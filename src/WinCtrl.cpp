@@ -6,7 +6,7 @@
 #include "json.hpp"
 using JSON = nlohmann::json;
 
-std::string WC2MB(const std::wstring &wstr, DWORD locale)
+std::string WC2MB(const std::wstring& wstr, DWORD locale)
 {
 	if (wstr.empty()) return {};
 	int sz = WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
@@ -15,7 +15,7 @@ std::string WC2MB(const std::wstring &wstr, DWORD locale)
 	return res;
 }
 
-std::wstring MB2WC(const std::string &str, DWORD locale)
+std::wstring MB2WC(const std::string& str, DWORD locale)
 {
 	if (str.empty()) return {};
 	int sz = MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), 0, 0);
@@ -24,7 +24,7 @@ std::wstring MB2WC(const std::string &str, DWORD locale)
 	return res;
 }
 
-std::wstring W(const JSON &json) {
+std::wstring W(const JSON& json) {
 	return MB2WC(json.dump());
 }
 
@@ -32,32 +32,32 @@ std::wstring SetWindow::GetWindowList()
 {
 	JSON json;
 	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
-	{
-		if (IsWindowVisible(hWnd)) {
-			JSON j;
-			j["hWnd"] = (INT64)hWnd;
+		{
+			if (IsWindowVisible(hWnd)) {
+				JSON j;
+				j["hWnd"] = (INT64)hWnd;
 
-			WCHAR buffer[256];
-			::GetClassName(hWnd, buffer, 256);
-			j["class"] = WC2MB(buffer, CP_UTF8);
+				WCHAR buffer[256];
+				::GetClassName(hWnd, buffer, 256);
+				j["class"] = WC2MB(buffer, CP_UTF8);
 
-			int length = GetWindowTextLength(hWnd);
-			if (length != 0) {
-				std::wstring text;
-				text.resize(length);
-				::GetWindowText(hWnd, &text[0], length + 1);
-				j["text"] = WC2MB(text, CP_UTF8);
+				int length = GetWindowTextLength(hWnd);
+				if (length != 0) {
+					std::wstring text;
+					text.resize(length);
+					::GetWindowText(hWnd, &text[0], length + 1);
+					j["text"] = WC2MB(text, CP_UTF8);
+				}
+
+				DWORD dwProcessId;
+				::GetWindowThreadProcessId(hWnd, &dwProcessId);
+				j["pid"] = dwProcessId;
+
+				JSON* json = (JSON*)lParam;
+				json->push_back(j);
 			}
-
-			DWORD dwProcessId;
-			::GetWindowThreadProcessId(hWnd, &dwProcessId);
-			j["pid"] = dwProcessId;
-
-			JSON *json = (JSON*)lParam;
-			json->push_back(j);
-		}
-		return TRUE;
-	}, (LPARAM)&json);
+			return TRUE;
+		}, (LPARAM)&json);
 
 	return MB2WC(json.dump(), CP_UTF8);
 }
@@ -74,25 +74,25 @@ HWND SetWindow::CurrentWindow()
 
 	// Enumerate the windows using a lambda to process each window
 	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
-	{
-		auto pParams = (std::pair<HWND, DWORD>*)(lParam);
-		WCHAR buffer[256];
-		DWORD processId;
-		if (IsWindowVisible(hWnd)
-			&& ::GetWindowThreadProcessId(hWnd, &processId)
-			&& processId == pParams->second
-			&& ::GetClassName(hWnd, buffer, 256)
-			&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
-			) {
-			// Stop enumerating
-			SetLastError(-1);
-			pParams->first = hWnd;
-			return FALSE;
-		}
+		{
+			auto pParams = (std::pair<HWND, DWORD>*)(lParam);
+			WCHAR buffer[256];
+			DWORD processId;
+			if (IsWindowVisible(hWnd)
+				&& ::GetWindowThreadProcessId(hWnd, &processId)
+				&& processId == pParams->second
+				&& ::GetClassName(hWnd, buffer, 256)
+				&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+				) {
+				// Stop enumerating
+				SetLastError(-1);
+				pParams->first = hWnd;
+				return FALSE;
+			}
 
-		// Continue enumerating
-		return TRUE;
-	}, (LPARAM)&params);
+			// Continue enumerating
+			return TRUE;
+		}, (LPARAM)&params);
 
 	if (!bResult && GetLastError() == -1 && params.first)
 	{
@@ -148,7 +148,7 @@ BOOL SetWindow::EnableResizing(tVariant* paParams, const long lSizeArray)
 	HWND hWnd = VarToHwnd(paParams);
 	BOOL enable = VarToInt(paParams + 1);
 	LONG style = ::GetWindowLong(hWnd, GWL_STYLE);
-	style = enable ? (style | WS_SIZEBOX) : (style&~WS_SIZEBOX);
+	style = enable ? (style | WS_SIZEBOX) : (style & ~WS_SIZEBOX);
 	return ::SetWindowLong(hWnd, GWL_STYLE, style);
 }
 
@@ -240,51 +240,48 @@ BOOL SetWindow::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const 
 	::PrintWindow(hWnd, hDC, 0);
 
 	BOOL Ret = FALSE;
-	Gdiplus::GdiplusStartupInput input;
-	Gdiplus::GdiplusStartupOutput output;
 	Gdiplus::Status status = Gdiplus::Ok;
-
 	if (!gdiplusToken) // initialization of gdi+
 	{
-		status = Gdiplus::GdiplusStartup(&gdiplusToken, &input, &output);
+		const Gdiplus::GdiplusStartupInput input;
+		status = Gdiplus::GdiplusStartup(&gdiplusToken, &input, NULL);
+		if (status != Gdiplus::Ok) return false;
+
 	}
 
-	if (status == Gdiplus::Ok)
+	CLSID clsid;
+	GetEncoderClsid(L"image/png", &clsid); // retrieving JPEG encoder CLSID
+
+	Gdiplus::Bitmap SrcBitmap(hBitmap, 0); // creating bitmap
+
+	IStream* pStream;
+	if (SUCCEEDED(CreateStreamOnHGlobal(0, TRUE, &pStream))) // creating stream
 	{
-		CLSID clsid;
-		GetEncoderClsid(L"image/png", &clsid); // retrieving JPEG encoder CLSID
-
-		Gdiplus::Bitmap SrcBitmap(hBitmap, 0); // creating bitmap
-
-		IStream * pStream;
-		if (SUCCEEDED(CreateStreamOnHGlobal(0, TRUE, &pStream))) // creating stream
+		status = SrcBitmap.Save(pStream, &clsid, 0); // saving image to the stream
+		if (status == Gdiplus::Ok)
 		{
-			status = SrcBitmap.Save(pStream, &clsid, 0); // saving image to the stream
-			if (status == Gdiplus::Ok)
+			LARGE_INTEGER lOfs;
+			ULARGE_INTEGER lSize;
+			lOfs.QuadPart = 0;
+			if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_END, &lSize))) // retrieving size of stream data (seek to end)
 			{
-				LARGE_INTEGER lOfs;
-				ULARGE_INTEGER lSize;
 				lOfs.QuadPart = 0;
-				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_END, &lSize))) // retrieving size of stream data (seek to end)
+				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
-					lOfs.QuadPart = 0;
-					if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
+					pvarRetValue->strLen = (ULONG)((DWORD_PTR)lSize.QuadPart);
+					m_iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
+					TV_VT(pvarRetValue) = VTYPE_BLOB;
+					if (pvarRetValue->pstrVal)
 					{
-						pvarRetValue->strLen = (ULONG)((DWORD_PTR)lSize.QuadPart);
-						m_iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
-						TV_VT(pvarRetValue) = VTYPE_BLOB;
-						if (pvarRetValue->pstrVal)
+						if (SUCCEEDED(pStream->Read(pvarRetValue->pstrVal, pvarRetValue->strLen, 0))) // reading stream to buffer
 						{
-							if (SUCCEEDED(pStream->Read(pvarRetValue->pstrVal, pvarRetValue->strLen, 0))) // reading stream to buffer
-							{
-								Ret = TRUE;
-							}
+							Ret = TRUE;
 						}
 					}
 				}
 			}
-			pStream->Release(); // releasing stream
 		}
+		pStream->Release(); // releasing stream
 	}
 	return Ret;
 }

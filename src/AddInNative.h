@@ -70,7 +70,7 @@ public:
 	virtual long ADDIN_API FindMethod(const WCHAR_T* wsMethodName);
 	virtual const WCHAR_T* ADDIN_API GetMethodName(const long lMethodNum, const long lMethodAlias);
 	virtual long ADDIN_API GetNParams(const long lMethodNum);
-	virtual bool ADDIN_API GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant *pvarParamDefValue);
+	virtual bool ADDIN_API GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue);
 	virtual bool ADDIN_API HasRetVal(const long lMethodNum);
 	virtual bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray);
 	virtual bool ADDIN_API CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
@@ -83,13 +83,13 @@ private:
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
 	BOOL W(std::wstring str, tVariant* res) const { return W(str.c_str(), res); }
 	BOOL W(std::string str, tVariant* res) const { return W(MB2WC(str), res); }
-	BOOL W(const wchar_t *str, WCHAR_T** res) const;
-	BOOL W(const wchar_t *str, tVariant* res) const;
-	BOOL W(const DWORD &val, tVariant* res) const;
-	const WCHAR_T* W(const wchar_t *str) const;
+	BOOL W(const wchar_t* str, WCHAR_T** res) const;
+	BOOL W(const wchar_t* str, tVariant* res) const;
+	BOOL W(const DWORD& val, tVariant* res) const;
+	const WCHAR_T* W(const wchar_t* str) const;
 	// Attributes
-	IAddInDefBase      *m_iConnect;
-	IMemoryManager     *m_iMemory;
+	IAddInDefBase* m_iConnect;
+	IMemoryManager* m_iMemory;
 };
 
 #endif //__ADDINNATIVE_H__

@@ -76,7 +76,7 @@ uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len)
 uint32_t getLenShortWcharStr(const WCHAR_T* Source)
 {
 	uint32_t res = 0;
-	WCHAR_T *tmpShort = (WCHAR_T*)Source;
+	WCHAR_T* tmpShort = (WCHAR_T*)Source;
 
 	while (*tmpShort++)
 		++res;
