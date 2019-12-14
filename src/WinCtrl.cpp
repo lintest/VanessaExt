@@ -28,7 +28,7 @@ std::wstring W(const JSON& json) {
 	return MB2WC(json.dump());
 }
 
-std::wstring SetWindow::GetWindowList()
+std::wstring WindowsControl::GetWindowList()
 {
 	JSON json;
 	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
@@ -62,12 +62,12 @@ std::wstring SetWindow::GetWindowList()
 	return MB2WC(json.dump(), CP_UTF8);
 }
 
-HWND SetWindow::ActiveWindow()
+HWND WindowsControl::ActiveWindow()
 {
 	return GetActiveWindow();
 }
 
-HWND SetWindow::CurrentWindow()
+HWND WindowsControl::CurrentWindow()
 {
 	DWORD pid = GetCurrentProcessId();
 	std::pair<HWND, DWORD> params = { 0, pid };
@@ -102,7 +102,7 @@ HWND SetWindow::CurrentWindow()
 	return 0;
 }
 
-DWORD SetWindow::ProcessId()
+DWORD WindowsControl::ProcessId()
 {
 	return(GetCurrentProcessId());
 }
@@ -117,7 +117,7 @@ HWND VarToHwnd(tVariant* paParams)
 	return (HWND)IntToPtr(paParams->intVal);
 }
 
-BOOL SetWindow::SetWindowSize(tVariant* paParams, const long lSizeArray)
+BOOL WindowsControl::SetWindowSize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	HWND hWnd = VarToHwnd(paParams);
@@ -126,7 +126,7 @@ BOOL SetWindow::SetWindowSize(tVariant* paParams, const long lSizeArray)
 	return ::SetWindowPos(hWnd, 0, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 
-BOOL SetWindow::SetWindowPos(tVariant* paParams, const long lSizeArray)
+BOOL WindowsControl::SetWindowPos(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	HWND hWnd = VarToHwnd(paParams);
@@ -135,14 +135,14 @@ BOOL SetWindow::SetWindowPos(tVariant* paParams, const long lSizeArray)
 	return ::SetWindowPos(hWnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 
-BOOL SetWindow::ActivateWindow(tVariant* paParams, const long lSizeArray)
+BOOL WindowsControl::ActivateWindow(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	HWND hWnd = VarToHwnd(paParams);
 	return ::SetForegroundWindow(hWnd);
 }
 
-BOOL SetWindow::EnableResizing(tVariant* paParams, const long lSizeArray)
+BOOL WindowsControl::EnableResizing(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 2) return false;
 	HWND hWnd = VarToHwnd(paParams);
@@ -152,7 +152,7 @@ BOOL SetWindow::EnableResizing(tVariant* paParams, const long lSizeArray)
 	return ::SetWindowLong(hWnd, GWL_STYLE, style);
 }
 
-std::wstring SetWindow::GetWindowText(tVariant* paParams, const long lSizeArray)
+std::wstring WindowsControl::GetWindowText(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	HWND hWnd = VarToHwnd(paParams);
@@ -221,7 +221,7 @@ static AutoULONG_PTR gdiplusToken;
 #include <dwmapi.h>
 #pragma comment(lib, "Dwmapi.lib")
 
-BOOL SetWindow::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+BOOL WindowsControl::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	HWND hWnd = VarToHwnd(paParams);
@@ -238,7 +238,10 @@ BOOL SetWindow::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const 
 
 	//Print to memory hdc
 	::PrintWindow(hWnd, hDC, 0);
+}
 
+BOOL WindowsControl::SaveBitmap(HBITMAP hBitmap, tVariant * pvarRetValue)
+{
 	BOOL Ret = FALSE;
 	Gdiplus::Status status = Gdiplus::Ok;
 	if (!gdiplusToken) // initialization of gdi+
