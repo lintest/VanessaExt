@@ -18,8 +18,9 @@ public:
 	static DWORD ProcessId();
 public:
 	WindowsControl(IMemoryManager* iMemory) { m_iMemory = iMemory; }
-	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 	BOOL CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
+	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
+	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
 private:
 	BOOL SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue);
 	IMemoryManager* m_iMemory;

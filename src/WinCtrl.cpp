@@ -168,20 +168,47 @@ std::wstring WindowsControl::GetWindowText(tVariant* paParams, const long lSizeA
 #include <dwmapi.h>
 #pragma comment(lib, "Dwmapi.lib")
 
+/*
+https://habr.com/ru/post/316012/
+https://github.com/AlexALX/ScreenshotGrab/blob/master/ScreenShot%20Grab/Program.cs
+https://forum.ixbt.com/post.cgi?id=print:26:41407
+*/
+
 BOOL WindowsControl::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
-	const int nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
-	const int nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
-	HWND hDesktopWnd = GetDesktopWindow();
-	HDC hDesktopDC = GetDC(hDesktopWnd);
-	HDC hCaptureDC = CreateCompatibleDC(hDesktopDC);
-	HBITMAP hBitmap = CreateCompatibleBitmap(hDesktopDC, nScreenWidth, nScreenHeight);
-	SelectObject(hCaptureDC, hBitmap);
-	BitBlt(hCaptureDC, 0, 0, nScreenWidth, nScreenHeight, hDesktopDC, 0, 0, SRCCOPY | CAPTUREBLT);
+	const int mode = lSizeArray == 0 ? 0 : VarToInt(paParams);
+	if (mode == 2) return CaptureWindow(pvarRetValue, 0);
+
+	LONG x, y, w, h;
+	if (mode == 1) {
+		RECT rect;
+		HWND hWnd = ::GetForegroundWindow();
+		DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect));
+		x = rect.left;
+		y = rect.top;
+		w = rect.right - rect.left;
+		h = rect.bottom - rect.top;
+	}
+	else {
+		x = 0;
+		y = 0;
+		w = GetSystemMetrics(SM_CXSCREEN);
+		h = GetSystemMetrics(SM_CYSCREEN);
+	} 
+
+	HDC hScreen = GetDC(NULL);
+	HDC hDC = CreateCompatibleDC(hScreen);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
+	HGDIOBJ object = SelectObject(hDC, hBitmap);
+	BitBlt(hDC, 0, 0, w, h, hScreen, x, y, SRCCOPY);
+
 	const BOOL result = SaveBitmap(hBitmap, pvarRetValue);
-	ReleaseDC(hDesktopWnd, hDesktopDC);
-	DeleteDC(hCaptureDC);
+
+	SelectObject(hDC, object);
+	DeleteDC(hDC);
+	ReleaseDC(NULL, hScreen);
 	DeleteObject(hBitmap);
+
 	return result;
 }
 
@@ -189,6 +216,11 @@ BOOL WindowsControl::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, c
 {
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	return CaptureWindow(pvarRetValue, hWnd);
+}
+
+BOOL WindowsControl::CaptureWindow(tVariant * pvarRetValue, HWND hWnd)
+{
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 
 	RECT rc;
@@ -200,10 +232,13 @@ BOOL WindowsControl::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, c
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
 	SelectObject(hDC, hBitmap);
 	PrintWindow(hWnd, hDC, 0);
+
 	const BOOL result = SaveBitmap(hBitmap, pvarRetValue);
-	ReleaseDC(0, hdcScreen);
+
+	ReleaseDC(NULL, hdcScreen);
 	DeleteDC(hDC);
 	DeleteObject(hBitmap);
+
 	return result;
 }
 
@@ -215,7 +250,7 @@ private:
 	ULONG_PTR h = NULL;
 public:
 	GgiPlusToken() {}
-	~GgiPlusToken() { Gdiplus::GdiplusShutdown(h); }
+	~GgiPlusToken() { if (h) Gdiplus::GdiplusShutdown(h); }
 	ULONG_PTR* operator &() { return &h; }
 	BOOL operator!() { return !h; }
 };
