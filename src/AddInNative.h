@@ -23,6 +23,7 @@ static const ADDIN_NAMES g_MethodNames = {
 	{ L"SetWindowPos", L"УстановитьПозициюОкна" },
 	{ L"ActivateWindow", L"АктивироватьОкно" },
 	{ L"EnableResizing", L"РазрешитьИзменятьРазмер" },
+	{ L"TakeScreenshot", L"ПолучитьСнимокЭкрана" },
 	{ L"CaptureWindow", L"ПолучитьСнимокОкна" },
 };
 
@@ -46,6 +47,7 @@ public:
 		eSetWindowPos,
 		eActivateWindow,
 		eEnableResizing,
+		eTakeScreenshot,
 		eCaptureWindow,
 		eMethLast      // Always last
 	};

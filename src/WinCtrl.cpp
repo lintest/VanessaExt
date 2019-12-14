@@ -165,26 +165,77 @@ std::wstring WindowsControl::GetWindowText(tVariant* paParams, const long lSizeA
 	return text;
 }
 
+#include <dwmapi.h>
+#pragma comment(lib, "Dwmapi.lib")
+
+BOOL WindowsControl::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+{
+	const int nScreenWidth = GetSystemMetrics(SM_CXSCREEN);
+	const int nScreenHeight = GetSystemMetrics(SM_CYSCREEN);
+	HWND hDesktopWnd = GetDesktopWindow();
+	HDC hDesktopDC = GetDC(hDesktopWnd);
+	HDC hCaptureDC = CreateCompatibleDC(hDesktopDC);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hDesktopDC, nScreenWidth, nScreenHeight);
+	SelectObject(hCaptureDC, hBitmap);
+	BitBlt(hCaptureDC, 0, 0, nScreenWidth, nScreenHeight, hDesktopDC, 0, 0, SRCCOPY | CAPTUREBLT);
+	const BOOL result = SaveBitmap(hBitmap, pvarRetValue);
+	ReleaseDC(hDesktopWnd, hDesktopDC);
+	DeleteDC(hCaptureDC);
+	DeleteObject(hBitmap);
+	return result;
+}
+
+BOOL WindowsControl::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+
+	RECT rc;
+	GetClientRect(hWnd, &rc);
+	DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rc, sizeof(rc));
+
+	HDC hdcScreen = GetDC(NULL);
+	HDC hDC = CreateCompatibleDC(hdcScreen);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
+	SelectObject(hDC, hBitmap);
+	PrintWindow(hWnd, hDC, 0);
+	const BOOL result = SaveBitmap(hBitmap, pvarRetValue);
+	ReleaseDC(0, hdcScreen);
+	DeleteDC(hDC);
+	DeleteObject(hBitmap);
+	return result;
+}
+
 #include <gdiplus.h>
-using namespace Gdiplus;
 #pragma comment(lib, "Gdiplus.lib")
+
+class GgiPlusToken {
+private:
+	ULONG_PTR h = NULL;
+public:
+	GgiPlusToken() {}
+	~GgiPlusToken() { Gdiplus::GdiplusShutdown(h); }
+	ULONG_PTR* operator &() { return &h; }
+	BOOL operator!() { return !h; }
+};
+
+static GgiPlusToken gdiplusToken;
 
 int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 {
 	UINT  num = 0;          // number of image encoders
 	UINT  size = 0;         // size of the image encoder array in bytes
 
-	ImageCodecInfo* pImageCodecInfo = NULL;
+	Gdiplus::ImageCodecInfo* pImageCodecInfo = NULL;
 
-	GetImageEncodersSize(&num, &size);
-	if (size == 0)
-		return -1;  // Failure
+	Gdiplus::GetImageEncodersSize(&num, &size);
+	if (size == 0) return -1;  // Failure
 
-	pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
-	if (pImageCodecInfo == NULL)
-		return -1;  // Failure
+	pImageCodecInfo = (Gdiplus::ImageCodecInfo*)(malloc(size));
+	if (pImageCodecInfo == NULL) return -1;  // Failure
 
-	GetImageEncoders(num, size, pImageCodecInfo);
+	Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
 
 	for (UINT j = 0; j < num; ++j)
 	{
@@ -200,47 +251,7 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 	return -1;  // Failure
 }
 
-#define AUTO_H(N, T, F)                \
-class N {                              \
-private:                               \
-	T h = NULL;                        \
-public:                                \
-	N() {}                             \
-	N(T h) { this->h = h; }            \
-	~N() { if (h) (F); }               \
-	operator T() const { return h; }   \
-	T* operator &() { return &h; }     \
-	T operator->() { return h; }       \
-	T operator!() { return !h; }       \
-}                                      \
-;
-
-AUTO_H(AutoULONG_PTR, ULONG_PTR, GdiplusShutdown(h))
-static AutoULONG_PTR gdiplusToken;
-
-#include <dwmapi.h>
-#pragma comment(lib, "Dwmapi.lib")
-
-BOOL WindowsControl::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 1) return false;
-	HWND hWnd = VarToHwnd(paParams);
-	if (hWnd == 0) hWnd = ::GetForegroundWindow();
-
-	RECT rc;
-	GetClientRect(hWnd, &rc);
-	DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rc, sizeof(rc));
-
-	HDC hdcScreen = GetDC(NULL);
-	HDC hDC = CreateCompatibleDC(hdcScreen);
-	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
-	SelectObject(hDC, hBitmap);
-
-	//Print to memory hdc
-	::PrintWindow(hWnd, hDC, 0);
-}
-
-BOOL WindowsControl::SaveBitmap(HBITMAP hBitmap, tVariant * pvarRetValue)
+BOOL WindowsControl::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 {
 	BOOL Ret = FALSE;
 	Gdiplus::Status status = Gdiplus::Ok;
@@ -249,7 +260,6 @@ BOOL WindowsControl::SaveBitmap(HBITMAP hBitmap, tVariant * pvarRetValue)
 		const Gdiplus::GdiplusStartupInput input;
 		status = Gdiplus::GdiplusStartup(&gdiplusToken, &input, NULL);
 		if (status != Gdiplus::Ok) return false;
-
 	}
 
 	CLSID clsid;
