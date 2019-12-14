@@ -5,6 +5,7 @@
 #include "AddInNative.h"
 #include "convertor.h"
 #include <memory>
+#include <locale>
 #include "WinCtrl.h"
 
 static std::wstring param(tVariant* paParams, const long lSizeArray)
@@ -92,15 +93,15 @@ long CAddInNative::FindProp(const WCHAR_T* wsPropName)
 }
 
 //---------------------------------------------------------------------------//
-const WCHAR_T* CAddInNative::W(const wchar_t *str) const
+const WCHAR_T* CAddInNative::W(const wchar_t* str) const
 {
-	WCHAR_T *res = NULL;
+	WCHAR_T* res = NULL;
 	W(str, &res);
 	return res;
 }
 
 //---------------------------------------------------------------------------//
-BOOL CAddInNative::W(const wchar_t *str, WCHAR_T** res) const
+BOOL CAddInNative::W(const wchar_t* str, WCHAR_T** res) const
 {
 	if (m_iMemory && str) {
 		size_t size = wcslen(str) + 1;
@@ -113,7 +114,7 @@ BOOL CAddInNative::W(const wchar_t *str, WCHAR_T** res) const
 }
 
 //---------------------------------------------------------------------------//
-BOOL CAddInNative::W(const wchar_t *str, tVariant* res) const
+BOOL CAddInNative::W(const wchar_t* str, tVariant* res) const
 {
 	TV_VT(res) = VTYPE_PWSTR;
 	res->pwstrVal = NULL;
@@ -121,7 +122,7 @@ BOOL CAddInNative::W(const wchar_t *str, tVariant* res) const
 	if (m_iMemory && str) {
 		size_t size = wcslen(str) + 1;
 		if (m_iMemory->AllocMemory((void**)&res->pwstrVal, size * sizeof(WCHAR_T))) {
-			::convToShortWchar((WCHAR_T **)&res->pwstrVal, str, size);
+			::convToShortWchar((WCHAR_T**)&res->pwstrVal, str, size);
 			res->wstrLen = size;
 			return true;
 		}
@@ -130,7 +131,7 @@ BOOL CAddInNative::W(const wchar_t *str, tVariant* res) const
 }
 
 //---------------------------------------------------------------------------//
-BOOL CAddInNative::W(const DWORD &val, tVariant* res) const
+BOOL CAddInNative::W(const DWORD& val, tVariant* res) const
 {
 	TV_VT(res) = VTYPE_UI4;
 	res->uintVal = (uint32_t)val;
@@ -158,7 +159,7 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	}
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::SetPropVal(const long lPropNum, tVariant *varPropVal)
+bool CAddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
 {
 	return false;
 }
@@ -192,9 +193,9 @@ long CAddInNative::GetNParams(const long lMethodNum)
 {
 	switch (lMethodNum)
 	{
-	case eSetWindowSize: 
+	case eSetWindowSize:
 		return 3;
-	case eSetWindowPos: 
+	case eSetWindowPos:
 		return 3;
 	case eActivateWindow:
 		return 1;
@@ -207,7 +208,7 @@ long CAddInNative::GetNParams(const long lMethodNum)
 	}
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant *pvarParamDefValue)
+bool CAddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
 {
 	TV_VT(pvarParamDefValue) = VTYPE_EMPTY;
 	return false;
@@ -262,7 +263,7 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 		return W(SetWindow::ActivateWindow(paParams, lSizeArray), pvarRetValue);
 	case eEnableResizing:
 		return W(SetWindow::EnableResizing(paParams, lSizeArray), pvarRetValue);
-	case eCaptureWindow: 
+	case eCaptureWindow:
 		return SetWindow(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
 	default:
 		return false;
@@ -292,8 +293,8 @@ void CAddInNative::addError(uint32_t wcode, const wchar_t* source, const wchar_t
 {
 	if (m_iConnect)
 	{
-		WCHAR_T *err = 0;
-		WCHAR_T *descr = 0;
+		WCHAR_T* err = 0;
+		WCHAR_T* descr = 0;
 
 		::convToShortWchar(&err, source);
 		::convToShortWchar(&descr, descriptor);
