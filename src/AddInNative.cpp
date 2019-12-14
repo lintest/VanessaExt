@@ -201,6 +201,8 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 1;
 	case eEnableResizing:
 		return 2;
+	case eTakeScreenshot:
+		return 0;
 	case eCaptureWindow:
 		return 1;
 	default:
@@ -222,6 +224,7 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	case eSetWindowSize:
 	case eSetWindowPos:
 	case eActivateWindow:
+	case eTakeScreenshot:
 	case eCaptureWindow:
 		return true;
 	default:
@@ -263,6 +266,8 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 		return W(WindowsControl::ActivateWindow(paParams, lSizeArray), pvarRetValue);
 	case eEnableResizing:
 		return W(WindowsControl::EnableResizing(paParams, lSizeArray), pvarRetValue);
+	case eTakeScreenshot:
+		return WindowsControl(m_iMemory).CaptureScreen(pvarRetValue);
 	case eCaptureWindow:
 		return WindowsControl(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
 	default:
