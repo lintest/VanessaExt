@@ -149,11 +149,11 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
 	case eCurrentWindow:
-		return W((DWORD)SetWindow::CurrentWindow(), pvarPropVal);
+		return W((DWORD)WindowsControl::CurrentWindow(), pvarPropVal);
 	case eActiveWindow:
-		return W((DWORD)SetWindow::ActiveWindow(), pvarPropVal);
+		return W((DWORD)WindowsControl::ActiveWindow(), pvarPropVal);
 	case eProcessId:
-		return W(SetWindow::ProcessId(), pvarPropVal);
+		return W(WindowsControl::ProcessId(), pvarPropVal);
 	default:
 		return false;
 	}
@@ -234,16 +234,16 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 	switch (lMethodNum)
 	{
 	case eGetWindowList:
-		SetWindow::GetWindowList();
+		WindowsControl::GetWindowList();
 		return true;
 	case eSetWindowSize:
-		return SetWindow::SetWindowSize(paParams, lSizeArray);
+		return WindowsControl::SetWindowSize(paParams, lSizeArray);
 	case eSetWindowPos:
-		return SetWindow::SetWindowPos(paParams, lSizeArray);
+		return WindowsControl::SetWindowPos(paParams, lSizeArray);
 	case eActivateWindow:
-		return SetWindow::ActivateWindow(paParams, lSizeArray);
+		return WindowsControl::ActivateWindow(paParams, lSizeArray);
 	case eEnableResizing:
-		return SetWindow::EnableResizing(paParams, lSizeArray);
+		return WindowsControl::EnableResizing(paParams, lSizeArray);
 	default:
 		return false;
 	}
@@ -254,17 +254,17 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 {
 	switch (lMethodNum) {
 	case eGetWindowList:
-		return W(SetWindow::GetWindowList(), pvarRetValue);
+		return W(WindowsControl::GetWindowList(), pvarRetValue);
 	case eSetWindowSize:
-		return W(SetWindow::SetWindowSize(paParams, lSizeArray), pvarRetValue);
+		return W(WindowsControl::SetWindowSize(paParams, lSizeArray), pvarRetValue);
 	case eSetWindowPos:
-		return W(SetWindow::SetWindowPos(paParams, lSizeArray), pvarRetValue);
+		return W(WindowsControl::SetWindowPos(paParams, lSizeArray), pvarRetValue);
 	case eActivateWindow:
-		return W(SetWindow::ActivateWindow(paParams, lSizeArray), pvarRetValue);
+		return W(WindowsControl::ActivateWindow(paParams, lSizeArray), pvarRetValue);
 	case eEnableResizing:
-		return W(SetWindow::EnableResizing(paParams, lSizeArray), pvarRetValue);
+		return W(WindowsControl::EnableResizing(paParams, lSizeArray), pvarRetValue);
 	case eCaptureWindow:
-		return SetWindow(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
+		return WindowsControl(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
 	default:
 		return false;
 	}

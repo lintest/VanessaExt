@@ -5,7 +5,7 @@
 #include <string>
 #include "IMemoryManager.h"
 
-class SetWindow {
+class WindowsControl {
 public:
 	static std::wstring GetWindowList();
 	static std::wstring GetWindowText(tVariant* paParams, const long lSizeArray);
@@ -17,9 +17,10 @@ public:
 	static HWND CurrentWindow();
 	static DWORD ProcessId();
 public:
-	SetWindow(IMemoryManager* iMemory) { m_iMemory = iMemory; }
+	WindowsControl(IMemoryManager* iMemory) { m_iMemory = iMemory; }
 	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 private:
+	BOOL SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue);
 	IMemoryManager* m_iMemory;
 };
 
