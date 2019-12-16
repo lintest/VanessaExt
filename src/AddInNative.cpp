@@ -205,6 +205,10 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 1;
 	case eCaptureWindow:
 		return 1;
+	case eGetWindowText:
+		return 1;
+	case eSetWindowText:
+		return 2;
 	default:
 		return 0;
 	}
@@ -226,6 +230,7 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	case eActivateWindow:
 	case eTakeScreenshot:
 	case eCaptureWindow:
+	case eGetWindowText:
 		return true;
 	default:
 		return false;
@@ -247,6 +252,8 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 		return WindowsControl::ActivateWindow(paParams, lSizeArray);
 	case eEnableResizing:
 		return WindowsControl::EnableResizing(paParams, lSizeArray);
+	case eSetWindowText:
+		return WindowsControl::SetText(paParams, lSizeArray);
 	default:
 		return false;
 	}
@@ -270,6 +277,10 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 		return WindowsControl(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
 		return WindowsControl(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
+	case eGetWindowText:
+		return W(WindowsControl::GetText(paParams, lSizeArray), pvarRetValue);
+	case eSetWindowText:
+		return WindowsControl::SetText(paParams, lSizeArray);
 	default:
 		return false;
 	}

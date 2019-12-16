@@ -152,17 +152,24 @@ BOOL WindowsControl::EnableResizing(tVariant* paParams, const long lSizeArray)
 	return ::SetWindowLong(hWnd, GWL_STYLE, style);
 }
 
-std::wstring WindowsControl::GetWindowText(tVariant* paParams, const long lSizeArray)
+std::wstring WindowsControl::GetText(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	HWND hWnd = VarToHwnd(paParams);
-	int length = ::GetWindowTextLength(hWnd);
+	const int length = ::GetWindowTextLength(hWnd);
 	std::wstring text;
 	if (length != 0) {
 		text.resize(length);
 		::GetWindowText(hWnd, &text[0], length + 1);
 	}
 	return text;
+}
+
+BOOL WindowsControl::SetText(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 2) return false;
+	HWND hWnd = VarToHwnd(paParams);
+	return ::SetWindowText(hWnd, (paParams + 1)->pwstrVal);
 }
 
 #include <dwmapi.h>
@@ -179,10 +186,12 @@ BOOL WindowsControl::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, c
 	const int mode = lSizeArray == 0 ? 0 : VarToInt(paParams);
 	if (mode == 2) return CaptureWindow(pvarRetValue, 0);
 
+	HWND hWnd = ::GetForegroundWindow();
+	UpdateWindow(hWnd);
+
 	LONG x, y, w, h;
 	if (mode == 1) {
 		RECT rect;
-		HWND hWnd = ::GetForegroundWindow();
 		DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect));
 		x = rect.left;
 		y = rect.top;
@@ -201,7 +210,6 @@ BOOL WindowsControl::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, c
 	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
 	HGDIOBJ object = SelectObject(hDC, hBitmap);
 	BitBlt(hDC, 0, 0, w, h, hScreen, x, y, SRCCOPY);
-
 	const BOOL result = SaveBitmap(hBitmap, pvarRetValue);
 
 	SelectObject(hDC, object);
@@ -333,3 +341,4 @@ BOOL WindowsControl::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 	}
 	return Ret;
 }
+
