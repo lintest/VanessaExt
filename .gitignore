@@ -7,3 +7,7 @@
 /bin64
 /bin
 /.vc
+/Example/fileversion
+AddIn.zip
+*.epf
+
