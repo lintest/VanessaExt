@@ -193,6 +193,8 @@ long CAddInNative::GetNParams(const long lMethodNum)
 {
 	switch (lMethodNum)
 	{
+	case eGetProcessList:
+		return 1;
 	case eSetWindowSize:
 		return 3;
 	case eSetWindowPos:
@@ -226,6 +228,7 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 {
 	switch (lMethodNum)
 	{
+	case eGetProcessList:
 	case eGetWindowList:
 	case eSetWindowSize:
 	case eSetWindowPos:
@@ -242,9 +245,6 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 {
 	switch (lMethodNum)
 	{
-	case eGetWindowList:
-		WindowsControl::GetWindowList();
-		return true;
 	case eSetWindowSize:
 		return WindowsControl::SetWindowSize(paParams, lSizeArray);
 	case eSetWindowPos:
@@ -268,6 +268,8 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 	switch (lMethodNum) {
 	case eGetWindowList:
 		return W(WindowsControl::GetWindowList(), pvarRetValue);
+	case eGetProcessList:
+		return W(WindowsControl::GetProcessList(paParams, lSizeArray), pvarRetValue);
 	case eSetWindowSize:
 		return W(WindowsControl::SetWindowSize(paParams, lSizeArray), pvarRetValue);
 	case eSetWindowPos:
