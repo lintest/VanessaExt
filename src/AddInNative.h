@@ -21,12 +21,13 @@ static const ADDIN_NAMES g_MethodNames = {
 	{ L"GetWindowList", L"ПолучитьСписокОкон" },
 	{ L"SetWindowSize", L"УстановитьРазмерОкна" },
 	{ L"SetWindowPos", L"УстановитьПозициюОкна" },
-	{ L"ActivateWindow", L"АктивироватьОкно" },
 	{ L"EnableResizing", L"РазрешитьИзменятьРазмер" },
 	{ L"TakeScreenshot", L"ПолучитьСнимокЭкрана" },
 	{ L"CaptureWindow", L"ПолучитьСнимокОкна" },
 	{ L"GetWindowText", L"ПолучитьЗаголовок" },
 	{ L"SetWindowText", L"УстановитьЗаголовок" },
+	{ L"Maximize", L"Максимизировать" },
+	{ L"Activate", L"Активировать" },
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,12 +48,13 @@ public:
 		eGetWindowList = 0,
 		eSetWindowSize,
 		eSetWindowPos,
-		eActivateWindow,
 		eEnableResizing,
 		eTakeScreenshot,
 		eCaptureWindow,
 		eGetWindowText,
 		eSetWindowText,
+		eMaximize,
+		eActivate,
 		eMethLast      // Always last
 	};
 
