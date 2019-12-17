@@ -15,6 +15,7 @@
 
 ## Методы
 
+- ПолучитьСписокПроцессов (GetProcessList)
 - ПолучитьСписокОкон (GetWindowList)
 - УстановитьРазмерОкна (SetWindowSize)
 - УстановитьПозициюОкна (SetWindowPos)
