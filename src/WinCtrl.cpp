@@ -135,13 +135,6 @@ BOOL WindowsControl::SetWindowPos(tVariant* paParams, const long lSizeArray)
 	return ::SetWindowPos(hWnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 }
 
-BOOL WindowsControl::ActivateWindow(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 1) return false;
-	HWND hWnd = VarToHwnd(paParams);
-	return ::SetForegroundWindow(hWnd);
-}
-
 BOOL WindowsControl::EnableResizing(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 2) return false;
@@ -340,5 +333,35 @@ BOOL WindowsControl::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 		pStream->Release(); // releasing stream
 	}
 	return Ret;
+}
+
+BOOL WindowsControl::Maximize(tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (IsWindow(hWnd)) {
+		if (IsWindowVisible(hWnd)) {
+			ShowWindow(hWnd, SW_SHOWMAXIMIZED);
+		}
+	}
+	return true;
+}
+
+BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return false;
+	HWND hWnd = VarToHwnd(paParams);
+	if (IsWindow(hWnd)) {
+		if (IsWindowVisible(hWnd)) {
+			WINDOWPLACEMENT place;
+			memset(&place, 0, sizeof(WINDOWPLACEMENT));
+			place.length = sizeof(WINDOWPLACEMENT);
+			GetWindowPlacement(hWnd, &place);
+			if (place.showCmd == SW_SHOWMINIMIZED) ShowWindow(hWnd, SW_RESTORE);
+			SetForegroundWindow(hWnd);
+		}
+	}
+	return true;
 }
 
