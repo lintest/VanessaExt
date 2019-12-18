@@ -135,25 +135,30 @@ DWORD ProcessManager::ProcessId()
 
 std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
 {
-	if (lSizeArray < 1) return {};
-	if (paParams->vt != VTYPE_PWSTR) return {};
-	if (paParams->pwstrVal == NULL) return {};
-
 	std::wstring query;
 	query.append(L"SELECT ProcessId,CreationDate,CommandLine");
-	query.append(L" FROM Win32_Process WHERE Name LIKE '%");
-	query.append(paParams->pwstrVal);
-	query.append(L"%'");
-
+	query.append(L" FROM Win32_Process ");
+	if (lSizeArray > 0 && paParams->vt == VTYPE_PWSTR && paParams->pwstrVal) {
+		query.append(L" WHERE Name LIKE '%");
+		query.append(paParams->pwstrVal);
+		query.append(L"%'");
+	}
 	return ProcessEnumerator(query.c_str());
 }
 
 std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return {};
-
 	std::wstring query;
 	query.append(L"SELECT * FROM Win32_Process WHERE ProcessId=");
 	query.append(to_wstring(VarToInt(paParams)));
 	return ProcessEnumerator(query.c_str());
+}
+
+std::wstring ProcessManager::FindProcess(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return {};
+	if (paParams->vt != VTYPE_PWSTR) return {};
+	if (paParams->pwstrVal == NULL) return {};
+	return ProcessEnumerator(paParams->pwstrVal);
 }
