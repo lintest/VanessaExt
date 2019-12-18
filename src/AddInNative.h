@@ -19,6 +19,7 @@ static const ADDIN_NAMES g_PropNames = {
 
 static const ADDIN_NAMES g_MethodNames = {
 	{ L"GetProcessList", L"ПолучитьСписокПроцессов" },
+	{ L"GetProcessInfo", L"ПолучитьДанныеПроцесса" },
 	{ L"GetWindowList", L"ПолучитьСписокОкон" },
 	{ L"SetWindowSize", L"УстановитьРазмерОкна" },
 	{ L"SetWindowPos", L"УстановитьПозициюОкна" },
@@ -47,6 +48,7 @@ public:
 	enum Methods
 	{
 		eGetProcessList = 0,
+		eGetProcessInfo,
 		eGetWindowList,
 		eSetWindowSize,
 		eSetWindowPos,
