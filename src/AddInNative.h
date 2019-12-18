@@ -29,8 +29,8 @@ static const ADDIN_NAMES g_MethodNames = {
 	{ L"CaptureWindow", L"ПолучитьСнимокОкна" },
 	{ L"GetWindowText", L"ПолучитьЗаголовок" },
 	{ L"SetWindowText", L"УстановитьЗаголовок" },
-	{ L"Maximize", L"Максимизировать" },
-	{ L"Activate", L"Активировать" },
+	{ L"MaximizeWindow", L"МаксимизироватьОкно" },
+	{ L"ActivateWindow", L"АктивироватьОкно" },
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -59,8 +59,8 @@ public:
 		eCaptureWindow,
 		eGetWindowText,
 		eSetWindowText,
-		eMaximize,
-		eActivate,
+		eMaximizeWindow,
+		eActivateWindow,
 		eMethLast      // Always last
 	};
 
