@@ -213,9 +213,9 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 1;
 	case eSetWindowText:
 		return 2;
-	case eMaximize:
+	case eMaximizeWindow:
 		return 1;
-	case eActivate:
+	case eActivateWindow:
 		return 1;
 	default:
 		return 0;
@@ -258,9 +258,9 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 		return WindowsControl::EnableResizing(paParams, lSizeArray);
 	case eSetWindowText:
 		return WindowsControl::SetText(paParams, lSizeArray);
-	case eMaximize:
+	case eMaximizeWindow:
 		return WindowsControl::Maximize(paParams, lSizeArray);
-	case eActivate:
+	case eActivateWindow:
 		return WindowsControl::Activate(paParams, lSizeArray);
 	default:
 		return false;
@@ -291,9 +291,9 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 		return W(WindowsControl::GetText(paParams, lSizeArray), pvarRetValue);
 	case eSetWindowText:
 		return WindowsControl::SetText(paParams, lSizeArray);
-	case eMaximize:
+	case eMaximizeWindow:
 		return WindowsControl::Maximize(paParams, lSizeArray);
-	case eActivate:
+	case eActivateWindow:
 		return WindowsControl::Activate(paParams, lSizeArray);
 	default:
 		return false;
