@@ -86,7 +86,9 @@ BOOL WindowsControl::SetWindowSize(tVariant* paParams, const long lSizeArray)
 	HWND hWnd = VarToHwnd(paParams);
 	int w = VarToInt(paParams + 1);
 	int h = VarToInt(paParams + 2);
-	return ::SetWindowPos(hWnd, 0, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+	::SetWindowPos(hWnd, 0, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+	::UpdateWindow(hWnd);
+	return true;
 }
 
 BOOL WindowsControl::SetWindowPos(tVariant* paParams, const long lSizeArray)
@@ -95,7 +97,9 @@ BOOL WindowsControl::SetWindowPos(tVariant* paParams, const long lSizeArray)
 	HWND hWnd = VarToHwnd(paParams);
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 1);
-	return ::SetWindowPos(hWnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+	::SetWindowPos(hWnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+	::UpdateWindow(hWnd);
+	return true;
 }
 
 BOOL WindowsControl::EnableResizing(tVariant* paParams, const long lSizeArray)
@@ -105,7 +109,9 @@ BOOL WindowsControl::EnableResizing(tVariant* paParams, const long lSizeArray)
 	BOOL enable = VarToInt(paParams + 1);
 	LONG style = ::GetWindowLong(hWnd, GWL_STYLE);
 	style = enable ? (style | WS_SIZEBOX) : (style & ~WS_SIZEBOX);
-	return ::SetWindowLong(hWnd, GWL_STYLE, style);
+	::SetWindowLong(hWnd, GWL_STYLE, style);
+	::UpdateWindow(hWnd);
+	return true;
 }
 
 std::wstring WindowsControl::GetText(tVariant* paParams, const long lSizeArray)
@@ -130,12 +136,6 @@ BOOL WindowsControl::SetText(tVariant* paParams, const long lSizeArray)
 
 #include <dwmapi.h>
 #pragma comment(lib, "Dwmapi.lib")
-
-/*
-https://habr.com/ru/post/316012/
-https://github.com/AlexALX/ScreenshotGrab/blob/master/ScreenShot%20Grab/Program.cs
-https://forum.ixbt.com/post.cgi?id=print:26:41407
-*/
 
 BOOL WindowsControl::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
