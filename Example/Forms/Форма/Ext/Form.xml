@@ -317,6 +317,11 @@
 										<CommandName>Form.Command.ПолучитьСписокПроцессов</CommandName>
 										<ExtendedTooltip name="СписокПроцессовПолучитьСписокПроцессовРасширеннаяПодсказка" id="144"/>
 									</Button>
+									<Button name="СписокПроцессовПолучитьДанныеПроцесса" id="169">
+										<Type>CommandBarButton</Type>
+										<CommandName>Form.Command.ПолучитьДанныеПроцесса</CommandName>
+										<ExtendedTooltip name="СписокПроцессовПолучитьДанныеПроцессаРасширеннаяПодсказка" id="170"/>
+									</Button>
 								</ChildItems>
 							</AutoCommandBar>
 							<ExtendedTooltip name="СписокПроцессовРасширеннаяПодсказка" id="127"/>
@@ -351,11 +356,86 @@
 									<ContextMenu name="СписокПроцессовProcessIdКонтекстноеМеню" id="138"/>
 									<ExtendedTooltip name="СписокПроцессовProcessIdРасширеннаяПодсказка" id="139"/>
 								</InputField>
+								<InputField name="СписокПроцессовCreationDate" id="145">
+									<DataPath>СписокПроцессов.CreationDate</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СписокПроцессовCreationDateКонтекстноеМеню" id="146"/>
+									<ExtendedTooltip name="СписокПроцессовCreationDateРасширеннаяПодсказка" id="147"/>
+								</InputField>
 								<InputField name="СписокПроцессовCommandLine" id="140">
 									<DataPath>СписокПроцессов.CommandLine</DataPath>
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="СписокПроцессовCommandLineКонтекстноеМеню" id="141"/>
 									<ExtendedTooltip name="СписокПроцессовCommandLineРасширеннаяПодсказка" id="142"/>
+								</InputField>
+							</ChildItems>
+						</Table>
+					</ChildItems>
+				</Page>
+				<Page name="СтраницаДанныеПроцесса" id="148">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Данные процесса</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница данные процесса</v8:content>
+						</v8:item>
+					</ToolTip>
+					<Group>HorizontalIfPossible</Group>
+					<ExtendedTooltip name="СтраницаДанныеПроцессаРасширеннаяПодсказка" id="149"/>
+					<ChildItems>
+						<Table name="ДанныеПроцесса" id="150">
+							<Representation>List</Representation>
+							<ChangeRowSet>false</ChangeRowSet>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>ДанныеПроцесса</DataPath>
+							<RowFilter xsi:nil="true"/>
+							<ContextMenu name="ДанныеПроцессаКонтекстноеМеню" id="151"/>
+							<AutoCommandBar name="ДанныеПроцессаКоманднаяПанель" id="152"/>
+							<ExtendedTooltip name="ДанныеПроцессаРасширеннаяПодсказка" id="153"/>
+							<SearchStringAddition name="ДанныеПроцессаСтрокаПоиска" id="154">
+								<AdditionSource>
+									<Item>ДанныеПроцесса</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="ДанныеПроцессаСтрокаПоискаКонтекстноеМеню" id="155"/>
+								<ExtendedTooltip name="ДанныеПроцессаСтрокаПоискаРасширеннаяПодсказка" id="156"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="ДанныеПроцессаСостояниеПросмотра" id="157">
+								<AdditionSource>
+									<Item>ДанныеПроцесса</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="ДанныеПроцессаСостояниеПросмотраКонтекстноеМеню" id="158"/>
+								<ExtendedTooltip name="ДанныеПроцессаСостояниеПросмотраРасширеннаяПодсказка" id="159"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="ДанныеПроцессаУправлениеПоиском" id="160">
+								<AdditionSource>
+									<Item>ДанныеПроцесса</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="ДанныеПроцессаУправлениеПоискомКонтекстноеМеню" id="161"/>
+								<ExtendedTooltip name="ДанныеПроцессаУправлениеПоискомРасширеннаяПодсказка" id="162"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="ДанныеПроцессаКлюч" id="163">
+									<DataPath>ДанныеПроцесса.Ключ</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>5</Width>
+									<ContextMenu name="ДанныеПроцессаКлючКонтекстноеМеню" id="164"/>
+									<ExtendedTooltip name="ДанныеПроцессаКлючРасширеннаяПодсказка" id="165"/>
+								</InputField>
+								<InputField name="ДанныеПроцессаЗначение" id="166">
+									<DataPath>ДанныеПроцесса.Значение</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="ДанныеПроцессаЗначениеКонтекстноеМеню" id="167"/>
+									<ExtendedTooltip name="ДанныеПроцессаЗначениеРасширеннаяПодсказка" id="168"/>
 								</InputField>
 							</ChildItems>
 						</Table>
@@ -791,7 +871,7 @@
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
-							<v8:content>Process id</v8:content>
+							<v8:content>Идентификатор</v8:content>
 						</v8:item>
 					</Title>
 					<Type>
@@ -807,7 +887,64 @@
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
-							<v8:content>Command line</v8:content>
+							<v8:content>Командная строка</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="CreationDate" id="3">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Дата создания</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:dateTime</v8:Type>
+						<v8:DateQualifiers>
+							<v8:DateFractions>DateTime</v8:DateFractions>
+						</v8:DateQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
+		<Attribute name="ДанныеПроцесса" id="13">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Данные процесса</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="Ключ" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Ключ</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="Значение" id="2">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Значение</v8:content>
 						</v8:item>
 					</Title>
 					<Type>
@@ -1106,6 +1243,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьСписокПроцессов</Action>
+		</Command>
+		<Command name="ПолучитьДанныеПроцесса" id="20">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить данные процесса</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить данные процесса</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьДанныеПроцесса</Action>
 		</Command>
 	</Commands>
 </Form>

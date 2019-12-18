@@ -6,28 +6,6 @@
 #include "json.hpp"
 using JSON = nlohmann::json;
 
-std::string WC2MB(const std::wstring& wstr, DWORD locale)
-{
-	if (wstr.empty()) return {};
-	int sz = WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
-	std::string res(sz, 0);
-	WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), &res[0], sz, 0, 0);
-	return res;
-}
-
-std::wstring MB2WC(const std::string& str, DWORD locale)
-{
-	if (str.empty()) return {};
-	int sz = MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), 0, 0);
-	std::wstring res(sz, 0);
-	MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), &res[0], sz);
-	return res;
-}
-
-std::wstring W(const JSON& json) {
-	return MB2WC(json.dump());
-}
-
 std::wstring WindowsControl::GetWindowList()
 {
 	JSON json;
@@ -100,21 +78,6 @@ HWND WindowsControl::CurrentWindow()
 	}
 
 	return 0;
-}
-
-DWORD WindowsControl::ProcessId()
-{
-	return(GetCurrentProcessId());
-}
-
-int VarToInt(tVariant* paParams)
-{
-	return paParams->intVal;
-}
-
-HWND VarToHwnd(tVariant* paParams)
-{
-	return (HWND)IntToPtr(paParams->intVal);
 }
 
 BOOL WindowsControl::SetWindowSize(tVariant* paParams, const long lSizeArray)
@@ -363,109 +326,4 @@ BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
 		}
 	}
 	return true;
-}
-
-#define _WIN32_DCOM
-#include <iostream>
-using namespace std;
-#include <comdef.h>
-#include <Wbemidl.h>
-# pragma comment(lib, "wbemuuid.lib")
-
-class ProcessEnumerator {
-private:
-	HRESULT hInitialize;
-	IWbemLocator* pLoc = NULL;
-	IWbemServices* pSvc = NULL;
-	IEnumWbemClassObject* pEnumerator = NULL;
-	IWbemClassObject* pclsObj = NULL;
-	std::wstring result;
-public:
-	ProcessEnumerator(const WCHAR* name)
-	{
-		hInitialize = CoInitializeEx(0, COINIT_APARTMENTTHREADED);
-		if (FAILED(hInitialize)) return;
-
-		HRESULT hres;
-
-		hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
-		if (FAILED(hres)) return;
-
-		hres = pLoc->ConnectServer(
-			_bstr_t(L"\\\\.\\root\\CIMV2"),      // Object path of WMI namespace
-			NULL,                    // User name. NULL = current user
-			NULL,                    // User password. NULL = current
-			0,                       // Locale. NULL indicates current
-			NULL,                    // Security flags.
-			0,                       // Authority (e.g. Kerberos)
-			0,                       // Context object
-			&pSvc                    // pointer to IWbemServices proxy
-		);
-		if (FAILED(hres)) return;
-
-		// Set security levels on the proxy -------------------------
-		hres = CoSetProxyBlanket(
-			pSvc,                        // Indicates the proxy to set
-			RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
-			RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
-			NULL,                        // Server principal name
-			RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx
-			RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
-			NULL,                        // client identity
-			EOAC_NONE                    // proxy capabilities
-		);
-		if (FAILED(hres)) return;
-
-		std::wstring query;
-		query.append(L"SELECT * FROM Win32_Process Where Name LIKE '%");
-		query.append(name);
-		query.append(L"%'");
-
-		hres = pSvc->ExecQuery(_bstr_t(L"WQL"), _bstr_t(query.c_str()),
-			WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
-		if (FAILED(hres)) return;
-
-		JSON json;
-		ULONG uReturn = 0;
-		while (pEnumerator)
-		{
-			HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
-			if (0 == uReturn || FAILED(hr)) break;
-
-			JSON j;
-			VARIANT vtProp;
-
-			hr = pclsObj->Get(L"CommandLine", 0, &vtProp, 0, 0);
-			if (SUCCEEDED(hr) && vtProp.vt == VT_BSTR) j["CommandLine"] = WC2MB(vtProp.bstrVal);
-			VariantClear(&vtProp);
-
-			hr = pclsObj->Get(L"ProcessId", 0, &vtProp, 0, 0);
-			if (SUCCEEDED(hr) && vtProp.vt == VT_I4) j["ProcessId"] = vtProp.intVal;
-			VariantClear(&vtProp);
-
-			pclsObj->Release();
-			pclsObj = NULL;
-
-			json.push_back(j);
-		}
-
-		result = MB2WC(json.dump());
-	}
-
-	~ProcessEnumerator() {
-		if (pEnumerator) pEnumerator->Release();
-		if (pSvc) pSvc->Release();
-		if (pLoc) pLoc->Release();
-		if (SUCCEEDED(hInitialize)) CoUninitialize();
-	}
-
-	operator std::wstring() {
-		return result;
-	}
-};
-
-std::wstring WindowsControl::GetProcessList(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 1) return {};
-	return ProcessEnumerator(paParams->pwstrVal);
 }

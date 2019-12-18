@@ -85,4 +85,33 @@ uint32_t getLenShortWcharStr(const WCHAR_T* Source)
 }
 //---------------------------------------------------------------------------//
 
+std::string WC2MB(const std::wstring& wstr, DWORD locale)
+{
+	if (wstr.empty()) return {};
+	int sz = WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
+	std::string res(sz, 0);
+	WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), &res[0], sz, 0, 0);
+	return res;
+}
 
+std::wstring MB2WC(const std::string& str, DWORD locale)
+{
+	if (str.empty()) return {};
+	int sz = MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), 0, 0);
+	std::wstring res(sz, 0);
+	MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), &res[0], sz);
+	return res;
+}
+
+//---------------------------------------------------------------------------//
+int VarToInt(tVariant* paParams)
+{
+	return paParams->intVal;
+}
+
+HWND VarToHwnd(tVariant* paParams)
+{
+	return (HWND)IntToPtr(paParams->intVal);
+}
+
+//---------------------------------------------------------------------------//

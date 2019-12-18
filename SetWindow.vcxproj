@@ -201,6 +201,7 @@
   <ItemGroup>
     <ClInclude Include="src\AddInNative.h" />
     <ClInclude Include="src\convertor.h" />
+    <ClInclude Include="src\ProcMngr.h" />
     <ClInclude Include="src\WinCtrl.h" />
     <ClInclude Include="src\stdafx.h" />
   </ItemGroup>
@@ -212,6 +213,7 @@
     <ClCompile Include="src\convertor.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\exports.cpp" />
+    <ClCompile Include="src\ProcMngr.cpp" />
     <ClCompile Include="src\WinCtrl.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
   </ItemGroup>
