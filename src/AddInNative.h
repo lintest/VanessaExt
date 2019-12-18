@@ -20,17 +20,19 @@ static const ADDIN_NAMES g_PropNames = {
 static const ADDIN_NAMES g_MethodNames = {
 	{ L"GetProcessList", L"ПолучитьСписокПроцессов" },
 	{ L"GetProcessInfo", L"ПолучитьДанныеПроцесса" },
-	{ L"FindProcess", L"НайтиПроцесс" },
-	{ L"GetWindowList", L"ПолучитьСписокОкон" },
-	{ L"SetWindowSize", L"УстановитьРазмерОкна" },
-	{ L"SetWindowPos", L"УстановитьПозициюОкна" },
+	{ L"FindProcess",    L"НайтиПроцесс" },
+	{ L"GetWindowList",  L"ПолучитьСписокОкон" },
+	{ L"SetWindowSize",  L"УстановитьРазмерОкна" },
+	{ L"SetWindowPos",   L"УстановитьПозициюОкна" },
 	{ L"EnableResizing", L"РазрешитьИзменятьРазмер" },
 	{ L"TakeScreenshot", L"ПолучитьСнимокЭкрана" },
-	{ L"CaptureWindow", L"ПолучитьСнимокОкна" },
-	{ L"GetWindowText", L"ПолучитьЗаголовок" },
-	{ L"SetWindowText", L"УстановитьЗаголовок" },
-	{ L"MaximizeWindow", L"МаксимизироватьОкно" },
+	{ L"CaptureWindow",  L"ПолучитьСнимокОкна" },
+	{ L"GetWindowText",  L"ПолучитьЗаголовок" },
+	{ L"SetWindowText",  L"УстановитьЗаголовок" },
 	{ L"ActivateWindow", L"АктивироватьОкно" },
+	{ L"MaximizeWindow", L"РаспахнутьОкно" },
+	{ L"RestoreWindow",  L"РазвернутьОкно" },
+	{ L"MinimizeWindow", L"СвернутьОкно" },
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -59,8 +61,10 @@ public:
 		eCaptureWindow,
 		eGetWindowText,
 		eSetWindowText,
-		eMaximizeWindow,
 		eActivateWindow,
+		eMaximizeWindow,
+		eRestoreWindow,
+		eMinimizeWindow,
 		eMethLast      // Always last
 	};
 

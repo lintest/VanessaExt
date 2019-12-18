@@ -215,6 +215,10 @@ long CAddInNative::GetNParams(const long lMethodNum)
 		return 2;
 	case eMaximizeWindow:
 		return 1;
+	case eRestoreWindow:
+		return 1;
+	case eMinimizeWindow:
+		return 1;
 	case eActivateWindow:
 		return 1;
 	default:
@@ -260,6 +264,10 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 		return WindowsControl::SetText(paParams, lSizeArray);
 	case eMaximizeWindow:
 		return WindowsControl::Maximize(paParams, lSizeArray);
+	case eMinimizeWindow:
+		return WindowsControl::Minimize(paParams, lSizeArray);
+	case eRestoreWindow:
+		return WindowsControl::Restore(paParams, lSizeArray);
 	case eActivateWindow:
 		return WindowsControl::Activate(paParams, lSizeArray);
 	default:
