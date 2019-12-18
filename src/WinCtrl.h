@@ -13,7 +13,9 @@ public:
 	static BOOL SetWindowSize(tVariant* paParams, const long lSizeArray);
 	static BOOL SetWindowPos(tVariant* paParams, const long lSizeArray);
 	static BOOL EnableResizing(tVariant* paParams, const long lSizeArray);
+	static BOOL Restore(tVariant* paParams, const long lSizeArray);
 	static BOOL Maximize(tVariant* paParams, const long lSizeArray);
+	static BOOL Minimize(tVariant* paParams, const long lSizeArray);
 	static BOOL Activate(tVariant* paParams, const long lSizeArray);
 	static HWND ActiveWindow();
 	static HWND CurrentWindow();

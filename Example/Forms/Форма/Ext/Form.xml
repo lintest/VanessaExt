@@ -473,6 +473,77 @@
 										<CommandName>Form.Command.ПолучитьСписокОкон</CommandName>
 										<ExtendedTooltip name="ПолучитьСписокОконРасширеннаяПодсказка" id="2"/>
 									</Button>
+									<ButtonGroup name="СписокОконГруппаСкриншот" id="179">
+										<Title>
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Список окон группа скриншот</v8:content>
+											</v8:item>
+										</Title>
+										<ToolTip>
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Список окон группа скриншот</v8:content>
+											</v8:item>
+										</ToolTip>
+										<Representation>Compact</Representation>
+										<ExtendedTooltip name="СписокОконГруппаСкриншотРасширеннаяПодсказка" id="180"/>
+										<ChildItems>
+											<Button name="СписокОконСнимокЭкрана" id="185">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.СнимокЭкрана</CommandName>
+												<ExtendedTooltip name="СписокОконСнимокЭкранаРасширеннаяПодсказка" id="186"/>
+											</Button>
+											<Button name="СписокОконСнимокОкна" id="183">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.СнимокОкна</CommandName>
+												<ExtendedTooltip name="СписокОконСнимокОкнаРасширеннаяПодсказка" id="184"/>
+											</Button>
+											<Button name="СписокОконСделатьСнимок" id="181">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.СделатьСнимок</CommandName>
+												<ExtendedTooltip name="СписокОконСделатьСнимокРасширеннаяПодсказка" id="182"/>
+											</Button>
+										</ChildItems>
+									</ButtonGroup>
+									<ButtonGroup name="СписокОконГруппаРежим" id="171">
+										<Title>
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Список окон группа режим</v8:content>
+											</v8:item>
+										</Title>
+										<ToolTip>
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Список окон группа режим</v8:content>
+											</v8:item>
+										</ToolTip>
+										<Representation>Compact</Representation>
+										<ExtendedTooltip name="СписокОконГруппаРежимРасширеннаяПодсказка" id="172"/>
+										<ChildItems>
+											<Button name="СписокОконРазвернуть" id="175">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.Развернуть</CommandName>
+												<ExtendedTooltip name="СписокОконРазвернутьРасширеннаяПодсказка" id="176"/>
+											</Button>
+											<Button name="СписокОконСвернуть" id="177">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.Свернуть</CommandName>
+												<ExtendedTooltip name="СписокОконСвернутьРасширеннаяПодсказка" id="178"/>
+											</Button>
+											<Button name="СписокОконРаспахнуть" id="173">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.Распахнуть</CommandName>
+												<ExtendedTooltip name="СписокОконРаспахнутьРасширеннаяПодсказка" id="174"/>
+											</Button>
+											<Button name="СписокОконАктивировать" id="120">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.Активировать</CommandName>
+												<ExtendedTooltip name="СписокОконАктивироватьРасширеннаяПодсказка" id="121"/>
+											</Button>
+										</ChildItems>
+									</ButtonGroup>
 									<ButtonGroup name="СписокОконГруппаСортировка" id="29">
 										<Title>
 											<v8:item>
@@ -513,30 +584,10 @@
 											</Button>
 										</ChildItems>
 									</ButtonGroup>
-									<Button name="СписокОконМаксимизировать" id="118">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.Максимизировать</CommandName>
-										<ExtendedTooltip name="СписокОконМаксимизироватьРасширеннаяПодсказка" id="119"/>
-									</Button>
-									<Button name="СписокОконАктивировать" id="120">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.Активировать</CommandName>
-										<ExtendedTooltip name="СписокОконАктивироватьРасширеннаяПодсказка" id="121"/>
-									</Button>
 									<Button name="СписокОконУстановитьЗаголовокОкна" id="116">
 										<Type>CommandBarButton</Type>
 										<CommandName>Form.Command.УстановитьЗаголовокОкна</CommandName>
 										<ExtendedTooltip name="СписокОконУстановитьЗаголовокОкнаРасширеннаяПодсказка" id="117"/>
-									</Button>
-									<Button name="СписокОконСделатьСнимок" id="97">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.СделатьСнимок</CommandName>
-										<ExtendedTooltip name="СписокОконСделатьСнимокРасширеннаяПодсказка" id="98"/>
-									</Button>
-									<Button name="СписокОконСнимокЭкрана" id="112">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.СнимокЭкрана</CommandName>
-										<ExtendedTooltip name="СписокОконСнимокЭкранаРасширеннаяПодсказка" id="113"/>
 									</Button>
 									<Button name="СписокОконАктивноеОкно" id="114">
 										<Type>CommandBarButton</Type>
@@ -1199,20 +1250,20 @@
 			</ToolTip>
 			<Action>УстановитьЗаголовокОкна</Action>
 		</Command>
-		<Command name="Максимизировать" id="17">
+		<Command name="Распахнуть" id="17">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Максимизировать</v8:content>
+					<v8:content>Распахнуть</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Максимизировать</v8:content>
+					<v8:content>Распахнуть</v8:content>
 				</v8:item>
 			</ToolTip>
-			<Action>Максимизировать</Action>
+			<Action>Распахнуть</Action>
 		</Command>
 		<Command name="Активировать" id="18">
 			<Title>
@@ -1258,6 +1309,36 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьДанныеПроцесса</Action>
+		</Command>
+		<Command name="Свернуть" id="21">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Свернуть</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Свернуть</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>Свернуть</Action>
+		</Command>
+		<Command name="Развернуть" id="22">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Развернуть</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Развернуть</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>Развернуть</Action>
 		</Command>
 	</Commands>
 </Form>

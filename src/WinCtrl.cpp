@@ -311,6 +311,32 @@ BOOL WindowsControl::Maximize(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
+BOOL WindowsControl::Restore(tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (IsWindow(hWnd)) {
+		if (IsWindowVisible(hWnd)) {
+			ShowWindow(hWnd, SW_SHOWNORMAL);
+		}
+	}
+	return true;
+}
+
+BOOL WindowsControl::Minimize(tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (IsWindow(hWnd)) {
+		if (IsWindowVisible(hWnd)) {
+			ShowWindow(hWnd, SW_SHOWMINIMIZED);
+		}
+	}
+	return true;
+}
+
 BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
