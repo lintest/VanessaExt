@@ -6,7 +6,9 @@
 #include "convertor.h"
 #include <memory>
 #include <locale>
+
 #include "WinCtrl.h"
+#include "ProcMngr.h"
 
 static std::wstring param(tVariant* paParams, const long lSizeArray)
 {
@@ -153,7 +155,7 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	case eActiveWindow:
 		return W((DWORD)WindowsControl::ActiveWindow(), pvarPropVal);
 	case eProcessId:
-		return W(WindowsControl::ProcessId(), pvarPropVal);
+		return W(ProcessManager::ProcessId(), pvarPropVal);
 	default:
 		return false;
 	}
@@ -195,6 +197,8 @@ long CAddInNative::GetNParams(const long lMethodNum)
 	{
 	case eGetProcessList:
 		return 1;
+	case eGetProcessInfo:
+		return 1;
 	case eSetWindowSize:
 		return 3;
 	case eSetWindowPos:
@@ -229,6 +233,7 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 	switch (lMethodNum)
 	{
 	case eGetProcessList:
+	case eGetProcessInfo:
 	case eGetWindowList:
 	case eSetWindowSize:
 	case eSetWindowPos:
@@ -269,7 +274,9 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 	case eGetWindowList:
 		return W(WindowsControl::GetWindowList(), pvarRetValue);
 	case eGetProcessList:
-		return W(WindowsControl::GetProcessList(paParams, lSizeArray), pvarRetValue);
+		return W(ProcessManager::GetProcessList(paParams, lSizeArray), pvarRetValue);
+	case eGetProcessInfo:
+		return W(ProcessManager::GetProcessInfo(paParams, lSizeArray), pvarRetValue);
 	case eSetWindowSize:
 		return W(WindowsControl::SetWindowSize(paParams, lSizeArray), pvarRetValue);
 	case eSetWindowPos:

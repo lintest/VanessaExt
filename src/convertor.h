@@ -13,4 +13,7 @@ uint32_t getLenShortWcharStr(const WCHAR_T* Source);
 std::string WC2MB(const std::wstring& wstr, DWORD locale = CP_UTF8);
 std::wstring MB2WC(const std::string& str, DWORD locale = CP_UTF8);
 
+int VarToInt(tVariant* paParams);
+HWND VarToHwnd(tVariant* paParams);
+
 #endif // __CONVERTOR_H__
