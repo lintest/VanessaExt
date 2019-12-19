@@ -8,11 +8,10 @@ using JSON = nlohmann::json;
 
 #define _WIN32_DCOM
 #include <iostream>
-#include<sstream>
-using namespace std;
+#include <sstream>
 #include <comdef.h>
 #include <Wbemidl.h>
-# pragma comment(lib, "wbemuuid.lib")
+#pragma comment(lib, "wbemuuid.lib")
 
 class ProcessEnumerator {
 private:
@@ -151,8 +150,14 @@ std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSize
 	if (lSizeArray < 1) return {};
 	std::wstring query;
 	query.append(L"SELECT * FROM Win32_Process WHERE ProcessId=");
-	query.append(to_wstring(VarToInt(paParams)));
-	return ProcessEnumerator(query.c_str());
+	query.append(std::to_wstring(VarToInt(paParams)));
+	JSON json = ProcessEnumerator(query.c_str()).json();
+	if (!json.is_array() || json.empty()) {
+		return MB2WC(json.dump());
+	}
+	else {
+		return MB2WC(json[0].dump());
+	}
 }
 
 std::wstring ProcessManager::FindProcess(tVariant* paParams, const long lSizeArray)
@@ -161,4 +166,46 @@ std::wstring ProcessManager::FindProcess(tVariant* paParams, const long lSizeArr
 	if (paParams->vt != VTYPE_PWSTR) return {};
 	if (paParams->pwstrVal == NULL) return {};
 	return ProcessEnumerator(paParams->pwstrVal);
+}
+
+HWND ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, std::wstring& result)
+{
+	if (lSizeArray < 1) return NULL;
+	std::wstring query;
+	query.append(L"SELECT * FROM Win32_Process");
+	query.append(L" WHERE Name LIKE '1cv8%' ");
+	query.append(L" AND CommandLine LIKE '% /TESTCLIENT %'");
+	query.append(L" AND CommandLine LIKE '% -TPort ");
+	query.append(std::to_wstring(VarToInt(paParams))).append(L" %'");
+	JSON json = ProcessEnumerator(query.c_str()).json();
+	if (!json.is_array() || json.empty()) return NULL;
+
+	std::pair<HWND, DWORD> params = { 0, (DWORD)json[0]["ProcessId"] };
+	// Enumerate the windows using a lambda to process each window
+	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+		{
+			auto pParams = (std::pair<HWND, DWORD>*)(lParam);
+			WCHAR buffer[256];
+			DWORD pid;
+			if (IsWindowVisible(hWnd)
+				&& ::GetWindowThreadProcessId(hWnd, &pid)
+				&& pid == pParams->second
+				&& ::GetClassName(hWnd, buffer, 256)
+				&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+				) {
+				// Stop enumerating
+				SetLastError(-1);
+				pParams->first = hWnd;
+				return FALSE;
+			}
+			// Continue enumerating
+			return TRUE;
+		}, (LPARAM)&params);
+
+	if (!bResult && GetLastError() == -1 && params.first)
+	{
+		result = MB2WC(json[0].dump());
+		return params.first;
+	}
+	return 0;
 }

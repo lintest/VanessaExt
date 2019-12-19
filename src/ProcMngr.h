@@ -7,6 +7,7 @@
 
 class ProcessManager {
 public:
+	static HWND FindTestClient(tVariant* paParams, const long lSizeArray, std::wstring& result);
 	static std::wstring GetProcessList(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetProcessInfo(tVariant* paParams, const long lSizeArray);
 	static std::wstring FindProcess(tVariant* paParams, const long lSizeArray);
