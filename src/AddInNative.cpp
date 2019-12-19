@@ -10,11 +10,39 @@
 #include "WinCtrl.h"
 #include "ProcMngr.h"
 
+const CAddInNative::Alias CAddInNative::m_PropNames[] = {
+	Alias(eCurrentWindow , L"CurrentWindow"   , L"ТекущееОкно"),
+	Alias(eActiveWindow  , L"ActiveWindow"    , L"АктивноеОкно"),
+	Alias(eProcessId     , L"ProcessId"       , L"ИдентификаторПроцесса"),
+};
+
+const CAddInNative::Alias CAddInNative::m_MethNames[] = {
+	Alias(eFindTestClient , L"FindTestClient" , L"НайтиКлиентТестирования"),
+	Alias(eGetProcessList , L"GetProcessList" , L"ПолучитьСписокПроцессов"),
+	Alias(eGetProcessInfo , L"GetProcessInfo" , L"ПолучитьДанныеПроцесса"),
+	Alias(eFindProcess    , L"FindProcess"    , L"НайтиПроцесс"),
+	Alias(eGetWindowList  , L"GetWindowList"  , L"ПолучитьСписокОкон"),
+	Alias(eSetWindowSize  , L"SetWindowSize"  , L"УстановитьРазмерОкна"),
+	Alias(eSetWindowPos   , L"SetWindowPos"   , L"УстановитьПозициюОкна"),
+	Alias(eEnableResizing , L"EnableResizing" , L"РазрешитьИзменятьРазмер"),
+	Alias(eTakeScreenshot , L"TakeScreenshot" , L"ПолучитьСнимокЭкрана"),
+	Alias(eCaptureWindow  , L"CaptureWindow"  , L"ПолучитьСнимокОкна"),
+	Alias(eGetWindowText  , L"GetWindowText"  , L"ПолучитьЗаголовок"),
+	Alias(eSetWindowText  , L"SetWindowText"  , L"УстановитьЗаголовок"),
+	Alias(eActivateWindow , L"ActivateWindow" , L"АктивироватьОкно"),
+	Alias(eMaximizeWindow , L"MaximizeWindow" , L"РаспахнутьОкно"),
+	Alias(eRestoreWindow  , L"RestoreWindow"  , L"РазвернутьОкно"),
+	Alias(eMinimizeWindow , L"MinimizeWindow" , L"СвернутьОкно"),
+};
+
+int const CAddInNative::m_PropCount = sizeof(CAddInNative::m_PropNames) / sizeof(CAddInNative::Alias);
+
+int const CAddInNative::m_MethCount = sizeof(CAddInNative::m_MethNames) / sizeof(CAddInNative::Alias);
+
 static std::wstring param(tVariant* paParams, const long lSizeArray)
 {
 	std::wstring result;
-	switch (TV_VT(paParams))
-	{
+	switch (TV_VT(paParams)) {
 	case VTYPE_PWSTR: {
 		wchar_t* str = 0;
 		::convFromShortWchar(&str, TV_WSTR(paParams));
@@ -70,28 +98,27 @@ long CAddInNative::GetNProps()
 }
 
 //---------------------------------------------------------------------------//
-long CAddInNative::FindName(const ADDIN_NAMES names, long size, const WCHAR_T* name)
+long CAddInNative::FindName(const CAddInNative::Alias names[], long size, const WCHAR_T* name)
 {
 	for (long i = 0; i < size; i++) {
 		for (long j = 0; j < ALIAS_COUNT; j++) {
-			if (wcsicmp(names[i][j], name) == 0) return i;
+			if (wcsicmp(names[i].Name(j), name) == 0) return i;
 		}
 	}
 	return -1;
 }
 
 //---------------------------------------------------------------------------//
-const WCHAR_T* CAddInNative::GetName(const ADDIN_NAMES names, long size, long lPropNum, long lPropAlias)
+const WCHAR_T* CAddInNative::GetName(const CAddInNative::Alias names[], long size, long lPropNum, long lPropAlias)
 {
 	if (lPropNum >= size) return NULL;
 	if (lPropAlias >= ALIAS_COUNT) return NULL;
-	return W((wchar_t*)names[lPropNum][lPropAlias]);
-}
-
-//---------------------------------------------------------------------------//
-long CAddInNative::FindProp(const WCHAR_T* wsPropName)
-{
-	return FindName(g_PropNames, ePropLast, wsPropName);
+	for (long i = 0; i < size; i++) {
+		if (names[i].id == lPropNum) {
+			return W((wchar_t*)names[i].Name(lPropAlias));
+		}
+	}
+	return NULL;
 }
 
 //---------------------------------------------------------------------------//
@@ -141,9 +168,15 @@ BOOL CAddInNative::W(const DWORD& val, tVariant* res) const
 }
 
 //---------------------------------------------------------------------------//
+long CAddInNative::FindProp(const WCHAR_T* wsPropName)
+{
+	return FindName(m_PropNames, ePropLast, wsPropName);
+}
+
+//---------------------------------------------------------------------------//
 const WCHAR_T* CAddInNative::GetPropName(long lPropNum, long lPropAlias)
 {
-	return GetName(g_PropNames, ePropLast, lPropNum, lPropAlias);
+	return GetName(m_PropNames, ePropLast, lPropNum, lPropAlias);
 }
 
 //---------------------------------------------------------------------------//
@@ -183,18 +216,20 @@ long CAddInNative::GetNMethods()
 //---------------------------------------------------------------------------//
 long CAddInNative::FindMethod(const WCHAR_T* wsMethodName)
 {
-	return FindName(g_MethodNames, eMethLast, wsMethodName);
+	return FindName(m_MethNames, eMethLast, wsMethodName);
 }
 //---------------------------------------------------------------------------//
 const WCHAR_T* CAddInNative::GetMethodName(const long lMethodNum, const long lMethodAlias)
 {
-	return GetName(g_MethodNames, eMethLast, lMethodNum, lMethodAlias);
+	return GetName(m_MethNames, eMethLast, lMethodNum, lMethodAlias);
 }
 //---------------------------------------------------------------------------//
 long CAddInNative::GetNParams(const long lMethodNum)
 {
 	switch (lMethodNum)
 	{
+	case eFindTestClient:
+		return 2;
 	case eGetProcessList:
 		return 1;
 	case eGetProcessInfo:
@@ -236,6 +271,7 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 {
 	switch (lMethodNum)
 	{
+	case eFindTestClient:
 	case eGetProcessList:
 	case eGetProcessInfo:
 	case eGetWindowList:
@@ -281,6 +317,12 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 	switch (lMethodNum) {
 	case eGetWindowList:
 		return W(WindowsControl::GetWindowList(), pvarRetValue);
+	case eFindTestClient: {
+		std::wstring result;
+		bool ok = W((DWORD)ProcessManager::FindTestClient(paParams, lSizeArray, result), pvarRetValue);
+		if (ok && lSizeArray > 1) W(result, paParams + 1);
+		return ok;
+	}
 	case eGetProcessList:
 		return W(ProcessManager::GetProcessList(paParams, lSizeArray), pvarRetValue);
 	case eGetProcessInfo:

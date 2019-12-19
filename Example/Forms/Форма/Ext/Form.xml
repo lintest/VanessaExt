@@ -68,6 +68,61 @@
 					</ToolTip>
 					<ExtendedTooltip name="СтраницаРазмерОкнаРасширеннаяПодсказка" id="107"/>
 					<ChildItems>
+						<CommandBar name="ПанельУправленияОкном" id="187">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Панель управления окном</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Панель управления окном</v8:content>
+								</v8:item>
+							</ToolTip>
+							<ExtendedTooltip name="ПанельУправленияОкномРасширеннаяПодсказка" id="188"/>
+							<ChildItems>
+								<ButtonGroup name="СписокОконГруппаРежим" id="171">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Список окон группа режим</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Список окон группа режим</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Representation>Compact</Representation>
+									<ExtendedTooltip name="СписокОконГруппаРежимРасширеннаяПодсказка" id="172"/>
+									<ChildItems>
+										<Button name="СписокОконРазвернуть" id="175">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.Развернуть</CommandName>
+											<ExtendedTooltip name="СписокОконРазвернутьРасширеннаяПодсказка" id="176"/>
+										</Button>
+										<Button name="СписокОконСвернуть" id="177">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.Свернуть</CommandName>
+											<ExtendedTooltip name="СписокОконСвернутьРасширеннаяПодсказка" id="178"/>
+										</Button>
+										<Button name="СписокОконРаспахнуть" id="173">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.Распахнуть</CommandName>
+											<ExtendedTooltip name="СписокОконРаспахнутьРасширеннаяПодсказка" id="174"/>
+										</Button>
+										<Button name="СписокОконАктивировать" id="120">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.Активировать</CommandName>
+											<ExtendedTooltip name="СписокОконАктивироватьРасширеннаяПодсказка" id="121"/>
+										</Button>
+									</ChildItems>
+								</ButtonGroup>
+							</ChildItems>
+						</CommandBar>
 						<UsualGroup name="ГруппаРазмерОкна" id="44">
 							<Title>
 								<v8:item>
@@ -256,6 +311,39 @@
 								</UsualGroup>
 							</ChildItems>
 						</UsualGroup>
+						<UsualGroup name="ГруппаКлиентТестирования" id="192">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа клиент тестирования</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа клиент тестирования</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаКлиентТестированияРасширеннаяПодсказка" id="193"/>
+							<ChildItems>
+								<InputField name="ПортПодключения" id="196">
+									<DataPath>ПортПодключения</DataPath>
+									<ContextMenu name="ПортПодключенияКонтекстноеМеню" id="197"/>
+									<ExtendedTooltip name="ПортПодключенияРасширеннаяПодсказка" id="198"/>
+								</InputField>
+								<Button name="НайтиКлиентТестирования" id="194">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.НайтиКлиентТестирования</CommandName>
+									<ExtendedTooltip name="НайтиКлиентТестированияРасширеннаяПодсказка" id="195"/>
+								</Button>
+							</ChildItems>
+						</UsualGroup>
+						<LabelDecoration name="ДекорацияИнтервал" id="189">
+							<ContextMenu name="ДекорацияИнтервалКонтекстноеМеню" id="190"/>
+							<ExtendedTooltip name="ДекорацияИнтервалРасширеннаяПодсказка" id="191"/>
+						</LabelDecoration>
 						<UsualGroup name="ГруппаКомпонента" id="108">
 							<Title>
 								<v8:item>
@@ -426,6 +514,7 @@
 							<ChildItems>
 								<InputField name="ДанныеПроцессаКлюч" id="163">
 									<DataPath>ДанныеПроцесса.Ключ</DataPath>
+									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>5</Width>
 									<ContextMenu name="ДанныеПроцессаКлючКонтекстноеМеню" id="164"/>
@@ -433,6 +522,7 @@
 								</InputField>
 								<InputField name="ДанныеПроцессаЗначение" id="166">
 									<DataPath>ДанныеПроцесса.Значение</DataPath>
+									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="ДанныеПроцессаЗначениеКонтекстноеМеню" id="167"/>
 									<ExtendedTooltip name="ДанныеПроцессаЗначениеРасширеннаяПодсказка" id="168"/>
@@ -503,44 +593,6 @@
 												<Type>CommandBarButton</Type>
 												<CommandName>Form.Command.СделатьСнимок</CommandName>
 												<ExtendedTooltip name="СписокОконСделатьСнимокРасширеннаяПодсказка" id="182"/>
-											</Button>
-										</ChildItems>
-									</ButtonGroup>
-									<ButtonGroup name="СписокОконГруппаРежим" id="171">
-										<Title>
-											<v8:item>
-												<v8:lang>ru</v8:lang>
-												<v8:content>Список окон группа режим</v8:content>
-											</v8:item>
-										</Title>
-										<ToolTip>
-											<v8:item>
-												<v8:lang>ru</v8:lang>
-												<v8:content>Список окон группа режим</v8:content>
-											</v8:item>
-										</ToolTip>
-										<Representation>Compact</Representation>
-										<ExtendedTooltip name="СписокОконГруппаРежимРасширеннаяПодсказка" id="172"/>
-										<ChildItems>
-											<Button name="СписокОконРазвернуть" id="175">
-												<Type>CommandBarButton</Type>
-												<CommandName>Form.Command.Развернуть</CommandName>
-												<ExtendedTooltip name="СписокОконРазвернутьРасширеннаяПодсказка" id="176"/>
-											</Button>
-											<Button name="СписокОконСвернуть" id="177">
-												<Type>CommandBarButton</Type>
-												<CommandName>Form.Command.Свернуть</CommandName>
-												<ExtendedTooltip name="СписокОконСвернутьРасширеннаяПодсказка" id="178"/>
-											</Button>
-											<Button name="СписокОконРаспахнуть" id="173">
-												<Type>CommandBarButton</Type>
-												<CommandName>Form.Command.Распахнуть</CommandName>
-												<ExtendedTooltip name="СписокОконРаспахнутьРасширеннаяПодсказка" id="174"/>
-											</Button>
-											<Button name="СписокОконАктивировать" id="120">
-												<Type>CommandBarButton</Type>
-												<CommandName>Form.Command.Активировать</CommandName>
-												<ExtendedTooltip name="СписокОконАктивироватьРасширеннаяПодсказка" id="121"/>
 											</Button>
 										</ChildItems>
 									</ButtonGroup>
@@ -1008,6 +1060,22 @@
 				</Column>
 			</Columns>
 		</Attribute>
+		<Attribute name="ПортПодключения" id="14">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Порт подключения</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -1339,6 +1407,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>Развернуть</Action>
+		</Command>
+		<Command name="НайтиКлиентТестирования" id="23">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти клиент тестирования</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти клиент тестирования</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НайтиКлиентТестирования</Action>
 		</Command>
 	</Commands>
 </Form>

@@ -9,37 +9,11 @@
 
 #define ALIAS_COUNT 2
 
-typedef wchar_t* ADDIN_NAMES[][ALIAS_COUNT];
-
-static const ADDIN_NAMES g_PropNames = {
-	{ L"CurrentWindow", L"ТекущееОкно" },
-	{ L"ActiveWindow", L"АктивноеОкно" },
-	{ L"ProcessId", L"ИдентификаторПроцесса" },
-};
-
-static const ADDIN_NAMES g_MethodNames = {
-	{ L"GetProcessList", L"ПолучитьСписокПроцессов" },
-	{ L"GetProcessInfo", L"ПолучитьДанныеПроцесса" },
-	{ L"FindProcess",    L"НайтиПроцесс" },
-	{ L"GetWindowList",  L"ПолучитьСписокОкон" },
-	{ L"SetWindowSize",  L"УстановитьРазмерОкна" },
-	{ L"SetWindowPos",   L"УстановитьПозициюОкна" },
-	{ L"EnableResizing", L"РазрешитьИзменятьРазмер" },
-	{ L"TakeScreenshot", L"ПолучитьСнимокЭкрана" },
-	{ L"CaptureWindow",  L"ПолучитьСнимокОкна" },
-	{ L"GetWindowText",  L"ПолучитьЗаголовок" },
-	{ L"SetWindowText",  L"УстановитьЗаголовок" },
-	{ L"ActivateWindow", L"АктивироватьОкно" },
-	{ L"MaximizeWindow", L"РаспахнутьОкно" },
-	{ L"RestoreWindow",  L"РазвернутьОкно" },
-	{ L"MinimizeWindow", L"СвернутьОкно" },
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // class CAddInNative
 class CAddInNative : public IComponentBase
 {
-public:
+private:
 	enum Props
 	{
 		eCurrentWindow = 0,
@@ -53,6 +27,7 @@ public:
 		eGetProcessList = 0,
 		eGetProcessInfo,
 		eFindProcess,
+		eFindTestClient,
 		eGetWindowList,
 		eSetWindowSize,
 		eSetWindowPos,
@@ -68,6 +43,27 @@ public:
 		eMethLast      // Always last
 	};
 
+	class Alias {
+	public:
+		const int id;
+	private:
+		std::wstring names[ALIAS_COUNT];
+	public:
+		Alias(int id, WCHAR* strEn, WCHAR* strRu): id(id) {
+			names[0] = strEn;
+			names[1] = strRu;
+		}
+		const WCHAR_T* Name(int i) const {
+			return names[i].c_str();
+		}
+	};
+
+	static const Alias m_PropNames[];
+	static const Alias m_MethNames[];
+	static int const m_PropCount;
+	static int const m_MethCount;
+
+public:
 	CAddInNative(void);
 	virtual ~CAddInNative();
 	// IInitDoneBase
@@ -96,8 +92,8 @@ public:
 	virtual void ADDIN_API SetLocale(const WCHAR_T* loc);
 
 private:
-	long FindName(const ADDIN_NAMES names, long size, const WCHAR_T* name);
-	const WCHAR_T* GetName(const ADDIN_NAMES names, long size, long lPropNum, long lPropAlias);
+	long FindName(const Alias names[], long size, const WCHAR_T* name);
+	const WCHAR_T* GetName(const Alias names[], long size, long lPropNum, long lPropAlias);
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
 	BOOL W(std::wstring str, tVariant* res) const { return W(str.c_str(), res); }
 	BOOL W(std::string str, tVariant* res) const { return W(MB2WC(str), res); }
