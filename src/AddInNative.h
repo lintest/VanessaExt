@@ -6,8 +6,7 @@
 #include "IMemoryManager.h"
 #include "convertor.h"
 #include <string>
-
-#define ALIAS_COUNT 2
+#include <vector>
 
 ///////////////////////////////////////////////////////////////////////////////
 // class CAddInNative
@@ -31,25 +30,37 @@ private:
 		eGetWindowList,
 		eSetWindowSize,
 		eSetWindowPos,
+		eGetWindowInfo,
 		eEnableResizing,
 		eTakeScreenshot,
 		eCaptureWindow,
 		eGetWindowText,
 		eSetWindowText,
-		eActivateWindow,
-		eMaximizeWindow,
-		eRestoreWindow,
+		eGetWindowState,
+		eSetWindowState,
 		eMinimizeWindow,
+		eRestoreWindow,
+		eMaximizeWindow,
+		eActivateWindow,
+		eTypeInfo,
 		eMethLast      // Always last
 	};
 
+	static const int m_AliasCount = 2;
+
 	class Alias {
 	public:
-		const int id;
+		const long id;
+		const long np;
+		const bool fn;
 	private:
-		std::wstring names[ALIAS_COUNT];
+		std::wstring names[m_AliasCount];
 	public:
-		Alias(int id, WCHAR* strEn, WCHAR* strRu): id(id) {
+		Alias(long id, long np, bool fn, WCHAR* strEn, WCHAR* strRu):
+			id(id),
+			np(np),
+			fn(fn)
+		{
 			names[0] = strEn;
 			names[1] = strRu;
 		}
@@ -58,10 +69,8 @@ private:
 		}
 	};
 
-	static const Alias m_PropNames[];
-	static const Alias m_MethNames[];
-	static int const m_PropCount;
-	static int const m_MethCount;
+	static const std::vector<Alias> m_PropList;
+	static const std::vector<Alias> m_MethList;
 
 public:
 	CAddInNative(void);
@@ -92,8 +101,10 @@ public:
 	virtual void ADDIN_API SetLocale(const WCHAR_T* loc);
 
 private:
-	long FindName(const Alias names[], long size, const WCHAR_T* name);
-	const WCHAR_T* GetName(const Alias names[], long size, long lPropNum, long lPropAlias);
+	long FindName(const std::vector<Alias>& names, const WCHAR_T* name);
+	const WCHAR_T* GetName(const std::vector<Alias>& names, long lPropNum, long lPropAlias);
+	long GetNParams(const std::vector<Alias>& names, const long lMethodNum);
+	bool HasRetVal(const std::vector<Alias>& names, const long lMethodNum);
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
 	BOOL W(std::wstring str, tVariant* res) const { return W(str.c_str(), res); }
 	BOOL W(std::string str, tVariant* res) const { return W(MB2WC(str), res); }

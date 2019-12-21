@@ -340,6 +340,103 @@
 								</Button>
 							</ChildItems>
 						</UsualGroup>
+						<UsualGroup name="ПанельУправленияСтатусом" id="199">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Панель управления статусом</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Панель управления статусом</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ПанельУправленияСтатусомРасширеннаяПодсказка" id="200"/>
+							<ChildItems>
+								<Button name="ПолучитьСтатус" id="207">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.ПолучитьСтатус</CommandName>
+									<ExtendedTooltip name="ПолучитьСтатусРасширеннаяПодсказка" id="208"/>
+								</Button>
+								<Button name="УстановитьСтатус" id="209">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.УстановитьСтатус</CommandName>
+									<ExtendedTooltip name="УстановитьСтатусРасширеннаяПодсказка" id="210"/>
+								</Button>
+								<InputField name="СтатусОкна" id="201">
+									<DataPath>СтатусОкна</DataPath>
+									<Width>10</Width>
+									<HorizontalStretch>false</HorizontalStretch>
+									<ListChoiceMode>true</ListChoiceMode>
+									<ChoiceList>
+										<xr:Item>
+											<xr:Presentation/>
+											<xr:CheckState>0</xr:CheckState>
+											<xr:Value xsi:type="FormChoiceListDesTimeValue">
+												<Presentation>
+													<v8:item>
+														<v8:lang>ru</v8:lang>
+														<v8:content>Свернуть</v8:content>
+													</v8:item>
+												</Presentation>
+												<Value xsi:type="xs:decimal">0</Value>
+											</xr:Value>
+										</xr:Item>
+										<xr:Item>
+											<xr:Presentation/>
+											<xr:CheckState>0</xr:CheckState>
+											<xr:Value xsi:type="FormChoiceListDesTimeValue">
+												<Presentation>
+													<v8:item>
+														<v8:lang>ru</v8:lang>
+														<v8:content>Развернуть</v8:content>
+													</v8:item>
+												</Presentation>
+												<Value xsi:type="xs:decimal">1</Value>
+											</xr:Value>
+										</xr:Item>
+										<xr:Item>
+											<xr:Presentation/>
+											<xr:CheckState>0</xr:CheckState>
+											<xr:Value xsi:type="FormChoiceListDesTimeValue">
+												<Presentation>
+													<v8:item>
+														<v8:lang>ru</v8:lang>
+														<v8:content>Распахнуть</v8:content>
+													</v8:item>
+												</Presentation>
+												<Value xsi:type="xs:decimal">2</Value>
+											</xr:Value>
+										</xr:Item>
+										<xr:Item>
+											<xr:Presentation/>
+											<xr:CheckState>0</xr:CheckState>
+											<xr:Value xsi:type="FormChoiceListDesTimeValue">
+												<Presentation>
+													<v8:item>
+														<v8:lang>ru</v8:lang>
+														<v8:content>Не найдено</v8:content>
+													</v8:item>
+												</Presentation>
+												<Value xsi:type="xs:decimal">-1</Value>
+											</xr:Value>
+										</xr:Item>
+									</ChoiceList>
+									<ContextMenu name="СтатусОкнаКонтекстноеМеню" id="202"/>
+									<ExtendedTooltip name="СтатусОкнаРасширеннаяПодсказка" id="203"/>
+								</InputField>
+								<CheckBoxField name="Активировать" id="204">
+									<DataPath>Активировать</DataPath>
+									<CheckBoxType>Auto</CheckBoxType>
+									<ContextMenu name="АктивироватьКонтекстноеМеню" id="205"/>
+									<ExtendedTooltip name="АктивироватьРасширеннаяПодсказка" id="206"/>
+								</CheckBoxField>
+							</ChildItems>
+						</UsualGroup>
 						<LabelDecoration name="ДекорацияИнтервал" id="189">
 							<ContextMenu name="ДекорацияИнтервалКонтекстноеМеню" id="190"/>
 							<ExtendedTooltip name="ДекорацияИнтервалРасширеннаяПодсказка" id="191"/>
@@ -405,10 +502,10 @@
 										<CommandName>Form.Command.ПолучитьСписокПроцессов</CommandName>
 										<ExtendedTooltip name="СписокПроцессовПолучитьСписокПроцессовРасширеннаяПодсказка" id="144"/>
 									</Button>
-									<Button name="СписокПроцессовПолучитьДанныеПроцесса" id="169">
+									<Button name="СписокПроцессовПолучитьСвойстваПроцесса" id="169">
 										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.ПолучитьДанныеПроцесса</CommandName>
-										<ExtendedTooltip name="СписокПроцессовПолучитьДанныеПроцессаРасширеннаяПодсказка" id="170"/>
+										<CommandName>Form.Command.ПолучитьСвойстваПроцесса</CommandName>
+										<ExtendedTooltip name="СписокПроцессовПолучитьСвойстваПроцессаРасширеннаяПодсказка" id="170"/>
 									</Button>
 								</ChildItems>
 							</AutoCommandBar>
@@ -455,77 +552,6 @@
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="СписокПроцессовCommandLineКонтекстноеМеню" id="141"/>
 									<ExtendedTooltip name="СписокПроцессовCommandLineРасширеннаяПодсказка" id="142"/>
-								</InputField>
-							</ChildItems>
-						</Table>
-					</ChildItems>
-				</Page>
-				<Page name="СтраницаДанныеПроцесса" id="148">
-					<Title>
-						<v8:item>
-							<v8:lang>ru</v8:lang>
-							<v8:content>Данные процесса</v8:content>
-						</v8:item>
-					</Title>
-					<ToolTip>
-						<v8:item>
-							<v8:lang>ru</v8:lang>
-							<v8:content>Страница данные процесса</v8:content>
-						</v8:item>
-					</ToolTip>
-					<Group>HorizontalIfPossible</Group>
-					<ExtendedTooltip name="СтраницаДанныеПроцессаРасширеннаяПодсказка" id="149"/>
-					<ChildItems>
-						<Table name="ДанныеПроцесса" id="150">
-							<Representation>List</Representation>
-							<ChangeRowSet>false</ChangeRowSet>
-							<AutoInsertNewRow>true</AutoInsertNewRow>
-							<EnableStartDrag>true</EnableStartDrag>
-							<EnableDrag>true</EnableDrag>
-							<DataPath>ДанныеПроцесса</DataPath>
-							<RowFilter xsi:nil="true"/>
-							<ContextMenu name="ДанныеПроцессаКонтекстноеМеню" id="151"/>
-							<AutoCommandBar name="ДанныеПроцессаКоманднаяПанель" id="152"/>
-							<ExtendedTooltip name="ДанныеПроцессаРасширеннаяПодсказка" id="153"/>
-							<SearchStringAddition name="ДанныеПроцессаСтрокаПоиска" id="154">
-								<AdditionSource>
-									<Item>ДанныеПроцесса</Item>
-									<Type>SearchStringRepresentation</Type>
-								</AdditionSource>
-								<ContextMenu name="ДанныеПроцессаСтрокаПоискаКонтекстноеМеню" id="155"/>
-								<ExtendedTooltip name="ДанныеПроцессаСтрокаПоискаРасширеннаяПодсказка" id="156"/>
-							</SearchStringAddition>
-							<ViewStatusAddition name="ДанныеПроцессаСостояниеПросмотра" id="157">
-								<AdditionSource>
-									<Item>ДанныеПроцесса</Item>
-									<Type>ViewStatusRepresentation</Type>
-								</AdditionSource>
-								<ContextMenu name="ДанныеПроцессаСостояниеПросмотраКонтекстноеМеню" id="158"/>
-								<ExtendedTooltip name="ДанныеПроцессаСостояниеПросмотраРасширеннаяПодсказка" id="159"/>
-							</ViewStatusAddition>
-							<SearchControlAddition name="ДанныеПроцессаУправлениеПоиском" id="160">
-								<AdditionSource>
-									<Item>ДанныеПроцесса</Item>
-									<Type>SearchControl</Type>
-								</AdditionSource>
-								<ContextMenu name="ДанныеПроцессаУправлениеПоискомКонтекстноеМеню" id="161"/>
-								<ExtendedTooltip name="ДанныеПроцессаУправлениеПоискомРасширеннаяПодсказка" id="162"/>
-							</SearchControlAddition>
-							<ChildItems>
-								<InputField name="ДанныеПроцессаКлюч" id="163">
-									<DataPath>ДанныеПроцесса.Ключ</DataPath>
-									<ReadOnly>true</ReadOnly>
-									<EditMode>EnterOnInput</EditMode>
-									<Width>5</Width>
-									<ContextMenu name="ДанныеПроцессаКлючКонтекстноеМеню" id="164"/>
-									<ExtendedTooltip name="ДанныеПроцессаКлючРасширеннаяПодсказка" id="165"/>
-								</InputField>
-								<InputField name="ДанныеПроцессаЗначение" id="166">
-									<DataPath>ДанныеПроцесса.Значение</DataPath>
-									<ReadOnly>true</ReadOnly>
-									<EditMode>EnterOnInput</EditMode>
-									<ContextMenu name="ДанныеПроцессаЗначениеКонтекстноеМеню" id="167"/>
-									<ExtendedTooltip name="ДанныеПроцессаЗначениеРасширеннаяПодсказка" id="168"/>
 								</InputField>
 							</ChildItems>
 						</Table>
@@ -730,6 +756,77 @@
 							<ContextMenu name="ДанныеКартинкиКонтекстноеМеню" id="102"/>
 							<ExtendedTooltip name="ДанныеКартинкиРасширеннаяПодсказка" id="103"/>
 						</PictureField>
+					</ChildItems>
+				</Page>
+				<Page name="СтраницаСвойстваОбъекта" id="148">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Свойства объекта</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница свойства объекта</v8:content>
+						</v8:item>
+					</ToolTip>
+					<Group>HorizontalIfPossible</Group>
+					<ExtendedTooltip name="СтраницаСвойстваОбъектаРасширеннаяПодсказка" id="149"/>
+					<ChildItems>
+						<Table name="СвойстваОбъекта" id="150">
+							<Representation>List</Representation>
+							<ChangeRowSet>false</ChangeRowSet>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>СвойстваОбъекта</DataPath>
+							<RowFilter xsi:nil="true"/>
+							<ContextMenu name="СвойстваОбъектаКонтекстноеМеню" id="151"/>
+							<AutoCommandBar name="СвойстваОбъектаКоманднаяПанель" id="152"/>
+							<ExtendedTooltip name="СвойстваОбъектаРасширеннаяПодсказка" id="153"/>
+							<SearchStringAddition name="СвойстваОбъектаСтрокаПоиска" id="154">
+								<AdditionSource>
+									<Item>СвойстваОбъекта</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="СвойстваОбъектаСтрокаПоискаКонтекстноеМеню" id="155"/>
+								<ExtendedTooltip name="СвойстваОбъектаСтрокаПоискаРасширеннаяПодсказка" id="156"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="СвойстваОбъектаСостояниеПросмотра" id="157">
+								<AdditionSource>
+									<Item>СвойстваОбъекта</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="СвойстваОбъектаСостояниеПросмотраКонтекстноеМеню" id="158"/>
+								<ExtendedTooltip name="СвойстваОбъектаСостояниеПросмотраРасширеннаяПодсказка" id="159"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="СвойстваОбъектаУправлениеПоиском" id="160">
+								<AdditionSource>
+									<Item>СвойстваОбъекта</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="СвойстваОбъектаУправлениеПоискомКонтекстноеМеню" id="161"/>
+								<ExtendedTooltip name="СвойстваОбъектаУправлениеПоискомРасширеннаяПодсказка" id="162"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="СвойстваОбъектаКлюч" id="163">
+									<DataPath>СвойстваОбъекта.Ключ</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>5</Width>
+									<ContextMenu name="СвойстваОбъектаКлючКонтекстноеМеню" id="164"/>
+									<ExtendedTooltip name="СвойстваОбъектаКлючРасширеннаяПодсказка" id="165"/>
+								</InputField>
+								<InputField name="СвойстваОбъектаЗначение" id="166">
+									<DataPath>СвойстваОбъекта.Значение</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СвойстваОбъектаЗначениеКонтекстноеМеню" id="167"/>
+									<ExtendedTooltip name="СвойстваОбъектаЗначениеРасширеннаяПодсказка" id="168"/>
+								</InputField>
+							</ChildItems>
+						</Table>
 					</ChildItems>
 				</Page>
 			</ChildItems>
@@ -1017,11 +1114,11 @@
 				</Column>
 			</Columns>
 		</Attribute>
-		<Attribute name="ДанныеПроцесса" id="13">
+		<Attribute name="СвойстваОбъекта" id="13">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Данные процесса</v8:content>
+					<v8:content>Свойства объекта</v8:content>
 				</v8:item>
 			</Title>
 			<Type>
@@ -1074,6 +1171,33 @@
 					<v8:FractionDigits>0</v8:FractionDigits>
 					<v8:AllowedSign>Any</v8:AllowedSign>
 				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="СтатусОкна" id="15">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Статус окна</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="Активировать" id="16">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Активировать</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
 			</Type>
 		</Attribute>
 	</Attributes>
@@ -1363,17 +1487,17 @@
 			</ToolTip>
 			<Action>ПолучитьСписокПроцессов</Action>
 		</Command>
-		<Command name="ПолучитьДанныеПроцесса" id="20">
+		<Command name="ПолучитьСвойстваПроцесса" id="20">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Получить данные процесса</v8:content>
+					<v8:content>Получить свойства процесса</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Получить данные процесса</v8:content>
+					<v8:content>Получить свойства процесса</v8:content>
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьДанныеПроцесса</Action>
@@ -1422,6 +1546,51 @@
 				</v8:item>
 			</ToolTip>
 			<Action>НайтиКлиентТестирования</Action>
+		</Command>
+		<Command name="ПолучитьСтатус" id="24">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить статус</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить статус</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьСтатус</Action>
+		</Command>
+		<Command name="УстановитьСтатус" id="25">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установить статус</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установить статус</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>УстановитьСтатус</Action>
+		</Command>
+		<Command name="Инфотип" id="26">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Инфотип</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Инфотип</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>Инфотип</Action>
 		</Command>
 	</Commands>
 </Form>
