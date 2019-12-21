@@ -298,17 +298,12 @@ BOOL WindowsControl::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 	return Ret;
 }
 
-BOOL WindowsControl::Maximize(tVariant* paParams, const long lSizeArray)
+BOOL WindowsControl::Minimize(tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
-	if (IsWindow(hWnd)) {
-		if (IsWindowVisible(hWnd)) {
-			ShowWindow(hWnd, SW_SHOWMAXIMIZED);
-		}
-	}
-	return true;
+	return SetWindowState(hWnd, 0, true);
 }
 
 BOOL WindowsControl::Restore(tVariant* paParams, const long lSizeArray)
@@ -316,31 +311,22 @@ BOOL WindowsControl::Restore(tVariant* paParams, const long lSizeArray)
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
-	if (IsWindow(hWnd)) {
-		if (IsWindowVisible(hWnd)) {
-			ShowWindow(hWnd, SW_SHOWNORMAL);
-		}
-	}
-	return true;
+	return SetWindowState(hWnd, 1, true);
 }
 
-BOOL WindowsControl::Minimize(tVariant* paParams, const long lSizeArray)
+BOOL WindowsControl::Maximize(tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
-	if (IsWindow(hWnd)) {
-		if (IsWindowVisible(hWnd)) {
-			ShowWindow(hWnd, SW_SHOWMINIMIZED);
-		}
-	}
-	return true;
+	return SetWindowState(hWnd, 2, true);
 }
 
 BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	HWND hWnd = VarToHwnd(paParams);
+
 	if (IsWindow(hWnd)) {
 		if (IsWindowVisible(hWnd)) {
 			WINDOWPLACEMENT place;
@@ -349,6 +335,64 @@ BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
 			GetWindowPlacement(hWnd, &place);
 			if (place.showCmd == SW_SHOWMINIMIZED) ShowWindow(hWnd, SW_RESTORE);
 			SetForegroundWindow(hWnd);
+		}
+	}
+	return true;
+}
+
+long WindowsControl::GetWindowState(tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+
+	WINDOWPLACEMENT place;
+	memset(&place, 0, sizeof(WINDOWPLACEMENT));
+	place.length = sizeof(WINDOWPLACEMENT);
+	if (!GetWindowPlacement(hWnd, &place)) return -1;
+
+	switch (place.showCmd) {
+	case SW_SHOWMINIMIZED:
+		return 0;
+	case SW_SHOWNORMAL:
+		return 1;
+	case SW_SHOWMAXIMIZED:
+		return 2;
+	}
+}
+
+BOOL WindowsControl::SetWindowState(tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	int iMode = 1;
+	bool bActivate = true;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (lSizeArray > 1) iMode = (paParams + 1)->intVal;
+	if (lSizeArray > 2) bActivate = (paParams + 2)->bVal;
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	return SetWindowState(hWnd, iMode, bActivate);
+}
+
+BOOL WindowsControl::SetWindowState(HWND hWnd, int iMode, bool bActivate)
+{
+	if (IsWindow(hWnd)) {
+		if (IsWindowVisible(hWnd)) {
+			int nCmdShow;
+			if (bActivate) {
+				switch (iMode) {
+				case 0: nCmdShow = SW_SHOWMINIMIZED; break;
+				case 2: nCmdShow = SW_SHOWMAXIMIZED; break;
+				default: nCmdShow = SW_RESTORE;
+				}
+			}
+			else {
+				switch (iMode) {
+				case 0: nCmdShow = SW_SHOWMINNOACTIVE; break;
+				case 2: nCmdShow = SW_MAXIMIZE; break;
+				default: nCmdShow = SW_RESTORE;
+				}
+			}
+			::ShowWindow(hWnd, nCmdShow);
 		}
 	}
 	return true;

@@ -10,34 +10,34 @@
 #include "WinCtrl.h"
 #include "ProcMngr.h"
 
-const CAddInNative::Alias CAddInNative::m_PropNames[] = {
-	Alias(eCurrentWindow , L"CurrentWindow"   , L"ТекущееОкно"),
-	Alias(eActiveWindow  , L"ActiveWindow"    , L"АктивноеОкно"),
-	Alias(eProcessId     , L"ProcessId"       , L"ИдентификаторПроцесса"),
+const std::vector<CAddInNative::Alias> CAddInNative::m_PropList = {
+	Alias(eCurrentWindow , 0, true, L"CurrentWindow"   , L"ТекущееОкно"),
+	Alias(eActiveWindow  , 0, true, L"ActiveWindow"    , L"АктивноеОкно"),
+	Alias(eProcessId     , 0, true, L"ProcessId"       , L"ИдентификаторПроцесса"),
 };
 
-const CAddInNative::Alias CAddInNative::m_MethNames[] = {
-	Alias(eFindTestClient , L"FindTestClient" , L"НайтиКлиентТестирования"),
-	Alias(eGetProcessList , L"GetProcessList" , L"ПолучитьСписокПроцессов"),
-	Alias(eGetProcessInfo , L"GetProcessInfo" , L"ПолучитьДанныеПроцесса"),
-	Alias(eFindProcess    , L"FindProcess"    , L"НайтиПроцесс"),
-	Alias(eGetWindowList  , L"GetWindowList"  , L"ПолучитьСписокОкон"),
-	Alias(eSetWindowSize  , L"SetWindowSize"  , L"УстановитьРазмерОкна"),
-	Alias(eSetWindowPos   , L"SetWindowPos"   , L"УстановитьПозициюОкна"),
-	Alias(eEnableResizing , L"EnableResizing" , L"РазрешитьИзменятьРазмер"),
-	Alias(eTakeScreenshot , L"TakeScreenshot" , L"ПолучитьСнимокЭкрана"),
-	Alias(eCaptureWindow  , L"CaptureWindow"  , L"ПолучитьСнимокОкна"),
-	Alias(eGetWindowText  , L"GetWindowText"  , L"ПолучитьЗаголовок"),
-	Alias(eSetWindowText  , L"SetWindowText"  , L"УстановитьЗаголовок"),
-	Alias(eActivateWindow , L"ActivateWindow" , L"АктивироватьОкно"),
-	Alias(eMaximizeWindow , L"MaximizeWindow" , L"РаспахнутьОкно"),
-	Alias(eRestoreWindow  , L"RestoreWindow"  , L"РазвернутьОкно"),
-	Alias(eMinimizeWindow , L"MinimizeWindow" , L"СвернутьОкно"),
+const std::vector<CAddInNative::Alias> CAddInNative::m_MethList = {
+	Alias(eFindTestClient , 2, true , L"FindTestClient" , L"НайтиКлиентТестирования"),
+	Alias(eGetProcessList , 1, true , L"GetProcessList" , L"ПолучитьСписокПроцессов"),
+	Alias(eGetProcessInfo , 1, true , L"GetProcessInfo" , L"ПолучитьСвойстваПроцесса"),
+	Alias(eFindProcess    , 1, true , L"FindProcess"    , L"НайтиПроцесс"),
+	Alias(eGetWindowList  , 1, true , L"GetWindowList"  , L"ПолучитьСписокОкон"),
+	Alias(eGetWindowInfo  , 1, true , L"GetWindowInfo"  , L"ПолучитьСвойстваОкна"),
+	Alias(eGetWindowState , 1, true , L"GetWindowState" , L"ПолучитьСтатусОкна"),
+	Alias(eGetWindowText  , 1, true , L"GetWindowText"  , L"ПолучитьЗаголовок"),
+	Alias(eTakeScreenshot , 1, true , L"TakeScreenshot" , L"ПолучитьСнимокЭкрана"),
+	Alias(eCaptureWindow  , 1, true , L"CaptureWindow"  , L"ПолучитьСнимокОкна"),
+	Alias(eEnableResizing , 2, false, L"EnableResizing" , L"РазрешитьИзменятьРазмер"),
+	Alias(eSetWindowPos   , 3, false, L"SetWindowPos"   , L"УстановитьПозициюОкна"),
+	Alias(eSetWindowSize  , 3, false, L"SetWindowSize"  , L"УстановитьРазмерОкна"),
+	Alias(eSetWindowState , 3, false, L"SetWindowState" , L"УстановитьСтатусОкна"),
+	Alias(eSetWindowText  , 2, false, L"SetWindowText"  , L"УстановитьЗаголовок"),
+	Alias(eActivateWindow , 1, false, L"ActivateWindow" , L"АктивироватьОкно"),
+	Alias(eMaximizeWindow , 1, false, L"MaximizeWindow" , L"РаспахнутьОкно"),
+	Alias(eMinimizeWindow , 1, false, L"MinimizeWindow" , L"СвернутьОкно"),
+	Alias(eRestoreWindow  , 1, false, L"RestoreWindow"  , L"РазвернутьОкно"),
+	Alias(eTypeInfo       , 1, true , L"TypeInfo"       , L"Инфотип"),
 };
-
-int const CAddInNative::m_PropCount = sizeof(CAddInNative::m_PropNames) / sizeof(CAddInNative::Alias);
-
-int const CAddInNative::m_MethCount = sizeof(CAddInNative::m_MethNames) / sizeof(CAddInNative::Alias);
 
 static std::wstring param(tVariant* paParams, const long lSizeArray)
 {
@@ -91,34 +91,46 @@ bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
 	return W(L"WindowsControl", wsExtensionName);
 }
-//---------------------------------------------------------------------------//
-long CAddInNative::GetNProps()
-{
-	return ePropLast;
-}
 
 //---------------------------------------------------------------------------//
-long CAddInNative::FindName(const CAddInNative::Alias names[], long size, const WCHAR_T* name)
+long CAddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
 {
-	for (long i = 0; i < size; i++) {
-		for (long j = 0; j < ALIAS_COUNT; j++) {
-			if (wcsicmp(names[i].Name(j), name) == 0) return i;
+	for (Alias alias : names) {
+		for (long i = 0; i < m_AliasCount; i++) {
+			if (wcsicmp(alias.Name(i), name) == 0) return alias.id;
 		}
 	}
 	return -1;
 }
 
 //---------------------------------------------------------------------------//
-const WCHAR_T* CAddInNative::GetName(const CAddInNative::Alias names[], long size, long lPropNum, long lPropAlias)
+const WCHAR_T* CAddInNative::GetName(const std::vector<Alias>& names, long lPropNum, long lPropAlias)
 {
-	if (lPropNum >= size) return NULL;
-	if (lPropAlias >= ALIAS_COUNT) return NULL;
-	for (long i = 0; i < size; i++) {
-		if (names[i].id == lPropNum) {
-			return W((wchar_t*)names[i].Name(lPropAlias));
+	if (lPropNum >= names.size()) return NULL;
+	if (lPropAlias >= m_AliasCount) return NULL;
+	for (Alias alias : names) {
+		if (alias.id == lPropNum) {
+			return W((wchar_t*)alias.Name(lPropAlias));
 		}
 	}
 	return NULL;
+}
+
+//---------------------------------------------------------------------------//
+long CAddInNative::GetNParams(const std::vector<Alias>& names, const long lMethodNum)
+{
+	for (Alias alias : names) {
+		if (alias.id == lMethodNum) return alias.np;
+	}
+	return 0;
+}
+//---------------------------------------------------------------------------//
+bool CAddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethodNum)
+{
+	for (Alias alias : names) {
+		if (alias.id == lMethodNum) return alias.fn;
+	}
+	return 0;
 }
 
 //---------------------------------------------------------------------------//
@@ -168,15 +180,21 @@ BOOL CAddInNative::W(const DWORD& val, tVariant* res) const
 }
 
 //---------------------------------------------------------------------------//
+long CAddInNative::GetNProps()
+{
+	return ePropLast;
+}
+
+//---------------------------------------------------------------------------//
 long CAddInNative::FindProp(const WCHAR_T* wsPropName)
 {
-	return FindName(m_PropNames, ePropLast, wsPropName);
+	return FindName(m_PropList, wsPropName);
 }
 
 //---------------------------------------------------------------------------//
 const WCHAR_T* CAddInNative::GetPropName(long lPropNum, long lPropAlias)
 {
-	return GetName(m_PropNames, ePropLast, lPropNum, lPropAlias);
+	return GetName(m_PropList, lPropNum, lPropAlias);
 }
 
 //---------------------------------------------------------------------------//
@@ -216,49 +234,17 @@ long CAddInNative::GetNMethods()
 //---------------------------------------------------------------------------//
 long CAddInNative::FindMethod(const WCHAR_T* wsMethodName)
 {
-	return FindName(m_MethNames, eMethLast, wsMethodName);
+	return FindName(m_MethList, wsMethodName);
 }
 //---------------------------------------------------------------------------//
 const WCHAR_T* CAddInNative::GetMethodName(const long lMethodNum, const long lMethodAlias)
 {
-	return GetName(m_MethNames, eMethLast, lMethodNum, lMethodAlias);
+	return GetName(m_MethList, lMethodNum, lMethodAlias);
 }
 //---------------------------------------------------------------------------//
 long CAddInNative::GetNParams(const long lMethodNum)
 {
-	switch (lMethodNum)
-	{
-	case eFindTestClient:
-		return 2;
-	case eGetProcessList:
-		return 1;
-	case eGetProcessInfo:
-		return 1;
-	case eSetWindowSize:
-		return 3;
-	case eSetWindowPos:
-		return 3;
-	case eEnableResizing:
-		return 2;
-	case eTakeScreenshot:
-		return 1;
-	case eCaptureWindow:
-		return 1;
-	case eGetWindowText:
-		return 1;
-	case eSetWindowText:
-		return 2;
-	case eMaximizeWindow:
-		return 1;
-	case eRestoreWindow:
-		return 1;
-	case eMinimizeWindow:
-		return 1;
-	case eActivateWindow:
-		return 1;
-	default:
-		return 0;
-	}
+	return GetNParams(m_MethList, lMethodNum);
 }
 //---------------------------------------------------------------------------//
 bool CAddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
@@ -269,43 +255,31 @@ bool CAddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum,
 //---------------------------------------------------------------------------//
 bool CAddInNative::HasRetVal(const long lMethodNum)
 {
-	switch (lMethodNum)
-	{
-	case eFindTestClient:
-	case eGetProcessList:
-	case eGetProcessInfo:
-	case eGetWindowList:
-	case eSetWindowSize:
-	case eSetWindowPos:
-	case eTakeScreenshot:
-	case eCaptureWindow:
-	case eGetWindowText:
-		return true;
-	default:
-		return false;
-	}
+	return HasRetVal(m_MethList, lMethodNum);
 }
 //---------------------------------------------------------------------------//
 bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 {
 	switch (lMethodNum)
 	{
-	case eSetWindowSize:
-		return WindowsControl::SetWindowSize(paParams, lSizeArray);
-	case eSetWindowPos:
-		return WindowsControl::SetWindowPos(paParams, lSizeArray);
 	case eEnableResizing:
 		return WindowsControl::EnableResizing(paParams, lSizeArray);
+	case eSetWindowPos:
+		return WindowsControl::SetWindowPos(paParams, lSizeArray);
+	case eSetWindowSize:
+		return WindowsControl::SetWindowSize(paParams, lSizeArray);
+	case eSetWindowState:
+		return WindowsControl::SetWindowState(paParams, lSizeArray);
 	case eSetWindowText:
 		return WindowsControl::SetText(paParams, lSizeArray);
+	case eActivateWindow:
+		return WindowsControl::Activate(paParams, lSizeArray);
 	case eMaximizeWindow:
 		return WindowsControl::Maximize(paParams, lSizeArray);
 	case eMinimizeWindow:
 		return WindowsControl::Minimize(paParams, lSizeArray);
 	case eRestoreWindow:
 		return WindowsControl::Restore(paParams, lSizeArray);
-	case eActivateWindow:
-		return WindowsControl::Activate(paParams, lSizeArray);
 	default:
 		return false;
 	}
@@ -315,36 +289,28 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	switch (lMethodNum) {
-	case eGetWindowList:
-		return W(WindowsControl::GetWindowList(), pvarRetValue);
 	case eFindTestClient: {
 		std::wstring result;
 		bool ok = W((DWORD)ProcessManager::FindTestClient(paParams, lSizeArray, result), pvarRetValue);
 		if (ok && lSizeArray > 1) W(result, paParams + 1);
 		return ok;
 	}
+	case eGetWindowList:
+		return W(WindowsControl::GetWindowList(), pvarRetValue);
 	case eGetProcessList:
 		return W(ProcessManager::GetProcessList(paParams, lSizeArray), pvarRetValue);
 	case eGetProcessInfo:
 		return W(ProcessManager::GetProcessInfo(paParams, lSizeArray), pvarRetValue);
-	case eSetWindowSize:
-		return W(WindowsControl::SetWindowSize(paParams, lSizeArray), pvarRetValue);
-	case eSetWindowPos:
-		return W(WindowsControl::SetWindowPos(paParams, lSizeArray), pvarRetValue);
-	case eEnableResizing:
-		return W(WindowsControl::EnableResizing(paParams, lSizeArray), pvarRetValue);
+	case eGetWindowState:
+		return W(WindowsControl::GetWindowState(paParams, lSizeArray), pvarRetValue);
+	case eGetWindowText:
+		return W(WindowsControl::GetText(paParams, lSizeArray), pvarRetValue);
 	case eTakeScreenshot:
 		return WindowsControl(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
 		return WindowsControl(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
-	case eGetWindowText:
-		return W(WindowsControl::GetText(paParams, lSizeArray), pvarRetValue);
-	case eSetWindowText:
-		return WindowsControl::SetText(paParams, lSizeArray);
-	case eMaximizeWindow:
-		return WindowsControl::Maximize(paParams, lSizeArray);
-	case eActivateWindow:
-		return WindowsControl::Activate(paParams, lSizeArray);
+	case eTypeInfo:
+		return W(paParams->vt, pvarRetValue);
 	default:
 		return false;
 	}

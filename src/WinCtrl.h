@@ -9,7 +9,9 @@ class WindowsControl {
 public:
 	static std::wstring GetWindowList();
 	static std::wstring GetText(tVariant* paParams, const long lSizeArray);
+	static long GetWindowState(tVariant* paParams, const long lSizeArray);
 	static BOOL SetText(tVariant* paParams, const long lSizeArray);
+	static BOOL SetWindowState(tVariant* paParams, const long lSizeArray);
 	static BOOL SetWindowSize(tVariant* paParams, const long lSizeArray);
 	static BOOL SetWindowPos(tVariant* paParams, const long lSizeArray);
 	static BOOL EnableResizing(tVariant* paParams, const long lSizeArray);
@@ -25,6 +27,7 @@ public:
 	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
 private:
+	static BOOL SetWindowState(HWND hWnd, int iMode, bool bActivate);
 	BOOL SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue);
 	IMemoryManager* m_iMemory;
 };
