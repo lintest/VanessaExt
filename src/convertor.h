@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef __CONVERTOR_H__
 #define __CONVERTOR_H__
 
