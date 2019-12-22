@@ -86,6 +86,8 @@ uint32_t getLenShortWcharStr(const WCHAR_T* Source)
 }
 //---------------------------------------------------------------------------//
 
+#ifndef __linux__
+
 std::string WC2MB(const std::wstring& wstr, DWORD locale)
 {
 	if (wstr.empty()) return {};
@@ -104,15 +106,21 @@ std::wstring MB2WC(const std::string& str, DWORD locale)
 	return res;
 }
 
+#endif //__linux__
+
 //---------------------------------------------------------------------------//
 int VarToInt(tVariant* paParams)
 {
 	return paParams->intVal;
 }
 
+#ifndef __linux__
+
 HWND VarToHwnd(tVariant* paParams)
 {
 	return (HWND)IntToPtr(paParams->intVal);
 }
+
+#endif //__linux__
 
 //---------------------------------------------------------------------------//
