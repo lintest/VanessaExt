@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "convertor.h"
+#include <iconv.h>
 #include <iomanip>
 #include <sstream>
 #include <vector>
