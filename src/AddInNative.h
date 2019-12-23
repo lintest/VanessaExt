@@ -64,7 +64,7 @@ private:
 			names[0] = strEn;
 			names[1] = strRu;
 		}
-		const WCHAR_T* Name(int i) const {
+		const WCHAR* Name(int i) const {
 			return names[i].c_str();
 		}
 	};

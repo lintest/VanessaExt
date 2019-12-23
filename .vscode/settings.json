@@ -48,7 +48,9 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "locale": "cpp",
+        "iomanip": "cpp"
     },
     "terminal.integrated.shell.windows": "cmd.exe"
 }
