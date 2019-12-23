@@ -6,6 +6,10 @@
 #include "json.hpp"
 using JSON = nlohmann::json;
 
+#ifdef __linux__
+
+#else//__linux__
+
 #define _WIN32_DCOM
 #include <iostream>
 #include <sstream>
@@ -209,3 +213,5 @@ HWND ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, s
 	}
 	return 0;
 }
+
+#endif//__linux__

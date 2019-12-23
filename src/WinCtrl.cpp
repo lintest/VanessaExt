@@ -6,6 +6,10 @@
 #include "json.hpp"
 using JSON = nlohmann::json;
 
+#ifdef __linux__
+
+#else//__linux__
+
 std::wstring WindowsControl::GetWindowList()
 {
 	JSON json;
@@ -397,3 +401,5 @@ BOOL WindowsControl::SetWindowState(HWND hWnd, int iMode, bool bActivate)
 	}
 	return true;
 }
+
+#endif//__linux__

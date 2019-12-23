@@ -1,23 +1,34 @@
-CXX		  := g++ -fpermissive
-CXX_FLAGS := -Wall -Wextra -std=c++17 -ggdb `pkg-config --cflags uuid`
+TARGET=AddInNative.so
 
-BIN		:= bin
-SRC		:= src
-INCLUDE	:= include
-LIB		:= lib
+SOURCES=src/AddInNative.cpp \
+	src/ProcMngr.cpp \
+	src/WinCtrl.cpp \
+	src/convertor.cpp \
+	src/dllmain.cpp \
+	src/exports.cpp \
+	src/stdafx.cpp 
 
-LIBRARIES	:= -lX11 `pkg-config --libs uuid`
-EXECUTABLE	:= winlist
+LIBS=pthread
 
+OBJECTS  := $(SOURCES:.cpp=.o)
+INCLUDES := -Iinclude
+CXXLAGS  := $(CXXFLAGS) $(INCLUDES) -m32 -fPIC `pkg-config --cflags uuid`
 
-all: $(BIN)/$(EXECUTABLE)
+all: $(TARGET)
 
-run: clean all
-	clear
-	./$(BIN)/$(EXECUTABLE)
+-include $(OBJECTS:.o=.d)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
+%.o: %.cpp
+	g++ -c  $(CXXLAGS) $*.cpp -o $*.o
+	g++ -MM $(CXXLAGS) $*.cpp >  $*.d
+	@mv -f $*.d $*.d.tmp
+	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d
+	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | \
+	  sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
+	@rm -f $*.d.tmp
+
+$(TARGET): $(OBJECTS) Makefile
+	g++ $(CXXLAGS) -shared $(OBJECTS) -o $(TARGET) $(addprefix -l, $(LIBS))
 
 clean:
-	-rm $(BIN)/*
+	-rm $(TARGET) *.o *.d

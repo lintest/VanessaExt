@@ -1,22 +1,27 @@
 ﻿#include "stdafx.h"
 
-#include <minwindef.h>
-#include <wtypes.h>
 #include "AddInNative.h"
 #include "convertor.h"
 #include <memory>
 #include <locale>
 
+#ifdef __linux__
+#include <wchar.h>
+#else
+#include <minwindef.h>
+#include <wtypes.h>
+#endif//__linux__
+
 #include "WinCtrl.h"
 #include "ProcMngr.h"
 
-const std::vector<CAddInNative::Alias> CAddInNative::m_PropList = {
+const std::vector<CAddInNative::Alias> CAddInNative::m_PropList {
 	Alias(eCurrentWindow , 0, true, L"CurrentWindow"   , L"ТекущееОкно"),
 	Alias(eActiveWindow  , 0, true, L"ActiveWindow"    , L"АктивноеОкно"),
 	Alias(eProcessId     , 0, true, L"ProcessId"       , L"ИдентификаторПроцесса"),
 };
 
-const std::vector<CAddInNative::Alias> CAddInNative::m_MethList = {
+const std::vector<CAddInNative::Alias> CAddInNative::m_MethList {
 	Alias(eFindTestClient , 2, true , L"FindTestClient" , L"НайтиКлиентТестирования"),
 	Alias(eGetProcessList , 1, true , L"GetProcessList" , L"ПолучитьСписокПроцессов"),
 	Alias(eGetProcessInfo , 1, true , L"GetProcessInfo" , L"ПолучитьСвойстваПроцесса"),
@@ -97,7 +102,15 @@ long CAddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name
 {
 	for (Alias alias : names) {
 		for (long i = 0; i < m_AliasCount; i++) {
+#ifdef __linux__			
+			wchar_t* str = 0;
+			::convFromShortWchar(&str, name);
+	        bool res = (wcscasecmp(alias.Name(i), str) == 0);
+			delete[] str;
+			if (res) return alias.id;
+#else			
 			if (wcsicmp(alias.Name(i), name) == 0) return alias.id;
+#endif//__linux__ 			
 		}
 	}
 	return -1;
@@ -200,6 +213,9 @@ const WCHAR_T* CAddInNative::GetPropName(long lPropNum, long lPropAlias)
 //---------------------------------------------------------------------------//
 bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
+#ifdef __linux__	
+	return false;
+#else
 	switch (lPropNum) {
 	case eCurrentWindow:
 		return W((DWORD)WindowsControl::CurrentWindow(), pvarPropVal);
@@ -210,6 +226,7 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	default:
 		return false;
 	}
+#endif	
 }
 //---------------------------------------------------------------------------//
 bool CAddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
@@ -260,6 +277,9 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 //---------------------------------------------------------------------------//
 bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 {
+#ifdef __linux__	
+	return false;
+#else
 	switch (lMethodNum)
 	{
 	case eEnableResizing:
@@ -283,11 +303,15 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 	default:
 		return false;
 	}
+#endif	
 }
 
 //---------------------------------------------------------------------------//
 bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
+#ifdef __linux__	
+	return false;
+#else
 	switch (lMethodNum) {
 	case eFindTestClient: {
 		std::wstring result;
@@ -314,6 +338,7 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 	default:
 		return false;
 	}
+#endif	
 }
 //---------------------------------------------------------------------------//
 void CAddInNative::SetLocale(const WCHAR_T* loc)
