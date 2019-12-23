@@ -1,9 +1,12 @@
 #include "stdafx.h"
 #include "convertor.h"
-#include <iconv.h>
 #include <iomanip>
 #include <sstream>
 #include <vector>
+
+#ifdef __linux__
+#include <iconv.h>
+#endif //__linux__
 
 //---------------------------------------------------------------------------//
 uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len)
@@ -106,21 +109,16 @@ std::wstring MB2WC(const std::string& str, DWORD locale)
 	return res;
 }
 
-#endif //__linux__
-
-//---------------------------------------------------------------------------//
-int VarToInt(tVariant* paParams)
-{
-	return paParams->intVal;
-}
-
-#ifndef __linux__
-
 HWND VarToHwnd(tVariant* paParams)
 {
 	return (HWND)IntToPtr(paParams->intVal);
 }
 
 #endif //__linux__
+
+int VarToInt(tVariant* paParams)
+{
+	return paParams->intVal;
+}
 
 //---------------------------------------------------------------------------//
