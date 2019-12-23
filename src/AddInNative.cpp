@@ -81,7 +81,7 @@ bool CAddInNative::Init(void* pConnection)
 //---------------------------------------------------------------------------//
 long CAddInNative::GetInfo()
 {
-	// Component should put supported component technology version 
+	// Component should put supported component technology version
 	// This component supports 2.0 version
 	return 2000;
 }
@@ -102,15 +102,15 @@ long CAddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name
 {
 	for (Alias alias : names) {
 		for (long i = 0; i < m_AliasCount; i++) {
-#ifdef __linux__			
+#ifdef __linux__
 			wchar_t* str = 0;
 			::convFromShortWchar(&str, name);
 	        bool res = (wcscasecmp(alias.Name(i), str) == 0);
 			delete[] str;
 			if (res) return alias.id;
-#else			
+#else
 			if (wcsicmp(alias.Name(i), name) == 0) return alias.id;
-#endif//__linux__ 			
+#endif//__linux__
 		}
 	}
 	return -1;
@@ -213,8 +213,9 @@ const WCHAR_T* CAddInNative::GetPropName(long lPropNum, long lPropAlias)
 //---------------------------------------------------------------------------//
 bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
-#ifdef __linux__	
-	return false;
+#ifdef __linux__
+	return W(L"WinCtrl", pvarPropVal);
+	return true;
 #else
 	switch (lPropNum) {
 	case eCurrentWindow:
@@ -226,7 +227,7 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	default:
 		return false;
 	}
-#endif	
+#endif
 }
 //---------------------------------------------------------------------------//
 bool CAddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
@@ -277,7 +278,7 @@ bool CAddInNative::HasRetVal(const long lMethodNum)
 //---------------------------------------------------------------------------//
 bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 {
-#ifdef __linux__	
+#ifdef __linux__
 	return false;
 #else
 	switch (lMethodNum)
@@ -303,13 +304,13 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 	default:
 		return false;
 	}
-#endif	
+#endif
 }
 
 //---------------------------------------------------------------------------//
 bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
-#ifdef __linux__	
+#ifdef __linux__
 	return false;
 #else
 	switch (lMethodNum) {
@@ -338,7 +339,7 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 	default:
 		return false;
 	}
-#endif	
+#endif
 }
 //---------------------------------------------------------------------------//
 void CAddInNative::SetLocale(const WCHAR_T* loc)
