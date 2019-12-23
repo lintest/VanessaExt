@@ -16,27 +16,57 @@
 ### Методы
 
 - <a href="#FindTestClient">НайтиКлиентТестирования (FindTestClient)</a>
-- ПолучитьСписокПроцессов (GetProcessList)
+- <a href="#GetProcessList">ПолучитьСписокПроцессов (GetProcessList)</a>
 - <a href="#GetProcessInfo">ПолучитьСвойстваПроцесса (GetProcessInfo)</a>
 - <a href="#GetWindowState">ПолучитьСтатусОкна (GetWindowState)</a>
 - <a href="#SetWindowState">УстановитьСтатусОкна (SetWindowState)</a>
-- ПолучитьСписокОкон (GetWindowList)
-- УстановитьРазмерОкна (SetWindowSize)
-- УстановитьПозициюОкна (SetWindowPos)
-- РазрешитьИзменятьРазмер (EnableResizing)
+- <a href="#GetWindowList">ПолучитьСписокОкон (GetWindowList)</a>
+- <a href="#SetWindowSize">УстановитьРазмерОкна (SetWindowSize)</a>
+- <a href="#SetWindowPos">УстановитьПозициюОкна (SetWindowPos)</a>
+- <a href="#EnableResizing">РазрешитьИзменятьРазмер (EnableResizing)</a>
 - <a href="#TakeScreenshot">ПолучитьСнимокЭкрана (TakeScreenshot)</a>
 - <a href="#CaptureWindow">ПолучитьСнимокОкна (CaptureWindow)</a>
-- ПолучитьЗаголовок (GetWindowText)
-- УстановитьЗаголовок (SetWindowText)
-- АктивироватьОкно (ActivateWindow)
-- РаспахнутьОкно (MaximixeWindow)
-- РазвернутьОкно (RestoreWindow)
-- СвернутьОкно (MinimizeWindow)
+- <a href="#GetWindowText">ПолучитьЗаголовок (GetWindowText)</a>
+- <a href="#SetWindowText">УстановитьЗаголовок (SetWindowText)</a>
+- <a href="#SetWindowText">АктивироватьОкно (ActivateWindow)</a>
+- <a href="#MaximixeWindow">РаспахнутьОкно (MaximixeWindow)</a>
+- <a href="#RestoreWindow">РазвернутьОкно (RestoreWindow)</a>
+- <a href="#MinimizeWindow">СвернутьОкно (MinimizeWindow)</a>
+
+### Общая информация
+
+Внешняя компонента поддерживает как синхронный, так и асинхронный вызов.
+Для асинхронного вызова в полном соответствии с документацией Синтакс-помощника
+1С:Предприятие применяются методы:
+- НачатьВызов<ИмяМетода>(<ОписаниеОповещения>, <Параметры>)
+- НачатьПолучение<ИмяСвойства>(<ОписаниеОповещения>)
+
+Пример асинхронного вызова внешней компоненты:
+```bsl
+&НаКлиенте
+Процедура НайтиКлиентТестирования(Команда)
+
+	ОписаниеОповещения = Новый ОписаниеОповещения("ПолученКлиентТестирования", ЭтотОбъект);
+	ВнешняяКомпонента.НачатьВызовНайтиКлиентТестирования(ОписаниеОповещения, ПортПодключения, );
+	
+КонецПроцедуры
+
+&НаКлиенте
+Процедура ПолученКлиентТестирования(РезультатВызова, ПараметрыВызова, ДополнительныеПараметры) Экспорт
+	
+	ДескрипторОкна = РезультатВызова;
+	
+КонецПроцедуры	
+```
+
+Обратие внимание, что при вызове методов можно пропускать необязательные параметры.
+Далее по тексту все примеры будут приводиться только для синхронных вызовов.
+В тестовой обработке **Example.epf** используются только асинхронные вызовы.
 
 ### Сборка проекта
 
-Готовая сборка внешней компоненты находится 
-в файле [/Example/Templates/SetWindow/Ext/Template.bin](https://github.com/lintest/1cWinCtrl/raw/master/Example/Templates/SetWindow/Ext/Template.bin)
+Готовая сборка внешней компоненты находится в файле 
+[/Example/Templates/SetWindow/Ext/Template.bin](https://github.com/lintest/1cWinCtrl/raw/master/Example/Templates/SetWindow/Ext/Template.bin)
 
 Порядок самостоятельной сборки внешней компоненты из исходников:
 1. Для сборки компоненты необходимо установить Visual Studio Community 2019.
