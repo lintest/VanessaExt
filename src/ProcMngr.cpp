@@ -172,7 +172,7 @@ std::wstring ProcessManager::FindProcess(tVariant* paParams, const long lSizeArr
 	return ProcessEnumerator(paParams->pwstrVal);
 }
 
-HWND ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, std::wstring& result)
+unsigned long ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, std::wstring& result)
 {
 	if (lSizeArray < 1) return NULL;
 	std::wstring query;
@@ -209,7 +209,7 @@ HWND ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, s
 	if (!bResult && GetLastError() == -1 && params.first)
 	{
 		result = MB2WC(json[0].dump());
-		return params.first;
+		return (unsigned long)params.first;
 	}
 	return 0;
 }

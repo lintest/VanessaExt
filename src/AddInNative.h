@@ -28,6 +28,7 @@ private:
 		eFindProcess,
 		eFindTestClient,
 		eGetWindowList,
+		eGetChildWindows,
 		eSetWindowSize,
 		eSetWindowPos,
 		eGetWindowInfo,
@@ -56,7 +57,7 @@ private:
 	private:
 		std::wstring names[m_AliasCount];
 	public:
-		Alias(long id, long np, bool fn, WCHAR* strEn, WCHAR* strRu):
+		Alias(long id, long np, bool fn, wchar_t* strEn, wchar_t* strRu):
 			id(id),
 			np(np),
 			fn(fn)
@@ -64,7 +65,7 @@ private:
 			names[0] = strEn;
 			names[1] = strRu;
 		}
-		const WCHAR* Name(int i) const {
+		const wchar_t* Name(int i) const {
 			return names[i].c_str();
 		}
 	};

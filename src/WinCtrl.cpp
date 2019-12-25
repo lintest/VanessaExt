@@ -10,7 +10,7 @@ using JSON = nlohmann::json;
 
 #else//__linux__
 
-std::wstring WindowsControl::GetWindowList()
+std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
 	JSON json;
 	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
@@ -42,6 +42,55 @@ std::wstring WindowsControl::GetWindowList()
 		}, (LPARAM)&json);
 
 	return MB2WC(json.dump(), CP_UTF8);
+}
+
+std::wstring WindowsControl::GetChildWindows(tVariant* paParams, const long lSizeArray)
+{
+	class Param {
+	public:
+		HWND hMainWnd = 0;
+		DWORD dwProcessId = 0;
+		JSON json;
+	};
+	Param param;
+
+	if (lSizeArray > 0) param.hMainWnd = VarToHwnd(paParams);
+	if (param.hMainWnd == 0) param.hMainWnd = ::GetForegroundWindow();
+	::GetWindowThreadProcessId(param.hMainWnd, &param.dwProcessId);
+
+	JSON json;
+	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+		{
+			DWORD pid = 0;
+			WCHAR buffer[256];
+			Param* p = (Param*)lParam;
+			if (p->hMainWnd != hWnd 
+				&& ::GetWindowThreadProcessId(hWnd, &pid)
+				&& pid == p->dwProcessId
+				&& ::GetClassName(hWnd, buffer, 256)
+				&& wcscmp(L"V8TopLevelFrameSDIsec", buffer) == 0
+				&& ::IsWindowVisible(hWnd)
+			) {
+				JSON j;
+				j["hWnd"] = (INT64)hWnd;
+
+				WCHAR buffer[256];
+				::GetClassName(hWnd, buffer, 256);
+				j["class"] = WC2MB(buffer, CP_UTF8);
+
+				int length = GetWindowTextLength(hWnd);
+				if (length != 0) {
+					std::wstring text;
+					text.resize(length);
+					::GetWindowText(hWnd, &text[0], length + 1);
+					j["text"] = WC2MB(text, CP_UTF8);
+				}
+				p->json.push_back(j);
+			}
+			return TRUE;
+		}, (LPARAM)&param);
+
+	return MB2WC(param.json.dump(), CP_UTF8);
 }
 
 HWND WindowsControl::ActiveWindow()
