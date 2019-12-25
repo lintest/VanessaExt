@@ -622,6 +622,11 @@
 											</Button>
 										</ChildItems>
 									</ButtonGroup>
+									<Button name="СписокОконПолучитьДочерниеОкна" id="211">
+										<Type>CommandBarButton</Type>
+										<CommandName>Form.Command.ПолучитьДочерниеОкна</CommandName>
+										<ExtendedTooltip name="СписокОконПолучитьДочерниеОкнаРасширеннаяПодсказка" id="212"/>
+									</Button>
 									<ButtonGroup name="СписокОконГруппаСортировка" id="29">
 										<Title>
 											<v8:item>
@@ -662,16 +667,6 @@
 											</Button>
 										</ChildItems>
 									</ButtonGroup>
-									<Button name="СписокОконУстановитьЗаголовокОкна" id="116">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.УстановитьЗаголовокОкна</CommandName>
-										<ExtendedTooltip name="СписокОконУстановитьЗаголовокОкнаРасширеннаяПодсказка" id="117"/>
-									</Button>
-									<Button name="СписокОконАктивноеОкно" id="114">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.СнимокОкна</CommandName>
-										<ExtendedTooltip name="СписокОконАктивноеОкноРасширеннаяПодсказка" id="115"/>
-									</Button>
 								</ChildItems>
 							</AutoCommandBar>
 							<ExtendedTooltip name="СписокОконРасширеннаяПодсказка" id="6"/>
@@ -1591,6 +1586,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>Инфотип</Action>
+		</Command>
+		<Command name="ПолучитьДочерниеОкна" id="27">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Дочерние окна</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить дочерние окна</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьДочерниеОкна</Action>
 		</Command>
 	</Commands>
 </Form>

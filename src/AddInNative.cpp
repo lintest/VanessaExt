@@ -15,33 +15,34 @@
 #include "WinCtrl.h"
 #include "ProcMngr.h"
 
-const std::vector<CAddInNative::Alias> CAddInNative::m_PropList {
+const std::vector<CAddInNative::Alias> CAddInNative::m_PropList{
 	Alias(eCurrentWindow , 0, true, L"CurrentWindow"   , L"ТекущееОкно"),
 	Alias(eActiveWindow  , 0, true, L"ActiveWindow"    , L"АктивноеОкно"),
 	Alias(eProcessId     , 0, true, L"ProcessId"       , L"ИдентификаторПроцесса"),
 };
 
-const std::vector<CAddInNative::Alias> CAddInNative::m_MethList {
-	Alias(eFindTestClient , 2, true , L"FindTestClient" , L"НайтиКлиентТестирования"),
-	Alias(eGetProcessList , 1, true , L"GetProcessList" , L"ПолучитьСписокПроцессов"),
-	Alias(eGetProcessInfo , 1, true , L"GetProcessInfo" , L"ПолучитьСвойстваПроцесса"),
-	Alias(eFindProcess    , 1, true , L"FindProcess"    , L"НайтиПроцесс"),
-	Alias(eGetWindowList  , 1, true , L"GetWindowList"  , L"ПолучитьСписокОкон"),
-	Alias(eGetWindowInfo  , 1, true , L"GetWindowInfo"  , L"ПолучитьСвойстваОкна"),
-	Alias(eGetWindowState , 1, true , L"GetWindowState" , L"ПолучитьСтатусОкна"),
-	Alias(eGetWindowText  , 1, true , L"GetWindowText"  , L"ПолучитьЗаголовок"),
-	Alias(eTakeScreenshot , 1, true , L"TakeScreenshot" , L"ПолучитьСнимокЭкрана"),
-	Alias(eCaptureWindow  , 1, true , L"CaptureWindow"  , L"ПолучитьСнимокОкна"),
-	Alias(eEnableResizing , 2, false, L"EnableResizing" , L"РазрешитьИзменятьРазмер"),
-	Alias(eSetWindowPos   , 3, false, L"SetWindowPos"   , L"УстановитьПозициюОкна"),
-	Alias(eSetWindowSize  , 3, false, L"SetWindowSize"  , L"УстановитьРазмерОкна"),
-	Alias(eSetWindowState , 3, false, L"SetWindowState" , L"УстановитьСтатусОкна"),
-	Alias(eSetWindowText  , 2, false, L"SetWindowText"  , L"УстановитьЗаголовок"),
-	Alias(eActivateWindow , 1, false, L"ActivateWindow" , L"АктивироватьОкно"),
-	Alias(eMaximizeWindow , 1, false, L"MaximizeWindow" , L"РаспахнутьОкно"),
-	Alias(eMinimizeWindow , 1, false, L"MinimizeWindow" , L"СвернутьОкно"),
-	Alias(eRestoreWindow  , 1, false, L"RestoreWindow"  , L"РазвернутьОкно"),
-	Alias(eTypeInfo       , 1, true , L"TypeInfo"       , L"Инфотип"),
+const std::vector<CAddInNative::Alias> CAddInNative::m_MethList{
+	Alias(eFindTestClient  , 2, true , L"FindTestClient"   , L"НайтиКлиентТестирования"),
+	Alias(eGetProcessList  , 1, true , L"GetProcessList"   , L"ПолучитьСписокПроцессов"),
+	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
+	Alias(eFindProcess     , 1, true , L"FindProcess"      , L"НайтиПроцесс"),
+	Alias(eGetWindowList   , 1, true , L"GetWindowList"    , L"ПолучитьСписокОкон"),
+	Alias(eGetChildWindows , 1, true , L"GetChildWindows"  , L"ПолучитьДочерниеОкна"),
+	Alias(eGetWindowInfo   , 1, true , L"GetWindowInfo"    , L"ПолучитьСвойстваОкна"),
+	Alias(eGetWindowState  , 1, true , L"GetWindowState"   , L"ПолучитьСтатусОкна"),
+	Alias(eGetWindowText   , 1, true , L"GetWindowText"    , L"ПолучитьЗаголовок"),
+	Alias(eTakeScreenshot  , 1, true , L"TakeScreenshot"   , L"ПолучитьСнимокЭкрана"),
+	Alias(eCaptureWindow   , 1, true , L"CaptureWindow"    , L"ПолучитьСнимокОкна"),
+	Alias(eEnableResizing  , 2, false, L"EnableResizing"   , L"РазрешитьИзменятьРазмер"),
+	Alias(eSetWindowPos    , 3, false, L"SetWindowPos"     , L"УстановитьПозициюОкна"),
+	Alias(eSetWindowSize   , 3, false, L"SetWindowSize"    , L"УстановитьРазмерОкна"),
+	Alias(eSetWindowState  , 3, false, L"SetWindowState"   , L"УстановитьСтатусОкна"),
+	Alias(eSetWindowText   , 2, false, L"SetWindowText"    , L"УстановитьЗаголовок"),
+	Alias(eActivateWindow  , 1, false, L"ActivateWindow"   , L"АктивироватьОкно"),
+	Alias(eMaximizeWindow  , 1, false, L"MaximizeWindow"   , L"РаспахнутьОкно"),
+	Alias(eMinimizeWindow  , 1, false, L"MinimizeWindow"   , L"СвернутьОкно"),
+	Alias(eRestoreWindow   , 1, false, L"RestoreWindow"    , L"РазвернутьОкно"),
+	Alias(eTypeInfo        , 1, true , L"TypeInfo"         , L"Инфотип"),
 };
 
 static std::wstring param(tVariant* paParams, const long lSizeArray)
@@ -105,7 +106,7 @@ long CAddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name
 #ifdef __linux__
 			wchar_t* str = 0;
 			::convFromShortWchar(&str, name);
-	        bool res = (wcscasecmp(alias.Name(i), str) == 0);
+			bool res = (wcscasecmp(alias.Name(i), str) == 0);
 			delete[] str;
 			if (res) return alias.id;
 #else
@@ -321,7 +322,9 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 		return ok;
 	}
 	case eGetWindowList:
-		return W(WindowsControl::GetWindowList(), pvarRetValue);
+		return W(WindowsControl::GetWindowList(paParams, lSizeArray), pvarRetValue);
+	case eGetChildWindows:
+		return W(WindowsControl::GetChildWindows(paParams, lSizeArray), pvarRetValue);
 	case eGetProcessList:
 		return W(ProcessManager::GetProcessList(paParams, lSizeArray), pvarRetValue);
 	case eGetProcessInfo:
