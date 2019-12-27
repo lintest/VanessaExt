@@ -18,6 +18,9 @@ private:
 		eCurrentWindow = 0,
 		eActiveWindow,
 		eProcessId,
+		eWindowList,
+		eDisplayList,
+		eScreenInfo,
 		ePropLast      // Always last
 	};
 
@@ -27,6 +30,9 @@ private:
 		eGetProcessInfo,
 		eFindProcess,
 		eFindTestClient,
+		eGetDisplayList,
+		eGetDisplayInfo,
+		eGetScreenRect,
 		eGetWindowList,
 		eGetChildWindows,
 		eSetWindowSize,

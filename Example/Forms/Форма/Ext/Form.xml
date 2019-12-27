@@ -557,6 +557,123 @@
 						</Table>
 					</ChildItems>
 				</Page>
+				<Page name="СтраницаСписокДисплеев" id="213">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Список дисплеев</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница список дисплеев</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаСписокДисплеевРасширеннаяПодсказка" id="214"/>
+					<ChildItems>
+						<Table name="СписокДисплеев" id="215">
+							<Representation>List</Representation>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>СписокДисплеев</DataPath>
+							<RowFilter xsi:nil="true"/>
+							<ContextMenu name="СписокДисплеевКонтекстноеМеню" id="216"/>
+							<AutoCommandBar name="СписокДисплеевКоманднаяПанель" id="217">
+								<ChildItems>
+									<Button name="ПолучитьСписокДисплеев" id="249">
+										<Type>CommandBarButton</Type>
+										<CommandName>Form.Command.ПолучитьСписокДисплеев</CommandName>
+										<ExtendedTooltip name="ПолучитьСписокДисплеевРасширеннаяПодсказка" id="250"/>
+									</Button>
+								</ChildItems>
+							</AutoCommandBar>
+							<ExtendedTooltip name="СписокДисплеевРасширеннаяПодсказка" id="218"/>
+							<SearchStringAddition name="СписокДисплеевСтрокаПоиска" id="219">
+								<AdditionSource>
+									<Item>СписокДисплеев</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="СписокДисплеевСтрокаПоискаКонтекстноеМеню" id="220"/>
+								<ExtendedTooltip name="СписокДисплеевСтрокаПоискаРасширеннаяПодсказка" id="221"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="СписокДисплеевСостояниеПросмотра" id="222">
+								<AdditionSource>
+									<Item>СписокДисплеев</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="СписокДисплеевСостояниеПросмотраКонтекстноеМеню" id="223"/>
+								<ExtendedTooltip name="СписокДисплеевСостояниеПросмотраРасширеннаяПодсказка" id="224"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="СписокДисплеевУправлениеПоиском" id="225">
+								<AdditionSource>
+									<Item>СписокДисплеев</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="СписокДисплеевУправлениеПоискомКонтекстноеМеню" id="226"/>
+								<ExtendedTooltip name="СписокДисплеевУправлениеПоискомРасширеннаяПодсказка" id="227"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="СписокДисплеевName" id="240">
+									<DataPath>СписокДисплеев.Name</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СписокДисплеевNameКонтекстноеМеню" id="241"/>
+									<ExtendedTooltip name="СписокДисплеевNameРасширеннаяПодсказка" id="242"/>
+								</InputField>
+								<InputField name="СписокДисплеевLeft" id="228">
+									<DataPath>СписокДисплеев.Left</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>5</Width>
+									<ContextMenu name="СписокДисплеевLeftКонтекстноеМеню" id="229"/>
+									<ExtendedTooltip name="СписокДисплеевLeftРасширеннаяПодсказка" id="230"/>
+								</InputField>
+								<InputField name="СписокДисплеевTop" id="231">
+									<DataPath>СписокДисплеев.Top</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>5</Width>
+									<ContextMenu name="СписокДисплеевTopКонтекстноеМеню" id="232"/>
+									<ExtendedTooltip name="СписокДисплеевTopРасширеннаяПодсказка" id="233"/>
+								</InputField>
+								<InputField name="СписокДисплеевRight" id="234">
+									<DataPath>СписокДисплеев.Right</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>5</Width>
+									<ContextMenu name="СписокДисплеевRightКонтекстноеМеню" id="235"/>
+									<ExtendedTooltip name="СписокДисплеевRightРасширеннаяПодсказка" id="236"/>
+								</InputField>
+								<InputField name="СписокДисплеевBottom" id="237">
+									<DataPath>СписокДисплеев.Bottom</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>5</Width>
+									<ContextMenu name="СписокДисплеевBottomКонтекстноеМеню" id="238"/>
+									<ExtendedTooltip name="СписокДисплеевBottomРасширеннаяПодсказка" id="239"/>
+								</InputField>
+								<InputField name="СписокДисплеевWidth" id="243">
+									<DataPath>СписокДисплеев.Width</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>5</Width>
+									<ContextMenu name="СписокДисплеевWidthКонтекстноеМеню" id="244"/>
+									<ExtendedTooltip name="СписокДисплеевWidthРасширеннаяПодсказка" id="245"/>
+								</InputField>
+								<InputField name="СписокДисплеевHeight" id="246">
+									<DataPath>СписокДисплеев.Height</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>5</Width>
+									<ContextMenu name="СписокДисплеевHeightКонтекстноеМеню" id="247"/>
+									<ExtendedTooltip name="СписокДисплеевHeightРасширеннаяПодсказка" id="248"/>
+								</InputField>
+							</ChildItems>
+						</Table>
+					</ChildItems>
+				</Page>
 				<Page name="СтраницаСписокОкон" id="36">
 					<Title>
 						<v8:item>
@@ -1195,6 +1312,130 @@
 				<v8:Type>xs:boolean</v8:Type>
 			</Type>
 		</Attribute>
+		<Attribute name="СписокДисплеев" id="17">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Список дисплеев</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="Left" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Left</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Top" id="2">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Top</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Right" id="3">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Right</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Bottom" id="4">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Bottom</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Name" id="5">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Name</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="Width" id="6">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Width</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Height" id="7">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Height</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -1601,6 +1842,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьДочерниеОкна</Action>
+		</Command>
+		<Command name="ПолучитьСписокДисплеев" id="28">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить список дисплеев</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить список дисплеев</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьСписокДисплеев</Action>
 		</Command>
 	</Commands>
 </Form>
