@@ -19,6 +19,9 @@ const std::vector<CAddInNative::Alias> CAddInNative::m_PropList{
 	Alias(eCurrentWindow , 0, true, L"CurrentWindow"   , L"ТекущееОкно"),
 	Alias(eActiveWindow  , 0, true, L"ActiveWindow"    , L"АктивноеОкно"),
 	Alias(eProcessId     , 0, true, L"ProcessId"       , L"ИдентификаторПроцесса"),
+	Alias(eWindowList    , 0, true, L"WindowList"      , L"СписокОкон"),
+	Alias(eDisplayList   , 0, true, L"DisplayList"     , L"СписокДисплеев"),
+	Alias(eScreenInfo    , 0, true, L"ScreenInfo"      , L"СвойстваЭкрана"),
 };
 
 const std::vector<CAddInNative::Alias> CAddInNative::m_MethList{
@@ -27,6 +30,9 @@ const std::vector<CAddInNative::Alias> CAddInNative::m_MethList{
 	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
 	Alias(eFindProcess     , 1, true , L"FindProcess"      , L"НайтиПроцесс"),
 	Alias(eGetWindowList   , 1, true , L"GetWindowList"    , L"ПолучитьСписокОкон"),
+	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
+	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
+	Alias(eGetScreenRect   , 0, true , L"GetScreenRect"    , L"ПолучитьРазмерЭкрана"),
 	Alias(eGetChildWindows , 1, true , L"GetChildWindows"  , L"ПолучитьДочерниеОкна"),
 	Alias(eGetWindowInfo   , 1, true , L"GetWindowInfo"    , L"ПолучитьСвойстваОкна"),
 	Alias(eGetWindowState  , 1, true , L"GetWindowState"   , L"ПолучитьСтатусОкна"),
@@ -223,6 +229,12 @@ bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		return W((DWORD)WindowsControl::CurrentWindow(), pvarPropVal);
 	case eActiveWindow:
 		return W((DWORD)WindowsControl::ActiveWindow(), pvarPropVal);
+	case eWindowList:
+		return W(WindowsControl::GetWindowList(NULL, 0), pvarPropVal);
+	case eDisplayList:
+		return W(WindowsControl::GetDisplayList(NULL, 0), pvarPropVal);
+	case eScreenInfo:
+		return W(WindowsControl::GetScreenInfo(), pvarPropVal);
 	case eProcessId:
 		return W(ProcessManager::ProcessId(), pvarPropVal);
 	default:
@@ -321,6 +333,10 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 		if (ok && lSizeArray > 1) W(result, paParams + 1);
 		return ok;
 	}
+	case eGetDisplayList:
+		return W(WindowsControl::GetDisplayList(paParams, lSizeArray), pvarRetValue);
+	case eGetDisplayInfo:
+		return W(WindowsControl::GetDisplayInfo(paParams, lSizeArray), pvarRetValue);
 	case eGetWindowList:
 		return W(WindowsControl::GetWindowList(paParams, lSizeArray), pvarRetValue);
 	case eGetChildWindows:

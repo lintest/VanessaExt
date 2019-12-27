@@ -10,6 +10,9 @@ public:
 	WindowsControl(IMemoryManager* iMemory) { m_iMemory = iMemory; }
 	static HWND ActiveWindow();
 	static HWND CurrentWindow();
+	static std::wstring GetScreenInfo();
+	static std::wstring GetDisplayInfo(tVariant* paParams, const long lSizeArray);
+	static std::wstring GetDisplayList(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetWindowList(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetChildWindows(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetText(tVariant* paParams, const long lSizeArray);

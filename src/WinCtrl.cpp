@@ -10,6 +10,75 @@ using JSON = nlohmann::json;
 
 #else//__linux__
 
+static JSON RectToJson(const RECT& rect)
+{
+	JSON json;
+	json["left"] = rect.left;
+	json["top"] = rect.top;
+	json["right"] = rect.right;
+	json["bottom"] = rect.bottom;
+	json["width"] = rect.right - rect.left;
+	json["height"] = rect.bottom - rect.top;
+	return json;
+}
+
+std::wstring WindowsControl::GetDisplayList(tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+
+	HDC hdc = NULL;
+	RECT rect;
+	LPCRECT lpRect = NULL;
+	if (hWnd) {
+		GetClientRect(hWnd, &rect);
+		hdc = GetDC(hWnd);
+		lpRect = &rect;
+	}
+
+	JSON json;
+	BOOL bResult = ::EnumDisplayMonitors(hdc, lpRect, [](HMONITOR hMonitor, HDC, LPRECT rect, LPARAM lParam) -> BOOL
+		{
+			JSON j = RectToJson(*rect);
+			MONITORINFOEX mi;
+			mi.cbSize = sizeof(mi);
+			if (::GetMonitorInfo(hMonitor, &mi)) {
+				j["name"] = WC2MB((mi.szDevice));
+				j["work"] = RectToJson(mi.rcWork);
+			}
+			JSON* json = (JSON*)lParam;
+			json->push_back(j);
+			return TRUE;
+		}, (LPARAM)&json);
+
+	if (hdc) ReleaseDC(hWnd, hdc);
+
+	return MB2WC(json.dump());
+}
+
+std::wstring WindowsControl::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (!hWnd) hWnd = ::GetForegroundWindow();
+	if (!hWnd) return {};
+
+	RECT rect;
+	GetWindowRect(hWnd, &rect);
+	HMONITOR hMonitor = ::MonitorFromRect(&rect, MONITOR_DEFAULTTONEAREST);
+	if (!hMonitor) return {};
+
+	MONITORINFOEX mi;
+	mi.cbSize = sizeof(mi);
+	BOOL bResult = ::GetMonitorInfo(hMonitor, &mi);
+	if (!bResult) return {};
+
+	JSON json = RectToJson(mi.rcMonitor);
+	json["name"] = WC2MB((mi.szDevice));
+	json["work"] = RectToJson(mi.rcWork);
+	return MB2WC(json.dump());
+}
+
 std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
 	JSON json;
@@ -18,6 +87,7 @@ std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeA
 			if (IsWindowVisible(hWnd)) {
 				JSON j;
 				j["hWnd"] = (INT64)hWnd;
+				j["enabled"] = (boolean)::IsWindowEnabled(hWnd);
 
 				WCHAR buffer[256];
 				::GetClassName(hWnd, buffer, 256);
@@ -41,7 +111,20 @@ std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeA
 			return TRUE;
 		}, (LPARAM)&json);
 
-	return MB2WC(json.dump(), CP_UTF8);
+	return MB2WC(json.dump());
+}
+
+std::wstring WindowsControl::GetScreenInfo()
+{
+	RECT rect, work{0,0,0,0};
+	rect.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+	rect.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+	rect.right = rect.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	rect.bottom = rect.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &work, 0);
+	JSON json = RectToJson(rect);
+	json["work"] = RectToJson(work);
+	return MB2WC(json.dump());
 }
 
 std::wstring WindowsControl::GetChildWindows(tVariant* paParams, const long lSizeArray)
@@ -64,15 +147,16 @@ std::wstring WindowsControl::GetChildWindows(tVariant* paParams, const long lSiz
 			DWORD pid = 0;
 			WCHAR buffer[256];
 			Param* p = (Param*)lParam;
-			if (p->hMainWnd != hWnd 
+			if (p->hMainWnd != hWnd
 				&& ::GetWindowThreadProcessId(hWnd, &pid)
 				&& pid == p->dwProcessId
 				&& ::GetClassName(hWnd, buffer, 256)
 				&& wcscmp(L"V8TopLevelFrameSDIsec", buffer) == 0
 				&& ::IsWindowVisible(hWnd)
-			) {
+				) {
 				JSON j;
 				j["hWnd"] = (INT64)hWnd;
+				j["enabled"] = (boolean)::IsWindowEnabled(hWnd);
 
 				WCHAR buffer[256];
 				::GetClassName(hWnd, buffer, 256);
@@ -149,7 +233,7 @@ BOOL WindowsControl::SetWindowPos(tVariant* paParams, const long lSizeArray)
 	if (lSizeArray < 3) return false;
 	HWND hWnd = VarToHwnd(paParams);
 	int x = VarToInt(paParams + 1);
-	int y = VarToInt(paParams + 1);
+	int y = VarToInt(paParams + 2);
 	::SetWindowPos(hWnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	::UpdateWindow(hWnd);
 	return true;
