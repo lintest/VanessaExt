@@ -20,6 +20,29 @@ using namespace std;
 
 #define VXX(T) reinterpret_cast<void**>(T)
 
+class WindowPtr
+{
+private:
+    Window* window = NULL;    
+public:
+    WindowPtr() {}
+    ~WindowPtr() {
+        if (window) XFree(window);
+    }
+    operator Window() {
+        return window ? *window : NULL;
+    }
+    operator bool() {
+        return window != NULL;
+    } 
+    bool operator!() {
+        return window == NULL;
+    } 
+    void** operator&() {
+        return VXX(&window);
+    }
+};
+
 class WindowHelper
 {
 protected:
@@ -105,17 +128,21 @@ protected:
 
 public:
     Window GetActiveWindow() {
-        Window* window = NULL;
+        WindowPtr window;
         unsigned long size;
         Window root = DefaultRootWindow(display);
-        if (!GetProperty(root, XA_WINDOW, "_NET_ACTIVE_WINDOW", VXX(&window), &size)) return NULL;
-        if (window) printf("\n0x%.8lx\n", *window);
-        return window ? *window : NULL;
+        if (!GetProperty(root, XA_WINDOW, "_NET_ACTIVE_WINDOW", &window, &size)) return NULL;
+        return window;
     }
 
-    Window SetActiveWindow(Window window) {
-        SendMessage(window, "_NET_ACTIVE_WINDOW");
-        XMapRaised(display, window);
+    void SetActiveWindow(Window window) {
+        SendMessage(window, "_NET_ACTIVE_WINDOW", 1, CurrentTime);
+    }
+
+     void Maximize(Window window, bool state) {
+        Atom prop1 = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+        Atom prop2 = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+        SendMessage(window, "_NET_WM_STATE", state ? 1 : 2, prop1, prop2);
     }
 };
 
@@ -209,7 +236,29 @@ BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	Window window =  paParams->intVal;
-	return WindowHelper().SetActiveWindow(window);
+	WindowHelper().SetActiveWindow(window);
+	return true;
+}
+
+BOOL  WindowsControl::Restore(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return false;
+	Window window =  paParams->intVal;
+	WindowHelper().Maximize(window, false);
+	return true;
+}
+
+BOOL  WindowsControl::Maximize(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return false;
+	Window window =  paParams->intVal;
+	WindowHelper().Maximize(window, true);
+	return true;
+}
+
+BOOL WindowsControl::Minimize(tVariant* paParams, const long lSizeArray)
+{
+	return false;
 }
 
 #else//__linux__
