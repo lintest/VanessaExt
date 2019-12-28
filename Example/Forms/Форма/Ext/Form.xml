@@ -627,6 +627,18 @@
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>5</Width>
+									<Format>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</Format>
+									<EditFormat>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</EditFormat>
 									<ContextMenu name="СписокДисплеевLeftКонтекстноеМеню" id="229"/>
 									<ExtendedTooltip name="СписокДисплеевLeftРасширеннаяПодсказка" id="230"/>
 								</InputField>
@@ -635,6 +647,18 @@
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>5</Width>
+									<Format>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</Format>
+									<EditFormat>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</EditFormat>
 									<ContextMenu name="СписокДисплеевTopКонтекстноеМеню" id="232"/>
 									<ExtendedTooltip name="СписокДисплеевTopРасширеннаяПодсказка" id="233"/>
 								</InputField>
@@ -643,6 +667,18 @@
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>5</Width>
+									<Format>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</Format>
+									<EditFormat>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</EditFormat>
 									<ContextMenu name="СписокДисплеевRightКонтекстноеМеню" id="235"/>
 									<ExtendedTooltip name="СписокДисплеевRightРасширеннаяПодсказка" id="236"/>
 								</InputField>
@@ -651,6 +687,18 @@
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>5</Width>
+									<Format>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</Format>
+									<EditFormat>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</EditFormat>
 									<ContextMenu name="СписокДисплеевBottomКонтекстноеМеню" id="238"/>
 									<ExtendedTooltip name="СписокДисплеевBottomРасширеннаяПодсказка" id="239"/>
 								</InputField>
@@ -659,6 +707,18 @@
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>5</Width>
+									<Format>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</Format>
+									<EditFormat>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</EditFormat>
 									<ContextMenu name="СписокДисплеевWidthКонтекстноеМеню" id="244"/>
 									<ExtendedTooltip name="СписокДисплеевWidthРасширеннаяПодсказка" id="245"/>
 								</InputField>
@@ -667,6 +727,18 @@
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>5</Width>
+									<Format>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</Format>
+									<EditFormat>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>ЧН=0</v8:content>
+										</v8:item>
+									</EditFormat>
 									<ContextMenu name="СписокДисплеевHeightКонтекстноеМеню" id="247"/>
 									<ExtendedTooltip name="СписокДисплеевHeightРасширеннаяПодсказка" id="248"/>
 								</InputField>
