@@ -203,7 +203,7 @@ std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeA
 		{
 			if (IsWindowVisible(hWnd)) {
 				JSON j;
-				j["hWnd"] = (INT64)hWnd;
+				j["window"] = (INT64)hWnd;
 				j["enabled"] = (boolean)::IsWindowEnabled(hWnd);
 
 				WCHAR buffer[256];
@@ -215,7 +215,7 @@ std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeA
 					std::wstring text;
 					text.resize(length);
 					::GetWindowText(hWnd, &text[0], length + 1);
-					j["text"] = WC2MB(text);
+					j["title"] = WC2MB(text);
 				}
 
 				DWORD dwProcessId;
