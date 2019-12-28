@@ -136,6 +136,7 @@
 									<v8:content>Группа размер окна</v8:content>
 								</v8:item>
 							</ToolTip>
+							<Group>Horizontal</Group>
 							<ShowTitle>false</ShowTitle>
 							<ExtendedTooltip name="ГруппаРазмерОкнаРасширеннаяПодсказка" id="45"/>
 							<ChildItems>
@@ -324,6 +325,7 @@
 									<v8:content>Группа клиент тестирования</v8:content>
 								</v8:item>
 							</ToolTip>
+							<Group>Horizontal</Group>
 							<Representation>None</Representation>
 							<ShowTitle>false</ShowTitle>
 							<ExtendedTooltip name="ГруппаКлиентТестированияРасширеннаяПодсказка" id="193"/>
@@ -353,6 +355,7 @@
 									<v8:content>Панель управления статусом</v8:content>
 								</v8:item>
 							</ToolTip>
+							<Group>Horizontal</Group>
 							<Representation>None</Representation>
 							<ShowTitle>false</ShowTitle>
 							<ExtendedTooltip name="ПанельУправленияСтатусомРасширеннаяПодсказка" id="200"/>
@@ -454,6 +457,7 @@
 									<v8:content>Группа компонента</v8:content>
 								</v8:item>
 							</ToolTip>
+							<Group>Horizontal</Group>
 							<ShowTitle>false</ShowTitle>
 							<ExtendedTooltip name="ГруппаКомпонентаРасширеннаяПодсказка" id="109"/>
 							<ChildItems>
@@ -895,7 +899,7 @@
 									<ExtendedTooltip name="СписокОконpidРасширеннаяПодсказка" id="33"/>
 								</InputField>
 								<InputField name="СписокОконhwnd" id="16">
-									<DataPath>СписокОкон.hwnd</DataPath>
+									<DataPath>СписокОкон.window</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="СписокОконhwndКонтекстноеМеню" id="17"/>
@@ -909,7 +913,7 @@
 									<ExtendedTooltip name="СписокОконclassРасширеннаяПодсказка" id="21"/>
 								</InputField>
 								<InputField name="СписокОконtext" id="22">
-									<DataPath>СписокОкон.text</DataPath>
+									<DataPath>СписокОкон.title</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="СписокОконtextКонтекстноеМеню" id="23"/>
@@ -1034,11 +1038,11 @@
 				<v8:Type>v8:ValueTable</v8:Type>
 			</Type>
 			<Columns>
-				<Column name="hwnd" id="1">
+				<Column name="window" id="1">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
-							<v8:content>Hwnd</v8:content>
+							<v8:content>Window</v8:content>
 						</v8:item>
 					</Title>
 					<Type>
@@ -1065,11 +1069,11 @@
 						</v8:StringQualifiers>
 					</Type>
 				</Column>
-				<Column name="text" id="3">
+				<Column name="title" id="3">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
-							<v8:content>Text</v8:content>
+							<v8:content>Title</v8:content>
 						</v8:item>
 					</Title>
 					<Type>
