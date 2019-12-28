@@ -49,8 +49,14 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "valarray": "cpp",
-        "locale": "cpp",
         "iomanip": "cpp"
     },
-    "terminal.integrated.shell.windows": "cmd.exe"
+    "terminal.integrated.shell.windows": "cmd.exe",
+    "files.exclude": {
+        "*.d": true,
+        "*.o": true,
+        "*.so": true,
+        "*.vcxproj*": true
+    },
+    "C_Cpp.errorSquiggles": "Enabled"
 }

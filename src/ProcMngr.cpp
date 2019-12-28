@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "convertor.h"
 
 #include "ProcMngr.h"
 
@@ -7,6 +6,87 @@
 using JSON = nlohmann::json;
 
 #ifdef __linux__
+
+#include <fstream>
+#include <dirent.h>
+#include <sys/stat.h>
+
+#define PROC_DIRECTORY "/proc/"
+
+class ProcList
+{
+private:
+    int IsNumeric(const char* ccharptr_CharacterList)
+    {
+        for ( ; *ccharptr_CharacterList; ccharptr_CharacterList++)
+            if (*ccharptr_CharacterList < '0' || *ccharptr_CharacterList > '9')
+                return 0; // false
+        return 1; // true
+    }
+
+    std::string text(const char *dir, const char *name) {
+        std::string path = std::string(PROC_DIRECTORY) + dir + name;
+        std::ifstream file(path.c_str());
+        std::string text;
+        if (file) std::getline(file, text);
+        return text;
+    }
+
+    std::string date(const char *dir) {
+        struct stat st;
+        std::string path = std::string(PROC_DIRECTORY) + dir;
+        stat(path.c_str(), &st);
+        time_t t = st.st_mtime;
+        struct tm lt;
+        localtime_r(&t, &lt);
+        char buffer[80];
+        strftime(buffer, sizeof(buffer), "%Y%m%d%H%M%S", &lt);
+        return buffer;
+    }
+
+    JSON json;
+
+public:
+    ProcList() {
+        struct dirent* dirEntity = NULL ;
+        DIR* dir_proc = NULL ;
+
+        dir_proc = opendir(PROC_DIRECTORY) ;
+        if (dir_proc == NULL)
+        {
+            perror("Couldn't open the " PROC_DIRECTORY " directory") ;
+            return;
+        }
+
+        while ((dirEntity = readdir(dir_proc)) != 0) {
+            if (dirEntity->d_type == DT_DIR) {
+                if (IsNumeric(dirEntity->d_name)) {
+                    JSON j;
+                    std::string comm = text(dirEntity->d_name, "/comm");
+                    if (comm.substr(0, 4) != "1cv8") continue;
+                    std::string line = text(dirEntity->d_name, "/cmdline");
+                    for (int i = 0; i < line.size(); i++) {
+                        if (line[i] == 0) line[i] = ' ';
+                    }
+                    j["ProcessId"] = std::stoi(dirEntity->d_name);
+                    j["CreationDate"] = date(dirEntity->d_name);
+                    j["CommandLine"] = line;
+                    json.push_back(j);
+                }
+            }
+        }
+        closedir(dir_proc) ;
+    }
+
+    std::string dump() {
+        return json.dump();
+    }
+};
+
+std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
+{
+	return MB2WC(ProcList().dump());
+}
 
 #else//__linux__
 
@@ -189,7 +269,7 @@ unsigned long ProcessManager::FindTestClient(tVariant* paParams, const long lSiz
 	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			auto pParams = (std::pair<HWND, DWORD>*)(lParam);
-			WCHAR buffer[256];
+			wchar_t buffer[256];
 			DWORD pid;
 			if (IsWindowVisible(hWnd)
 				&& ::GetWindowThreadProcessId(hWnd, &pid)

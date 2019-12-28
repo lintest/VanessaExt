@@ -1,18 +1,16 @@
 TARGET=AddInNative.so
 
-SOURCES=src/AddInNative.cpp \
-	src/ProcMngr.cpp \
-	src/WinCtrl.cpp \
-	src/convertor.cpp \
-	src/dllmain.cpp \
-	src/exports.cpp \
-	src/stdafx.cpp 
+SOURCES=AddInNative.cpp \
+	ProcMngr.cpp \
+	WinCtrl.cpp \
+	dllmain.cpp \
+	stdafx.cpp 
 
 LIBS=pthread
 
-OBJECTS  := $(SOURCES:.cpp=.o)
-INCLUDES := -Iinclude
-CXXLAGS  := $(CXXFLAGS) $(INCLUDES) -m32 -fPIC `pkg-config --cflags uuid`
+OBJECTS=$(SOURCES:.cpp=.o)
+INCLUDES=-I../include
+CXXLAGS=$(CXXFLAGS) $(INCLUDES) -m64 -fPIC -fpermissive
 
 all: $(TARGET)
 

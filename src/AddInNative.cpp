@@ -1,30 +1,42 @@
-﻿#include "stdafx.h"
+﻿
+#include "stdafx.h"
 
-#include "AddInNative.h"
-#include "convertor.h"
-#include <memory>
-#include <locale>
 
-#ifdef __linux__
+#if defined( __linux__ ) || defined(__APPLE__)
+#include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <time.h>
+#include <errno.h>
+#include <iconv.h>
+#include <sys/time.h>
+#endif
+
+#include <stdio.h>
 #include <wchar.h>
-#else
-#include <minwindef.h>
-#include <wtypes.h>
-#endif//__linux__
+#include "AddInNative.h"
+#include <string>
 
-#include "WinCtrl.h"
+#define BASE_ERRNO     7
+
+#ifdef WIN32
+#pragma setlocale("ru-RU" )
+#endif
+
 #include "ProcMngr.h"
+#include "WinCtrl.h"
 
-const std::vector<CAddInNative::Alias> CAddInNative::m_PropList{
+const std::vector<AddInNative::Alias> AddInNative::m_PropList{
 	Alias(eCurrentWindow , 0, true, L"CurrentWindow"   , L"ТекущееОкно"),
 	Alias(eActiveWindow  , 0, true, L"ActiveWindow"    , L"АктивноеОкно"),
 	Alias(eProcessId     , 0, true, L"ProcessId"       , L"ИдентификаторПроцесса"),
 	Alias(eWindowList    , 0, true, L"WindowList"      , L"СписокОкон"),
+	Alias(eProcessList   , 0, true, L"ProcessList"     , L"СписокПроцессов"),
 	Alias(eDisplayList   , 0, true, L"DisplayList"     , L"СписокДисплеев"),
 	Alias(eScreenInfo    , 0, true, L"ScreenInfo"      , L"СвойстваЭкрана"),
 };
 
-const std::vector<CAddInNative::Alias> CAddInNative::m_MethList{
+const std::vector<AddInNative::Alias> AddInNative::m_MethList{
 	Alias(eFindTestClient  , 2, true , L"FindTestClient"   , L"НайтиКлиентТестирования"),
 	Alias(eGetProcessList  , 1, true , L"GetProcessList"   , L"ПолучитьСписокПроцессов"),
 	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
@@ -48,64 +60,78 @@ const std::vector<CAddInNative::Alias> CAddInNative::m_MethList{
 	Alias(eMaximizeWindow  , 1, false, L"MaximizeWindow"   , L"РаспахнутьОкно"),
 	Alias(eMinimizeWindow  , 1, false, L"MinimizeWindow"   , L"СвернутьОкно"),
 	Alias(eRestoreWindow   , 1, false, L"RestoreWindow"    , L"РазвернутьОкно"),
-	Alias(eTypeInfo        , 1, true , L"TypeInfo"         , L"Инфотип"),
 };
 
-static std::wstring param(tVariant* paParams, const long lSizeArray)
-{
-	std::wstring result;
-	switch (TV_VT(paParams)) {
-	case VTYPE_PWSTR: {
-		wchar_t* str = 0;
-		::convFromShortWchar(&str, TV_WSTR(paParams));
-		result = str;
-		delete[] str;
-	} break;
-	default:
-		break;
-	}
-	return result;
-}
+static const wchar_t g_kClassNames[] = L"WindowsControl"; 
+static IAddInDefBase *pAsyncEvent = NULL;
 
-/////////////////////////////////////////////////////////////////////////////
-// CAddInNative
+uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
+uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len = 0);
+uint32_t getLenShortWcharStr(const WCHAR_T* Source);
+static AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
+static WcharWrapper s_names(g_kClassNames);
 //---------------------------------------------------------------------------//
-CAddInNative::CAddInNative()
+long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
-	m_iMemory = 0;
-	m_iConnect = 0;
+    if(!*pInterface)
+    {
+        *pInterface= new AddInNative;
+        return (long)*pInterface;
+    }
+    return 0;
 }
 //---------------------------------------------------------------------------//
-CAddInNative::~CAddInNative()
+AppCapabilities SetPlatformCapabilities(const AppCapabilities capabilities)
 {
+    g_capabilities = capabilities;
+    return eAppCapabilitiesLast;
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::Init(void* pConnection)
+long DestroyObject(IComponentBase** pIntf)
 {
-	m_iConnect = (IAddInDefBase*)pConnection;
-	return m_iConnect != NULL;
-}
-//---------------------------------------------------------------------------//
-long CAddInNative::GetInfo()
-{
-	// Component should put supported component technology version
-	// This component supports 2.0 version
-	return 2000;
-}
-//---------------------------------------------------------------------------//
-void CAddInNative::Done()
-{
-}
-/////////////////////////////////////////////////////////////////////////////
-// ILanguageExtenderBase
-//---------------------------------------------------------------------------//
-bool CAddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
-{
-	return W(L"WindowsControl", wsExtensionName);
-}
+    if(!*pIntf)
+        return -1;
 
+    delete *pIntf;
+    *pIntf = 0;
+    return 0;
+}
 //---------------------------------------------------------------------------//
-long CAddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
+const WCHAR_T* GetClassNames()
+{
+    return s_names;
+}
+//---------------------------------------------------------------------------//
+// WindowsControl
+//---------------------------------------------------------------------------//
+AddInNative::AddInNative()
+{
+    m_iMemory = 0;
+    m_iConnect = 0;
+}
+//---------------------------------------------------------------------------//
+AddInNative::~AddInNative()
+{
+}
+//---------------------------------------------------------------------------//
+bool AddInNative::Init(void* pConnection)
+{ 
+    m_iConnect = (IAddInDefBase*)pConnection;
+    return m_iConnect != NULL;
+}
+//---------------------------------------------------------------------------//
+long AddInNative::GetInfo()
+{ 
+    // Component should put supported component technology version 
+    // This component supports 2.0 version
+    return 2000; 
+}
+//---------------------------------------------------------------------------//
+void AddInNative::Done()
+{
+}
+//---------------------------------------------------------------------------//
+long AddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
 {
 	for (Alias alias : names) {
 		for (long i = 0; i < m_AliasCount; i++) {
@@ -122,9 +148,8 @@ long CAddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name
 	}
 	return -1;
 }
-
 //---------------------------------------------------------------------------//
-const WCHAR_T* CAddInNative::GetName(const std::vector<Alias>& names, long lPropNum, long lPropAlias)
+const WCHAR_T* AddInNative::GetName(const std::vector<Alias>& names, long lPropNum, long lPropAlias)
 {
 	if (lPropNum >= names.size()) return NULL;
 	if (lPropAlias >= m_AliasCount) return NULL;
@@ -135,9 +160,8 @@ const WCHAR_T* CAddInNative::GetName(const std::vector<Alias>& names, long lProp
 	}
 	return NULL;
 }
-
 //---------------------------------------------------------------------------//
-long CAddInNative::GetNParams(const std::vector<Alias>& names, const long lMethodNum)
+long AddInNative::GetNParams(const std::vector<Alias>& names, const long lMethodNum)
 {
 	for (Alias alias : names) {
 		if (alias.id == lMethodNum) return alias.np;
@@ -145,7 +169,7 @@ long CAddInNative::GetNParams(const std::vector<Alias>& names, const long lMetho
 	return 0;
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethodNum)
+bool AddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethodNum)
 {
 	for (Alias alias : names) {
 		if (alias.id == lMethodNum) return alias.fn;
@@ -153,16 +177,16 @@ bool CAddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethod
 	return 0;
 }
 
-//---------------------------------------------------------------------------//
-const WCHAR_T* CAddInNative::W(const wchar_t* str) const
+BOOL AddInNative::W(long value, tVariant* res) const
 {
-	WCHAR_T* res = NULL;
-	W(str, &res);
-	return res;
+    tVarInit(res);
+    TV_VT(res) = VTYPE_I4;
+    TV_I4(res) = value;
+    return true;
 }
 
 //---------------------------------------------------------------------------//
-BOOL CAddInNative::W(const wchar_t* str, WCHAR_T** res) const
+BOOL AddInNative::W(const wchar_t* str, WCHAR_T** res) const
 {
 	if (m_iMemory && str) {
 		size_t size = wcslen(str) + 1;
@@ -173,13 +197,11 @@ BOOL CAddInNative::W(const wchar_t* str, WCHAR_T** res) const
 	}
 	return false;
 }
-
 //---------------------------------------------------------------------------//
-BOOL CAddInNative::W(const wchar_t* str, tVariant* res) const
+BOOL AddInNative::W(const wchar_t* str, tVariant* res) const
 {
-	TV_VT(res) = VTYPE_PWSTR;
-	res->pwstrVal = NULL;
-	res->wstrLen = 0;
+    tVarInit(res);
+   	TV_VT(res) = VTYPE_PWSTR;
 	if (m_iMemory && str) {
 		size_t size = wcslen(str) + 1;
 		if (m_iMemory->AllocMemory((void**)&res->pwstrVal, size * sizeof(WCHAR_T))) {
@@ -190,107 +212,135 @@ BOOL CAddInNative::W(const wchar_t* str, tVariant* res) const
 	}
 	return false;
 }
-
 //---------------------------------------------------------------------------//
-BOOL CAddInNative::W(const DWORD& val, tVariant* res) const
+const WCHAR_T* AddInNative::W(const wchar_t* str) const
 {
-	TV_VT(res) = VTYPE_UI4;
-	res->uintVal = (uint32_t)val;
-	return true;
+	WCHAR_T* res = NULL;
+	W(str, &res);
+	return res;
 }
-
+/////////////////////////////////////////////////////////////////////////////
+// ILanguageExtenderBase
 //---------------------------------------------------------------------------//
-long CAddInNative::GetNProps()
-{
-	return ePropLast;
+bool AddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
+{ 
+    const wchar_t *wsExtension = L"WindowsControl";
+    int iActualSize = ::wcslen(wsExtension) + 1;
+    WCHAR_T* dest = 0;
+
+    if (m_iMemory)
+    {
+        if(m_iMemory->AllocMemory((void**)wsExtensionName, iActualSize * sizeof(WCHAR_T)))
+            ::convToShortWchar(wsExtensionName, wsExtension, iActualSize);
+        return true;
+    }
+
+    return false; 
 }
-
 //---------------------------------------------------------------------------//
-long CAddInNative::FindProp(const WCHAR_T* wsPropName)
-{
+long AddInNative::GetNProps()
+{ 
+    // You may delete next lines and add your own implementation code here
+    return ePropLast;
+}
+//---------------------------------------------------------------------------//
+long AddInNative::FindProp(const WCHAR_T* wsPropName)
+{ 
 	return FindName(m_PropList, wsPropName);
 }
-
 //---------------------------------------------------------------------------//
-const WCHAR_T* CAddInNative::GetPropName(long lPropNum, long lPropAlias)
-{
+const WCHAR_T* AddInNative::GetPropName(long lPropNum, long lPropAlias)
+{ 
 	return GetName(m_PropList, lPropNum, lPropAlias);
 }
-
 //---------------------------------------------------------------------------//
-bool CAddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
-{
+bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
+{ 
 #ifdef __linux__
-	return W(L"WinCtrl", pvarPropVal);
-	return true;
-#else
-	switch (lPropNum) {
-	case eCurrentWindow:
-		return W((DWORD)WindowsControl::CurrentWindow(), pvarPropVal);
-	case eActiveWindow:
-		return W((DWORD)WindowsControl::ActiveWindow(), pvarPropVal);
-	case eWindowList:
-		return W(WindowsControl::GetWindowList(NULL, 0), pvarPropVal);
-	case eDisplayList:
-		return W(WindowsControl::GetDisplayList(NULL, 0), pvarPropVal);
-	case eScreenInfo:
-		return W(WindowsControl::GetScreenInfo(), pvarPropVal);
-	case eProcessId:
-		return W(ProcessManager::ProcessId(), pvarPropVal);
-	default:
-		return false;
-	}
-#endif
+    switch(lPropNum)
+    {
+    case eWindowList:
+        return W(WindowsControl::GetWindowList(NULL, 0).c_str(), pvarPropVal);
+    case eProcessList:
+        return W(ProcessManager::GetProcessList(NULL, 0).c_str(), pvarPropVal);
+    default:
+        return false;
+    }
+#else//__linux__
+    switch (lPropNum) {
+    case eCurrentWindow:
+        return W((DWORD)WindowsControl::CurrentWindow(), pvarPropVal);
+    case eActiveWindow:
+        return W((DWORD)WindowsControl::ActiveWindow(), pvarPropVal);
+    case eWindowList:
+        return W(WindowsControl::GetWindowList(NULL, 0), pvarPropVal);
+    case eDisplayList:
+        return W(WindowsControl::GetDisplayList(NULL, 0), pvarPropVal);
+    case eScreenInfo:
+        return W(WindowsControl::GetScreenInfo(), pvarPropVal);
+    case eProcessId:
+        return W(ProcessManager::ProcessId(), pvarPropVal);
+    default:
+        return false;
+    }
+#endif//__linux__
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
-{
-	return false;
+bool AddInNative::SetPropVal(const long lPropNum, tVariant *varPropVal)
+{ 
+   return false;
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::IsPropReadable(const long lPropNum)
-{
-	return true;
+bool AddInNative::IsPropReadable(const long lPropNum)
+{ 
+    return true;
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::IsPropWritable(const long lPropNum)
+bool AddInNative::IsPropWritable(const long lPropNum)
 {
-	return false;
+    return false;
 }
 //---------------------------------------------------------------------------//
-long CAddInNative::GetNMethods()
-{
-	return eMethLast;
+long AddInNative::GetNMethods()
+{ 
+    return eMethLast;
 }
 //---------------------------------------------------------------------------//
-long CAddInNative::FindMethod(const WCHAR_T* wsMethodName)
-{
+long AddInNative::FindMethod(const WCHAR_T* wsMethodName)
+{ 
 	return FindName(m_MethList, wsMethodName);
 }
 //---------------------------------------------------------------------------//
-const WCHAR_T* CAddInNative::GetMethodName(const long lMethodNum, const long lMethodAlias)
-{
+const WCHAR_T* AddInNative::GetMethodName(const long lMethodNum, const long lMethodAlias)
+{ 
 	return GetName(m_MethList, lMethodNum, lMethodAlias);
 }
 //---------------------------------------------------------------------------//
-long CAddInNative::GetNParams(const long lMethodNum)
-{
+long AddInNative::GetNParams(const long lMethodNum)
+{ 
 	return GetNParams(m_MethList, lMethodNum);
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
-{
-	TV_VT(pvarParamDefValue) = VTYPE_EMPTY;
-	return false;
-}
+bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant *pvarParamDefValue)
+{ 
+    TV_VT(pvarParamDefValue)= VTYPE_EMPTY;
+
+    switch(lMethodNum)
+    { 
+    default:
+        return false;
+    }
+
+    return false;
+} 
 //---------------------------------------------------------------------------//
-bool CAddInNative::HasRetVal(const long lMethodNum)
-{
+bool AddInNative::HasRetVal(const long lMethodNum)
+{ 
 	return HasRetVal(m_MethList, lMethodNum);
 }
 //---------------------------------------------------------------------------//
-bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
-{
+bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
+{ 
 #ifdef __linux__
 	return false;
 #else
@@ -319,10 +369,9 @@ bool CAddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const l
 	}
 #endif
 }
-
 //---------------------------------------------------------------------------//
-bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{
+bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+{ 
 #ifdef __linux__
 	return false;
 #else
@@ -353,47 +402,176 @@ bool CAddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVa
 		return WindowsControl(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
 		return WindowsControl(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
-	case eTypeInfo:
-		return W(paParams->vt, pvarRetValue);
 	default:
 		return false;
 	}
 #endif
 }
+
 //---------------------------------------------------------------------------//
-void CAddInNative::SetLocale(const WCHAR_T* loc)
+void AddInNative::SetLocale(const WCHAR_T* loc)
 {
 #if !defined( __linux__ ) && !defined(__APPLE__)
-	_wsetlocale(LC_ALL, loc);
+    _wsetlocale(LC_ALL, loc);
 #else
-	//We convert in char* char_locale
-	//also we establish locale
-	//setlocale(LC_ALL, char_locale);
+    //We convert in char* char_locale
+    //also we establish locale
+    //setlocale(LC_ALL, char_locale);
 #endif
 }
 /////////////////////////////////////////////////////////////////////////////
 // LocaleBase
 //---------------------------------------------------------------------------//
-bool CAddInNative::setMemManager(void* mem)
+bool AddInNative::setMemManager(void* mem)
 {
-	m_iMemory = (IMemoryManager*)mem;
-	return m_iMemory != 0;
+    m_iMemory = (IMemoryManager*)mem;
+    return m_iMemory != 0;
 }
 //---------------------------------------------------------------------------//
-void CAddInNative::addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code)
+void AddInNative::addError(uint32_t wcode, const wchar_t* source, 
+                        const wchar_t* descriptor, long code)
 {
-	if (m_iConnect)
-	{
-		WCHAR_T* err = 0;
-		WCHAR_T* descr = 0;
+    if (m_iConnect)
+    {
+        WCHAR_T *err = 0;
+        WCHAR_T *descr = 0;
+        
+        ::convToShortWchar(&err, source);
+        ::convToShortWchar(&descr, descriptor);
 
-		::convToShortWchar(&err, source);
-		::convToShortWchar(&descr, descriptor);
+        m_iConnect->AddError(wcode, err, descr, code);
+        delete[] err;
+        delete[] descr;
+    }
+}
+//---------------------------------------------------------------------------//
+uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len)
+{
+    if (!len)
+        len = ::wcslen(Source) + 1;
 
-		m_iConnect->AddError(wcode, err, descr, code);
-		delete[] err;
-		delete[] descr;
-	}
+    if (!*Dest)
+        *Dest = new WCHAR_T[len];
+
+    WCHAR_T* tmpShort = *Dest;
+    wchar_t* tmpWChar = (wchar_t*) Source;
+    uint32_t res = 0;
+
+    ::memset(*Dest, 0, len * sizeof(WCHAR_T));
+#ifdef __linux__
+    size_t succeed = (size_t)-1;
+    size_t f = len * sizeof(wchar_t), t = len * sizeof(WCHAR_T);
+    const char* fromCode = sizeof(wchar_t) == 2 ? "UTF-16" : "UTF-32";
+    iconv_t cd = iconv_open("UTF-16LE", fromCode);
+    if (cd != (iconv_t)-1)
+    {
+        succeed = iconv(cd, (char**)&tmpWChar, &f, (char**)&tmpShort, &t);
+        iconv_close(cd);
+        if(succeed != (size_t)-1)
+            return (uint32_t)succeed;
+    }
+#endif //__linux__
+    for (; len; --len, ++res, ++tmpWChar, ++tmpShort)
+    {
+        *tmpShort = (WCHAR_T)*tmpWChar;
+    }
+
+    return res;
+}
+//---------------------------------------------------------------------------//
+uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len)
+{
+    if (!len)
+        len = getLenShortWcharStr(Source) + 1;
+
+    if (!*Dest)
+        *Dest = new wchar_t[len];
+
+    wchar_t* tmpWChar = *Dest;
+    WCHAR_T* tmpShort = (WCHAR_T*)Source;
+    uint32_t res = 0;
+
+    ::memset(*Dest, 0, len * sizeof(wchar_t));
+#ifdef __linux__
+    size_t succeed = (size_t)-1;
+    const char* fromCode = sizeof(wchar_t) == 2 ? "UTF-16" : "UTF-32";
+    size_t f = len * sizeof(WCHAR_T), t = len * sizeof(wchar_t);
+    iconv_t cd = iconv_open("UTF-32LE", fromCode);
+    if (cd != (iconv_t)-1)
+    {
+        succeed = iconv(cd, (char**)&tmpShort, &f, (char**)&tmpWChar, &t);
+        iconv_close(cd);
+        if(succeed != (size_t)-1)
+            return (uint32_t)succeed;
+    }
+#endif //__linux__
+    for (; len; --len, ++res, ++tmpWChar, ++tmpShort)
+    {
+        *tmpWChar = (wchar_t)*tmpShort;
+    }
+
+    return res;
+}
+//---------------------------------------------------------------------------//
+uint32_t getLenShortWcharStr(const WCHAR_T* Source)
+{
+    uint32_t res = 0;
+    WCHAR_T *tmpShort = (WCHAR_T*)Source;
+
+    while (*tmpShort++)
+        ++res;
+
+    return res;
 }
 //---------------------------------------------------------------------------//
 
+#ifdef LINUX_OR_MACOS
+WcharWrapper::WcharWrapper(const WCHAR_T* str) : m_str_WCHAR(NULL),
+                           m_str_wchar(NULL)
+{
+    if (str)
+    {
+        int len = getLenShortWcharStr(str);
+        m_str_WCHAR = new WCHAR_T[len + 1];
+        memset(m_str_WCHAR,   0, sizeof(WCHAR_T) * (len + 1));
+        memcpy(m_str_WCHAR, str, sizeof(WCHAR_T) * len);
+        ::convFromShortWchar(&m_str_wchar, m_str_WCHAR);
+    }
+}
+#endif
+//---------------------------------------------------------------------------//
+WcharWrapper::WcharWrapper(const wchar_t* str) :
+#ifdef LINUX_OR_MACOS
+    m_str_WCHAR(NULL),
+#endif 
+    m_str_wchar(NULL)
+{
+    if (str)
+    {
+        int len = wcslen(str);
+        m_str_wchar = new wchar_t[len + 1];
+        memset(m_str_wchar, 0, sizeof(wchar_t) * (len + 1));
+        memcpy(m_str_wchar, str, sizeof(wchar_t) * len);
+#ifdef LINUX_OR_MACOS
+        ::convToShortWchar(&m_str_WCHAR, m_str_wchar);
+#endif
+    }
+
+}
+//---------------------------------------------------------------------------//
+WcharWrapper::~WcharWrapper()
+{
+#ifdef LINUX_OR_MACOS
+    if (m_str_WCHAR)
+    {
+        delete [] m_str_WCHAR;
+        m_str_WCHAR = NULL;
+    }
+#endif
+    if (m_str_wchar)
+    {
+        delete [] m_str_wchar;
+        m_str_wchar = NULL;
+    }
+}
+//---------------------------------------------------------------------------//

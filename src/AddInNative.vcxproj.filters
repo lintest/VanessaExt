@@ -18,16 +18,16 @@
     <ClInclude Include="src\AddInNative.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\convertor.h">
+    <ClInclude Include="convertor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\stdafx.h">
+    <ClInclude Include="ProcMngr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\WinCtrl.h">
+    <ClInclude Include="WinCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ProcMngr.h">
+    <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,40 +35,29 @@
     <Xml Include="..\MANIFEST.XML" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AddInNative.cpp">
+    <ClCompile Include="AddInNative.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\convertor.cpp">
+    <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\dllmain.cpp">
+    <ClCompile Include="ProcMngr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\exports.cpp">
+    <ClCompile Include="WinCtrl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\WinCtrl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\ProcMngr.cpp">
+    <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\AddInNative.def">
+    <None Include="AddInNative.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="src\Makefile" />
+    <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="src\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="src\AddInNative.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
 </Project>

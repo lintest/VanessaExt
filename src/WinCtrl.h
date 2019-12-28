@@ -5,6 +5,15 @@
 #include <string>
 #include "IMemoryManager.h"
 
+#ifdef __linux__
+
+class WindowsControl {
+public:
+	static std::wstring GetWindowList(tVariant* paParams, const long lSizeArray);
+};
+
+#else//__linux__
+
 class WindowsControl {
 public:
 	WindowsControl(IMemoryManager* iMemory) { m_iMemory = iMemory; }
@@ -29,10 +38,14 @@ public:
 	BOOL CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 private:
-	static BOOL SetWindowState(HWND hWnd, int iMode, bool bActivate);
+#ifndef __linux__	
 	BOOL SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue);
+#endif//__linux__
+	static BOOL SetWindowState(HWND hWnd, int iMode, bool bActivate);
 	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
 	IMemoryManager* m_iMemory;
 };
+
+#endif//__linux__
 
 #endif //__WINCTRL_H__

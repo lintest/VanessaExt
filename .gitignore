@@ -10,4 +10,7 @@
 /Example/fileversion
 AddIn.zip
 *.epf
+*.o
+*.d
+*.so
 
