@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <time.h>
 #include <errno.h>
 #include <iconv.h>
 #include <sys/time.h>
@@ -201,11 +200,11 @@ BOOL AddInNative::W(const wchar_t* str, WCHAR_T** res) const
 BOOL AddInNative::W(const wchar_t* str, tVariant* res) const
 {
     tVarInit(res);
-   	TV_VT(res) = VTYPE_PWSTR;
 	if (m_iMemory && str) {
 		size_t size = wcslen(str) + 1;
 		if (m_iMemory->AllocMemory((void**)&res->pwstrVal, size * sizeof(WCHAR_T))) {
 			::convToShortWchar((WCHAR_T**)&res->pwstrVal, str, size);
+           	TV_VT(res) = VTYPE_PWSTR;
 			res->wstrLen = size;
 			return true;
 		}
@@ -265,6 +264,8 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
         return W(WindowsControl::GetWindowList(NULL, 0).c_str(), pvarPropVal);
     case eProcessList:
         return W(ProcessManager::GetProcessList(NULL, 0).c_str(), pvarPropVal);
+    case eScreenInfo:
+		return W(WindowsControl::GetDisplayInfo(NULL, 0).c_str(), pvarPropVal);
     default:
         return false;
     }
@@ -345,6 +346,12 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 { 
 #ifdef __linux__
 	switch (lMethodNum)	{
+	case eEnableResizing:
+        return true;
+	case eSetWindowPos:
+		return WindowsControl::SetWindowPos(paParams, lSizeArray);
+	case eSetWindowSize:
+		return WindowsControl::SetWindowSize(paParams, lSizeArray);
 	case eActivateWindow:
 		return WindowsControl::Activate(paParams, lSizeArray);
 	case eMaximizeWindow:
@@ -385,7 +392,12 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 { 
 #ifdef __linux__
-	return false;
+	switch (lMethodNum) {
+	case eGetDisplayInfo:
+		return W(WindowsControl::GetDisplayInfo(paParams, lSizeArray).c_str(), pvarRetValue);
+	default:
+		return false;
+	}
 #else
 	switch (lMethodNum) {
 	case eFindTestClient: {
