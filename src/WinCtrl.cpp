@@ -20,34 +20,11 @@ using namespace std;
 
 #define VXX(T) reinterpret_cast<void**>(T)
 
-class WindowPtr
-{
-private:
-    Window* window = NULL;    
-public:
-    WindowPtr() {}
-    ~WindowPtr() {
-        if (window) XFree(window);
-    }
-    operator Window() {
-        return window ? *window : NULL;
-    }
-    operator bool() {
-        return window != NULL;
-    } 
-    bool operator!() {
-        return window == NULL;
-    } 
-    void** operator&() {
-        return VXX(&window);
-    }
-};
-
 class WindowHelper
 {
 protected:
     JSON json;
-    Display* display;
+    Display* display = NULL;
     unsigned long count = 0;
 
 public:
@@ -55,12 +32,16 @@ public:
         display = XOpenDisplay(NULL);
 	}
     ~WindowHelper() {
-        XCloseDisplay(display);
+        if (display) XCloseDisplay(display);
     }
 
     std::string dump() {
         return json.dump();
     }
+
+	operator std::wstring() {
+		return MB2WC(json.dump());
+	}
 
 protected:
     bool GetProperty(Window window, Atom xa_prop_type, const char *prop_name, void **ret_prop, unsigned long *size) {
@@ -128,11 +109,13 @@ protected:
 
 public:
     Window GetActiveWindow() {
-        WindowPtr window;
+        Window *buffer = NULL;
         unsigned long size;
         Window root = DefaultRootWindow(display);
-        if (!GetProperty(root, XA_WINDOW, "_NET_ACTIVE_WINDOW", &window, &size)) return NULL;
-        return window;
+        if (!GetProperty(root, XA_WINDOW, "_NET_ACTIVE_WINDOW", VXX(&buffer), &size)) return NULL;
+        Window result = buffer ? *buffer : NULL;
+        XFree(buffer);
+        return result;
     }
 
     void SetActiveWindow(Window window) {
@@ -150,6 +133,14 @@ public:
         SendMessage(window, "_NET_WM_STATE_HIDDEN", 1, CurrentTime);
 		XLowerWindow(display, window);
     }
+
+	void SetWindowPos(Window window, unsigned long x, unsigned long y) {
+		XMoveWindow(display, window, x, y);
+	}
+
+	void SetWindowSize(Window window, unsigned long w, unsigned long h) {
+		XResizeWindow(display, window, w, h);
+	}
 };
 
 class WindowList : public WindowHelper
@@ -195,18 +186,6 @@ public	:
 	}
 };
 
-class DisplayHelper : public WindowHelper 
-{
-public:
-    DisplayHelper() {
-        int number = DefaultScreen(display);
-        json["number"] = number;
-        json["left"] = json["top"] = 0;
-        json["right"] = json["width"] = DisplayWidth(display, number);
-        json["bottom"] = json["height"] = DisplayHeight(display, number);
-    }
-};
-
 class GeometryHelper : public WindowHelper 
 {
 public:
@@ -230,7 +209,22 @@ public:
 
 std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
-	return MB2WC(WindowList().dump());
+	return WindowList();
+}
+
+std::wstring WindowsControl::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+{
+	return {};
+	JSON json;
+	Display* display = XOpenDisplay(NULL);
+	if (!display) return {};
+	int number = DefaultScreen(display);
+	json["number"] = number;
+	json["left"] = json["top"] = 0;
+	json["right"] = json["width"] = DisplayWidth(display, number);
+	json["bottom"] = json["height"] = DisplayHeight(display, number);
+	XCloseDisplay(display);
+	return MB2WC(json.dump());
 }
 
 HWND WindowsControl::ActiveWindow()
@@ -241,7 +235,7 @@ HWND WindowsControl::ActiveWindow()
 BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
-	Window window =  paParams->intVal;
+	Window window =  VarToInt(paParams);
 	WindowHelper().SetActiveWindow(window);
 	return true;
 }
@@ -249,7 +243,7 @@ BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
 BOOL  WindowsControl::Restore(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
-	Window window =  paParams->intVal;
+	Window window =  VarToInt(paParams);
 	WindowHelper().Maximize(window, false);
 	return true;
 }
@@ -257,7 +251,7 @@ BOOL  WindowsControl::Restore(tVariant* paParams, const long lSizeArray)
 BOOL  WindowsControl::Maximize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
-	Window window =  paParams->intVal;
+	Window window =  VarToInt(paParams);
 	WindowHelper().Maximize(window, true);
 	return true;
 }
@@ -265,8 +259,28 @@ BOOL  WindowsControl::Maximize(tVariant* paParams, const long lSizeArray)
 BOOL WindowsControl::Minimize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
-	Window window =  paParams->intVal;
+	Window window =  VarToInt(paParams);
 	WindowHelper().Minimize(window);
+	return true;
+}
+
+BOOL WindowsControl::SetWindowSize(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 3) return false;
+	Window window =  VarToInt(paParams);
+	int x = VarToInt(paParams + 1);
+	int y = VarToInt(paParams + 2);
+	WindowHelper().SetWindowSize(window, x, y);
+	return true;
+}
+
+BOOL WindowsControl::SetWindowPos(tVariant* paParams, const long lSizeArray) 
+{
+	if (lSizeArray < 3) return false;
+	Window window =  VarToInt(paParams);
+	int x = VarToInt(paParams + 1);
+	int y = VarToInt(paParams + 2);
+	WindowHelper().SetWindowPos(window, x, y);
 	return true;
 }
 

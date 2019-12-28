@@ -68,14 +68,14 @@ std::wstring MB2WC(const std::string& str)
     return res;
 }
 
-long VarToInt(tVariant* paParams)
-{
-    return paParams->intVal;
-}
-
 HWND VarToHwnd(tVariant* paParams)
 {
     return (HWND)IntToPtr(paParams->intVal);
 }
 
 #endif//__linux__
+
+long VarToInt(tVariant* paParams)
+{
+    return paParams->intVal;
+}
