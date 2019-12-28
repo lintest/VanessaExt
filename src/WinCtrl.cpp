@@ -383,7 +383,7 @@ std::wstring WindowsControl::GetChildWindows(tVariant* paParams, const long lSiz
 
 HWND WindowsControl::ActiveWindow()
 {
-	return GetActiveWindow();
+	return ::GetForegroundWindow();
 }
 
 HWND WindowsControl::CurrentWindow()
