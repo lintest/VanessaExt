@@ -140,9 +140,15 @@ public:
     }
 
      void Maximize(Window window, bool state) {
+        SendMessage(window, "_NET_WM_STATE_HIDDEN", 0, CurrentTime);
         Atom prop1 = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
         Atom prop2 = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
         SendMessage(window, "_NET_WM_STATE", state ? 1 : 2, prop1, prop2);
+    }
+
+    void Minimize(Window window) {
+        SendMessage(window, "_NET_WM_STATE_HIDDEN", 1, CurrentTime);
+		XLowerWindow(display, window);
     }
 };
 
@@ -258,7 +264,10 @@ BOOL  WindowsControl::Maximize(tVariant* paParams, const long lSizeArray)
 
 BOOL WindowsControl::Minimize(tVariant* paParams, const long lSizeArray)
 {
-	return false;
+	if (lSizeArray < 1) return false;
+	Window window =  paParams->intVal;
+	WindowHelper().Minimize(window);
+	return true;
 }
 
 #else//__linux__
