@@ -347,6 +347,12 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 	switch (lMethodNum)	{
 	case eActivateWindow:
 		return WindowsControl::Activate(paParams, lSizeArray);
+	case eMaximizeWindow:
+		return WindowsControl::Maximize(paParams, lSizeArray);
+	case eMinimizeWindow:
+		return WindowsControl::Minimize(paParams, lSizeArray);
+	case eRestoreWindow:
+		return WindowsControl::Restore(paParams, lSizeArray);
 	return false;
 	}
 #else
