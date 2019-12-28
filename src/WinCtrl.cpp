@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "WinCtrl.h"
 
 #include "json.hpp"
@@ -25,8 +23,10 @@ using namespace std;
 class WindowHelper
 {
 protected:
+    JSON json;
     Display* display;
     unsigned long count = 0;
+
 public:
     WindowHelper() {
         display = XOpenDisplay(NULL);
@@ -59,6 +59,35 @@ protected:
         return true;
     }
 
+    int SendMessage(Window window, char *msg, 
+        unsigned long data0 = 0, unsigned long data1 = 0, 
+        unsigned long data2 = 0, unsigned long data3 = 0,
+        unsigned long data4 = 0) 
+    {
+        XEvent event;
+        long mask = SubstructureRedirectMask | SubstructureNotifyMask;
+
+        event.xclient.type = ClientMessage;
+        event.xclient.serial = 0;
+        event.xclient.send_event = True;
+        event.xclient.message_type = XInternAtom(display, msg, False);
+        event.xclient.window = window;
+        event.xclient.format = 32;
+        event.xclient.data.l[0] = data0;
+        event.xclient.data.l[1] = data1;
+        event.xclient.data.l[2] = data2;
+        event.xclient.data.l[3] = data3;
+        event.xclient.data.l[4] = data4;
+
+        if (XSendEvent(display, DefaultRootWindow(display), False, mask, &event)) {
+            return EXIT_SUCCESS;
+        }
+        else {
+            fprintf(stderr, "Cannot send %s event.\n", msg);
+            return EXIT_FAILURE;
+        }
+    }
+
     bool GetWindowTitle(Window window, char **title) {
         unsigned long size;
         if (GetProperty(window, XInternAtom(display, "UTF8_STRING", False), "_NET_WM_NAME", VXX(title), &size)) return true;
@@ -74,7 +103,20 @@ protected:
         return true;
     }
 
-    JSON json;
+public:
+    Window GetActiveWindow() {
+        Window* window = NULL;
+        unsigned long size;
+        Window root = DefaultRootWindow(display);
+        if (!GetProperty(root, XA_WINDOW, "_NET_ACTIVE_WINDOW", VXX(&window), &size)) return NULL;
+        if (window) printf("\n0x%.8lx\n", *window);
+        return window ? *window : NULL;
+    }
+
+    Window SetActiveWindow(Window window) {
+        SendMessage(window, "_NET_ACTIVE_WINDOW");
+        XMapRaised(display, window);
+    }
 };
 
 class WindowList : public WindowHelper
@@ -120,9 +162,54 @@ public	:
 	}
 };
 
+class DisplayHelper : public WindowHelper 
+{
+public:
+    DisplayHelper() {
+        int number = DefaultScreen(display);
+        json["number"] = number;
+        json["left"] = json["top"] = 0;
+        json["right"] = json["width"] = DisplayWidth(display, number);
+        json["bottom"] = json["height"] = DisplayHeight(display, number);
+    }
+};
+
+class GeometryHelper : public WindowHelper 
+{
+public:
+    GeometryHelper(Window window) {
+        /* geometry */
+        Window junkroot;
+        int x, y, junkx, junky;
+        unsigned int w, h, bw, depth;
+        Status status = XGetGeometry(display, window, &junkroot, &junkx, &junky, &w, &h, &bw, &depth);
+        if (!status) return;
+        Bool ok = XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
+        if (!ok) return;
+        json["left"] = x;
+        json["top"] = y;
+        json["width"] = w;
+        json["height"] = h;
+        json["right"] = x + w;
+        json["bottom"] = y + h;
+    }
+};
+
 std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
 	return MB2WC(WindowList().dump());
+}
+
+HWND WindowsControl::ActiveWindow()
+{
+	return WindowHelper().GetActiveWindow();
+}
+
+BOOL WindowsControl::Activate(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return false;
+	Window window =  paParams->intVal;
+	return WindowHelper().SetActiveWindow(window);
 }
 
 #else//__linux__

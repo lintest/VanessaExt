@@ -5,21 +5,24 @@
 #ifndef __STDAFX_H__
 #define __STDAFX_H__
 
+#include <locale>
+#include <string>
+#include <vector>
+#include <types.h>
+
 #include "ComponentBase.h"
 #include "AddInDefBase.h"
 #include "IMemoryManager.h"
 
 #ifdef _WINDOWS
     #include <windows.h>
+#else
+    typedef unsigned long HWND;
 #endif //_WINDOWS
 
 #if defined(__linux__) || defined(__APPLE__)
 	#define LINUX_OR_MACOS
 #endif
-
-#include <locale>
-#include <string>
-#include <vector>
 
 std::wstring MB2WC(const std::string &source);
 

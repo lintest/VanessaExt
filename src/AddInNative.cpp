@@ -259,6 +259,8 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 #ifdef __linux__
     switch(lPropNum)
     {
+    case eActiveWindow:
+        return W(WindowsControl::ActiveWindow(), pvarPropVal);  
     case eWindowList:
         return W(WindowsControl::GetWindowList(NULL, 0).c_str(), pvarPropVal);
     case eProcessList:
@@ -342,7 +344,11 @@ bool AddInNative::HasRetVal(const long lMethodNum)
 bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 { 
 #ifdef __linux__
+	switch (lMethodNum)	{
+	case eActivateWindow:
+		return WindowsControl::Activate(paParams, lSizeArray);
 	return false;
+	}
 #else
 	switch (lMethodNum)
 	{

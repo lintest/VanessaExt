@@ -1,18 +1,9 @@
 #ifndef __WINCTRL_H__
 #define __WINCTRL_H__
 
-#include <types.h>
-#include <string>
+#include "stdafx.h"
+
 #include "IMemoryManager.h"
-
-#ifdef __linux__
-
-class WindowsControl {
-public:
-	static std::wstring GetWindowList(tVariant* paParams, const long lSizeArray);
-};
-
-#else//__linux__
 
 class WindowsControl {
 public:
@@ -45,7 +36,5 @@ private:
 	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
 	IMemoryManager* m_iMemory;
 };
-
-#endif//__linux__
 
 #endif //__WINCTRL_H__
