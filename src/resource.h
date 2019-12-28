@@ -15,7 +15,7 @@
 #define VERSION_REVISION            0
 #define VERSION_BUILD               0
 
-#define VER_FILE_DESCRIPTION_STR    "Синхронизация сертификатов и ключей электронной подписи"
+#define VER_FILE_DESCRIPTION_STR    "1cWinCtrl: управление окнами"
 #define VER_FILE_VERSION            VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION, VERSION_BUILD
 #define VER_FILE_VERSION_STR        STRINGIZE(VERSION_MAJOR)        \
                                     "." STRINGIZE(VERSION_MINOR)    \
@@ -27,7 +27,7 @@
 #define VER_PRODUCT_VERSION_STR     VER_FILE_VERSION_STR
 #define VER_ORIGINAL_FILENAME_STR   VER_FILENAME VER_FILE_EXT
 #define VER_INTERNAL_NAME_STR       VER_ORIGINAL_FILENAME_STR
-#define VER_COPYRIGHT_STR           "Группа АБСОЛЮТ, 2018"
+#define VER_COPYRIGHT_STR           "Kandrashin Denis, 2020"
 
 #ifdef _DEBUG
 #define VER_VER_DEBUG             VS_FF_DEBUG

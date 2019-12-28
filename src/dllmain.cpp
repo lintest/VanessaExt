@@ -1,4 +1,4 @@
-// dllmain.cpp : Defines the entry point for the DLL application.
+﻿// dllmain.cpp : Defines the entry point for the DLL application.
 #include "stdafx.h"
 #if !defined(__linux__) && !defined(__APPLE__)
 BOOL APIENTRY DllMain( HMODULE hModule,

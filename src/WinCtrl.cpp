@@ -1,12 +1,129 @@
 #include "stdafx.h"
 
 #include "WinCtrl.h"
-#include "convertor.h"
 
 #include "json.hpp"
 using JSON = nlohmann::json;
 
 #ifdef __linux__
+
+#include <fstream>
+#include <sys/stat.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+
+#define p_verbose(...) if (envir_verbose) { \
+    fprintf(stderr, __VA_ARGS__); \
+}
+
+static bool envir_verbose = false;
+
+using namespace std;
+
+#define VXX(T) reinterpret_cast<void**>(T)
+
+class WindowHelper
+{
+protected:
+    Display* display;
+    unsigned long count = 0;
+public:
+    WindowHelper() {
+        display = XOpenDisplay(NULL);
+	}
+    ~WindowHelper() {
+        XCloseDisplay(display);
+    }
+
+    std::string dump() {
+        return json.dump();
+    }
+
+protected:
+    bool GetProperty(Window window, Atom xa_prop_type, const char *prop_name, void **ret_prop, unsigned long *size) {
+        int ret_format;
+        Atom xa_prop_name, xa_ret_type;
+        unsigned long ret_bytes_after;
+        xa_prop_name = XInternAtom(display, prop_name, False);
+        if (XGetWindowProperty(display, window, xa_prop_name, 0, ~0L, False,
+                xa_prop_type, &xa_ret_type, &ret_format,
+                size, &ret_bytes_after, (unsigned char**)ret_prop) != Success) {
+            p_verbose("Cannot get %s property.\n", prop_name);
+            return false;
+        }
+        if (xa_ret_type != xa_prop_type) {
+            p_verbose("Invalid type of %s property.\n", prop_name);
+            XFree(*ret_prop);
+            return false;
+        }
+        return true;
+    }
+
+    bool GetWindowTitle(Window window, char **title) {
+        unsigned long size;
+        if (GetProperty(window, XInternAtom(display, "UTF8_STRING", False), "_NET_WM_NAME", VXX(title), &size)) return true;
+        if (GetProperty(window, XA_STRING, "WM_NAME", VXX(title), NULL)) return true;
+        return false;
+    }
+
+    bool GetWindowClass(Window window, char **title) {
+        unsigned long size;
+        if (!GetProperty(window, XA_STRING, "WM_CLASS", VXX(title), &size)) return false;
+        char *p0 = strchr(*title, '\0');
+        if (*title + size - 1 > p0) *(p0) = '.';
+        return true;
+    }
+
+    JSON json;
+};
+
+class WindowList : public WindowHelper
+{
+protected:
+    Window* windows = NULL;
+
+public	:
+    WindowList() {
+        Window root = DefaultRootWindow(display);
+        if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&windows), &count)) return;
+        for (int i = 0; i < count; i++) {
+            JSON j;
+            Window window = windows[i];
+
+            unsigned long size;
+            unsigned long *pid = NULL;
+            GetProperty(window, XA_CARDINAL, "_NET_WM_PID", VXX(&pid), &size);
+            j["pid"] = *pid;
+            j["window"] = (unsigned long)window;
+            XFree(pid);
+
+            /* geometry */
+            Window junkroot;
+            int x, y, junkx, junky;
+            unsigned int w, h, bw, depth;
+            XGetGeometry(display, window, &junkroot, &junkx, &junky, &w, &h, &bw, &depth);
+            XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
+
+            char *name = NULL;
+            char *title = NULL;
+            GetWindowClass(window, &name);
+            GetWindowTitle(window, &title);
+            j["class"] = name;
+            j["title"] = title;
+            XFree(title);
+            XFree(name);
+            json.push_back(j);
+        }
+    }
+	~WindowList() {
+        XFree(windows);
+	}
+};
+
+std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeArray)
+{
+	return MB2WC(WindowList().dump());
+}
 
 #else//__linux__
 
@@ -91,14 +208,14 @@ std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeA
 
 				WCHAR buffer[256];
 				::GetClassName(hWnd, buffer, 256);
-				j["class"] = WC2MB(buffer, CP_UTF8);
+				j["class"] = WC2MB(buffer);
 
 				int length = GetWindowTextLength(hWnd);
 				if (length != 0) {
 					std::wstring text;
 					text.resize(length);
 					::GetWindowText(hWnd, &text[0], length + 1);
-					j["text"] = WC2MB(text, CP_UTF8);
+					j["text"] = WC2MB(text);
 				}
 
 				DWORD dwProcessId;
@@ -160,21 +277,21 @@ std::wstring WindowsControl::GetChildWindows(tVariant* paParams, const long lSiz
 
 				WCHAR buffer[256];
 				::GetClassName(hWnd, buffer, 256);
-				j["class"] = WC2MB(buffer, CP_UTF8);
+				j["class"] = WC2MB(buffer);
 
 				int length = GetWindowTextLength(hWnd);
 				if (length != 0) {
 					std::wstring text;
 					text.resize(length);
 					::GetWindowText(hWnd, &text[0], length + 1);
-					j["text"] = WC2MB(text, CP_UTF8);
+					j["text"] = WC2MB(text);
 				}
 				p->json.push_back(j);
 			}
 			return TRUE;
 		}, (LPARAM)&param);
 
-	return MB2WC(param.json.dump(), CP_UTF8);
+	return MB2WC(param.json.dump());
 }
 
 HWND WindowsControl::ActiveWindow()
@@ -495,6 +612,8 @@ long WindowsControl::GetWindowState(tVariant* paParams, const long lSizeArray)
 		return 1;
 	case SW_SHOWMAXIMIZED:
 		return 2;
+	default:
+		return -1;
 	}
 }
 
