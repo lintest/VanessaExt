@@ -1,8 +1,5 @@
 #include "WinCtrl.h"
 
-#include "json.hpp"
-using JSON = nlohmann::json;
-
 #ifdef __linux__
 
 #include <fstream>
@@ -40,7 +37,7 @@ public:
     }
 
 	operator std::wstring() {
-		return MB2WC(json.dump());
+		return WSTR(json);
 	}
 
 protected:
@@ -222,7 +219,7 @@ std::wstring WindowsControl::GetDisplayInfo(tVariant* paParams, const long lSize
 	json["right"] = json["width"] = DisplayWidth(display, number);
 	json["bottom"] = json["height"] = DisplayHeight(display, number);
 	XCloseDisplay(display);
-	return MB2WC(json.dump());
+	return WSTR(json);
 }
 
 HWND WindowsControl::ActiveWindow()

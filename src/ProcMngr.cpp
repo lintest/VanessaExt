@@ -2,9 +2,6 @@
 
 #include "ProcMngr.h"
 
-#include "json.hpp"
-using JSON = nlohmann::json;
-
 #ifdef __linux__
 
 #include <fstream>

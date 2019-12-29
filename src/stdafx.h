@@ -14,6 +14,9 @@
 #include "AddInDefBase.h"
 #include "IMemoryManager.h"
 
+#include "json.hpp"
+using JSON = nlohmann::json;
+
 #ifdef _WINDOWS
     #include <windows.h>
 #else
@@ -33,5 +36,7 @@ long VarToInt(tVariant* paParams);
 #ifdef _WINDOWS
 HWND VarToHwnd(tVariant* paParams);
 #endif //_WINDOWS
+
+std::wstring WSTR(const JSON &json);
 
 #endif //__STDAFX_H__

@@ -113,3 +113,8 @@ long VarToInt(tVariant* paParams)
 {
     return paParams->intVal;
 }
+
+std::wstring WSTR(const JSON &json) {
+    if (json.empty()) return {};
+    return MB2WC(json.dump());
+}

@@ -71,6 +71,22 @@ private:
 		}
 	};
 
+	class VarinantHelper {
+	private:
+		tVariant* pvar = NULL;
+		IMemoryManager *mm = NULL;
+	public:
+		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), mm(va.mm) {}
+		VarinantHelper(tVariant* pvar, IMemoryManager* mm) :pvar(pvar), mm(mm) {}
+		VarinantHelper& operator=(const VarinantHelper& va) { pvar = va.pvar; mm = va.mm; return *this; }
+		VarinantHelper& operator<<(const wchar_t* str);
+		VarinantHelper& operator<<(const std::wstring &str);
+		VarinantHelper& operator<<(const std::string &str);
+		operator BOOL() const { return true; };
+	};
+
+	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, m_iMemory); } 
+
 	static const std::vector<Alias> m_PropList;
 	static const std::vector<Alias> m_MethList;
 	long FindName(const std::vector<Alias>& names, const WCHAR_T* name);

@@ -1,7 +1,6 @@
 ﻿
 #include "stdafx.h"
 
-
 #if defined( __linux__ ) || defined(__APPLE__)
 #include <unistd.h>
 #include <stdlib.h>
@@ -176,9 +175,31 @@ bool AddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethodN
 	return 0;
 }
 
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const wchar_t* str)
+{
+	if (mm && str) {
+		size_t size = wcslen(str) + 1;
+		if (mm->AllocMemory((void**)&pvar->pwstrVal, size * sizeof(WCHAR_T))) {
+			::convToShortWchar((WCHAR_T**)&pvar->pwstrVal, str, size);
+           	TV_VT(pvar) = VTYPE_PWSTR;
+			pvar->wstrLen = size;
+		}
+	}
+	return *this;
+}
+
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::wstring &str)
+{
+    return operator<<(str.c_str());
+}
+
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::string &str)
+{
+    return operator<<(MB2WC(str.c_str()));
+}
+
 BOOL AddInNative::W(long value, tVariant* res) const
 {
-    tVarInit(res);
     TV_VT(res) = VTYPE_I4;
     TV_I4(res) = value;
     return true;
@@ -199,8 +220,7 @@ BOOL AddInNative::W(const wchar_t* str, WCHAR_T** res) const
 //---------------------------------------------------------------------------//
 BOOL AddInNative::W(const wchar_t* str, tVariant* res) const
 {
-    tVarInit(res);
-	if (m_iMemory && str) {
+ 	if (m_iMemory && str) {
 		size_t size = wcslen(str) + 1;
 		if (m_iMemory->AllocMemory((void**)&res->pwstrVal, size * sizeof(WCHAR_T))) {
 			::convToShortWchar((WCHAR_T**)&res->pwstrVal, str, size);
@@ -261,11 +281,11 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
     case eActiveWindow:
         return W(WindowsControl::ActiveWindow(), pvarPropVal);  
     case eWindowList:
-        return W(WindowsControl::GetWindowList(NULL, 0).c_str(), pvarPropVal);
+        return VA(pvarPropVal) << WindowsControl::GetWindowList(NULL, 0);
     case eProcessList:
         return W(ProcessManager::GetProcessList(NULL, 0).c_str(), pvarPropVal);
     case eScreenInfo:
-		return W(WindowsControl::GetDisplayInfo(NULL, 0).c_str(), pvarPropVal);
+		return VA(pvarPropVal) << WindowsControl::GetDisplayInfo(NULL, 0);
     default:
         return false;
     }
@@ -394,7 +414,7 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 #ifdef __linux__
 	switch (lMethodNum) {
 	case eGetDisplayInfo:
-		return W(WindowsControl::GetDisplayInfo(paParams, lSizeArray).c_str(), pvarRetValue);
+		return VA(pvarRetValue) << WindowsControl::GetDisplayInfo(paParams, lSizeArray);
 	default:
 		return false;
 	}
