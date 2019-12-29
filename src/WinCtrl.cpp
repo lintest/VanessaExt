@@ -429,7 +429,7 @@ std::wstring WindowsControl::GetChildWindows(tVariant* paParams, const long lSiz
 				&& ::IsWindowVisible(hWnd)
 				) {
 				JSON j;
-				j["hWnd"] = (INT64)hWnd;
+				j["window"] = (INT64)hWnd;
 				j["enabled"] = (boolean)::IsWindowEnabled(hWnd);
 
 				WCHAR buffer[256];
@@ -441,7 +441,7 @@ std::wstring WindowsControl::GetChildWindows(tVariant* paParams, const long lSiz
 					std::wstring text;
 					text.resize(length);
 					::GetWindowText(hWnd, &text[0], length + 1);
-					j["text"] = WC2MB(text);
+					j["title"] = WC2MB(text);
 				}
 				p->json.push_back(j);
 			}
