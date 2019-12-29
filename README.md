@@ -18,25 +18,33 @@
 
 ### Методы
 
+Работа с процессами:
 - <a href="#FindTestClient">НайтиКлиентТестирования (FindTestClient)</a>
 - <a href="#GetProcessList">ПолучитьСписокПроцессов (GetProcessList)</a>
 - <a href="#GetProcessInfo">ПолучитьСвойстваПроцесса (GetProcessInfo)</a>
+
+Информация об окнах и окружении:
 - <a href="#GetDisplayList">ПолучитьСписокДисплеев (GetDisplayList)</a>
 - <a href="#GetDisplayInfo">ПолучитьСвойстваДисплея (GetDisplayInfo)</a>
 - <a href="#GetWindowList">ПолучитьСписокОкон (GetWindowList)</a>
+- <a href="#GetChildWindows">ПолучитьДочерниеОкна (GetChildWindows)</a>
+
+Управление окном приложения:
 - <a href="#GetWindowState">ПолучитьСтатусОкна (GetWindowState)</a>
 - <a href="#SetWindowState">УстановитьСтатусОкна (SetWindowState)</a>
 - <a href="#SetWindowSize">УстановитьРазмерОкна (SetWindowSize)</a>
 - <a href="#SetWindowPos">УстановитьПозициюОкна (SetWindowPos)</a>
 - <a href="#EnableResizing">РазрешитьИзменятьРазмер (EnableResizing)</a>
-- <a href="#TakeScreenshot">ПолучитьСнимокЭкрана (TakeScreenshot)</a>
-- <a href="#CaptureWindow">ПолучитьСнимокОкна (CaptureWindow)</a>
 - <a href="#GetWindowText">ПолучитьЗаголовок (GetWindowText)</a>
 - <a href="#SetWindowText">УстановитьЗаголовок (SetWindowText)</a>
 - <a href="#SetWindowText">АктивироватьОкно (ActivateWindow)</a>
 - <a href="#MaximixeWindow">РаспахнутьОкно (MaximixeWindow)</a>
 - <a href="#RestoreWindow">РазвернутьОкно (RestoreWindow)</a>
 - <a href="#MinimizeWindow">СвернутьОкно (MinimizeWindow)</a>
+
+Захвата изображения экрана:
+- <a href="#TakeScreenshot">ПолучитьСнимокЭкрана (TakeScreenshot)</a>
+- <a href="#CaptureWindow">ПолучитьСнимокОкна (CaptureWindow)</a>
 
 ### Общая информация
 
