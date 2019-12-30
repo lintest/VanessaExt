@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        ".gitignore": true,
+        "LICENSE": true,
+        "Example.xml": true,
+        "*.bat": true,
+        "*.sln": true,
+        "*/*.d": true,
+        "*/*.o": true,
+        "*/*.vcxproj*": true
+    }
+}

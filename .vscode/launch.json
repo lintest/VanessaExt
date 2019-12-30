@@ -1,0 +1,27 @@
+{
+    // Используйте IntelliSense, чтобы узнать о возможных атрибутах.
+    // Наведите указатель мыши, чтобы просмотреть описания существующих атрибутов.
+    // Для получения дополнительной информации посетите: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Запустить",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/opt/1C/v8.3/x86_64/1cv8",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Включить автоматическое форматирование для gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
