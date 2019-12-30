@@ -415,6 +415,12 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 { 
 #ifdef __linux__
 	switch (lMethodNum) {
+	case eFindTestClient: {
+		std::wstring result;
+		bool ok = W((DWORD)ProcessManager::FindTestClient(paParams, lSizeArray, result), pvarRetValue);
+		if (ok && lSizeArray > 1) W(result, paParams + 1);
+		return ok;
+	}
 	case eGetDisplayInfo:
 		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
 	case eTakeScreenshot:

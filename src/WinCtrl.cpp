@@ -5,6 +5,7 @@
 #ifdef __linux__
 
 #include <fstream>
+#include <dirent.h>
 #include <sys/stat.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -87,6 +88,14 @@ protected:
         }
     }
 
+    unsigned long GetWindowPid(Window window) {
+		unsigned long size, *pid = NULL;
+		GetProperty(window, XA_CARDINAL, "_NET_WM_PID", VXX(&pid), &size);
+		unsigned long result = pid ? *pid : 0;
+		XFree(pid);
+		return result;
+    }
+
     bool GetWindowTitle(Window window, char **title) {
         unsigned long size;
         if (GetProperty(window, XInternAtom(display, "UTF8_STRING", False), "_NET_WM_NAME", VXX(title), &size)) return true;
@@ -150,29 +159,18 @@ public	:
         for (int i = 0; i < count; i++) {
             JSON j;
             Window window = windows[i];
-
-            unsigned long size;
-            unsigned long *pid = NULL;
-            GetProperty(window, XA_CARDINAL, "_NET_WM_PID", VXX(&pid), &size);
-            j["pid"] = *pid;
             j["window"] = (unsigned long)window;
-            XFree(pid);
-
-            /* geometry */
-            Window junkroot;
-            int x, y, junkx, junky;
-            unsigned int w, h, bw, depth;
-            XGetGeometry(display, window, &junkroot, &junkx, &junky, &w, &h, &bw, &depth);
-            XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
-
+            j["pid"] = GetWindowPid(window);
             char *name = NULL;
+            if (GetWindowClass(window, &name)) {
+	            j["class"] = name;
+	            XFree(name);
+			};
             char *title = NULL;
-            GetWindowClass(window, &name);
-            GetWindowTitle(window, &title);
-            j["class"] = name;
-            j["title"] = title;
-            XFree(title);
-            XFree(name);
+            if (GetWindowTitle(window, &title)) {
+	            j["title"] = title;
+	            XFree(title);
+			}
             json.push_back(j);
         }
     }
@@ -180,6 +178,83 @@ public	:
         XFree(windows);
 	}
 };
+
+class ClientFinder : public WindowHelper
+{
+protected:
+    Window* windows = NULL;
+	unsigned int result = 0;
+
+public:
+
+    ClientFinder(int port) {
+        Window root = DefaultRootWindow(display);
+        if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&windows), &count)) return;
+        for (int i = 0; i < count; i++) {
+            Window window = windows[i];
+            char *name = NULL;
+            if (!GetWindowClass(window, &name)) continue;
+			std::string str = name;
+	        XFree(name);
+			if (str.substr(0, 4) != "1cv8") continue;
+			unsigned long pid = GetWindowPid(window);
+			if (NotFound(port, pid)) continue;
+
+            json["window"] = result = (unsigned long)window;
+            json["pid"] = pid;
+
+            char *title = NULL;
+            GetWindowTitle(window, &title);
+            json["title"] = title;
+            XFree(title);
+			break;
+        }
+    }
+	~ClientFinder() {
+        XFree(windows);
+	}
+
+	operator bool() const {
+		return result;
+	}
+
+	operator unsigned int() const {
+		return result;
+	}
+
+private:
+    std::string text(const std::string &dir, const std::string &name) {
+        std::string path = dir + name;
+        std::ifstream file(path);
+        std::string text;
+        if (file) std::getline(file, text);
+        return text;
+    }
+
+	bool NotFound(int port, unsigned long pid) {
+		std::string spid = to_string(pid);
+		std::string dir = "/proc/";
+		dir.append(to_string(pid)).append("/");
+		std::string line = text(dir, "cmdline");
+		char* first = NULL;
+		char* second = &line[0];
+		for (int i = 0; i < line.size()-1; i++) {
+			if (line[i] != 0) continue;
+			first = second;
+			second = &line[0] + i + 1;
+			if (strcmp(first, "-TPort") == 0 
+				&& strcmp(spid.c_str(), second)) return false;
+		}
+		return true;
+	}
+};
+
+unsigned int FindTestClient(int port, std::wstring &json) 
+{
+	ClientFinder finder(port);
+	if (finder) json.assign(finder);
+	return finder;
+}
 
 class GeometryHelper : public WindowHelper 
 {

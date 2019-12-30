@@ -4,6 +4,15 @@
 
 #ifdef __linux__
 
+unsigned int FindTestClient(int port, std::wstring &json);
+
+unsigned long ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, std::wstring& result)
+{
+	if (lSizeArray < 1) return 0;
+	int port = VarToInt(paParams);
+	return ::FindTestClient(port, result);
+}
+
 #include <fstream>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -23,7 +32,7 @@ private:
 
     std::string text(const char *dir, const char *name) {
         std::string path = std::string(PROC_DIRECTORY) + dir + name;
-        std::ifstream file(path.c_str());
+        std::ifstream file(path);
         std::string text;
         if (file) std::getline(file, text);
         return text;
