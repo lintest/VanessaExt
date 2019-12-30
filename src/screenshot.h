@@ -27,14 +27,7 @@ class X11Screenshot {
         @param path a constant character pointer - path where to create png image
         @return a boolean - true if succesfuly created image file, false otherwise
         */
-        bool save_to_png(const char * path);
-        /**
-        Public method to save image to jpeg file
-        @param path a constant character pointer - path where to create jpeg image
-        @param quality integer - level of jpeg compression, lower the value higher the compression
-        @return a boolean - true if succesfuly created image file, false otherwise
-        */
-        bool save_to_jpeg(const char * path, int quality);
+        bool save_to_png(std::vector<char> &out);
         /**
         Public method to aquire image current width
         @return a integer - image width in pexels

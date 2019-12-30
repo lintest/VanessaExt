@@ -1,7 +1,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <png.h>
-#include <jpeglib.h>
 #include <stdexcept>
 #include "screenshot.h"
 
@@ -135,17 +134,16 @@ std::vector<std::vector<unsigned char>> X11Screenshot::process_scale_bilinear(XI
     return image_data;
 };
 
-bool X11Screenshot::save_to_png(const char * path) {
+static void PngWriteCallback(png_structp  png_ptr, png_bytep data, png_size_t length) {
+    std::vector<char> *p = (std::vector<char>*)png_get_io_ptr(png_ptr);
+    p->insert(p->end(), data, data + length);
+}
+
+bool X11Screenshot::save_to_png(std::vector<char> &out) {
     FILE *fp = NULL;
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
     png_bytep row;
-
-    fp = fopen(path, "wb");
-    if (!fp) {
-        std::cout << "Failed to create file " << path << std::endl;
-        return false;
-    }
 
     png_ptr = png_create_write_struct(
         PNG_LIBPNG_VER_STRING,
@@ -178,6 +176,8 @@ bool X11Screenshot::save_to_png(const char * path) {
 
     png_init_io(png_ptr, fp);
 
+    png_set_write_fn(png_ptr, &out, PngWriteCallback, NULL);
+
     // Output is 8bit depth, RGBA format.
     png_set_IHDR(
         png_ptr,
@@ -206,38 +206,6 @@ bool X11Screenshot::save_to_png(const char * path) {
     if (fp != NULL) fclose(fp);
     if (info_ptr != NULL) png_free_data(png_ptr, info_ptr, PNG_FREE_ALL, -1);
     if (png_ptr != NULL) png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
-
-    return true;
-};
-
-bool X11Screenshot::save_to_jpeg(const char * path, int quality){
-    FILE *fp = NULL;
-    struct jpeg_compress_struct cinfo;
-    struct jpeg_error_mgr jerr;
-    JSAMPARRAY row;
-
-    fp = fopen(path, "wb");
-    if (!fp) {
-        std::cout << "Failed to create file " << path << std::endl;
-        return false;
-    }
-    cinfo.err = jpeg_std_error(&jerr);
-    jpeg_create_compress(&cinfo);
-    jpeg_stdio_dest(&cinfo, fp);
-    cinfo.image_width = this->width;
-    cinfo.image_height = this->height;
-    cinfo.input_components = 3;
-    cinfo.in_color_space = JCS_RGB;
-    jpeg_set_defaults(&cinfo);
-    jpeg_set_quality (&cinfo, quality, true);
-    jpeg_start_compress(&cinfo, true);
-    for(std::vector<std::vector<unsigned char>>::size_type i = 0; i != this->image_data.size(); i++) {
-        row = (JSAMPARRAY) &this->image_data[i];
-        jpeg_write_scanlines(&cinfo, row, 1);
-    }
-    jpeg_finish_compress(&cinfo);
-    jpeg_destroy_compress(&cinfo);
-    if (fp != NULL) fclose(fp);
 
     return true;
 };

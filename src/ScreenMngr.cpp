@@ -2,9 +2,48 @@
 #include "ScreenMngr.h"
 #include "json_ext.h"
 
+BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToInt(paParams);
+	return CaptureWindow(pvarRetValue, hWnd);
+}
+
 #ifdef __linux__
 
+#include "screenshot.h"
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
+
+BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
+{
+    Display * display = XOpenDisplay(NULL);
+    if (display == NULL) return false;
+
+	Window window = hWnd;
+	if (window == 0) window = DefaultRootWindow(display);
+
+	BOOL success = false;
+    XWindowAttributes gwa;
+    XGetWindowAttributes(display, window, &gwa);
+    XImage * image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
+    X11Screenshot screenshot = X11Screenshot(image);
+	std::vector<char> buffer;
+    if (screenshot.save_to_png(buffer)) {
+		pvarRetValue->strLen = buffer.size();
+		m_iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
+		TV_VT(pvarRetValue) = VTYPE_BLOB;
+		if (pvarRetValue->pstrVal) {
+	        memcpy((void*)pvarRetValue->pstrVal, &buffer[0], pvarRetValue->strLen);
+			success = true;
+		}
+	}
+    XDestroyImage(image);
+    XCloseDisplay(display);
+	return success;
+}
 
 std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
 {
@@ -143,13 +182,6 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 	DeleteObject(hBitmap);
 
 	return result;
-}
-
-BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{
-	HWND hWnd = 0;
-	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
-	return CaptureWindow(pvarRetValue, hWnd);
 }
 
 BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)

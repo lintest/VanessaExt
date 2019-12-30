@@ -3,10 +3,18 @@
         ".gitignore": true,
         "LICENSE": true,
         "Example.xml": true,
+        "*/MANIFEST.XML": true,
+        "*/dllmain.cpp": true,
+        "*/resource.*": true,
         "*.bat": true,
         "*.sln": true,
+        "*/*.def": true,
         "*/*.d": true,
         "*/*.o": true,
         "*/*.vcxproj*": true
+    },
+    "files.associations": {
+        "sstream": "cpp",
+        "functional": "cpp"
     }
 }
