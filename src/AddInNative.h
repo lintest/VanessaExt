@@ -81,7 +81,7 @@ private:
 		VarinantHelper& operator=(const VarinantHelper& va) { pvar = va.pvar; mm = va.mm; return *this; }
 		VarinantHelper& operator<<(const wchar_t* str);
 		VarinantHelper& operator<<(const std::wstring &str);
-		VarinantHelper& operator<<(const std::string &str);
+		VarinantHelper& operator<<(long int value);
 		operator BOOL() const { return true; };
 	};
 

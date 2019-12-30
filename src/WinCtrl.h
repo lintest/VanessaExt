@@ -3,16 +3,10 @@
 
 #include "stdafx.h"
 
-#include "IMemoryManager.h"
-
 class WindowsControl {
 public:
-	WindowsControl(IMemoryManager* iMemory) { m_iMemory = iMemory; }
 	static HWND ActiveWindow();
 	static HWND CurrentWindow();
-	static std::wstring GetScreenInfo();
-	static std::wstring GetDisplayInfo(tVariant* paParams, const long lSizeArray);
-	static std::wstring GetDisplayList(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetWindowList(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetChildWindows(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetText(tVariant* paParams, const long lSizeArray);
@@ -26,15 +20,8 @@ public:
 	static BOOL Maximize(tVariant* paParams, const long lSizeArray);
 	static BOOL Minimize(tVariant* paParams, const long lSizeArray);
 	static BOOL Activate(tVariant* paParams, const long lSizeArray);
-	BOOL CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
-	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 private:
-#ifndef __linux__	
-	BOOL SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue);
-#endif//__linux__
-	static BOOL SetWindowState(HWND hWnd, int iMode, bool bActivate);
-	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
-	IMemoryManager* m_iMemory;
+	static BOOL WindowsControl::SetWindowState(HWND hWnd, int iMode, bool bActivate);
 };
 
 #endif //__WINCTRL_H__

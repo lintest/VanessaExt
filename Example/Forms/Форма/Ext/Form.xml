@@ -578,6 +578,7 @@
 					<ChildItems>
 						<Table name="СписокДисплеев" id="215">
 							<Representation>List</Representation>
+							<ChangeRowSet>false</ChangeRowSet>
 							<AutoInsertNewRow>true</AutoInsertNewRow>
 							<EnableStartDrag>true</EnableStartDrag>
 							<EnableDrag>true</EnableDrag>
@@ -895,6 +896,7 @@
 									<DataPath>СписокОкон.pid</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
+									<Width>10</Width>
 									<ContextMenu name="СписокОконpidКонтекстноеМеню" id="32"/>
 									<ExtendedTooltip name="СписокОконpidРасширеннаяПодсказка" id="33"/>
 								</InputField>
@@ -902,9 +904,18 @@
 									<DataPath>СписокОкон.window</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
+									<Width>10</Width>
 									<ContextMenu name="СписокОконhwndКонтекстноеМеню" id="17"/>
 									<ExtendedTooltip name="СписокОконhwndРасширеннаяПодсказка" id="18"/>
 								</InputField>
+								<CheckBoxField name="СписокОконenabled" id="251">
+									<DataPath>СписокОкон.enabled</DataPath>
+									<ReadOnly>true</ReadOnly>
+									<EditMode>EnterOnInput</EditMode>
+									<CheckBoxType>Auto</CheckBoxType>
+									<ContextMenu name="СписокОконenabledКонтекстноеМеню" id="252"/>
+									<ExtendedTooltip name="СписокОконenabledРасширеннаяПодсказка" id="253"/>
+								</CheckBoxField>
 								<InputField name="СписокОконclass" id="19">
 									<DataPath>СписокОкон.class</DataPath>
 									<ReadOnly>true</ReadOnly>
@@ -1098,6 +1109,17 @@
 							<v8:FractionDigits>0</v8:FractionDigits>
 							<v8:AllowedSign>Any</v8:AllowedSign>
 						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="enabled" id="5">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Enabled</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:boolean</v8:Type>
 					</Type>
 				</Column>
 			</Columns>

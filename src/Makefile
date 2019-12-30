@@ -2,6 +2,7 @@ TARGET=AddInNative.so
 
 SOURCES=AddInNative.cpp \
 	ProcMngr.cpp \
+	ScreenMngr.cpp \
 	WinCtrl.cpp \
 	dllmain.cpp \
 	stdafx.cpp 

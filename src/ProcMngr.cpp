@@ -1,6 +1,6 @@
 #include "stdafx.h"
-
 #include "ProcMngr.h"
+#include "json_ext.h"
 
 #ifdef __linux__
 
@@ -201,7 +201,7 @@ public:
 	}
 
 	operator std::wstring() {
-		return MB2WC(result.dump());
+		return result;
 	}
 	JSON json() {
 		return result;
@@ -233,12 +233,10 @@ std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSize
 	query.append(L"SELECT * FROM Win32_Process WHERE ProcessId=");
 	query.append(std::to_wstring(VarToInt(paParams)));
 	JSON json = ProcessEnumerator(query.c_str()).json();
-	if (!json.is_array() || json.empty()) {
-		return MB2WC(json.dump());
-	}
-	else {
+	if (json.is_array() && json.size() == 1) {
 		return MB2WC(json[0].dump());
 	}
+	return {};
 }
 
 std::wstring ProcessManager::FindProcess(tVariant* paParams, const long lSizeArray)
