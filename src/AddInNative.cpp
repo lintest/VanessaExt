@@ -446,6 +446,8 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		return VA(pvarRetValue) << WindowsControl::GetChildWindows(paParams, lSizeArray);
 	case eGetProcessList:
 		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
+	case eGetProcessInfo:
+		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
 	case eGetWindowState:
 		return W(WindowsControl::GetWindowState(paParams, lSizeArray), pvarRetValue);
 	case eGetWindowText:
