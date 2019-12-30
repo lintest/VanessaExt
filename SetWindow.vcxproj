@@ -224,9 +224,6 @@
   <ItemGroup>
     <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="src\AddInNative.rc" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
