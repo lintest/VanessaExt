@@ -287,7 +287,7 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
     case eProcessList:
         return W(ProcessManager::GetProcessList(NULL, 0).c_str(), pvarPropVal);
     case eScreenInfo:
-		return VA(pvarPropVal) << WindowsControl::GetDisplayInfo(NULL, 0);
+		return VA(pvarPropVal) << ScreenManager::GetDisplayInfo(NULL, 0);
     default:
         return false;
     }
@@ -416,7 +416,7 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 #ifdef __linux__
 	switch (lMethodNum) {
 	case eGetDisplayInfo:
-		return VA(pvarRetValue) << WindowsControl::GetDisplayInfo(paParams, lSizeArray);
+		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
 	default:
 		return false;
 	}

@@ -207,19 +207,6 @@ std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeA
 	return WindowList();
 }
 
-std::wstring WindowsControl::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
-{
-	JSON json;
-	Display* display = XOpenDisplay(NULL);
-	if (!display) return {};
-	int number = DefaultScreen(display);
-	json["left"] = json["top"] = 0;
-	json["right"] = json["width"] = DisplayWidth(display, number);
-	json["bottom"] = json["height"] = DisplayHeight(display, number);
-	XCloseDisplay(display);
-	return WSTR(json);
-}
-
 HWND WindowsControl::ActiveWindow()
 {
 	return WindowHelper().GetActiveWindow();
