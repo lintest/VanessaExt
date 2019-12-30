@@ -12,10 +12,11 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, co
 #ifdef __linux__
 
 #include "screenshot.h"
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
+
+BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+{
+	return CaptureWindow(pvarRetValue, 0);
+}
 
 BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 {

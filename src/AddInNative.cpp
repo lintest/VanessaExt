@@ -418,6 +418,7 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 	case eGetDisplayInfo:
 		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
 	case eTakeScreenshot:
+		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
 		return ScreenManager(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
 	default:
