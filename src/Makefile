@@ -4,6 +4,8 @@ SOURCES=AddInNative.cpp \
 	ProcMngr.cpp \
 	ScreenMngr.cpp \
 	WinCtrl.cpp \
+	screenshot.cpp \
+	screenshot.h \
 	dllmain.cpp \
 	stdafx.cpp 
 
