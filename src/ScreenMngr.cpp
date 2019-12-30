@@ -5,7 +5,7 @@
 BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
-	if (lSizeArray > 0) hWnd = VarToInt(paParams);
+	if (lSizeArray > 0) hWnd = (HWND)VarToInt(paParams);
 	return CaptureWindow(pvarRetValue, hWnd);
 }
 

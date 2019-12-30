@@ -84,14 +84,14 @@ public:
         closedir(dir_proc) ;
     }
 
-    std::string dump() {
-        return json.dump();
-    }
+	operator std::wstring() {
+		return json;
+	}
 };
 
 std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
 {
-	return MB2WC(ProcList().dump());
+	return ProcList();
 }
 
 #else//__linux__

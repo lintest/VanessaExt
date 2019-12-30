@@ -232,6 +232,7 @@ private:
     }
 
 	bool NotFound(int port, unsigned long pid) {
+		std::string spopt = to_string(port);
 		std::string spid = to_string(pid);
 		std::string dir = "/proc/";
 		dir.append(to_string(pid)).append("/");
@@ -243,7 +244,8 @@ private:
 			first = second;
 			second = &line[0] + i + 1;
 			if (strcmp(first, "-TPort") == 0 
-				&& strcmp(spid.c_str(), second)) return false;
+				&& strcmp(spopt.c_str(), second) == 0) 
+					return false;
 		}
 		return true;
 	}

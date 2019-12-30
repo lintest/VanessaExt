@@ -284,8 +284,6 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
         return W(WindowsControl::ActiveWindow(), pvarPropVal);  
     case eWindowList:
         return VA(pvarPropVal) << WindowsControl::GetWindowList(NULL, 0);
-    case eProcessList:
-        return W(ProcessManager::GetProcessList(NULL, 0).c_str(), pvarPropVal);
     case eScreenInfo:
 		return VA(pvarPropVal) << ScreenManager::GetDisplayInfo(NULL, 0);
     default:
@@ -448,8 +446,6 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		return VA(pvarRetValue) << WindowsControl::GetChildWindows(paParams, lSizeArray);
 	case eGetProcessList:
 		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
-	case eGetProcessInfo:
-		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
 	case eGetWindowState:
 		return W(WindowsControl::GetWindowState(paParams, lSizeArray), pvarRetValue);
 	case eGetWindowText:
