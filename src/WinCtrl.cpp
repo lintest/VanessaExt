@@ -6,29 +6,18 @@
 
 #include "XWinBase.h"
 
-class WindowList : public WindowHelper
+class WindowList : public WindowEnumerator
 {
 protected:
-    Window* windows = NULL;
-
-public	:
-    WindowList() {
-	    unsigned long count = 0;
-        Window root = DefaultRootWindow(display);
-        if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&windows), &count)) return;
-        for (int i = 0; i < count; i++) {
-            JSON j;
-            Window window = windows[i];
-            j["window"] = (unsigned long)window;
-            j["pid"] = GetWindowPid(window);
-			j["class"] = GetWindowClass(window);
-            j["title"] = GetWindowTitle(window);
-            json.push_back(j);
-        }
+    virtual bool EnumWindow(Window window) {
+		JSON j;
+		j["pid"] = GetWindowPid(window);
+		j["window"] = (unsigned long)window;
+		j["class"] = GetWindowClass(window);
+		j["title"] = GetWindowTitle(window);
+		json.push_back(j);
+		return true;
     }
-	~WindowList() {
-        XFree(windows);
-	}
 };
 
 class GeometryHelper : public WindowHelper 
@@ -54,7 +43,7 @@ public:
 
 std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
-	return WindowList();
+	return WindowList().Enumerate();
 }
 
 HWND WindowsControl::ActiveWindow()
