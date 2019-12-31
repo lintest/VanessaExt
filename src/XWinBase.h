@@ -107,7 +107,7 @@ protected:
         unsigned long size;
         char *buffer = NULL;
         if (GetProperty(window, XInternAtom(display, "UTF8_STRING", False), "_NET_WM_NAME", VXX(&buffer), &size)) return S(buffer);
-        if (GetProperty(window, XA_STRING, "WM_NAME", VXX(&buffer), NULL)) return S(buffer);
+        if (GetProperty(window, XA_STRING, "WM_NAME", VXX(&buffer), &size)) return S(buffer);
         return {};
     }
 
@@ -159,27 +159,35 @@ public:
 class WindowEnumerator : public WindowHelper
 {
 private:
-    Window* windows = NULL;
-    unsigned long count = 0;
+    Window* m_windows = NULL;
+    unsigned long m_count = 0;
 
 protected:
     virtual bool EnumWindow(Window window) = 0;
 
 public:
-    WindowEnumerator() {
-        Window root = DefaultRootWindow(display);
-        if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&windows), &count)) return;
+    WindowEnumerator(Window window = 0) {
+        if (window == 0) {
+            Window root = DefaultRootWindow(display);
+            if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
+        } else {
+            Window root, parent;
+            unsigned int count = 0;
+            unsigned int *nchildren_return;
+            if (!XQueryTree(display, window, &root, &parent, VXX(&m_windows), &count)) return;
+            m_count = count;
+        }
     }
 
     std::wstring Enumerate() {
-        for (int i = 0; i < count; i++) {
-            if (!EnumWindow(windows[i])) break;
+        for (int i = 0; i < m_count; i++) {
+            if (!EnumWindow(m_windows[i])) break;
         }
         return *this;
     }
 
 	~WindowEnumerator() {
-        XFree(windows);
+        XFree(m_windows);
 	}
 };
 

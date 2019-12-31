@@ -70,7 +70,6 @@ class ProcessList : public WindowEnumerator
 {
 protected:
     virtual bool EnumWindow(Window window) {
-		try {
 		unsigned long pid =  GetWindowPid(window);
 		std::string filepath = "/proc/";
 		filepath.append(to_string(pid)).append("/cmdline");
@@ -83,7 +82,6 @@ protected:
 		j["ProcessId"] = pid;
 		j["CommandLine"] = line;
 		json.push_back(j);
-		} catch (...) {}
 		return true;
 	}
 };

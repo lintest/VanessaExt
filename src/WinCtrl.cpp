@@ -18,6 +18,9 @@ protected:
 		json.push_back(j);
 		return true;
     }
+public:
+    WindowList(Window parent = 0)
+		: WindowEnumerator(parent) {}
 };
 
 class GeometryHelper : public WindowHelper 
@@ -44,6 +47,13 @@ public:
 std::wstring WindowsControl::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
 	return WindowList().Enumerate();
+}
+
+std::wstring WindowsControl::GetChildWindows(tVariant* paParams, const long lSizeArray)
+{
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	return WindowList(window).Enumerate();
 }
 
 HWND WindowsControl::ActiveWindow()
