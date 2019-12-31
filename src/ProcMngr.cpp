@@ -4,94 +4,94 @@
 
 #ifdef __linux__
 
-unsigned int FindTestClient(int port, std::wstring &json);
+#include "XWinBase.h"
+
+static std::string file2str(const std::string &filepath) {
+	std::ifstream file(filepath);
+	std::string text;
+	if (file) std::getline(file, text);
+	return text;
+}
+
+class ClientFinder : public WindowEnumerator
+{
+private:	
+	unsigned long m_result = 0;
+	int m_port;
+
+protected:
+    virtual bool EnumWindow(Window window) {
+		std::string str = GetWindowClass(window);
+		if (str.substr(0, 4) != "1cv8") return true;
+		unsigned long pid =  GetWindowPid(window);
+		if (NotFound(pid)) return true;
+		json["window"] = m_result = (unsigned long)window;
+		json["title"] = GetWindowTitle(window);
+		json["pid"] = pid;
+		return false;
+	}
+
+public:
+    ClientFinder(int port): m_port(port) {}
+	operator bool() const { return m_result; }
+	operator unsigned long() const { return m_result; }
+
+private:
+	bool NotFound(unsigned long pid) {
+		std::string filepath = "/proc/";
+		filepath.append(to_string(pid)).append("/cmdline");
+		std::string line = file2str(filepath);
+		std::string port = to_string(m_port);
+		char* first = NULL;
+		char* second = &line[0];
+		for (int i = 0; i < line.size() - 1; i++) {
+			if (line[i] != 0) continue;
+			first = second;
+			second = &line[0] + i + 1;
+			if (strcmp(first, "-TPort") == 0 
+				&& strcmp(port.c_str(), second) == 0) 
+					return false;
+		}
+		return true;
+	}
+};
 
 unsigned long ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, std::wstring& result)
 {
 	if (lSizeArray < 1) return 0;
 	int port = VarToInt(paParams);
-	return ::FindTestClient(port, result);
+	ClientFinder finder(port);
+	std::wstring json = finder.Enumerate();
+	if (finder) result.assign(json);
+	return finder;
 }
 
-#include <fstream>
-#include <dirent.h>
-#include <sys/stat.h>
-
-#define PROC_DIRECTORY "/proc/"
-
-class ProcList
+class ProcessList : public WindowEnumerator
 {
-private:
-    int IsNumeric(const char* ccharptr_CharacterList)
-    {
-        for ( ; *ccharptr_CharacterList; ccharptr_CharacterList++)
-            if (*ccharptr_CharacterList < '0' || *ccharptr_CharacterList > '9')
-                return 0; // false
-        return 1; // true
-    }
-
-    std::string text(const char *dir, const char *name) {
-        std::string path = std::string(PROC_DIRECTORY) + dir + name;
-        std::ifstream file(path);
-        std::string text;
-        if (file) std::getline(file, text);
-        return text;
-    }
-
-    std::string date(const char *dir) {
-        struct stat st;
-        std::string path = std::string(PROC_DIRECTORY) + dir;
-        stat(path.c_str(), &st);
-        time_t t = st.st_mtime;
-        struct tm lt;
-        localtime_r(&t, &lt);
-        char buffer[80];
-        strftime(buffer, sizeof(buffer), "%Y%m%d%H%M%S", &lt);
-        return buffer;
-    }
-
-    JSON json;
-
-public:
-    ProcList() {
-        struct dirent* dirEntity = NULL ;
-        DIR* dir_proc = NULL ;
-
-        dir_proc = opendir(PROC_DIRECTORY) ;
-        if (dir_proc == NULL)
-        {
-            perror("Couldn't open the " PROC_DIRECTORY " directory") ;
-            return;
-        }
-
-        while ((dirEntity = readdir(dir_proc)) != 0) {
-            if (dirEntity->d_type == DT_DIR) {
-                if (IsNumeric(dirEntity->d_name)) {
-                    JSON j;
-                    std::string comm = text(dirEntity->d_name, "/comm");
-                    if (comm.substr(0, 4) != "1cv8") continue;
-                    std::string line = text(dirEntity->d_name, "/cmdline");
-                    for (int i = 0; i < line.size(); i++) {
-                        if (line[i] == 0) line[i] = ' ';
-                    }
-                    j["ProcessId"] = std::stoi(dirEntity->d_name);
-                    j["CreationDate"] = date(dirEntity->d_name);
-                    j["CommandLine"] = line;
-                    json.push_back(j);
-                }
-            }
-        }
-        closedir(dir_proc) ;
-    }
-
-	operator std::wstring() {
-		return json;
+protected:
+    virtual bool EnumWindow(Window window) {
+		try {
+		unsigned long pid =  GetWindowPid(window);
+		std::string filepath = "/proc/";
+		filepath.append(to_string(pid)).append("/cmdline");
+		std::string line = file2str(filepath);
+		for ( std::string::iterator it = line.begin(); it != line.end(); ++it) {
+    		if (*it == 0) *it = ' ';
+		}
+		JSON j;
+		j["window"] = (unsigned long)window;
+		j["ProcessId"] = pid;
+		j["CommandLine"] = line;
+		json.push_back(j);
+		} catch (...) {}
+		return true;
 	}
 };
 
 std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
 {
-	return ProcList();
+	ProcessList list;
+	return list.Enumerate();
 }
 
 #else//__linux__

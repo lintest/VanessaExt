@@ -156,6 +156,33 @@ public:
 	}
 };
 
+class WindowEnumerator : public WindowHelper
+{
+private:
+    Window* windows = NULL;
+    unsigned long count = 0;
+
+protected:
+    virtual bool EnumWindow(Window window) = 0;
+
+public:
+    WindowEnumerator() {
+        Window root = DefaultRootWindow(display);
+        if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&windows), &count)) return;
+    }
+
+    std::wstring Enumerate() {
+        for (int i = 0; i < count; i++) {
+            if (!EnumWindow(windows[i])) break;
+        }
+        return *this;
+    }
+
+	~WindowEnumerator() {
+        XFree(windows);
+	}
+};
+
 #endif //__linux__
 
 #endif //__XWINBASE_H__

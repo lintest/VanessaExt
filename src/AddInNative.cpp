@@ -284,6 +284,8 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
         return W(WindowsControl::ActiveWindow(), pvarPropVal);  
     case eWindowList:
         return VA(pvarPropVal) << WindowsControl::GetWindowList(NULL, 0);
+    case eProcessList:
+        return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
     case eScreenInfo:
 		return VA(pvarPropVal) << ScreenManager::GetDisplayInfo(NULL, 0);
     default:
@@ -295,6 +297,8 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
         return W((DWORD)WindowsControl::CurrentWindow(), pvarPropVal);
     case eActiveWindow:
         return W((DWORD)WindowsControl::ActiveWindow(), pvarPropVal);
+    case eProcessList:
+        return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
     case eWindowList:
         return VA(pvarPropVal) << WindowsControl::GetWindowList(NULL, 0);
     case eDisplayList:
@@ -425,6 +429,8 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
 		return ScreenManager(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
+	case eGetProcessList:
+		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
 	default:
 		return false;
 	}

@@ -15,7 +15,7 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): src/WinCtrl.cpp src/test.cpp src/stdafx.cpp
+$(BIN)/$(EXECUTABLE): src/WinCtrl.cpp src/ProcMngr.cpp src/test.cpp src/stdafx.cpp
 	$(CXX) $(CXX_FLAGS) -I$(INC) -L$(LIB) $^ -o $@ $(LIBRARIES)
 
 clean:
