@@ -4,34 +4,19 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "cmake",
+            "label": "Build 1cWinCtrl64",
             "type": "shell",
-            "command": "${workspaceRoot}/build64.sh",
+            "command": "${workspaceRoot}/build.sh",
+            "args": [ "64" ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
         },
         {
-            "label": "Build C++ project",
+            "label": "Build Test",
             "type": "shell",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
             "command": "make",
-        },
-        {
-            "label": "Build & run C++ project",
-            "type": "shell",
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            },
-            "command": "make",
-            "args": [
-                "run"
-            ]
         }
     ]
 }
