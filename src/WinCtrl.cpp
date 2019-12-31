@@ -4,148 +4,7 @@
 
 #ifdef __linux__
 
-#include <fstream>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-
-#define p_verbose(...) if (envir_verbose) { \
-    fprintf(stderr, __VA_ARGS__); \
-}
-
-static bool envir_verbose = false;
-
-using namespace std;
-
-#define VXX(T) reinterpret_cast<void**>(T)
-
-class WindowHelper
-{
-protected:
-    JSON json;
-    Display* display = NULL;
-    unsigned long count = 0;
-
-public:
-    WindowHelper() {
-        display = XOpenDisplay(NULL);
-	}
-    ~WindowHelper() {
-        if (display) XCloseDisplay(display);
-    }
-
-	operator std::wstring() {
-		return json;
-	}
-
-protected:
-    bool GetProperty(Window window, Atom xa_prop_type, const char *prop_name, void **ret_prop, unsigned long *size) {
-        int ret_format;
-        Atom xa_prop_name, xa_ret_type;
-        unsigned long ret_bytes_after;
-        xa_prop_name = XInternAtom(display, prop_name, False);
-        if (XGetWindowProperty(display, window, xa_prop_name, 0, ~0L, False,
-                xa_prop_type, &xa_ret_type, &ret_format,
-                size, &ret_bytes_after, (unsigned char**)ret_prop) != Success) {
-            p_verbose("Cannot get %s property.\n", prop_name);
-            return false;
-        }
-        if (xa_ret_type != xa_prop_type) {
-            p_verbose("Invalid type of %s property.\n", prop_name);
-            XFree(*ret_prop);
-            return false;
-        }
-        return true;
-    }
-
-    int SendMessage(Window window, char *msg, 
-        unsigned long data0 = 0, unsigned long data1 = 0, 
-        unsigned long data2 = 0, unsigned long data3 = 0,
-        unsigned long data4 = 0) 
-    {
-        XEvent event;
-        long mask = SubstructureRedirectMask | SubstructureNotifyMask;
-
-        event.xclient.type = ClientMessage;
-        event.xclient.serial = 0;
-        event.xclient.send_event = True;
-        event.xclient.message_type = XInternAtom(display, msg, False);
-        event.xclient.window = window;
-        event.xclient.format = 32;
-        event.xclient.data.l[0] = data0;
-        event.xclient.data.l[1] = data1;
-        event.xclient.data.l[2] = data2;
-        event.xclient.data.l[3] = data3;
-        event.xclient.data.l[4] = data4;
-
-        if (XSendEvent(display, DefaultRootWindow(display), False, mask, &event)) {
-            return EXIT_SUCCESS;
-        }
-        else {
-            fprintf(stderr, "Cannot send %s event.\n", msg);
-            return EXIT_FAILURE;
-        }
-    }
-
-    unsigned long GetWindowPid(Window window) {
-		unsigned long size, *pid = NULL;
-		GetProperty(window, XA_CARDINAL, "_NET_WM_PID", VXX(&pid), &size);
-		unsigned long result = pid ? *pid : 0;
-		XFree(pid);
-		return result;
-    }
-
-    bool GetWindowTitle(Window window, char **title) {
-        unsigned long size;
-        if (GetProperty(window, XInternAtom(display, "UTF8_STRING", False), "_NET_WM_NAME", VXX(title), &size)) return true;
-        if (GetProperty(window, XA_STRING, "WM_NAME", VXX(title), NULL)) return true;
-        return false;
-    }
-
-    bool GetWindowClass(Window window, char **title) {
-        unsigned long size;
-        if (!GetProperty(window, XA_STRING, "WM_CLASS", VXX(title), &size)) return false;
-        char *p0 = strchr(*title, '\0');
-        if (*title + size - 1 > p0) *(p0) = '.';
-        return true;
-    }
-
-public:
-    Window GetActiveWindow() {
-        Window *buffer = NULL;
-        unsigned long size;
-        Window root = DefaultRootWindow(display);
-        if (!GetProperty(root, XA_WINDOW, "_NET_ACTIVE_WINDOW", VXX(&buffer), &size)) return NULL;
-        Window result = buffer ? *buffer : NULL;
-        XFree(buffer);
-        return result;
-    }
-
-    void SetActiveWindow(Window window) {
-        SendMessage(window, "_NET_ACTIVE_WINDOW", 1, CurrentTime);
-    }
-
-     void Maximize(Window window, bool state) {
-        SendMessage(window, "_NET_WM_STATE_HIDDEN", 0, CurrentTime);
-        Atom prop1 = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
-        Atom prop2 = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
-        SendMessage(window, "_NET_WM_STATE", state ? 1 : 2, prop1, prop2);
-    }
-
-    void Minimize(Window window) {
-        SendMessage(window, "_NET_WM_STATE_HIDDEN", 1, CurrentTime);
-		XLowerWindow(display, window);
-    }
-
-	void SetWindowPos(Window window, unsigned long x, unsigned long y) {
-		XMoveWindow(display, window, x, y);
-	}
-
-	void SetWindowSize(Window window, unsigned long w, unsigned long h) {
-		XResizeWindow(display, window, w, h);
-	}
-};
+#include "XWinBase.h"
 
 class WindowList : public WindowHelper
 {
@@ -154,6 +13,7 @@ protected:
 
 public	:
     WindowList() {
+	    unsigned long count = 0;
         Window root = DefaultRootWindow(display);
         if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&windows), &count)) return;
         for (int i = 0; i < count; i++) {
@@ -161,16 +21,8 @@ public	:
             Window window = windows[i];
             j["window"] = (unsigned long)window;
             j["pid"] = GetWindowPid(window);
-            char *name = NULL;
-            if (GetWindowClass(window, &name)) {
-	            j["class"] = name;
-	            XFree(name);
-			};
-            char *title = NULL;
-            if (GetWindowTitle(window, &title)) {
-	            j["title"] = title;
-	            XFree(title);
-			}
+			j["class"] = GetWindowClass(window);
+            j["title"] = GetWindowTitle(window);
             json.push_back(j);
         }
     }
@@ -188,25 +40,17 @@ protected:
 public:
 
     ClientFinder(int port) {
+	    unsigned long count = 0;
         Window root = DefaultRootWindow(display);
         if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&windows), &count)) return;
         for (int i = 0; i < count; i++) {
             Window window = windows[i];
-            char *name = NULL;
-            if (!GetWindowClass(window, &name)) continue;
-			std::string str = name;
-	        XFree(name);
+			std::string str = GetWindowClass(window);
 			if (str.substr(0, 4) != "1cv8") continue;
-			unsigned long pid = GetWindowPid(window);
-			if (NotFound(port, pid)) continue;
-
+			if (NotFound(window, port)) continue;
             json["window"] = result = (unsigned long)window;
-            json["pid"] = pid;
-
-            char *title = NULL;
-            GetWindowTitle(window, &title);
-            json["title"] = title;
-            XFree(title);
+            json["pid"] =  GetWindowPid(window);
+            json["title"] = GetWindowTitle(window);
 			break;
         }
     }
@@ -231,20 +75,15 @@ private:
         return text;
     }
 
-	bool NotFound(int port, unsigned long pid) {
-		std::string spopt = to_string(port);
-		std::string spid = to_string(pid);
-		std::string dir = "/proc/";
-		dir.append(to_string(pid)).append("/");
-		std::string line = text(dir, "cmdline");
-		char* first = NULL;
-		char* second = &line[0];
-		for (int i = 0; i < line.size()-1; i++) {
-			if (line[i] != 0) continue;
-			first = second;
-			second = &line[0] + i + 1;
-			if (strcmp(first, "-TPort") == 0 
-				&& strcmp(spopt.c_str(), second) == 0) 
+	bool NotFound(Window window, int port) {
+		char **argv;
+		int argc;
+		if (!XGetCommand(display, window, &argv, &argc)) return true;
+		std::string sPort = to_string(port);
+		XFreeStringList(argv);
+		for (int i=0; i < argc-1; i++) {
+			if (strcmp(argv[i], "-TPort") == 0 
+				&& strcmp(argv[i+1], sPort.c_str()) == 0) 
 					return false;
 		}
 		return true;
