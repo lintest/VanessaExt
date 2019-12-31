@@ -47,10 +47,11 @@ public:
             Window window = windows[i];
 			std::string str = GetWindowClass(window);
 			if (str.substr(0, 4) != "1cv8") continue;
-			if (NotFound(window, port)) continue;
+			unsigned long pid =  GetWindowPid(window);
+			if (NotFound(pid, port)) continue;
             json["window"] = result = (unsigned long)window;
-            json["pid"] =  GetWindowPid(window);
             json["title"] = GetWindowTitle(window);
+            json["pid"] = pid;
 			break;
         }
     }
@@ -75,16 +76,19 @@ private:
         return text;
     }
 
-	bool NotFound(Window window, int port) {
-		char **argv;
-		int argc;
-		if (!XGetCommand(display, window, &argv, &argc)) return true;
+	bool NotFound( unsigned long pid, int port) {
+		std::string dir = "/proc/";
+		dir.append(to_string(pid)).append("/");
+		std::string line = text(dir, "cmdline");
 		std::string sPort = to_string(port);
-		XFreeStringList(argv);
-		for (int i=0; i < argc-1; i++) {
-			if (strcmp(argv[i], "-TPort") == 0 
-				&& strcmp(argv[i+1], sPort.c_str()) == 0) 
-					return false;
+		char* first = NULL;
+		char* second = &line[0];
+		for (int i = 0; i < line.size()-1; i++) {
+			if (line[i] != 0) continue;
+			first = second;
+			second = &line[0] + i + 1;
+			if (strcmp(first, "-TPort") == 0 
+				&& strcmp(sPort.c_str(), second) == 0) return false;
 		}
 		return true;
 	}
