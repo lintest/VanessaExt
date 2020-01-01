@@ -11,7 +11,7 @@
 #define STRINGIZE(s) STRINGIZE2(s)
 
 #define VERSION_MAJOR               0
-#define VERSION_MINOR               4
+#define VERSION_MINOR               5
 #define VERSION_REVISION            0
 #define VERSION_BUILD               0
 
@@ -44,7 +44,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by AddInNative.rc
 
-// Следующие стандартные значения для новых объектов
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS

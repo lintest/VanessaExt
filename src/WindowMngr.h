@@ -1,9 +1,9 @@
-#ifndef __WINCTRL_H__
-#define __WINCTRL_H__
+#ifndef __WINDOWMNGR_H__
+#define __WINDOWMNGR_H__
 
 #include "stdafx.h"
 
-class WindowsControl {
+class WindowManager {
 public:
 	static HWND ActiveWindow();
 	static HWND CurrentWindow();
@@ -21,7 +21,7 @@ public:
 	static BOOL Minimize(tVariant* paParams, const long lSizeArray);
 	static BOOL Activate(tVariant* paParams, const long lSizeArray);
 private:
-	static BOOL WindowsControl::SetWindowState(HWND hWnd, int iMode, bool bActivate);
+	static BOOL WindowManager::SetWindowState(HWND hWnd, int iMode, bool bActivate);
 };
 
-#endif //__WINCTRL_H__
+#endif //__WINDOWMNGR_H__

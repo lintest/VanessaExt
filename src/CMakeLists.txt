@@ -14,12 +14,12 @@ PROJECT(1cWinCtrl)
 SET(AddInNative_SRC 
     AddInNative.cpp
     AddInNative.h
-    ScreenMngr.cpp 
-    ScreenMngr.h 
     ProcMngr.cpp
     ProcMngr.h
-    WinCtrl.cpp
-    WinCtrl.h
+    ScreenMngr.cpp 
+    ScreenMngr.h 
+    WindowMngr.cpp
+    WindowMngr.h
     screenshot.cpp
     screenshot.h
     json.hpp

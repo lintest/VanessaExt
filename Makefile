@@ -6,8 +6,16 @@ SRC		:= src
 INC		:= include
 LIB		:= lib
 
-LIBRARIES	:= -lX11
+LIBRARIES	:= -lX11 -lpng
 EXECUTABLE	:= test
+
+SRC = \
+	src/ProcMngr.cpp \
+	src/ScreenMngr.cpp \
+	src/WindowMngr.cpp \
+	src/screenshot.cpp \
+	src/stdafx.cpp \
+	src/test.cpp
 
 all: $(BIN)/$(EXECUTABLE)
 
@@ -15,7 +23,7 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): src/WinCtrl.cpp src/ProcMngr.cpp src/test.cpp src/stdafx.cpp
+$(BIN)/$(EXECUTABLE): $(SRC)
 	$(CXX) $(CXX_FLAGS) -I$(INC) -L$(LIB) $^ -o $@ $(LIBRARIES)
 
 clean:
