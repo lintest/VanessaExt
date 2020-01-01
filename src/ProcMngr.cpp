@@ -17,11 +17,11 @@ static std::string file2str(const std::string &filepath) {
 class ProcessEnumerator : public WindowEnumerator
 {
 private:
-	const std::string proc_dir = "/proc/";
+	const std::string proc = "/proc/";
 
 protected:
 	std::string GetCommandLine(unsigned long pid, bool original = false) {
-		std::string filepath = proc_dir + to_string(pid) + "/cmdline";
+		std::string filepath = proc + to_string(pid) + "/cmdline";
 		std::string line = file2str(filepath);
 		if (original) return line;
 		for ( std::string::iterator it = line.begin(); it != line.end(); ++it) {
@@ -32,7 +32,7 @@ protected:
 
 	std::string GetCreationDate(unsigned long pid) {
 			struct stat st;
-			std::string filepath = proc_dir + to_string(pid);
+			std::string filepath = proc + to_string(pid);
 			stat(filepath.c_str(), &st);
 			time_t t = st.st_mtime;
 			struct tm lt;
@@ -86,9 +86,13 @@ private:
 
 class ProcessList : public ProcessEnumerator
 {
+private:
+	vector<unsigned long> v;
 protected:
     virtual bool EnumWindow(Window window) {
-		unsigned long pid =  GetWindowPid(window);
+		unsigned long pid = GetWindowPid(window);
+		if (std::find(v.begin(), v.end(), pid) != v.end()) return true;
+		v.push_back(pid);
 		JSON j;
 		j["Window"] = (unsigned long)window;
 		j["Title"] = GetWindowTitle(window);
