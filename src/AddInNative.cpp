@@ -60,7 +60,7 @@ const std::vector<AddInNative::Alias> AddInNative::m_MethList{
 	Alias(eRestoreWindow   , 1, false, L"RestoreWindow"    , L"РазвернутьОкно"),
 };
 
-static const wchar_t g_kClassNames[] = L"WindowManager"; 
+static const wchar_t g_kClassNames[] = L"WindowsControl"; 
 static IAddInDefBase *pAsyncEvent = NULL;
 
 uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
@@ -245,7 +245,7 @@ const WCHAR_T* AddInNative::W(const wchar_t* str) const
 //---------------------------------------------------------------------------//
 bool AddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 { 
-    const wchar_t *wsExtension = L"WindowManager";
+    const wchar_t *wsExtension = L"WindowsControl";
     int iActualSize = ::wcslen(wsExtension) + 1;
     WCHAR_T* dest = 0;
 
