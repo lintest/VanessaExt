@@ -12,6 +12,29 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, co
 #ifdef __linux__
 
 #include "screenshot.h"
+#include "XWinBase.h"
+
+class ScreenEnumerator : public WindowHelper
+{
+public:
+    std::wstring Enumerate() {
+		int count_screens = ScreenCount(display);
+		for (int i = 0; i < count_screens; ++i) {
+			Screen *screen = ScreenOfDisplay(display, i);
+			JSON j;
+			j["id"] = i;
+			j["width"] = screen->width;
+			j["height"] = screen->height;
+			json.push_back(j);
+		}
+        return *this;
+	}
+};
+
+std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
+{
+	return ScreenEnumerator().Enumerate();
+}
 
 BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {

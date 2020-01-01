@@ -284,15 +284,15 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
         return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
     case eWindowList:
         return VA(pvarPropVal) << WindowManager::GetWindowList(NULL, 0);
-    case eScreenInfo:
-        return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
+    case eDisplayList:
+        return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
 #ifdef _WINDOWS
     case eCurrentWindow:
         return W((DWORD)WindowManager::CurrentWindow(), pvarPropVal);
-    case eDisplayList:
-        return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
     case eProcessId:
         return W(ProcessManager::ProcessId(), pvarPropVal);
+    case eScreenInfo:
+        return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
 #endif
     default:
         return false;

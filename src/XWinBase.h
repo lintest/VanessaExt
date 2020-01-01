@@ -6,8 +6,6 @@
 #ifdef __linux__
 
 #include <fstream>
-#include <dirent.h>
-#include <sys/stat.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
