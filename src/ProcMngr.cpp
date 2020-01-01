@@ -13,10 +13,25 @@ static std::string file2str(const std::string &filepath) {
 	return text;
 }
 
-class ClientFinder : public WindowEnumerator
+class ProcessEnumerator : public WindowEnumerator
+{
+protected:
+	std::string GetCommandLine(unsigned long pid, bool original = false) {
+		std::string filepath = "/proc/";
+		filepath.append(to_string(pid)).append("/cmdline");
+		std::string line = file2str(filepath);
+		if (original) return line;
+		for ( std::string::iterator it = line.begin(); it != line.end(); ++it) {
+    		if (*it == 0) *it = ' ';
+		}
+		return line;
+	}
+
+};
+
+class ClientFinder : public ProcessEnumerator
 {
 private:	
-	unsigned long m_result = 0;
 	int m_port;
 
 protected:
@@ -25,22 +40,19 @@ protected:
 		if (str.substr(0, 4) != "1cv8") return true;
 		unsigned long pid =  GetWindowPid(window);
 		if (NotFound(pid)) return true;
-		json["window"] = m_result = (unsigned long)window;
-		json["title"] = GetWindowTitle(window);
-		json["pid"] = pid;
+		json["Window"] = (unsigned long)window;
+		json["Title"] = GetWindowTitle(window);
+		json["CommandLine"] = GetCommandLine(pid);
+		json["ProcessId"] = pid;
 		return false;
 	}
 
 public:
     ClientFinder(int port): m_port(port) {}
-	operator bool() const { return m_result; }
-	operator unsigned long() const { return m_result; }
 
 private:
 	bool NotFound(unsigned long pid) {
-		std::string filepath = "/proc/";
-		filepath.append(to_string(pid)).append("/cmdline");
-		std::string line = file2str(filepath);
+		std::string line = GetCommandLine(pid, true);
 		std::string port = to_string(m_port);
 		char* first = NULL;
 		char* second = &line[0];
@@ -56,35 +68,27 @@ private:
 	}
 };
 
-unsigned long ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, std::wstring& result)
-{
-	if (lSizeArray < 1) return 0;
-	int port = VarToInt(paParams);
-	ClientFinder finder(port);
-	std::wstring json = finder.Enumerate();
-	if (finder) result.assign(json);
-	return finder;
-}
-
-class ProcessList : public WindowEnumerator
+class ProcessList : public ProcessEnumerator
 {
 protected:
     virtual bool EnumWindow(Window window) {
 		unsigned long pid =  GetWindowPid(window);
-		std::string filepath = "/proc/";
-		filepath.append(to_string(pid)).append("/cmdline");
-		std::string line = file2str(filepath);
-		for ( std::string::iterator it = line.begin(); it != line.end(); ++it) {
-    		if (*it == 0) *it = ' ';
-		}
 		JSON j;
-		j["window"] = (unsigned long)window;
-		j["ProcessId"] = pid;
-		j["CommandLine"] = line;
+		json["Window"] = (unsigned long)window;
+		json["Title"] = GetWindowTitle(window);
+		json["CommandLine"] = GetCommandLine(pid);
+		json["ProcessId"] = pid;
 		json.push_back(j);
 		return true;
 	}
 };
+
+std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return 0;
+	int port = VarToInt(paParams);
+	return ClientFinder(port).Enumerate();
+}
 
 std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
 {
@@ -254,11 +258,12 @@ std::wstring ProcessManager::FindProcess(tVariant* paParams, const long lSizeArr
 	return ProcessEnumerator(paParams->pwstrVal);
 }
 
-unsigned long ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray, std::wstring& result)
+std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return NULL;
 	std::wstring query;
-	query.append(L"SELECT * FROM Win32_Process");
+	query.append(L"SELECT ProcessId,CreationDate,CommandLine");
+	query.append(L" FROM Win32_Process ");
 	query.append(L" WHERE Name LIKE '1cv8%' ");
 	query.append(L" AND CommandLine LIKE '% /TESTCLIENT %'");
 	query.append(L" AND CommandLine LIKE '% -TPort ");
@@ -288,12 +293,21 @@ unsigned long ProcessManager::FindTestClient(tVariant* paParams, const long lSiz
 			return TRUE;
 		}, (LPARAM)&params);
 
-	if (!bResult && GetLastError() == -1 && params.first)
+	HWND hWnd = params.first;
+	if (!bResult && GetLastError() == -1 && hWnd)
 	{
-		result = MB2WC(json[0].dump());
-		return (unsigned long)params.first;
+		JSON j = json[0];
+		j["Window"] = hWnd;
+		int length = GetWindowTextLength(hWnd);
+		if (length != 0) {
+			std::wstring text;
+			text.resize(length);
+			::GetWindowText(hWnd, &text[0], length + 1);
+			j["Title"] = WC2MB(text);
+		}
+		return MB2WC(j.dump());
 	}
-	return 0;
+	return {};
 }
 
 #endif//__linux__

@@ -35,7 +35,7 @@ const std::vector<AddInNative::Alias> AddInNative::m_PropList{
 };
 
 const std::vector<AddInNative::Alias> AddInNative::m_MethList{
-	Alias(eFindTestClient  , 2, true , L"FindTestClient"   , L"НайтиКлиентТестирования"),
+	Alias(eFindTestClient  , 1, true , L"FindTestClient"   , L"НайтиКлиентТестирования"),
 	Alias(eGetProcessList  , 1, true , L"GetProcessList"   , L"ПолучитьСписокПроцессов"),
 	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
 	Alias(eFindProcess     , 1, true , L"FindProcess"      , L"НайтиПроцесс"),
@@ -277,40 +277,26 @@ const WCHAR_T* AddInNative::GetPropName(long lPropNum, long lPropAlias)
 //---------------------------------------------------------------------------//
 bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 { 
-#ifdef __linux__
-    switch(lPropNum)
-    {
-    case eActiveWindow:
-        return W(WindowsControl::ActiveWindow(), pvarPropVal);  
-    case eWindowList:
-        return VA(pvarPropVal) << WindowsControl::GetWindowList(NULL, 0);
-    case eProcessList:
-        return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
-    case eScreenInfo:
-		return VA(pvarPropVal) << ScreenManager::GetDisplayInfo(NULL, 0);
-    default:
-        return false;
-    }
-#else//__linux__
     switch (lPropNum) {
-    case eCurrentWindow:
-        return W((DWORD)WindowsControl::CurrentWindow(), pvarPropVal);
     case eActiveWindow:
         return W((DWORD)WindowsControl::ActiveWindow(), pvarPropVal);
     case eProcessList:
         return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
     case eWindowList:
         return VA(pvarPropVal) << WindowsControl::GetWindowList(NULL, 0);
-    case eDisplayList:
-        return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
     case eScreenInfo:
         return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
+#ifdef _WINDOWS
+    case eCurrentWindow:
+        return W((DWORD)WindowsControl::CurrentWindow(), pvarPropVal);
+    case eDisplayList:
+        return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
     case eProcessId:
         return W(ProcessManager::ProcessId(), pvarPropVal);
+#endif
     default:
         return false;
     }
-#endif//__linux__
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::SetPropVal(const long lPropNum, tVariant *varPropVal)
@@ -368,10 +354,8 @@ bool AddInNative::HasRetVal(const long lMethodNum)
 //---------------------------------------------------------------------------//
 bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 { 
-#ifdef __linux__
-	switch (lMethodNum)	{
-	case eEnableResizing:
-        return true;
+	switch (lMethodNum)
+	{
 	case eSetWindowPos:
 		return WindowsControl::SetWindowPos(paParams, lSizeArray);
 	case eSetWindowSize:
@@ -384,90 +368,49 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 		return WindowsControl::Minimize(paParams, lSizeArray);
 	case eRestoreWindow:
 		return WindowsControl::Restore(paParams, lSizeArray);
-	return false;
-	}
-#else
-	switch (lMethodNum)
-	{
+#ifdef _WINDOWS
 	case eEnableResizing:
 		return WindowsControl::EnableResizing(paParams, lSizeArray);
-	case eSetWindowPos:
-		return WindowsControl::SetWindowPos(paParams, lSizeArray);
-	case eSetWindowSize:
-		return WindowsControl::SetWindowSize(paParams, lSizeArray);
 	case eSetWindowState:
 		return WindowsControl::SetWindowState(paParams, lSizeArray);
 	case eSetWindowText:
 		return WindowsControl::SetText(paParams, lSizeArray);
-	case eActivateWindow:
-		return WindowsControl::Activate(paParams, lSizeArray);
-	case eMaximizeWindow:
-		return WindowsControl::Maximize(paParams, lSizeArray);
-	case eMinimizeWindow:
-		return WindowsControl::Minimize(paParams, lSizeArray);
-	case eRestoreWindow:
-		return WindowsControl::Restore(paParams, lSizeArray);
+#endif
 	default:
 		return false;
 	}
-#endif
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 { 
-#ifdef __linux__
 	switch (lMethodNum) {
-	case eFindTestClient: {
-		std::wstring result;
-		bool ok = W((DWORD)ProcessManager::FindTestClient(paParams, lSizeArray, result), pvarRetValue);
-		if (ok && lSizeArray > 1) W(result, paParams + 1);
-		return ok;
-	}
-	case eGetDisplayInfo:
-		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
-	case eGetChildWindows:
-		return VA(pvarRetValue) << WindowsControl::GetChildWindows(paParams, lSizeArray);
-	case eTakeScreenshot:
-		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
-	case eCaptureWindow:
-		return ScreenManager(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
-	case eGetProcessList:
-		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
-	default:
-		return false;
-	}
-#else
-	switch (lMethodNum) {
-	case eFindTestClient: {
-		std::wstring result;
-		bool ok = W((DWORD)ProcessManager::FindTestClient(paParams, lSizeArray, result), pvarRetValue);
-		if (ok && lSizeArray > 1) W(result, paParams + 1);
-		return ok;
-	}
-	case eGetDisplayList:
-		return VA(pvarRetValue) << ScreenManager::GetDisplayList(paParams, lSizeArray);
-	case eGetDisplayInfo:
-		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
-	case eGetWindowList:
-		return VA(pvarRetValue) << WindowsControl::GetWindowList(paParams, lSizeArray);
-	case eGetChildWindows:
-		return VA(pvarRetValue) << WindowsControl::GetChildWindows(paParams, lSizeArray);
+	case eFindTestClient:
+		return VA(pvarRetValue) << ProcessManager::FindTestClient(paParams, lSizeArray);
 	case eGetProcessList:
 		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
 	case eGetProcessInfo:
 		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
-	case eGetWindowState:
-		return W(WindowsControl::GetWindowState(paParams, lSizeArray), pvarRetValue);
-	case eGetWindowText:
-		return VA(pvarRetValue) << WindowsControl::GetText(paParams, lSizeArray);
+	case eGetWindowList:
+		return VA(pvarRetValue) << WindowsControl::GetWindowList(paParams, lSizeArray);
+	case eGetChildWindows:
+		return VA(pvarRetValue) << WindowsControl::GetChildWindows(paParams, lSizeArray);
 	case eTakeScreenshot:
 		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
 		return ScreenManager(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
+#ifdef _WINDOWS
+	case eGetDisplayList:
+		return VA(pvarRetValue) << ScreenManager::GetDisplayList(paParams, lSizeArray);
+	case eGetDisplayInfo:
+		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
+	case eGetWindowState:
+		return W(WindowsControl::GetWindowState(paParams, lSizeArray), pvarRetValue);
+	case eGetWindowText:
+		return VA(pvarRetValue) << WindowsControl::GetText(paParams, lSizeArray);
+#endif
 	default:
 		return false;
 	}
-#endif
 }
 
 //---------------------------------------------------------------------------//
