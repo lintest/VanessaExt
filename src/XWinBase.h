@@ -166,17 +166,9 @@ protected:
     virtual bool EnumWindow(Window window) = 0;
 
 public:
-    WindowEnumerator(Window window = 0) {
-        if (window == 0) {
-            Window root = DefaultRootWindow(display);
-            if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
-        } else {
-            Window root, parent;
-            unsigned int count = 0;
-            unsigned int *nchildren_return;
-            if (!XQueryTree(display, window, &root, &parent, VXX(&m_windows), &count)) return;
-            m_count = count;
-        }
+    WindowEnumerator() {
+        Window root = DefaultRootWindow(display);
+        if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
     }
 
     std::wstring Enumerate() {
