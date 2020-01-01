@@ -4,6 +4,7 @@
 
 #ifdef __linux__
 
+#include <sys/stat.h>
 #include "XWinBase.h"
 
 static std::string file2str(const std::string &filepath) {
@@ -15,10 +16,12 @@ static std::string file2str(const std::string &filepath) {
 
 class ProcessEnumerator : public WindowEnumerator
 {
+private:
+	const std::string proc_dir = "/proc/";
+
 protected:
 	std::string GetCommandLine(unsigned long pid, bool original = false) {
-		std::string filepath = "/proc/";
-		filepath.append(to_string(pid)).append("/cmdline");
+		std::string filepath = proc_dir + to_string(pid) + "/cmdline";
 		std::string line = file2str(filepath);
 		if (original) return line;
 		for ( std::string::iterator it = line.begin(); it != line.end(); ++it) {
@@ -26,6 +29,18 @@ protected:
 		}
 		return line;
 	}
+
+	std::string GetCreationDate(unsigned long pid) {
+			struct stat st;
+			std::string filepath = proc_dir + to_string(pid);
+			stat(filepath.c_str(), &st);
+			time_t t = st.st_mtime;
+			struct tm lt;
+			localtime_r(&t, &lt);
+			char buffer[80];
+			strftime(buffer, sizeof(buffer), "%FT%T", &lt);
+			return buffer;
+		}	
 
 };
 
@@ -43,6 +58,7 @@ protected:
 		json["Window"] = (unsigned long)window;
 		json["Title"] = GetWindowTitle(window);
 		json["CommandLine"] = GetCommandLine(pid);
+		json["CreationDate"] = GetCreationDate(pid);
 		json["ProcessId"] = pid;
 		return false;
 	}
@@ -74,10 +90,11 @@ protected:
     virtual bool EnumWindow(Window window) {
 		unsigned long pid =  GetWindowPid(window);
 		JSON j;
-		json["Window"] = (unsigned long)window;
-		json["Title"] = GetWindowTitle(window);
-		json["CommandLine"] = GetCommandLine(pid);
-		json["ProcessId"] = pid;
+		j["Window"] = (unsigned long)window;
+		j["Title"] = GetWindowTitle(window);
+		j["CommandLine"] = GetCommandLine(pid);
+		j["CreationDate"] = GetCreationDate(pid);
+		j["ProcessId"] = pid;
 		json.push_back(j);
 		return true;
 	}
