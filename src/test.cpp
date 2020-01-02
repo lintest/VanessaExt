@@ -30,5 +30,8 @@ int main() {
     json = ProcessManager::GetProcessList(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
 
+    json = WindowManager().GetWindowList(NULL, 0);
+    std::wcout << std::endl << json << std::endl << std::endl;
+
     return 0;
 }

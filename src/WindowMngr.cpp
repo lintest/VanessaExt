@@ -11,10 +11,11 @@ class WindowList : public WindowEnumerator
 protected:
     virtual bool EnumWindow(Window window) {
 		JSON j;
-		j["pid"] = GetWindowPid(window);
-		j["window"] = (unsigned long)window;
+		j["window"] = window;
+		j["parent"] = GetWindowParent(window);
 		j["class"] = GetWindowClass(window);
 		j["title"] = GetWindowTitle(window);
+		j["pid"] = GetWindowPid(window);
 		json.push_back(j);
 		return true;
     }
