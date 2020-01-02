@@ -43,7 +43,6 @@ const std::vector<AddInNative::Alias> AddInNative::m_MethList{
 	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
 	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
 	Alias(eGetScreenRect   , 0, true , L"GetScreenRect"    , L"ПолучитьРазмерЭкрана"),
-	Alias(eGetChildWindows , 1, true , L"GetChildWindows"  , L"ПолучитьДочерниеОкна"),
 	Alias(eGetWindowInfo   , 1, true , L"GetWindowInfo"    , L"ПолучитьСвойстваОкна"),
 	Alias(eGetWindowState  , 1, true , L"GetWindowState"   , L"ПолучитьСтатусОкна"),
 	Alias(eGetWindowText   , 1, true , L"GetWindowText"    , L"ПолучитьЗаголовок"),
@@ -392,8 +391,6 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
 	case eGetWindowList:
 		return VA(pvarRetValue) << WindowManager::GetWindowList(paParams, lSizeArray);
-	case eGetChildWindows:
-		return VA(pvarRetValue) << WindowManager::GetChildWindows(paParams, lSizeArray);
 	case eTakeScreenshot:
 		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:

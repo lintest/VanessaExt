@@ -24,6 +24,11 @@
 			<ShowTitle>false</ShowTitle>
 			<ExtendedTooltip name="ГруппаЗаголовокРасширеннаяПодсказка" id="93"/>
 			<ChildItems>
+				<InputField name="ИдентификаторПроцесса" id="260">
+					<DataPath>ИдентификаторПроцесса</DataPath>
+					<ContextMenu name="ИдентификаторПроцессаКонтекстноеМеню" id="261"/>
+					<ExtendedTooltip name="ИдентификаторПроцессаРасширеннаяПодсказка" id="262"/>
+				</InputField>
 				<InputField name="ДескрипторОкна" id="89">
 					<DataPath>ДескрипторОкна</DataPath>
 					<ContextMenu name="ДескрипторОкнаКонтекстноеМеню" id="90"/>
@@ -506,6 +511,11 @@
 										<CommandName>Form.Command.ПолучитьСписокПроцессов</CommandName>
 										<ExtendedTooltip name="СписокПроцессовПолучитьСписокПроцессовРасширеннаяПодсказка" id="144"/>
 									</Button>
+									<Button name="СписокПроцессовПолучитьПроцессы1С" id="263">
+										<Type>CommandBarButton</Type>
+										<CommandName>Form.Command.ПолучитьПроцессы1С</CommandName>
+										<ExtendedTooltip name="СписокПроцессовПолучитьПроцессы1СРасширеннаяПодсказка" id="264"/>
+									</Button>
 									<Button name="СписокПроцессовПолучитьСвойстваПроцесса" id="169">
 										<Type>CommandBarButton</Type>
 										<CommandName>Form.Command.ПолучитьСвойстваПроцесса</CommandName>
@@ -822,10 +832,10 @@
 											</Button>
 										</ChildItems>
 									</ButtonGroup>
-									<Button name="СписокОконПолучитьДочерниеОкна" id="211">
+									<Button name="СписокОконПолучитьОкнаПроцесса" id="211">
 										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.ПолучитьДочерниеОкна</CommandName>
-										<ExtendedTooltip name="СписокОконПолучитьДочерниеОкнаРасширеннаяПодсказка" id="212"/>
+										<CommandName>Form.Command.ПолучитьОкнаПроцесса</CommandName>
+										<ExtendedTooltip name="СписокОконПолучитьОкнаПроцессаРасширеннаяПодсказка" id="212"/>
 									</Button>
 									<ButtonGroup name="СписокОконГруппаСортировка" id="29">
 										<Title>
@@ -898,13 +908,13 @@
 								<Event name="OnActivateRow">СписокОконПриАктивизацииСтроки</Event>
 							</Events>
 							<ChildItems>
-								<InputField name="СписокОконpid" id="31">
-									<DataPath>СписокОкон.pid</DataPath>
+								<InputField name="СписокОконpProcessId" id="31">
+									<DataPath>СписокОкон.ProcessId</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>10</Width>
-									<ContextMenu name="СписокОконpidКонтекстноеМеню" id="32"/>
-									<ExtendedTooltip name="СписокОконpidРасширеннаяПодсказка" id="33"/>
+									<ContextMenu name="СписокОконpProcessIdКонтекстноеМеню" id="32"/>
+									<ExtendedTooltip name="СписокОконpProcessIdРасширеннаяПодсказка" id="33"/>
 								</InputField>
 								<InputField name="СписокОконWindow" id="16">
 									<DataPath>СписокОкон.Window</DataPath>
@@ -920,27 +930,27 @@
 									<ContextMenu name="СписокОконOwnerКонтекстноеМеню" id="255"/>
 									<ExtendedTooltip name="СписокОконOwnerРасширеннаяПодсказка" id="256"/>
 								</InputField>
-								<CheckBoxField name="СписокОконenabled" id="251">
+								<CheckBoxField name="СписокОконEnabled" id="251">
 									<DataPath>СписокОкон.Enabled</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<CheckBoxType>Auto</CheckBoxType>
-									<ContextMenu name="СписокОконenabledКонтекстноеМеню" id="252"/>
-									<ExtendedTooltip name="СписокОконenabledРасширеннаяПодсказка" id="253"/>
+									<ContextMenu name="СписокОконEnabledКонтекстноеМеню" id="252"/>
+									<ExtendedTooltip name="СписокОконEnabledРасширеннаяПодсказка" id="253"/>
 								</CheckBoxField>
-								<InputField name="СписокОконclass" id="19">
+								<InputField name="СписокОконClass" id="19">
 									<DataPath>СписокОкон.Class</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
-									<ContextMenu name="СписокОконclassКонтекстноеМеню" id="20"/>
-									<ExtendedTooltip name="СписокОконclassРасширеннаяПодсказка" id="21"/>
+									<ContextMenu name="СписокОконClassКонтекстноеМеню" id="20"/>
+									<ExtendedTooltip name="СписокОконClassРасширеннаяПодсказка" id="21"/>
 								</InputField>
-								<InputField name="СписокОконtext" id="22">
+								<InputField name="СписокОконTitle" id="22">
 									<DataPath>СписокОкон.Title</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
-									<ContextMenu name="СписокОконtextКонтекстноеМеню" id="23"/>
-									<ExtendedTooltip name="СписокОконtextРасширеннаяПодсказка" id="24"/>
+									<ContextMenu name="СписокОконTitleКонтекстноеМеню" id="23"/>
+									<ExtendedTooltip name="СписокОконTitleРасширеннаяПодсказка" id="24"/>
 								</InputField>
 							</ChildItems>
 						</Table>
@@ -1107,11 +1117,11 @@
 						</v8:StringQualifiers>
 					</Type>
 				</Column>
-				<Column name="pid" id="4">
+				<Column name="ProcessId" id="4">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
-							<v8:content>Pid</v8:content>
+							<v8:content>Process id</v8:content>
 						</v8:item>
 					</Title>
 					<Type>
@@ -1593,6 +1603,22 @@
 				</Column>
 			</Columns>
 		</Attribute>
+		<Attribute name="ИдентификаторПроцесса" id="18">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Идентификатор процесса</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -1985,20 +2011,20 @@
 			</ToolTip>
 			<Action>Инфотип</Action>
 		</Command>
-		<Command name="ПолучитьДочерниеОкна" id="27">
+		<Command name="ПолучитьОкнаПроцесса" id="27">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Дочерние окна</v8:content>
+					<v8:content>Окна процесса</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Получить дочерние окна</v8:content>
+					<v8:content>Получить окна процесса</v8:content>
 				</v8:item>
 			</ToolTip>
-			<Action>ПолучитьДочерниеОкна</Action>
+			<Action>ПолучитьОкнаПроцесса</Action>
 		</Command>
 		<Command name="ПолучитьСписокДисплеев" id="28">
 			<Title>
@@ -2014,6 +2040,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьСписокДисплеев</Action>
+		</Command>
+		<Command name="ПолучитьПроцессы1С" id="29">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить процессы 1С</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить процессы1 С</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьПроцессы1С</Action>
 		</Command>
 	</Commands>
 </Form>

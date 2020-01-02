@@ -30,7 +30,6 @@ private:
 		eGetDisplayInfo,
 		eGetScreenRect,
 		eGetWindowList,
-		eGetChildWindows,
 		eSetWindowSize,
 		eSetWindowPos,
 		eGetWindowInfo,

@@ -27,7 +27,6 @@
 - <a href="#GetDisplayList">ПолучитьСписокДисплеев (GetDisplayList)</a>
 - <a href="#GetDisplayInfo">ПолучитьСвойстваДисплея (GetDisplayInfo)</a>
 - <a href="#GetWindowList">ПолучитьСписокОкон (GetWindowList)</a>
-- <a href="#GetChildWindows">ПолучитьДочерниеОкна (GetChildWindows)</a>
 
 Управление окном приложения:
 - <a href="#GetWindowState">ПолучитьСтатусОкна (GetWindowState)</a>
