@@ -317,9 +317,9 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 	HWND hWnd = params.first;
 	if (!bResult && GetLastError() == -1 && hWnd)
 	{
-		JSON j = json[0];
-		j["Window"] = hWnd;
-		int length = GetWindowTextLength(hWnd);
+		nlohmann::json j = json[0];
+		j["Window"] = (UINT64) hWnd;
+		const int length = GetWindowTextLength(hWnd);
 		if (length != 0) {
 			std::wstring text;
 			text.resize(length);
