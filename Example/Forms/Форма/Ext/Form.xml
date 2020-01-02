@@ -545,6 +545,12 @@
 									<ContextMenu name="СписокПроцессовProcessIdКонтекстноеМеню" id="138"/>
 									<ExtendedTooltip name="СписокПроцессовProcessIdРасширеннаяПодсказка" id="139"/>
 								</InputField>
+								<InputField name="СписокПроцессовWindow" id="257">
+									<DataPath>СписокПроцессов.Window</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СписокПроцессовWindowКонтекстноеМеню" id="258"/>
+									<ExtendedTooltip name="СписокПроцессовWindowРасширеннаяПодсказка" id="259"/>
+								</InputField>
 								<InputField name="СписокПроцессовCreationDate" id="145">
 									<DataPath>СписокПроцессов.CreationDate</DataPath>
 									<EditMode>EnterOnInput</EditMode>
@@ -900,16 +906,22 @@
 									<ContextMenu name="СписокОконpidКонтекстноеМеню" id="32"/>
 									<ExtendedTooltip name="СписокОконpidРасширеннаяПодсказка" id="33"/>
 								</InputField>
-								<InputField name="СписокОконhwnd" id="16">
-									<DataPath>СписокОкон.window</DataPath>
+								<InputField name="СписокОконWindow" id="16">
+									<DataPath>СписокОкон.Window</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>10</Width>
-									<ContextMenu name="СписокОконhwndКонтекстноеМеню" id="17"/>
-									<ExtendedTooltip name="СписокОконhwndРасширеннаяПодсказка" id="18"/>
+									<ContextMenu name="СписокОконWindowКонтекстноеМеню" id="17"/>
+									<ExtendedTooltip name="СписокОконWindowРасширеннаяПодсказка" id="18"/>
+								</InputField>
+								<InputField name="СписокОконparent" id="254">
+									<DataPath>СписокОкон.Parent</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СписокОконparentКонтекстноеМеню" id="255"/>
+									<ExtendedTooltip name="СписокОконparentРасширеннаяПодсказка" id="256"/>
 								</InputField>
 								<CheckBoxField name="СписокОконenabled" id="251">
-									<DataPath>СписокОкон.enabled</DataPath>
+									<DataPath>СписокОкон.Enabled</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<CheckBoxType>Auto</CheckBoxType>
@@ -917,14 +929,14 @@
 									<ExtendedTooltip name="СписокОконenabledРасширеннаяПодсказка" id="253"/>
 								</CheckBoxField>
 								<InputField name="СписокОконclass" id="19">
-									<DataPath>СписокОкон.class</DataPath>
+									<DataPath>СписокОкон.Class</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="СписокОконclassКонтекстноеМеню" id="20"/>
 									<ExtendedTooltip name="СписокОконclassРасширеннаяПодсказка" id="21"/>
 								</InputField>
 								<InputField name="СписокОконtext" id="22">
-									<DataPath>СписокОкон.title</DataPath>
+									<DataPath>СписокОкон.Title</DataPath>
 									<ReadOnly>true</ReadOnly>
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="СписокОконtextКонтекстноеМеню" id="23"/>
@@ -1049,7 +1061,7 @@
 				<v8:Type>v8:ValueTable</v8:Type>
 			</Type>
 			<Columns>
-				<Column name="window" id="1">
+				<Column name="Window" id="1">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
@@ -1059,13 +1071,13 @@
 					<Type>
 						<v8:Type>xs:decimal</v8:Type>
 						<v8:NumberQualifiers>
-							<v8:Digits>0</v8:Digits>
+							<v8:Digits>10</v8:Digits>
 							<v8:FractionDigits>0</v8:FractionDigits>
 							<v8:AllowedSign>Any</v8:AllowedSign>
 						</v8:NumberQualifiers>
 					</Type>
 				</Column>
-				<Column name="class" id="2">
+				<Column name="Class" id="2">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
@@ -1080,7 +1092,7 @@
 						</v8:StringQualifiers>
 					</Type>
 				</Column>
-				<Column name="title" id="3">
+				<Column name="Title" id="3">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
@@ -1111,7 +1123,7 @@
 						</v8:NumberQualifiers>
 					</Type>
 				</Column>
-				<Column name="enabled" id="5">
+				<Column name="Enabled" id="5">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
@@ -1120,6 +1132,22 @@
 					</Title>
 					<Type>
 						<v8:Type>xs:boolean</v8:Type>
+					</Type>
+				</Column>
+				<Column name="Parent" id="6">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Parent</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
 					</Type>
 				</Column>
 			</Columns>
@@ -1320,6 +1348,37 @@
 						<v8:DateQualifiers>
 							<v8:DateFractions>DateTime</v8:DateFractions>
 						</v8:DateQualifiers>
+					</Type>
+				</Column>
+				<Column name="Window" id="4">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Window</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Title" id="5">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Title</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
 					</Type>
 				</Column>
 			</Columns>
