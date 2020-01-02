@@ -176,7 +176,9 @@ bool AddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethodN
 
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const wchar_t* str)
 {
-	if (mm && str) {
+    TV_VT(pvar) = VTYPE_PWSTR;
+    pvar->pwstrVal = NULL;
+    if (mm && str && wcslen(str)) {
 		size_t size = wcslen(str) + 1;
 		if (mm->AllocMemory((void**)&pvar->pwstrVal, size * sizeof(WCHAR_T))) {
 			::convToShortWchar((WCHAR_T**)&pvar->pwstrVal, str, size);
@@ -192,6 +194,13 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::
     return operator<<(str.c_str());
 }
 
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(INT64 value)
+{
+    TV_VT(pvar) = VTYPE_I4;
+    TV_I8(pvar) = value;
+    return *this;
+}
+
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(long int value)
 {
     TV_VT(pvar) = VTYPE_I4;
@@ -199,46 +208,18 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(long int va
     return *this;
 }
 
-BOOL AddInNative::W(long value, tVariant* res) const
-{
-    TV_VT(res) = VTYPE_I4;
-    TV_I4(res) = value;
-    return true;
-}
-
-//---------------------------------------------------------------------------//
-BOOL AddInNative::W(const wchar_t* str, WCHAR_T** res) const
-{
-	if (m_iMemory && str) {
-		size_t size = wcslen(str) + 1;
-		if (m_iMemory->AllocMemory((void**)res, size * sizeof(WCHAR_T))) {
-			::convToShortWchar(res, str, size);
-			return true;
-		}
-	}
-	return false;
-}
-//---------------------------------------------------------------------------//
-BOOL AddInNative::W(const wchar_t* str, tVariant* res) const
-{
- 	if (m_iMemory && str) {
-		size_t size = wcslen(str) + 1;
-		if (m_iMemory->AllocMemory((void**)&res->pwstrVal, size * sizeof(WCHAR_T))) {
-			::convToShortWchar((WCHAR_T**)&res->pwstrVal, str, size);
-           	TV_VT(res) = VTYPE_PWSTR;
-			res->wstrLen = size;
-			return true;
-		}
-	}
-	return false;
-}
-//---------------------------------------------------------------------------//
 const WCHAR_T* AddInNative::W(const wchar_t* str) const
 {
-	WCHAR_T* res = NULL;
-	W(str, &res);
-	return res;
+    WCHAR_T* res = NULL;
+    if (m_iMemory && str && wcslen(str)) {
+        size_t size = wcslen(str) + 1;
+        if (m_iMemory->AllocMemory((void**)res, size * sizeof(WCHAR_T))) {
+            ::convToShortWchar(&res, str, size);
+        }
+    }
+    return res;
 }
+
 /////////////////////////////////////////////////////////////////////////////
 // ILanguageExtenderBase
 //---------------------------------------------------------------------------//
@@ -278,7 +259,7 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 { 
     switch (lPropNum) {
     case eActiveWindow:
-        return W((DWORD)WindowManager::ActiveWindow(), pvarPropVal);
+        return VA(pvarPropVal) << (INT64)WindowManager::ActiveWindow();
     case eProcessList:
         return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
     case eWindowList:
@@ -287,9 +268,9 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
         return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
 #ifdef _WINDOWS
     case eCurrentWindow:
-        return W((DWORD)WindowManager::CurrentWindow(), pvarPropVal);
+        return VA(pvarPropVal) << (INT64)WindowManager::CurrentWindow();
     case eProcessId:
-        return W(ProcessManager::ProcessId(), pvarPropVal);
+        return VA(pvarPropVal) << (INT64)ProcessManager::ProcessId();
     case eScreenInfo:
         return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
 #endif
@@ -401,7 +382,7 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 	case eGetDisplayInfo:
 		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
 	case eGetWindowState:
-		return W(WindowManager::GetWindowState(paParams, lSizeArray), pvarRetValue);
+		return VA(pvarRetValue) << WindowManager::GetWindowState(paParams, lSizeArray);
 	case eGetWindowText:
 		return VA(pvarRetValue) << WindowManager::GetText(paParams, lSizeArray);
 #endif

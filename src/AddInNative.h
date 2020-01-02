@@ -81,6 +81,7 @@ private:
 		VarinantHelper& operator<<(const wchar_t* str);
 		VarinantHelper& operator<<(const std::wstring &str);
 		VarinantHelper& operator<<(long int value);
+		VarinantHelper& operator<<(INT64 value);
 		operator BOOL() const { return true; };
 	};
 
@@ -122,12 +123,7 @@ public:
     virtual void ADDIN_API SetLocale(const WCHAR_T* loc);
     
 private:
-	BOOL W(long value, tVariant* res) const;
 	const WCHAR_T* W(const wchar_t* str) const;
-	BOOL W(const wchar_t* str, WCHAR_T** res) const;
-	BOOL W(const wchar_t* str, tVariant* res) const;
-	BOOL W(std::string str, tVariant* res) const { return W(MB2WC(str), res); }
-	BOOL W(std::wstring str, tVariant* res) const { return W(str.c_str(), res); }
     void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
     // Attributes
     IMemoryManager *m_iMemory;

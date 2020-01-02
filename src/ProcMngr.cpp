@@ -297,7 +297,7 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 	query.append(L" AND CommandLine LIKE '% -TPort ");
 	query.append(std::to_wstring(VarToInt(paParams))).append(L" %'");
 	JSON json = ProcessEnumerator(query.c_str()).json();
-	if (!json.is_array() || json.empty()) return NULL;
+	if (!json.is_array() || json.empty()) return {};
 
 	std::pair<HWND, DWORD> params = { 0, (DWORD)json[0]["ProcessId"] };
 	// Enumerate the windows using a lambda to process each window
