@@ -12,7 +12,7 @@ protected:
     virtual bool EnumWindow(Window window) {
 		JSON j;
 		j["window"] = window;
-		j["parent"] = GetWindowParent(window);
+		j["owner"] = GetWindowOwner(window);
 		j["class"] = GetWindowClass(window);
 		j["title"] = GetWindowTitle(window);
 		j["pid"] = GetWindowPid(window);
@@ -125,6 +125,7 @@ std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeAr
 				JSON j;
 				j["window"] = (INT64)hWnd;
 				j["enabled"] = (boolean)::IsWindowEnabled(hWnd);
+				j["owner"] = (INT64)::GetWindow(hWnd, GW_OWNER);
 
 				WCHAR buffer[256];
 				::GetClassName(hWnd, buffer, 256);
