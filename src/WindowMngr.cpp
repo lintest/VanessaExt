@@ -11,11 +11,11 @@ class WindowList : public WindowEnumerator
 protected:
     virtual bool EnumWindow(Window window) {
 		JSON j;
-		j["window"] = window;
-		j["owner"] = GetWindowOwner(window);
-		j["class"] = GetWindowClass(window);
-		j["title"] = GetWindowTitle(window);
-		j["pid"] = GetWindowPid(window);
+		j["Window"] = window;
+		j["Owner"] = GetWindowOwner(window);
+		j["Class"] = GetWindowClass(window);
+		j["Title"] = GetWindowTitle(window);
+		j["ProcessId"] = GetWindowPid(window);
 		json.push_back(j);
 		return true;
     }
@@ -123,25 +123,25 @@ std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeAr
 		{
 			if (IsWindowVisible(hWnd)) {
 				JSON j;
-				j["window"] = (INT64)hWnd;
-				j["enabled"] = (boolean)::IsWindowEnabled(hWnd);
-				j["owner"] = (INT64)::GetWindow(hWnd, GW_OWNER);
+				j["Window"] = (INT64)hWnd;
+				j["Enabled"] = (boolean)::IsWindowEnabled(hWnd);
+				j["Owner"] = (INT64)::GetWindow(hWnd, GW_OWNER);
 
 				WCHAR buffer[256];
 				::GetClassName(hWnd, buffer, 256);
-				j["class"] = WC2MB(buffer);
+				j["Class"] = WC2MB(buffer);
 
 				int length = GetWindowTextLength(hWnd);
 				if (length != 0) {
 					std::wstring text;
 					text.resize(length);
 					::GetWindowText(hWnd, &text[0], length + 1);
-					j["title"] = WC2MB(text);
+					j["Title"] = WC2MB(text);
 				}
 
 				DWORD dwProcessId;
 				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				j["pid"] = dwProcessId;
+				j["ProcessId"] = dwProcessId;
 
 				JSON* json = (JSON*)lParam;
 				json->push_back(j);
