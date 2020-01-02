@@ -94,6 +94,12 @@ protected:
 		return result;
     }
 
+    Window GetWindowParent(Window window) {
+        Window parent = 0;
+        Status status = XGetTransientForHint(display, window, &parent);
+        return status ? parent : 0;
+    }
+
     std::string S(char *buffer) {
         if (!buffer) return {};
         std::string result(buffer);
