@@ -194,14 +194,14 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::
     return operator<<(str.c_str());
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(INT64 value)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int64_t value)
 {
     TV_VT(pvar) = VTYPE_I4;
     TV_I8(pvar) = value;
     return *this;
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(long int value)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int32_t value)
 {
     TV_VT(pvar) = VTYPE_I4;
     TV_I4(pvar) = value;
@@ -259,7 +259,7 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 { 
     switch (lPropNum) {
     case eActiveWindow:
-        return VA(pvarPropVal) << (INT64)WindowManager::ActiveWindow();
+        return VA(pvarPropVal) << (int64_t)WindowManager::ActiveWindow();
     case eProcessList:
         return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
     case eWindowList:
