@@ -24,6 +24,14 @@ int main() {
 
     json = ProcessManager::GetProcessList(&pVarTrue, 1);
     std::wcout << std::endl << json << std::endl << std::endl;
+
+    tVariant pVarClient;
+    pVarTrue.intVal = 48000;
+    pVarTrue.vt = VTYPE_I4;
+
+    json = ProcessManager::FindTestClient(&pVarTrue, 1);
+    std::wstring text = json;
+    std::wcout << std::endl << json << std::endl << std::endl;
 /*
     json = WindowManager().GetWindowList(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
