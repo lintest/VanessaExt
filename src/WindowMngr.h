@@ -8,7 +8,6 @@ public:
 	static HWND ActiveWindow();
 	static HWND CurrentWindow();
 	static std::wstring GetWindowList(tVariant* paParams, const long lSizeArray);
-	static std::wstring GetChildWindows(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetText(tVariant* paParams, const long lSizeArray);
 	static long GetWindowState(tVariant* paParams, const long lSizeArray);
 	static BOOL SetText(tVariant* paParams, const long lSizeArray);

@@ -17,13 +17,16 @@ int main() {
 
     json = ScreenManager::GetDisplayList(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
-
-    json = ProcessManager::GetProcessList(NULL, 0);
-    std::wcout << std::endl << json << std::endl << std::endl;
 */
+    tVariant pVarTrue;
+    pVarTrue.intVal = 1;
+    pVarTrue.vt = VTYPE_BOOL;
 
+    json = ProcessManager::GetProcessList(&pVarTrue, 1);
+    std::wcout << std::endl << json << std::endl << std::endl;
+/*
     json = WindowManager().GetWindowList(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
-
+*/
     return 0;
 }

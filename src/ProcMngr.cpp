@@ -204,17 +204,26 @@ public:
 				VARIANT vtProp;
 				hr = pclsObj->Get(name, 0, &vtProp, 0, 0);
 				if (SUCCEEDED(hr)) {
-					switch (vtProp.vt) {
-					case VT_BSTR:
-						json[WC2MB(name)] = WC2MB(vtProp.bstrVal);
-						break;
-					case VT_I4:
-						json[WC2MB(name)] = vtProp.intVal;
-						break;
-					default:
-						VARIANTARG vtDest;
-						hr = VariantChangeType(&vtDest, &vtProp, VARIANT_ALPHABOOL, VT_BSTR);
-						if SUCCEEDED(hr) json[WC2MB(name)] = WC2MB(vtDest.bstrVal);
+					if (wcscmp(name, L"CreationDate") == 0) {
+						std::wstring str = vtProp.bstrVal;
+						str = str.substr(0, 8) + L"T" + str.substr(8, 6);
+						json["CreationDate"] = WC2MB(str);
+					}
+					else {
+						switch (vtProp.vt) {
+						case VT_NULL:
+							break;
+						case VT_BSTR:
+							json[WC2MB(name)] = WC2MB(vtProp.bstrVal);
+							break;
+						case VT_I4:
+							json[WC2MB(name)] = vtProp.intVal;
+							break;
+						default:
+							VARIANTARG vtDest;
+							hr = VariantChangeType(&vtDest, &vtProp, VARIANT_ALPHABOOL, VT_BSTR);
+							if SUCCEEDED(hr) json[WC2MB(name)] = WC2MB(vtDest.bstrVal);
+						}
 					}
 				}
 				VariantClear(&vtProp);
@@ -250,10 +259,8 @@ std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSize
 	std::wstring query;
 	query.append(L"SELECT ProcessId,CreationDate,CommandLine");
 	query.append(L" FROM Win32_Process ");
-	if (lSizeArray > 0 && paParams->vt == VTYPE_PWSTR && paParams->pwstrVal) {
-		query.append(L" WHERE Name LIKE '%");
-		query.append(paParams->pwstrVal);
-		query.append(L"%'");
+	if (lSizeArray > 0 && paParams->vt == VTYPE_BOOL && paParams->intVal) {
+		query.append(L" WHERE Name LIKE '1cv8%'");
 	}
 	return ProcessEnumerator(query.c_str());
 }

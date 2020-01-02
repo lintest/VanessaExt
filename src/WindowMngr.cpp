@@ -9,7 +9,7 @@
 class WindowList : public WindowEnumerator
 {
 protected:
-    virtual bool EnumWindow(Window window) {
+	virtual bool EnumWindow(Window window) {
 		JSON j;
 		j["Window"] = window;
 		j["Owner"] = GetWindowOwner(window);
@@ -18,42 +18,35 @@ protected:
 		j["ProcessId"] = GetWindowPid(window);
 		json.push_back(j);
 		return true;
-    }
+	}
 public:
-    WindowList()
+	WindowList()
 		: WindowEnumerator() {}
 };
 
-class GeometryHelper : public WindowHelper 
+class GeometryHelper : public WindowHelper
 {
 public:
-    GeometryHelper(Window window) {
-        /* geometry */
-        Window junkroot;
-        int x, y, junkx, junky;
-        unsigned int w, h, bw, depth;
-        Status status = XGetGeometry(display, window, &junkroot, &junkx, &junky, &w, &h, &bw, &depth);
-        if (!status) return;
-        Bool ok = XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
-        if (!ok) return;
-        json["left"] = x;
-        json["top"] = y;
-        json["width"] = w;
-        json["height"] = h;
-        json["right"] = x + w;
-        json["bottom"] = y + h;
-    }
+	GeometryHelper(Window window) {
+		/* geometry */
+		Window junkroot;
+		int x, y, junkx, junky;
+		unsigned int w, h, bw, depth;
+		Status status = XGetGeometry(display, window, &junkroot, &junkx, &junky, &w, &h, &bw, &depth);
+		if (!status) return;
+		Bool ok = XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
+		if (!ok) return;
+		json["left"] = x;
+		json["top"] = y;
+		json["width"] = w;
+		json["height"] = h;
+		json["right"] = x + w;
+		json["bottom"] = y + h;
+	}
 };
 
 std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
-	return WindowList().Enumerate();
-}
-
-std::wstring WindowManager::GetChildWindows(tVariant* paParams, const long lSizeArray)
-{
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
 	return WindowList().Enumerate();
 }
 
@@ -65,7 +58,7 @@ HWND WindowManager::ActiveWindow()
 BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
-	Window window =  VarToInt(paParams);
+	Window window = VarToInt(paParams);
 	WindowHelper().SetActiveWindow(window);
 	return true;
 }
@@ -73,7 +66,7 @@ BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 BOOL  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
-	Window window =  VarToInt(paParams);
+	Window window = VarToInt(paParams);
 	WindowHelper().Maximize(window, false);
 	return true;
 }
@@ -81,7 +74,7 @@ BOOL  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
 BOOL  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
-	Window window =  VarToInt(paParams);
+	Window window = VarToInt(paParams);
 	WindowHelper().Maximize(window, true);
 	return true;
 }
@@ -89,7 +82,7 @@ BOOL  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
 BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
-	Window window =  VarToInt(paParams);
+	Window window = VarToInt(paParams);
 	WindowHelper().Minimize(window);
 	return true;
 }
@@ -97,17 +90,17 @@ BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
 BOOL WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
-	Window window =  VarToInt(paParams);
+	Window window = VarToInt(paParams);
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 2);
 	WindowHelper().SetWindowSize(window, x, y);
 	return true;
 }
 
-BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray) 
+BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
-	Window window =  VarToInt(paParams);
+	Window window = VarToInt(paParams);
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 2);
 	WindowHelper().SetWindowPos(window, x, y);
@@ -118,80 +111,41 @@ BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 
 std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
-	JSON json;
-	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
-		{
-			if (IsWindowVisible(hWnd)) {
-				JSON j;
-				j["Window"] = (INT64)hWnd;
-				j["Enabled"] = (boolean)::IsWindowEnabled(hWnd);
-				j["Owner"] = (INT64)::GetWindow(hWnd, GW_OWNER);
-
-				WCHAR buffer[256];
-				::GetClassName(hWnd, buffer, 256);
-				j["Class"] = WC2MB(buffer);
-
-				int length = GetWindowTextLength(hWnd);
-				if (length != 0) {
-					std::wstring text;
-					text.resize(length);
-					::GetWindowText(hWnd, &text[0], length + 1);
-					j["Title"] = WC2MB(text);
-				}
-
-				DWORD dwProcessId;
-				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				j["ProcessId"] = dwProcessId;
-
-				JSON* json = (JSON*)lParam;
-				json->push_back(j);
-			}
-			return TRUE;
-		}, (LPARAM)&json);
-
-	return json;
-}
-
-std::wstring WindowManager::GetChildWindows(tVariant* paParams, const long lSizeArray)
-{
 	class Param {
 	public:
-		HWND hMainWnd = 0;
-		DWORD dwProcessId = 0;
+		DWORD pid = 0;
 		JSON json;
 	};
 	Param param;
 
-	if (lSizeArray > 0) param.hMainWnd = VarToHwnd(paParams);
-	if (param.hMainWnd == 0) param.hMainWnd = ::GetForegroundWindow();
-	::GetWindowThreadProcessId(param.hMainWnd, &param.dwProcessId);
+	if (lSizeArray > 0) param.pid = VarToInt(paParams);
 
-	JSON json;
 	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
-			DWORD pid = 0;
-			Param* p = (Param*)lParam;
-			if (p->hMainWnd != hWnd
-				&& ::GetWindowThreadProcessId(hWnd, &pid)
-				&& pid == p->dwProcessId
-				&& ::IsWindowVisible(hWnd)
-				) {
-				JSON j;
-				j["window"] = (INT64)hWnd;
-				j["enabled"] = (boolean)::IsWindowEnabled(hWnd);
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
+				Param* p = (Param*)lParam;
+				DWORD dwProcessId;
+				::GetWindowThreadProcessId(hWnd, &dwProcessId);
+				if (p->pid == 0 || p->pid == dwProcessId) {
+					JSON j;
+					j["Window"] = (INT64)hWnd;
+					j["ProcessId"] = dwProcessId;
+					j["Enabled"] = (boolean)::IsWindowEnabled(hWnd);
+					j["Owner"] = (INT64)::GetWindow(hWnd, GW_OWNER);
 
-				WCHAR buffer[256];
-				::GetClassName(hWnd, buffer, 256);
-				j["class"] = WC2MB(buffer);
+					WCHAR buffer[256];
+					::GetClassName(hWnd, buffer, 256);
+					j["Class"] = WC2MB(buffer);
 
-				int length = GetWindowTextLength(hWnd);
-				if (length != 0) {
-					std::wstring text;
-					text.resize(length);
-					::GetWindowText(hWnd, &text[0], length + 1);
-					j["title"] = WC2MB(text);
+					const int length = GetWindowTextLength(hWnd);
+					if (length != 0) {
+						std::wstring text;
+						text.resize(length);
+						::GetWindowText(hWnd, &text[0], length + 1);
+						j["Title"] = WC2MB(text);
+					}
+					p->json.push_back(j);
 				}
-				p->json.push_back(j);
 			}
 			return TRUE;
 		}, (LPARAM)&param);
