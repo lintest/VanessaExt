@@ -8,20 +8,25 @@
 
 class WindowList : public WindowEnumerator
 {
+private:	
+    const unsigned long m_pid = 0;
 protected:
 	virtual bool EnumWindow(Window window) {
-		JSON j;
-		j["Window"] = window;
-		j["Owner"] = GetWindowOwner(window);
-		j["Class"] = GetWindowClass(window);
-		j["Title"] = GetWindowTitle(window);
-		j["ProcessId"] = GetWindowPid(window);
-		json.push_back(j);
+		unsigned long pid = GetWindowPid(window);
+		if (m_pid == 0 || m_pid == pid) {
+			JSON j;
+			j["Window"] = window;
+			j["Owner"] = GetWindowOwner(window);
+			j["Class"] = GetWindowClass(window);
+			j["Title"] = GetWindowTitle(window);
+			j["ProcessId"] = pid;
+			json.push_back(j);
+		}
 		return true;
 	}
 public:
-	WindowList()
-		: WindowEnumerator() {}
+	WindowList(unsigned long pid = 0)
+		: WindowEnumerator(), m_pid(pid) {}
 };
 
 class GeometryHelper : public WindowHelper
@@ -47,7 +52,9 @@ public:
 
 std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
-	return WindowList().Enumerate();
+	unsigned long pid = 0;
+	if (lSizeArray > 0) pid = VarToInt(paParams);
+	return WindowList(pid).Enumerate();
 }
 
 HWND WindowManager::ActiveWindow()
