@@ -296,7 +296,7 @@ BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-long WindowManager::GetWindowState(tVariant* paParams, const long lSizeArray)
+int32_t WindowManager::GetWindowState(tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
