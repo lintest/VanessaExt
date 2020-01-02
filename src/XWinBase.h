@@ -94,7 +94,7 @@ protected:
 		return result;
     }
 
-    Window GetWindowParent(Window window) {
+    Window GetWindowOwner(Window window) {
         Window parent = 0;
         Status status = XGetTransientForHint(display, window, &parent);
         return status ? parent : 0;

@@ -914,11 +914,11 @@
 									<ContextMenu name="СписокОконWindowКонтекстноеМеню" id="17"/>
 									<ExtendedTooltip name="СписокОконWindowРасширеннаяПодсказка" id="18"/>
 								</InputField>
-								<InputField name="СписокОконparent" id="254">
-									<DataPath>СписокОкон.Parent</DataPath>
+								<InputField name="СписокОконOwner" id="254">
+									<DataPath>СписокОкон.Owner</DataPath>
 									<EditMode>EnterOnInput</EditMode>
-									<ContextMenu name="СписокОконparentКонтекстноеМеню" id="255"/>
-									<ExtendedTooltip name="СписокОконparentРасширеннаяПодсказка" id="256"/>
+									<ContextMenu name="СписокОконOwnerКонтекстноеМеню" id="255"/>
+									<ExtendedTooltip name="СписокОконOwnerРасширеннаяПодсказка" id="256"/>
 								</InputField>
 								<CheckBoxField name="СписокОконenabled" id="251">
 									<DataPath>СписокОкон.Enabled</DataPath>
@@ -1134,11 +1134,11 @@
 						<v8:Type>xs:boolean</v8:Type>
 					</Type>
 				</Column>
-				<Column name="Parent" id="6">
+				<Column name="Owner" id="6">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
-							<v8:content>Parent</v8:content>
+							<v8:content>Owner</v8:content>
 						</v8:item>
 					</Title>
 					<Type>
