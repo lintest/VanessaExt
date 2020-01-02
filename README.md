@@ -94,12 +94,23 @@
 2. Чтобы работала сборка примера обработки EPF надо установить OneScript версии 1.0.20 или выше.
 3. Для запуска сборки из исходников надо запустить ./Compile.bat.
 
-Сборка для Linux осуществляется в CentOS 8:
+Сборка для Linux в CentOS 8:
 ```bash
 yum -y group install "Development Tools"
 yum -y install cmake glibc-devel.i686 glibc-devel libuuid-devel 
 yum -y install libstdc++-devel.i686 gtk2-devel.i686 glib2-devel.i686
 yum -y install libstdc++-devel.x86_64 gtk2-devel.x86_64 glib2-devel.x86_64
+```
+
+Сборка для Linux в Ubuntu 18.04:
+```bash
+sudo apt update
+sudo apt install -y build-essential cmake git
+sudo apt install -y gcc-multilib g++-multilib
+sudo apt install -y uuid-dev libx11-dev libpng-dev
+git clone https://github.com/lintest/1cWinCtrl.git
+cd 1cWinCtrl
+./build.sh
 ```
 
 ***
