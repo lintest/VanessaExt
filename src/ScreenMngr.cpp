@@ -106,7 +106,7 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	return success;
 }
 
-std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+std::wstring ScreenManager::GetScreenInfo()
 {
 	JSON json;
 	Display* display = XOpenDisplay(NULL);
@@ -117,6 +117,11 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 	json["bottom"] = json["height"] = DisplayHeight(display, number);
 	XCloseDisplay(display);
 	return json;
+}
+
+std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+{
+	return {};
 }
 
 #else//__linux__

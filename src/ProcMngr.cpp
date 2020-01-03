@@ -4,6 +4,7 @@
 
 #ifdef __linux__
 
+#include <unistd.h>
 #include <sys/stat.h>
 #include "XWinBase.h"
 
@@ -104,6 +105,23 @@ protected:
 	}
 };
 
+class ProcessInfo : public ProcessEnumerator
+{
+protected:
+    virtual bool EnumWindow(Window window) {}
+public:
+	ProcessInfo(unsigned long pid) {
+		json["CommandLine"] = GetCommandLine(pid);
+		json["CreationDate"] = GetCreationDate(pid);
+		json["ProcessId"] = pid;
+	}
+};
+
+int64_t ProcessManager::ProcessId()
+{
+	return getpid();
+}
+
 std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return 0;
@@ -113,8 +131,14 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 
 std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
 {
-	ProcessList list;
-	return list.Enumerate();
+	return ProcessList().Enumerate();
+}
+
+std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return 0;
+	unsigned long pid = VarToInt(paParams);
+	return ProcessInfo(pid);
 }
 
 #else//__linux__

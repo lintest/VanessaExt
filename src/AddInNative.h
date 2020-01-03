@@ -10,8 +10,7 @@ class AddInNative : public IComponentBase
 private:
 	enum Props
 	{
-		eCurrentWindow = 0,
-		eActiveWindow,
+		eActiveWindow = 0,
 		eProcessId,
 		eProcessList,
 		eWindowList,
@@ -22,23 +21,20 @@ private:
 
 	enum Methods
 	{
-		eGetProcessList = 0,
+		eFindTestClient = 0,
+		eGetProcessList,
 		eGetProcessInfo,
-		eFindProcess,
-		eFindTestClient,
 		eGetDisplayList,
 		eGetDisplayInfo,
 		eGetScreenRect,
 		eGetWindowList,
+		eGetWindowInfo,
 		eSetWindowSize,
 		eSetWindowPos,
-		eGetWindowInfo,
 		eEnableResizing,
 		eTakeScreenshot,
 		eCaptureWindow,
-		eGetWindowText,
 		eSetWindowText,
-		eGetWindowState,
 		eSetWindowState,
 		eMinimizeWindow,
 		eRestoreWindow,

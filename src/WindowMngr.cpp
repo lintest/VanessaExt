@@ -29,11 +29,16 @@ public:
 		: WindowEnumerator(), m_pid(pid) {}
 };
 
-class GeometryHelper : public WindowHelper
+class WindowInfo : public WindowHelper
 {
 public:
-	GeometryHelper(Window window) {
-		/* geometry */
+	WindowInfo(Window window) {
+		json["Window"] = window;
+		json["Owner"] = GetWindowOwner(window);
+		json["Class"] = GetWindowClass(window);
+		json["Title"] = GetWindowTitle(window);
+		json["ProcessId"] = GetWindowPid(window);
+
 		Window junkroot;
 		int x, y, junkx, junky;
 		unsigned int w, h, bw, depth;
@@ -41,12 +46,12 @@ public:
 		if (!status) return;
 		Bool ok = XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
 		if (!ok) return;
-		json["left"] = x;
-		json["top"] = y;
-		json["width"] = w;
-		json["height"] = h;
-		json["right"] = x + w;
-		json["bottom"] = y + h;
+		json["Left"] = x;
+		json["Top"] = y;
+		json["Width"] = w;
+		json["Height"] = h;
+		json["Right"] = x + w;
+		json["Bottom"] = y + h;
 	}
 };
 
@@ -55,6 +60,14 @@ std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeAr
 	unsigned long pid = 0;
 	if (lSizeArray > 0) pid = VarToInt(paParams);
 	return WindowList(pid).Enumerate();
+}
+
+std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return {};
+	Window window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	return WindowInfo(window);
 }
 
 HWND WindowManager::ActiveWindow()

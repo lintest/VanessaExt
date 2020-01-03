@@ -41,6 +41,9 @@ int main() {
     std::wcout << std::endl << json << std::endl << std::endl;
 */    
 
+    json = ScreenManager::GetScreenList();
+    std::wcout << std::endl << json << std::endl << std::endl;
+
     json = ScreenManager::GetDisplayList(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
 

@@ -25,7 +25,6 @@
 #include "WindowMngr.h"
 
 const std::vector<AddInNative::Alias> AddInNative::m_PropList{
-	Alias(eCurrentWindow , 0, true, L"CurrentWindow"   , L"ТекущееОкно"),
 	Alias(eActiveWindow  , 0, true, L"ActiveWindow"    , L"АктивноеОкно"),
 	Alias(eProcessId     , 0, true, L"ProcessId"       , L"ИдентификаторПроцесса"),
 	Alias(eWindowList    , 0, true, L"WindowList"      , L"СписокОкон"),
@@ -38,14 +37,11 @@ const std::vector<AddInNative::Alias> AddInNative::m_MethList{
 	Alias(eFindTestClient  , 1, true , L"FindTestClient"   , L"НайтиКлиентТестирования"),
 	Alias(eGetProcessList  , 1, true , L"GetProcessList"   , L"ПолучитьСписокПроцессов"),
 	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
-	Alias(eFindProcess     , 1, true , L"FindProcess"      , L"НайтиПроцесс"),
-	Alias(eGetWindowList   , 1, true , L"GetWindowList"    , L"ПолучитьСписокОкон"),
 	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
 	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
 	Alias(eGetScreenRect   , 0, true , L"GetScreenRect"    , L"ПолучитьРазмерЭкрана"),
+	Alias(eGetWindowList   , 1, true , L"GetWindowList"    , L"ПолучитьСписокОкон"),
 	Alias(eGetWindowInfo   , 1, true , L"GetWindowInfo"    , L"ПолучитьСвойстваОкна"),
-	Alias(eGetWindowState  , 1, true , L"GetWindowState"   , L"ПолучитьСтатусОкна"),
-	Alias(eGetWindowText   , 1, true , L"GetWindowText"    , L"ПолучитьЗаголовок"),
 	Alias(eTakeScreenshot  , 1, true , L"TakeScreenshot"   , L"ПолучитьСнимокЭкрана"),
 	Alias(eCaptureWindow   , 1, true , L"CaptureWindow"    , L"ПолучитьСнимокОкна"),
 	Alias(eEnableResizing  , 2, false, L"EnableResizing"   , L"РазрешитьИзменятьРазмер"),
@@ -266,14 +262,10 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
         return VA(pvarPropVal) << WindowManager::GetWindowList(NULL, 0);
     case eDisplayList:
         return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
-#ifdef _WINDOWS
-    case eCurrentWindow:
-        return VA(pvarPropVal) << (INT64)WindowManager::CurrentWindow();
-    case eProcessId:
-        return VA(pvarPropVal) << (INT64)ProcessManager::ProcessId();
     case eScreenInfo:
         return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
-#endif
+    case eProcessId:
+        return VA(pvarPropVal) << ProcessManager::ProcessId();
     default:
         return false;
     }
@@ -372,6 +364,8 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
 	case eGetWindowList:
 		return VA(pvarRetValue) << WindowManager::GetWindowList(paParams, lSizeArray);
+	case eGetWindowInfo:
+		return VA(pvarRetValue) << WindowManager::GetWindowInfo(paParams, lSizeArray);
 	case eTakeScreenshot:
 		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
@@ -381,10 +375,6 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		return VA(pvarRetValue) << ScreenManager::GetDisplayList(paParams, lSizeArray);
 	case eGetDisplayInfo:
 		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
-	case eGetWindowState:
-		return VA(pvarRetValue) << WindowManager::GetWindowState(paParams, lSizeArray);
-	case eGetWindowText:
-		return VA(pvarRetValue) << WindowManager::GetText(paParams, lSizeArray);
 #endif
 	default:
 		return false;

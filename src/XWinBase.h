@@ -172,7 +172,9 @@ protected:
 public:
     WindowEnumerator() {
         Window root = DefaultRootWindow(display);
-        if (!GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
+        if (GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
+        if (GetProperty(root, XA_WINDOW, "_WIN_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
+        m_count = 0; // Cannot get client list properties.
     }
 
     std::wstring Enumerate() {

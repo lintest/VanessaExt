@@ -17,7 +17,7 @@
 #ifdef _WINDOWS
     #include <windows.h>
 #else
-    typedef unsigned long HWND;
+    typedef int64_t HWND;
 #endif //_WINDOWS
 
 #if defined(__linux__) || defined(__APPLE__)

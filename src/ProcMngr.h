@@ -11,7 +11,7 @@ public:
 	static std::wstring GetProcessList(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetProcessInfo(tVariant* paParams, const long lSizeArray);
 	static std::wstring FindProcess(tVariant* paParams, const long lSizeArray);
-	static DWORD ProcessId();
+	static int64_t ProcessId();
 };
 
 #endif //__PROCMNG_H__
