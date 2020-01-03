@@ -32,12 +32,17 @@ int main() {
     json = ProcessManager::FindTestClient(&pVarClient, 1);
     std::wstring text = json;
     std::wcout << std::endl << json << std::endl << std::endl;
-*/
+
     tVariant pVarProc;
     pVarProc.intVal = 4792;
     pVarProc.vt = VTYPE_I4;
 
     json = WindowManager().GetWindowList(&pVarProc, 1);
     std::wcout << std::endl << json << std::endl << std::endl;
+*/    
+
+    json = ScreenManager::GetDisplayList(NULL, 0);
+    std::wcout << std::endl << json << std::endl << std::endl;
+
     return 0;
 }

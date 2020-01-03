@@ -9,6 +9,7 @@ class ScreenManager {
 public:
 	ScreenManager(IMemoryManager* iMemory) { m_iMemory = iMemory; }
 	static std::wstring GetScreenInfo();
+	static std::wstring GetScreenList();
 	static std::wstring GetDisplayInfo(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetDisplayList(tVariant* paParams, const long lSizeArray);
 	BOOL CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ScreenMngr.h"
 #include "json_ext.h"
+#include <X11/extensions/Xrandr.h>
 
 BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
@@ -31,9 +32,45 @@ public:
 	}
 };
 
-std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
+class DisplayEnumerator : public WindowHelper
+{
+public:
+    std::wstring Enumerate() {
+		int	count;
+        Window root = DefaultRootWindow(display);
+		XRRMonitorInfo* monitors = XRRGetMonitors(display, root, false, &count);
+		if (count == -1) return {};
+		for (int i = 0; i < count; ++i) {
+			XRRMonitorInfo* info = monitors  + i;
+			char* name = XGetAtomName(display, info->name);
+			JSON j;
+			j["name"] = name;
+			j["left"] = info->x;
+			j["top"] = info->y;
+			j["width"] = info->width;
+			j["height"] = info->height;
+			j["mwidth"] = info->mwidth;
+			j["mheight"] = info->mheight;
+			j["right"] = info->x + info->width;
+			j["bottom"] = info->y + info->height;
+			j["automatic"] = (bool)info->automatic;
+			j["primary"] = (bool)info->primary;
+			XFree(name);
+			json.push_back(j);
+		}
+		XFree(monitors);
+        return *this;
+	}
+};
+
+std::wstring ScreenManager::GetScreenList()
 {
 	return ScreenEnumerator().Enumerate();
+}
+
+std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
+{
+	return DisplayEnumerator().Enumerate();
 }
 
 BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
