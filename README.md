@@ -106,7 +106,7 @@ yum -y install libstdc++-devel.x86_64 gtk2-devel.x86_64 glib2-devel.x86_64
 sudo apt update
 sudo apt install -y build-essential cmake git
 sudo apt install -y gcc-multilib g++-multilib
-sudo apt install -y uuid-dev libx11-dev libpng-dev
+sudo apt install -y uuid-dev libx11-dev libxrandr-dev libpng-dev
 git clone https://github.com/lintest/1cWinCtrl.git
 cd 1cWinCtrl
 ./build.sh

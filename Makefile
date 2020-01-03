@@ -6,7 +6,7 @@ SRC		:= src
 INC		:= include
 LIB		:= lib
 
-LIBRARIES	:= -lX11 -lpng
+LIBRARIES	:= -lX11 -lpng -lXrandr
 EXECUTABLE	:= test
 
 SRC = \
