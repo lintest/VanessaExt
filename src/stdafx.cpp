@@ -1,6 +1,33 @@
 ﻿#include "stdafx.h"
 
-#ifdef __linux__
+#ifdef _WINDOWS
+
+std::string WC2MB(const std::wstring& wstr)
+{
+	DWORD locale = CP_UTF8;
+	if (wstr.empty()) return {};
+	const int sz = WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
+	std::string res(sz, 0);
+	WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), &res[0], sz, 0, 0);
+	return res;
+}
+
+std::wstring MB2WC(const std::string& str)
+{
+	DWORD locale = CP_UTF8;
+	if (str.empty()) return {};
+	const int sz = MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), 0, 0);
+	std::wstring res(sz, 0);
+	MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), &res[0], sz);
+	return res;
+}
+
+HWND VarToHwnd(tVariant* paParams)
+{
+	return (HWND)IntToPtr(paParams->lVal);
+}
+
+#else //_WINDOWS
 
 #include <iconv.h>
 
@@ -46,34 +73,7 @@ std::string WC2MB(const std::wstring& source)
 	return result;
 }
 
-#else//__linux__
-
-std::string WC2MB(const std::wstring& wstr)
-{
-	DWORD locale = CP_UTF8;
-	if (wstr.empty()) return {};
-	const int sz = WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), 0, 0, 0, 0);
-	std::string res(sz, 0);
-	WideCharToMultiByte(locale, 0, &wstr[0], (int)wstr.size(), &res[0], sz, 0, 0);
-	return res;
-}
-
-std::wstring MB2WC(const std::string& str)
-{
-	DWORD locale = CP_UTF8;
-	if (str.empty()) return {};
-	const int sz = MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), 0, 0);
-	std::wstring res(sz, 0);
-	MultiByteToWideChar(locale, 0, &str[0], (int)str.size(), &res[0], sz);
-	return res;
-}
-
-HWND VarToHwnd(tVariant* paParams)
-{
-	return (HWND)IntToPtr(paParams->lVal);
-}
-
-#endif//__linux__
+#endif //_WINDOWS
 
 int32_t VarToInt(tVariant* paParams)
 {

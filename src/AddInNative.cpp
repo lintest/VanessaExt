@@ -1,13 +1,15 @@
 ﻿#include "stdafx.h"
 
-#if defined( __linux__ ) || defined(__APPLE__)
+#ifdef _WINDOWS
+#pragma setlocale("ru-RU" )
+#else //_WINDOWS
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <errno.h>
 #include <iconv.h>
 #include <sys/time.h>
-#endif
+#endif //_WINDOWS
 
 #include <stdio.h>
 #include <wchar.h>
@@ -15,10 +17,6 @@
 #include <string>
 
 #define BASE_ERRNO     7
-
-#ifdef WIN32
-#pragma setlocale("ru-RU" )
-#endif
 
 #include "ProcMngr.h"
 #include "ScreenMngr.h"

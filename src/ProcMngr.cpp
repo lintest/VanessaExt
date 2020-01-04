@@ -2,146 +2,7 @@
 #include "ProcMngr.h"
 #include "json_ext.h"
 
-#ifdef __linux__
-
-#include <unistd.h>
-#include <sys/stat.h>
-#include "XWinBase.h"
-
-static std::string file2str(const std::string& filepath) {
-	std::ifstream file(filepath);
-	std::string text;
-	if (file) std::getline(file, text);
-	return text;
-}
-
-class ProcessEnumerator : public WindowEnumerator
-{
-private:
-	const std::string proc = "/proc/";
-
-protected:
-	std::string GetCommandLine(unsigned long pid, bool original = false) {
-		std::string filepath = proc + to_string(pid) + "/cmdline";
-		std::string line = file2str(filepath);
-		if (original) return line;
-		for (std::string::iterator it = line.begin(); it != line.end(); ++it) {
-			if (*it == 0) *it = ' ';
-		}
-		return line;
-	}
-
-	std::string GetCreationDate(unsigned long pid) {
-		struct stat st;
-		std::string filepath = proc + to_string(pid);
-		stat(filepath.c_str(), &st);
-		time_t t = st.st_mtime;
-		struct tm lt;
-		localtime_r(&t, &lt);
-		char buffer[80];
-		strftime(buffer, sizeof(buffer), "%FT%T", &lt);
-		return buffer;
-	}
-
-};
-
-class ClientFinder : public ProcessEnumerator
-{
-private:
-	int m_port;
-
-protected:
-	virtual bool EnumWindow(Window window) {
-		std::string str = GetWindowClass(window);
-		if (str.substr(0, 4) != "1cv8") return true;
-		unsigned long pid = GetWindowPid(window);
-		if (NotFound(pid)) return true;
-		json["Window"] = (unsigned long)window;
-		json["Title"] = GetWindowTitle(window);
-		json["CommandLine"] = GetCommandLine(pid);
-		json["CreationDate"] = GetCreationDate(pid);
-		json["ProcessId"] = pid;
-		return false;
-	}
-
-public:
-	ClientFinder(int port) : m_port(port) {}
-
-private:
-	bool NotFound(unsigned long pid) {
-		std::string line = GetCommandLine(pid, true);
-		std::string port = to_string(m_port);
-		char* first = NULL;
-		char* second = &line[0];
-		for (int i = 0; i < line.size() - 1; i++) {
-			if (line[i] != 0) continue;
-			first = second;
-			second = &line[0] + i + 1;
-			if (strcmp(first, "-TPort") == 0
-				&& strcmp(port.c_str(), second) == 0)
-				return false;
-		}
-		return true;
-	}
-};
-
-class ProcessList : public ProcessEnumerator
-{
-private:
-	vector<unsigned long> v;
-protected:
-	virtual bool EnumWindow(Window window) {
-		unsigned long pid = GetWindowPid(window);
-		if (std::find(v.begin(), v.end(), pid) != v.end()) return true;
-		v.push_back(pid);
-		JSON j;
-		j["Window"] = (unsigned long)window;
-		j["Title"] = GetWindowTitle(window);
-		j["CommandLine"] = GetCommandLine(pid);
-		j["CreationDate"] = GetCreationDate(pid);
-		j["ProcessId"] = pid;
-		json.push_back(j);
-		return true;
-	}
-};
-
-class ProcessInfo : public ProcessEnumerator
-{
-protected:
-	virtual bool EnumWindow(Window window) {}
-public:
-	ProcessInfo(unsigned long pid) {
-		json["CommandLine"] = GetCommandLine(pid);
-		json["CreationDate"] = GetCreationDate(pid);
-		json["ProcessId"] = pid;
-	}
-};
-
-int64_t ProcessManager::ProcessId()
-{
-	return getpid();
-}
-
-std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 1) return 0;
-	int port = VarToInt(paParams);
-	return ClientFinder(port).Enumerate();
-}
-
-std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
-{
-	return ProcessList().Enumerate();
-}
-
-std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 1) return 0;
-	unsigned long pid = VarToInt(paParams);
-	return ProcessInfo(pid);
-}
-
-#else//__linux__
+#ifdef _WINDOWS
 
 #define _WIN32_DCOM
 #include <iostream>
@@ -362,4 +223,143 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 	return {};
 }
 
-#endif//__linux__
+#else //_WINDOWS
+
+#include <unistd.h>
+#include <sys/stat.h>
+#include "XWinBase.h"
+
+static std::string file2str(const std::string& filepath) {
+	std::ifstream file(filepath);
+	std::string text;
+	if (file) std::getline(file, text);
+	return text;
+}
+
+class ProcessEnumerator : public WindowEnumerator
+{
+private:
+	const std::string proc = "/proc/";
+
+protected:
+	std::string GetCommandLine(unsigned long pid, bool original = false) {
+		std::string filepath = proc + to_string(pid) + "/cmdline";
+		std::string line = file2str(filepath);
+		if (original) return line;
+		for (std::string::iterator it = line.begin(); it != line.end(); ++it) {
+			if (*it == 0) *it = ' ';
+		}
+		return line;
+	}
+
+	std::string GetCreationDate(unsigned long pid) {
+		struct stat st;
+		std::string filepath = proc + to_string(pid);
+		stat(filepath.c_str(), &st);
+		time_t t = st.st_mtime;
+		struct tm lt;
+		localtime_r(&t, &lt);
+		char buffer[80];
+		strftime(buffer, sizeof(buffer), "%FT%T", &lt);
+		return buffer;
+	}
+
+};
+
+class ClientFinder : public ProcessEnumerator
+{
+private:
+	int m_port;
+
+protected:
+	virtual bool EnumWindow(Window window) {
+		std::string str = GetWindowClass(window);
+		if (str.substr(0, 4) != "1cv8") return true;
+		unsigned long pid = GetWindowPid(window);
+		if (NotFound(pid)) return true;
+		json["Window"] = (unsigned long)window;
+		json["Title"] = GetWindowTitle(window);
+		json["CommandLine"] = GetCommandLine(pid);
+		json["CreationDate"] = GetCreationDate(pid);
+		json["ProcessId"] = pid;
+		return false;
+	}
+
+public:
+	ClientFinder(int port) : m_port(port) {}
+
+private:
+	bool NotFound(unsigned long pid) {
+		std::string line = GetCommandLine(pid, true);
+		std::string port = to_string(m_port);
+		char* first = NULL;
+		char* second = &line[0];
+		for (int i = 0; i < line.size() - 1; i++) {
+			if (line[i] != 0) continue;
+			first = second;
+			second = &line[0] + i + 1;
+			if (strcmp(first, "-TPort") == 0
+				&& strcmp(port.c_str(), second) == 0)
+				return false;
+		}
+		return true;
+	}
+};
+
+class ProcessList : public ProcessEnumerator
+{
+private:
+	vector<unsigned long> v;
+protected:
+	virtual bool EnumWindow(Window window) {
+		unsigned long pid = GetWindowPid(window);
+		if (std::find(v.begin(), v.end(), pid) != v.end()) return true;
+		v.push_back(pid);
+		JSON j;
+		j["Window"] = (unsigned long)window;
+		j["Title"] = GetWindowTitle(window);
+		j["CommandLine"] = GetCommandLine(pid);
+		j["CreationDate"] = GetCreationDate(pid);
+		j["ProcessId"] = pid;
+		json.push_back(j);
+		return true;
+	}
+};
+
+class ProcessInfo : public ProcessEnumerator
+{
+protected:
+	virtual bool EnumWindow(Window window) {}
+public:
+	ProcessInfo(unsigned long pid) {
+		json["CommandLine"] = GetCommandLine(pid);
+		json["CreationDate"] = GetCreationDate(pid);
+		json["ProcessId"] = pid;
+	}
+};
+
+int64_t ProcessManager::ProcessId()
+{
+	return getpid();
+}
+
+std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return 0;
+	int port = VarToInt(paParams);
+	return ClientFinder(port).Enumerate();
+}
+
+std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
+{
+	return ProcessList().Enumerate();
+}
+
+std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return 0;
+	unsigned long pid = VarToInt(paParams);
+	return ProcessInfo(pid);
+}
+
+#endif //_WINDOWS

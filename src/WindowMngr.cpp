@@ -2,158 +2,7 @@
 #include "WindowMngr.h"
 #include "json_ext.h"
 
-#ifdef __linux__
-
-#include "XWinBase.h"
-
-class WindowList : public WindowEnumerator
-{
-private:
-	const unsigned long m_pid = 0;
-protected:
-	virtual bool EnumWindow(Window window) {
-		unsigned long pid = GetWindowPid(window);
-		if (m_pid == 0 || m_pid == pid) {
-			JSON j;
-			j["Window"] = window;
-			j["Owner"] = GetWindowOwner(window);
-			j["Class"] = GetWindowClass(window);
-			j["Title"] = GetWindowTitle(window);
-			j["ProcessId"] = pid;
-			json.push_back(j);
-		}
-		return true;
-	}
-public:
-	WindowList(unsigned long pid = 0)
-		: WindowEnumerator(), m_pid(pid) {}
-};
-
-class WindowInfo : public WindowHelper
-{
-public:
-	WindowInfo(Window window) {
-		json["Window"] = window;
-		json["Owner"] = GetWindowOwner(window);
-		json["Class"] = GetWindowClass(window);
-		json["Title"] = GetWindowTitle(window);
-		json["Maximized"] = IsMaximized(window);
-		json["ProcessId"] = GetWindowPid(window);
-	}
-};
-
-class WindowSize : public WindowHelper
-{
-public:
-	WindowSize(Window window) {
-		Window junkroot;
-		int x, y, junkx, junky;
-		unsigned int w, h, bw, depth;
-		Status status = XGetGeometry(display, window, &junkroot, &junkx, &junky, &w, &h, &bw, &depth);
-		if (!status) return;
-		Bool ok = XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
-		if (!ok) return;
-		json["Left"] = x;
-		json["Top"] = y;
-		json["Width"] = w;
-		json["Height"] = h;
-		json["Right"] = x + w;
-		json["Bottom"] = y + h;
-		json["Window"] = window;
-	}
-};
-
-bool WindowManager::IsMaximized(HWND hWnd)
-{
-
-}
-
-std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)
-{
-	unsigned long pid = 0;
-	if (lSizeArray > 0) pid = VarToInt(paParams);
-	return WindowList(pid).Enumerate();
-}
-
-std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)
-{
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
-	if (window == 0) window = ActiveWindow();
-	return WindowInfo(window);
-}
-
-std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
-{
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
-	if (window == 0) window = ActiveWindow();
-	return WindowSize(window);
-}
-
-HWND WindowManager::ActiveWindow()
-{
-	return WindowHelper().GetActiveWindow();
-}
-
-BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 1) return false;
-	Window window = VarToInt(paParams);
-	WindowHelper().SetActiveWindow(window);
-	return true;
-}
-
-BOOL  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
-{
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
-	if (window == 0) window = ActiveWindow();
-	WindowHelper().Maximize(window, false);
-	return true;
-}
-
-BOOL  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
-{
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
-	if (window == 0) window = ActiveWindow();
-	WindowHelper().Maximize(window, true);
-	return true;
-}
-
-BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
-{
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
-	if (window == 0) window = ActiveWindow();
-	WindowHelper().Minimize(window);
-	return true;
-}
-
-BOOL WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 3) return false;
-	Window window = VarToInt(paParams);
-	if (window == 0) window = ActiveWindow();
-	int x = VarToInt(paParams + 1);
-	int y = VarToInt(paParams + 2);
-	WindowHelper().SetWindowSize(window, x, y);
-	return true;
-}
-
-BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 3) return false;
-	Window window = VarToInt(paParams);
-	if (window == 0) window = ActiveWindow();
-	int x = VarToInt(paParams + 1);
-	int y = VarToInt(paParams + 2);
-	WindowHelper().SetWindowPos(window, x, y);
-	return true;
-}
-
-#else//__linux__
+#ifdef _WINDOWS
 
 static JSON WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
 {
@@ -423,4 +272,155 @@ BOOL WindowManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)
 	return true;
 }
 
-#endif//__linux__
+#else //_WINDOWS
+
+#include "XWinBase.h"
+
+class WindowList : public WindowEnumerator
+{
+private:
+	const unsigned long m_pid = 0;
+protected:
+	virtual bool EnumWindow(Window window) {
+		unsigned long pid = GetWindowPid(window);
+		if (m_pid == 0 || m_pid == pid) {
+			JSON j;
+			j["Window"] = window;
+			j["Owner"] = GetWindowOwner(window);
+			j["Class"] = GetWindowClass(window);
+			j["Title"] = GetWindowTitle(window);
+			j["ProcessId"] = pid;
+			json.push_back(j);
+		}
+		return true;
+	}
+public:
+	WindowList(unsigned long pid = 0)
+		: WindowEnumerator(), m_pid(pid) {}
+};
+
+class WindowInfo : public WindowHelper
+{
+public:
+	WindowInfo(Window window) {
+		json["Window"] = window;
+		json["Owner"] = GetWindowOwner(window);
+		json["Class"] = GetWindowClass(window);
+		json["Title"] = GetWindowTitle(window);
+		json["Maximized"] = IsMaximized(window);
+		json["ProcessId"] = GetWindowPid(window);
+	}
+};
+
+class WindowSize : public WindowHelper
+{
+public:
+	WindowSize(Window window) {
+		Window junkroot;
+		int x, y, junkx, junky;
+		unsigned int w, h, bw, depth;
+		Status status = XGetGeometry(display, window, &junkroot, &junkx, &junky, &w, &h, &bw, &depth);
+		if (!status) return;
+		Bool ok = XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
+		if (!ok) return;
+		json["Left"] = x;
+		json["Top"] = y;
+		json["Width"] = w;
+		json["Height"] = h;
+		json["Right"] = x + w;
+		json["Bottom"] = y + h;
+		json["Window"] = window;
+	}
+};
+
+bool WindowManager::IsMaximized(HWND hWnd)
+{
+
+}
+
+std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)
+{
+	unsigned long pid = 0;
+	if (lSizeArray > 0) pid = VarToInt(paParams);
+	return WindowList(pid).Enumerate();
+}
+
+std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)
+{
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	return WindowInfo(window);
+}
+
+std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
+{
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	return WindowSize(window);
+}
+
+HWND WindowManager::ActiveWindow()
+{
+	return WindowHelper().GetActiveWindow();
+}
+
+BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return false;
+	Window window = VarToInt(paParams);
+	WindowHelper().SetActiveWindow(window);
+	return true;
+}
+
+BOOL  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
+{
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	WindowHelper().Maximize(window, false);
+	return true;
+}
+
+BOOL  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
+{
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	WindowHelper().Maximize(window, true);
+	return true;
+}
+
+BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
+{
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	WindowHelper().Minimize(window);
+	return true;
+}
+
+BOOL WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 3) return false;
+	Window window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	int x = VarToInt(paParams + 1);
+	int y = VarToInt(paParams + 2);
+	WindowHelper().SetWindowSize(window, x, y);
+	return true;
+}
+
+BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 3) return false;
+	Window window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	int x = VarToInt(paParams + 1);
+	int y = VarToInt(paParams + 2);
+	WindowHelper().SetWindowPos(window, x, y);
+	return true;
+}
+
+#endif //_WINDOWS

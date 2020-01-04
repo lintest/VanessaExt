@@ -1,3 +1,5 @@
+#ifndef _WINDOWS
+
 #include <iostream>
 #include <cstdlib>
 #include <png.h>
@@ -209,3 +211,5 @@ bool X11Screenshot::save_to_png(std::vector<char> &out) {
 
     return true;
 };
+
+#endif //_WINDOWS

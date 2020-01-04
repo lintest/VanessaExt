@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 
-#ifdef __linux__
+#ifndef _WINDOWS
 
 #include <fstream>
 #include <X11/Xlib.h>
@@ -207,6 +207,6 @@ public:
 	}
 };
 
-#endif //__linux__
+#endif //_WINDOWS
 
 #endif //__XWINBASE_H__

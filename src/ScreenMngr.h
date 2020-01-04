@@ -1,6 +1,8 @@
 #ifndef __SCREENMNGR_H__
 #define __SCREENMNGR_H__
 
+#ifndef _WINDOWS
+
 #include "stdafx.h"
 
 #include "IMemoryManager.h"
@@ -21,5 +23,7 @@ private:
 	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
 	IMemoryManager* m_iMemory;
 };
+
+#endif //_WINDOWS
 
 #endif //__SCREENMNGR_H__

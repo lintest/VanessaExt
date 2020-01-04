@@ -9,159 +9,10 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, co
 	return CaptureWindow(pvarRetValue, hWnd);
 }
 
-#ifdef __linux__
+#ifdef _WINDOWS
 
-#include <X11/extensions/Xrandr.h>
-#include "screenshot.h"
-#include "XWinBase.h"
-
-class ScreenEnumerator : public WindowHelper
-{
-public:
-	std::wstring Enumerate() {
-		int count_screens = ScreenCount(display);
-		for (int i = 0; i < count_screens; ++i) {
-			Screen* screen = ScreenOfDisplay(display, i);
-			JSON j;
-			j["Id"] = i;
-			j["Width"] = screen->width;
-			j["Height"] = screen->height;
-			json.push_back(j);
-		}
-		return *this;
-	}
-};
-
-class DisplayEnumerator : public WindowHelper
-{
-public:
-	std::wstring Enumerate() {
-		int	count;
-		Window root = DefaultRootWindow(display);
-		XRRMonitorInfo* monitors = XRRGetMonitors(display, root, false, &count);
-		if (count == -1) return {};
-		for (int i = 0; i < count; ++i) {
-			XRRMonitorInfo* info = monitors + i;
-			char* name = XGetAtomName(display, info->name);
-			JSON j;
-			j["Name"] = name;
-			j["Left"] = info->x;
-			j["Top"] = info->y;
-			j["Width"] = info->width;
-			j["Height"] = info->height;
-			j["mWidth"] = info->mwidth;
-			j["mHeight"] = info->mheight;
-			j["Right"] = info->x + info->width;
-			j["Bottom"] = info->y + info->height;
-			j["Automatic"] = (bool)info->automatic;
-			j["Primary"] = (bool)info->primary;
-			XFree(name);
-			json.push_back(j);
-		}
-		XFree(monitors);
-		return *this;
-	}
-};
-
-std::wstring ScreenManager::GetScreenList()
-{
-	return ScreenEnumerator().Enumerate();
-}
-
-std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
-{
-	return DisplayEnumerator().Enumerate();
-}
-
-BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{
-	return CaptureWindow(pvarRetValue, 0);
-}
-
-BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
-{
-	Display* display = XOpenDisplay(NULL);
-	if (display == NULL) return false;
-
-	Window window = hWnd;
-	if (window == 0) window = DefaultRootWindow(display);
-
-	BOOL success = false;
-	XWindowAttributes gwa;
-	XGetWindowAttributes(display, window, &gwa);
-	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
-	X11Screenshot screenshot = X11Screenshot(image);
-	std::vector<char> buffer;
-	if (screenshot.save_to_png(buffer)) {
-		pvarRetValue->strLen = buffer.size();
-		m_iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
-		TV_VT(pvarRetValue) = VTYPE_BLOB;
-		if (pvarRetValue->pstrVal) {
-			memcpy((void*)pvarRetValue->pstrVal, &buffer[0], pvarRetValue->strLen);
-			success = true;
-		}
-	}
-	XDestroyImage(image);
-	XCloseDisplay(display);
-	return success;
-}
-
-class ScreenHelper : public WindowHelper
-{
-public:
-	ScreenHelper() {
-		unsigned long* geometry = NULL;
-		unsigned long geometry_size = 0;
-		unsigned long* workarea = NULL;
-		unsigned long workarea_size = 0;
-		Window root = DefaultRootWindow(display);
-		if (!GetProperty(root, XA_CARDINAL, "_NET_DESKTOP_GEOMETRY", VXX(&geometry), &geometry_size)) return;
-		if (!GetProperty(root, XA_CARDINAL, "_NET_WORKAREA", VXX(&workarea), &workarea_size)) {
-			if (!GetProperty(root, XA_CARDINAL, "_WIN_WORKAREA", VXX(&workarea), &workarea_size)) {
-				XFree(geometry);
-				return;
-			}
-		};
-		if (geometry_size >= 2) {
-			json["Left"] = json["Top"] = 0;
-			json["Right"] = json["Width"] = geometry[0];
-			json["Bottom"] = json["Height"] = geometry[1];
-		}
-		if (workarea_size >= 4) {
-			JSON j;
-			j["Left"] = workarea[0];
-			j["Top"] = workarea[1];
-			j["Width"] = workarea[2];
-			j["Height"] = workarea[3];
-			json["Work"] = j;
-		}
-		XFree(geometry);
-		XFree(workarea);
-	}
-};
-
-std::wstring ScreenManager::GetScreenInfo()
-{
-	ScreenHelper helper;
-	if (helper) return helper;
-
-	JSON json;
-	Display* display = XOpenDisplay(NULL);
-	if (!display) return {};
-	int number = DefaultScreen(display);
-	json["Left"] = json["Top"] = 0;
-	json["Right"] = json["Width"] = DisplayWidth(display, number);
-	json["Bottom"] = json["Height"] = DisplayHeight(display, number);
-	XCloseDisplay(display);
-	return json;
-}
-
-std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
-{
-	return {};
-}
-
-#else//__linux__
+#include <dwmapi.h>
+#pragma comment(lib, "Dwmapi.lib")
 
 nlohmann::json RectToJson(const RECT& rect)
 {
@@ -243,9 +94,6 @@ std::wstring ScreenManager::GetScreenInfo()
 	json["Work"] = RectToJson(work);
 	return MB2WC(json.dump());
 }
-
-#include <dwmapi.h>
-#pragma comment(lib, "Dwmapi.lib")
 
 BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
@@ -401,4 +249,156 @@ BOOL ScreenManager::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 	return Ret;
 }
 
-#endif//__linux__
+#else //_WINDOWS
+
+#include <X11/extensions/Xrandr.h>
+#include "screenshot.h"
+#include "XWinBase.h"
+
+class ScreenEnumerator : public WindowHelper
+{
+public:
+	std::wstring Enumerate() {
+		int count_screens = ScreenCount(display);
+		for (int i = 0; i < count_screens; ++i) {
+			Screen* screen = ScreenOfDisplay(display, i);
+			JSON j;
+			j["Id"] = i;
+			j["Width"] = screen->width;
+			j["Height"] = screen->height;
+			json.push_back(j);
+		}
+		return *this;
+	}
+};
+
+class DisplayEnumerator : public WindowHelper
+{
+public:
+	std::wstring Enumerate() {
+		int	count;
+		Window root = DefaultRootWindow(display);
+		XRRMonitorInfo* monitors = XRRGetMonitors(display, root, false, &count);
+		if (count == -1) return {};
+		for (int i = 0; i < count; ++i) {
+			XRRMonitorInfo* info = monitors + i;
+			char* name = XGetAtomName(display, info->name);
+			JSON j;
+			j["Name"] = name;
+			j["Left"] = info->x;
+			j["Top"] = info->y;
+			j["Width"] = info->width;
+			j["Height"] = info->height;
+			j["mWidth"] = info->mwidth;
+			j["mHeight"] = info->mheight;
+			j["Right"] = info->x + info->width;
+			j["Bottom"] = info->y + info->height;
+			j["Automatic"] = (bool)info->automatic;
+			j["Primary"] = (bool)info->primary;
+			XFree(name);
+			json.push_back(j);
+		}
+		XFree(monitors);
+		return *this;
+	}
+};
+
+std::wstring ScreenManager::GetScreenList()
+{
+	return ScreenEnumerator().Enumerate();
+}
+
+std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
+{
+	return DisplayEnumerator().Enumerate();
+}
+
+BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+{
+	return CaptureWindow(pvarRetValue, 0);
+}
+
+BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
+{
+	Display* display = XOpenDisplay(NULL);
+	if (display == NULL) return false;
+
+	Window window = hWnd;
+	if (window == 0) window = DefaultRootWindow(display);
+
+	BOOL success = false;
+	XWindowAttributes gwa;
+	XGetWindowAttributes(display, window, &gwa);
+	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
+	X11Screenshot screenshot = X11Screenshot(image);
+	std::vector<char> buffer;
+	if (screenshot.save_to_png(buffer)) {
+		pvarRetValue->strLen = buffer.size();
+		m_iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
+		TV_VT(pvarRetValue) = VTYPE_BLOB;
+		if (pvarRetValue->pstrVal) {
+			memcpy((void*)pvarRetValue->pstrVal, &buffer[0], pvarRetValue->strLen);
+			success = true;
+		}
+	}
+	XDestroyImage(image);
+	XCloseDisplay(display);
+	return success;
+}
+
+class ScreenHelper : public WindowHelper
+{
+public:
+	ScreenHelper() {
+		unsigned long* geometry = NULL;
+		unsigned long geometry_size = 0;
+		unsigned long* workarea = NULL;
+		unsigned long workarea_size = 0;
+		Window root = DefaultRootWindow(display);
+		if (!GetProperty(root, XA_CARDINAL, "_NET_DESKTOP_GEOMETRY", VXX(&geometry), &geometry_size)) return;
+		if (!GetProperty(root, XA_CARDINAL, "_NET_WORKAREA", VXX(&workarea), &workarea_size)) {
+			if (!GetProperty(root, XA_CARDINAL, "_WIN_WORKAREA", VXX(&workarea), &workarea_size)) {
+				XFree(geometry);
+				return;
+			}
+		};
+		if (geometry_size >= 2) {
+			json["Left"] = json["Top"] = 0;
+			json["Right"] = json["Width"] = geometry[0];
+			json["Bottom"] = json["Height"] = geometry[1];
+		}
+		if (workarea_size >= 4) {
+			JSON j;
+			j["Left"] = workarea[0];
+			j["Top"] = workarea[1];
+			j["Width"] = workarea[2];
+			j["Height"] = workarea[3];
+			json["Work"] = j;
+		}
+		XFree(geometry);
+		XFree(workarea);
+	}
+};
+
+std::wstring ScreenManager::GetScreenInfo()
+{
+	ScreenHelper helper;
+	if (helper) return helper;
+
+	JSON json;
+	Display* display = XOpenDisplay(NULL);
+	if (!display) return {};
+	int number = DefaultScreen(display);
+	json["Left"] = json["Top"] = 0;
+	json["Right"] = json["Width"] = DisplayWidth(display, number);
+	json["Bottom"] = json["Height"] = DisplayHeight(display, number);
+	XCloseDisplay(display);
+	return json;
+}
+
+std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+{
+	return {};
+}
+
+#endif //_WINDOWS
