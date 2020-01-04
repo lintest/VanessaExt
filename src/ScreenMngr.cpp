@@ -106,8 +106,45 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	return success;
 }
 
+class ScreenHelper : public WindowHelper
+{
+public:	
+	ScreenHelper() {
+		unsigned long *geometry = NULL;
+		unsigned long geometry_size = 0;
+		unsigned long *workarea = NULL;
+		unsigned long workarea_size = 0;
+		Window root = DefaultRootWindow(display);
+		if (!GetProperty(root, XA_CARDINAL, "_NET_DESKTOP_GEOMETRY", VXX(&geometry), &geometry_size)) return;
+		if (!GetProperty(root, XA_CARDINAL, "_NET_WORKAREA", VXX(&workarea), &workarea_size)) {
+			if (!GetProperty(root, XA_CARDINAL, "_WIN_WORKAREA", VXX(&workarea), &workarea_size)) {
+				XFree(geometry);
+				return;
+			}
+		};
+		if (geometry_size >= 2) {
+			json["left"] = json["top"] = 0;
+			json["right"] = json["width"] = geometry[0];
+			json["bottom"] = json["height"] = geometry[1];
+		}
+		if (workarea_size >= 4) {
+			JSON j;
+			j["left"] = workarea[0];
+			j["top"] = workarea[1];
+			j["width"] = workarea[2];
+			j["height"] = workarea[3];
+			json["work"] = j;
+		}
+		XFree(geometry);
+		XFree(workarea);
+	}
+};
+
 std::wstring ScreenManager::GetScreenInfo()
 {
+	ScreenHelper helper;
+	if (helper) return helper;
+
 	JSON json;
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return {};

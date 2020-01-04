@@ -45,8 +45,11 @@ int main() {
 
     json = ScreenManager::GetDisplayList(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
-*/
+
     json = WindowManager::GetWindowSize(NULL, 0);
+    std::wcout << std::endl << json << std::endl << std::endl;
+*/
+    json = ScreenManager::GetScreenInfo();
     std::wcout << std::endl << json << std::endl << std::endl;
 
     return 0;

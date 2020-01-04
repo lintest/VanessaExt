@@ -33,7 +33,11 @@ public:
         if (display) XCloseDisplay(display);
     }
 
-	operator std::wstring() {
+    operator bool() {
+        return !json.empty();
+    }
+
+	operator std::wstring() const {
 		return json;
 	}
 
