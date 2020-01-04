@@ -8,8 +8,8 @@
 
 class WindowList : public WindowEnumerator
 {
-private:	
-    const unsigned long m_pid = 0;
+private:
+	const unsigned long m_pid = 0;
 protected:
 	virtual bool EnumWindow(Window window) {
 		unsigned long pid = GetWindowPid(window);
@@ -144,6 +144,30 @@ BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 
 #else//__linux__
 
+static JSON WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
+{
+	if (dwProcessId == 0) ::GetWindowThreadProcessId(hWnd, &dwProcessId);
+
+	JSON json;
+	json["Window"] = (INT64)hWnd;
+	json["Enabled"] = (boolean)::IsWindowEnabled(hWnd);
+	json["Owner"] = (INT64)::GetWindow(hWnd, GW_OWNER);
+	json["ProcessId"] = dwProcessId;
+
+	WCHAR buffer[256];
+	::GetClassName(hWnd, buffer, 256);
+	json["Class"] = WC2MB(buffer);
+
+	const int length = GetWindowTextLength(hWnd);
+	if (length != 0) {
+		std::wstring text;
+		text.resize(length);
+		::GetWindowText(hWnd, &text[0], length + 1);
+		json["Title"] = WC2MB(text);
+	}
+	return json;
+}
+
 std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
 	class Param {
@@ -162,23 +186,7 @@ std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeAr
 				DWORD dwProcessId;
 				::GetWindowThreadProcessId(hWnd, &dwProcessId);
 				if (p->pid == 0 || p->pid == dwProcessId) {
-					JSON j;
-					j["Window"] = (INT64)hWnd;
-					j["ProcessId"] = dwProcessId;
-					j["Enabled"] = (boolean)::IsWindowEnabled(hWnd);
-					j["Owner"] = (INT64)::GetWindow(hWnd, GW_OWNER);
-
-					WCHAR buffer[256];
-					::GetClassName(hWnd, buffer, 256);
-					j["Class"] = WC2MB(buffer);
-
-					const int length = GetWindowTextLength(hWnd);
-					if (length != 0) {
-						std::wstring text;
-						text.resize(length);
-						::GetWindowText(hWnd, &text[0], length + 1);
-						j["Title"] = WC2MB(text);
-					}
+					JSON j = WindowInfo(hWnd, dwProcessId);
 					p->json.push_back(j);
 				}
 			}
@@ -186,6 +194,28 @@ std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeAr
 		}, (LPARAM)&param);
 
 	return param.json;
+}
+
+std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)
+{
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	JSON json = WindowInfo(hWnd);
+	json["Maximized"] = IsMaximized(hWnd);
+	return json;
+}
+
+std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
+{
+	RECT rect;
+	HWND hWnd = 0;
+	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	::GetWindowRect(hWnd, &rect);
+	JSON json = RectToJson(rect);
+	json["Window"] = (INT64)hWnd;
+	return json;
 }
 
 HWND WindowManager::ActiveWindow()
@@ -262,26 +292,6 @@ BOOL WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-std::wstring WindowManager::GetText(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 1) return false;
-	HWND hWnd = VarToHwnd(paParams);
-	const int length = ::GetWindowTextLength(hWnd);
-	std::wstring text;
-	if (length != 0) {
-		text.resize(length);
-		::GetWindowText(hWnd, &text[0], length + 1);
-	}
-	return text;
-}
-
-BOOL WindowManager::SetText(tVariant* paParams, const long lSizeArray)
-{
-	if (lSizeArray < 2) return false;
-	HWND hWnd = VarToHwnd(paParams);
-	return ::SetWindowText(hWnd, (paParams + 1)->pwstrVal);
-}
-
 BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
@@ -322,6 +332,15 @@ BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 		}
 	}
 	return true;
+}
+
+bool WindowManager::IsMaximized(HWND hWnd)
+{
+	WINDOWPLACEMENT place;
+	memset(&place, 0, sizeof(WINDOWPLACEMENT));
+	place.length = sizeof(WINDOWPLACEMENT);
+	if (!GetWindowPlacement(hWnd, &place)) return false;
+	return place.showCmd == SW_SHOWMAXIMIZED;
 }
 
 int32_t WindowManager::GetWindowState(tVariant* paParams, const long lSizeArray)

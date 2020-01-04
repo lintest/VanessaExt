@@ -42,21 +42,21 @@ const std::vector<AddInNative::Alias> AddInNative::m_MethList{
 	Alias(eGetScreenRect   , 0, true , L"GetScreenRect"    , L"ПолучитьРазмерЭкрана"),
 	Alias(eGetWindowList   , 1, true , L"GetWindowList"    , L"ПолучитьСписокОкон"),
 	Alias(eGetWindowInfo   , 1, true , L"GetWindowInfo"    , L"ПолучитьСвойстваОкна"),
+	Alias(eGetWindowSize   , 1, true , L"GetWindowSize"    , L"ПолучитьРазмерОкна"),
 	Alias(eTakeScreenshot  , 1, true , L"TakeScreenshot"   , L"ПолучитьСнимокЭкрана"),
 	Alias(eCaptureWindow   , 1, true , L"CaptureWindow"    , L"ПолучитьСнимокОкна"),
 	Alias(eEnableResizing  , 2, false, L"EnableResizing"   , L"РазрешитьИзменятьРазмер"),
 	Alias(eSetWindowPos    , 3, false, L"SetWindowPos"     , L"УстановитьПозициюОкна"),
 	Alias(eSetWindowSize   , 3, false, L"SetWindowSize"    , L"УстановитьРазмерОкна"),
 	Alias(eSetWindowState  , 3, false, L"SetWindowState"   , L"УстановитьСтатусОкна"),
-	Alias(eSetWindowText   , 2, false, L"SetWindowText"    , L"УстановитьЗаголовок"),
 	Alias(eActivateWindow  , 1, false, L"ActivateWindow"   , L"АктивироватьОкно"),
 	Alias(eMaximizeWindow  , 1, false, L"MaximizeWindow"   , L"РаспахнутьОкно"),
 	Alias(eMinimizeWindow  , 1, false, L"MinimizeWindow"   , L"СвернутьОкно"),
 	Alias(eRestoreWindow   , 1, false, L"RestoreWindow"    , L"РазвернутьОкно"),
 };
 
-static const wchar_t g_kClassNames[] = L"WindowsControl"; 
-static IAddInDefBase *pAsyncEvent = NULL;
+static const wchar_t g_kClassNames[] = L"WindowsControl";
+static IAddInDefBase* pAsyncEvent = NULL;
 
 uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
 uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len = 0);
@@ -66,41 +66,41 @@ static WcharWrapper s_names(g_kClassNames);
 //---------------------------------------------------------------------------//
 long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
-    if(!*pInterface)
-    {
-        *pInterface= new AddInNative;
-        return (long)*pInterface;
-    }
-    return 0;
+	if (!*pInterface)
+	{
+		*pInterface = new AddInNative;
+		return (long)*pInterface;
+	}
+	return 0;
 }
 //---------------------------------------------------------------------------//
 AppCapabilities SetPlatformCapabilities(const AppCapabilities capabilities)
 {
-    g_capabilities = capabilities;
-    return eAppCapabilitiesLast;
+	g_capabilities = capabilities;
+	return eAppCapabilitiesLast;
 }
 //---------------------------------------------------------------------------//
 long DestroyObject(IComponentBase** pIntf)
 {
-    if(!*pIntf)
-        return -1;
+	if (!*pIntf)
+		return -1;
 
-    delete *pIntf;
-    *pIntf = 0;
-    return 0;
+	delete* pIntf;
+	*pIntf = 0;
+	return 0;
 }
 //---------------------------------------------------------------------------//
 const WCHAR_T* GetClassNames()
 {
-    return s_names;
+	return s_names;
 }
 //---------------------------------------------------------------------------//
 // WindowManager
 //---------------------------------------------------------------------------//
 AddInNative::AddInNative()
 {
-    m_iMemory = 0;
-    m_iConnect = 0;
+	m_iMemory = 0;
+	m_iConnect = 0;
 }
 //---------------------------------------------------------------------------//
 AddInNative::~AddInNative()
@@ -108,16 +108,16 @@ AddInNative::~AddInNative()
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::Init(void* pConnection)
-{ 
-    m_iConnect = (IAddInDefBase*)pConnection;
-    return m_iConnect != NULL;
+{
+	m_iConnect = (IAddInDefBase*)pConnection;
+	return m_iConnect != NULL;
 }
 //---------------------------------------------------------------------------//
 long AddInNative::GetInfo()
-{ 
-    // Component should put supported component technology version 
-    // This component supports 2.0 version
-    return 2000; 
+{
+	// Component should put supported component technology version 
+	// This component supports 2.0 version
+	return 2000;
 }
 //---------------------------------------------------------------------------//
 void AddInNative::Done()
@@ -172,160 +172,153 @@ bool AddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethodN
 
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const wchar_t* str)
 {
-    TV_VT(pvar) = VTYPE_PWSTR;
-    pvar->pwstrVal = NULL;
-    if (mm && str && wcslen(str)) {
-		size_t size = wcslen(str) + 1;
+	TV_VT(pvar) = VTYPE_PWSTR;
+	pvar->pwstrVal = NULL;
+	if (mm && str && wcslen(str)) {
+		unsigned long size = (unsigned long)wcslen(str) + 1;
 		if (mm->AllocMemory((void**)&pvar->pwstrVal, size * sizeof(WCHAR_T))) {
 			::convToShortWchar((WCHAR_T**)&pvar->pwstrVal, str, size);
-           	TV_VT(pvar) = VTYPE_PWSTR;
+			TV_VT(pvar) = VTYPE_PWSTR;
 			pvar->wstrLen = size;
 		}
 	}
 	return *this;
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::wstring &str)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::wstring& str)
 {
-    return operator<<(str.c_str());
+	return operator<<(str.c_str());
 }
 
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int64_t value)
 {
-    TV_VT(pvar) = VTYPE_I4;
-    TV_I8(pvar) = value;
-    return *this;
+	TV_VT(pvar) = VTYPE_I4;
+	TV_I8(pvar) = value;
+	return *this;
 }
 
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int32_t value)
 {
-    TV_VT(pvar) = VTYPE_I4;
-    TV_I4(pvar) = value;
-    return *this;
+	TV_VT(pvar) = VTYPE_I4;
+	TV_I4(pvar) = value;
+	return *this;
 }
 
 const WCHAR_T* AddInNative::W(const wchar_t* str) const
 {
-    WCHAR_T* res = NULL;
-    if (m_iMemory && str && wcslen(str)) {
-        size_t size = wcslen(str) + 1;
-        if (m_iMemory->AllocMemory((void**)res, size * sizeof(WCHAR_T))) {
-            ::convToShortWchar(&res, str, size);
-        }
-    }
-    return res;
+	WCHAR_T* res = NULL;
+	if (m_iMemory && str && wcslen(str)) {
+		unsigned long size = (unsigned long)wcslen(str) + 1;
+		if (m_iMemory->AllocMemory((void**)res, size * sizeof(WCHAR_T))) {
+			::convToShortWchar(&res, str, size);
+		}
+	}
+	return res;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // ILanguageExtenderBase
 //---------------------------------------------------------------------------//
 bool AddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
-{ 
-    const wchar_t *wsExtension = L"WindowsControl";
-    int iActualSize = ::wcslen(wsExtension) + 1;
-    WCHAR_T* dest = 0;
+{
+	const wchar_t* wsExtension = L"WindowsControl";
+	unsigned long iActualSize = (unsigned long)::wcslen(wsExtension) + 1;
+	WCHAR_T* dest = 0;
 
-    if (m_iMemory)
-    {
-        if(m_iMemory->AllocMemory((void**)wsExtensionName, iActualSize * sizeof(WCHAR_T)))
-            ::convToShortWchar(wsExtensionName, wsExtension, iActualSize);
-        return true;
-    }
+	if (m_iMemory)
+	{
+		if (m_iMemory->AllocMemory((void**)wsExtensionName, iActualSize * sizeof(WCHAR_T)))
+			::convToShortWchar(wsExtensionName, wsExtension, iActualSize);
+		return true;
+	}
 
-    return false; 
+	return false;
 }
 //---------------------------------------------------------------------------//
 long AddInNative::GetNProps()
-{ 
-    // You may delete next lines and add your own implementation code here
-    return ePropLast;
+{
+	// You may delete next lines and add your own implementation code here
+	return ePropLast;
 }
 //---------------------------------------------------------------------------//
 long AddInNative::FindProp(const WCHAR_T* wsPropName)
-{ 
+{
 	return FindName(m_PropList, wsPropName);
 }
 //---------------------------------------------------------------------------//
 const WCHAR_T* AddInNative::GetPropName(long lPropNum, long lPropAlias)
-{ 
+{
 	return GetName(m_PropList, lPropNum, lPropAlias);
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
-{ 
-    switch (lPropNum) {
-    case eActiveWindow:
-        return VA(pvarPropVal) << (int64_t)WindowManager::ActiveWindow();
-    case eProcessList:
-        return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
-    case eWindowList:
-        return VA(pvarPropVal) << WindowManager::GetWindowList(NULL, 0);
-    case eDisplayList:
-        return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
-    case eScreenInfo:
-        return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
-    case eProcessId:
-        return VA(pvarPropVal) << ProcessManager::ProcessId();
-    default:
-        return false;
-    }
+{
+	switch (lPropNum) {
+	case eActiveWindow:
+		return VA(pvarPropVal) << (int64_t)WindowManager::ActiveWindow();
+	case eProcessList:
+		return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
+	case eWindowList:
+		return VA(pvarPropVal) << WindowManager::GetWindowList(NULL, 0);
+	case eDisplayList:
+		return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
+	case eScreenInfo:
+		return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
+	case eProcessId:
+		return VA(pvarPropVal) << ProcessManager::ProcessId();
+	default:
+		return false;
+	}
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::SetPropVal(const long lPropNum, tVariant *varPropVal)
-{ 
-   return false;
+bool AddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
+{
+	return false;
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::IsPropReadable(const long lPropNum)
-{ 
-    return true;
+{
+	return true;
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::IsPropWritable(const long lPropNum)
 {
-    return false;
+	return false;
 }
 //---------------------------------------------------------------------------//
 long AddInNative::GetNMethods()
-{ 
-    return eMethLast;
+{
+	return eMethLast;
 }
 //---------------------------------------------------------------------------//
 long AddInNative::FindMethod(const WCHAR_T* wsMethodName)
-{ 
+{
 	return FindName(m_MethList, wsMethodName);
 }
 //---------------------------------------------------------------------------//
 const WCHAR_T* AddInNative::GetMethodName(const long lMethodNum, const long lMethodAlias)
-{ 
+{
 	return GetName(m_MethList, lMethodNum, lMethodAlias);
 }
 //---------------------------------------------------------------------------//
 long AddInNative::GetNParams(const long lMethodNum)
-{ 
+{
 	return GetNParams(m_MethList, lMethodNum);
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant *pvarParamDefValue)
-{ 
-    TV_VT(pvarParamDefValue)= VTYPE_EMPTY;
-
-    switch(lMethodNum)
-    { 
-    default:
-        return false;
-    }
-
-    return false;
-} 
+bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
+{
+	TV_VT(pvarParamDefValue) = VTYPE_EMPTY;
+	return false;
+}
 //---------------------------------------------------------------------------//
 bool AddInNative::HasRetVal(const long lMethodNum)
-{ 
+{
 	return HasRetVal(m_MethList, lMethodNum);
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
-{ 
+{
 	switch (lMethodNum)
 	{
 	case eSetWindowPos:
@@ -345,8 +338,6 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 		return WindowManager::EnableResizing(paParams, lSizeArray);
 	case eSetWindowState:
 		return WindowManager::SetWindowState(paParams, lSizeArray);
-	case eSetWindowText:
-		return WindowManager::SetText(paParams, lSizeArray);
 #endif
 	default:
 		return false;
@@ -354,7 +345,7 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{ 
+{
 	switch (lMethodNum) {
 	case eFindTestClient:
 		return VA(pvarRetValue) << ProcessManager::FindTestClient(paParams, lSizeArray);
@@ -366,7 +357,7 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		return VA(pvarRetValue) << WindowManager::GetWindowList(paParams, lSizeArray);
 	case eGetWindowInfo:
 		return VA(pvarRetValue) << WindowManager::GetWindowInfo(paParams, lSizeArray);
-    case eGetWindowSize:
+	case eGetWindowSize:
 		return VA(pvarRetValue) << WindowManager::GetWindowSize(paParams, lSizeArray);
 	case eTakeScreenshot:
 		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
@@ -387,11 +378,11 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 void AddInNative::SetLocale(const WCHAR_T* loc)
 {
 #if !defined( __linux__ ) && !defined(__APPLE__)
-    _wsetlocale(LC_ALL, loc);
+	_wsetlocale(LC_ALL, loc);
 #else
-    //We convert in char* char_locale
-    //also we establish locale
-    //setlocale(LC_ALL, char_locale);
+	//We convert in char* char_locale
+	//also we establish locale
+	//setlocale(LC_ALL, char_locale);
 #endif
 }
 /////////////////////////////////////////////////////////////////////////////
@@ -399,154 +390,154 @@ void AddInNative::SetLocale(const WCHAR_T* loc)
 //---------------------------------------------------------------------------//
 bool AddInNative::setMemManager(void* mem)
 {
-    m_iMemory = (IMemoryManager*)mem;
-    return m_iMemory != 0;
+	m_iMemory = (IMemoryManager*)mem;
+	return m_iMemory != 0;
 }
 //---------------------------------------------------------------------------//
-void AddInNative::addError(uint32_t wcode, const wchar_t* source, 
-                        const wchar_t* descriptor, long code)
+void AddInNative::addError(uint32_t wcode, const wchar_t* source,
+	const wchar_t* descriptor, long code)
 {
-    if (m_iConnect)
-    {
-        WCHAR_T *err = 0;
-        WCHAR_T *descr = 0;
-        
-        ::convToShortWchar(&err, source);
-        ::convToShortWchar(&descr, descriptor);
+	if (m_iConnect)
+	{
+		WCHAR_T* err = 0;
+		WCHAR_T* descr = 0;
 
-        m_iConnect->AddError(wcode, err, descr, code);
-        delete[] err;
-        delete[] descr;
-    }
+		::convToShortWchar(&err, source);
+		::convToShortWchar(&descr, descriptor);
+
+		m_iConnect->AddError(wcode, err, descr, code);
+		delete[] err;
+		delete[] descr;
+	}
 }
 //---------------------------------------------------------------------------//
 uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len)
 {
-    if (!len)
-        len = ::wcslen(Source) + 1;
+	if (!len)
+		len = (uint32_t)::wcslen(Source) + 1;
 
-    if (!*Dest)
-        *Dest = new WCHAR_T[len];
+	if (!*Dest)
+		*Dest = new WCHAR_T[len];
 
-    WCHAR_T* tmpShort = *Dest;
-    wchar_t* tmpWChar = (wchar_t*) Source;
-    uint32_t res = 0;
+	WCHAR_T* tmpShort = *Dest;
+	wchar_t* tmpWChar = (wchar_t*)Source;
+	uint32_t res = 0;
 
-    ::memset(*Dest, 0, len * sizeof(WCHAR_T));
+	::memset(*Dest, 0, len * sizeof(WCHAR_T));
 #ifdef __linux__
-    size_t succeed = (size_t)-1;
-    size_t f = len * sizeof(wchar_t), t = len * sizeof(WCHAR_T);
-    const char* fromCode = sizeof(wchar_t) == 2 ? "UTF-16" : "UTF-32";
-    iconv_t cd = iconv_open("UTF-16LE", fromCode);
-    if (cd != (iconv_t)-1)
-    {
-        succeed = iconv(cd, (char**)&tmpWChar, &f, (char**)&tmpShort, &t);
-        iconv_close(cd);
-        if(succeed != (size_t)-1)
-            return (uint32_t)succeed;
-    }
+	size_t succeed = (size_t)-1;
+	size_t f = len * sizeof(wchar_t), t = len * sizeof(WCHAR_T);
+	const char* fromCode = sizeof(wchar_t) == 2 ? "UTF-16" : "UTF-32";
+	iconv_t cd = iconv_open("UTF-16LE", fromCode);
+	if (cd != (iconv_t)-1)
+	{
+		succeed = iconv(cd, (char**)&tmpWChar, &f, (char**)&tmpShort, &t);
+		iconv_close(cd);
+		if (succeed != (size_t)-1)
+			return (uint32_t)succeed;
+	}
 #endif //__linux__
-    for (; len; --len, ++res, ++tmpWChar, ++tmpShort)
-    {
-        *tmpShort = (WCHAR_T)*tmpWChar;
-    }
+	for (; len; --len, ++res, ++tmpWChar, ++tmpShort)
+	{
+		*tmpShort = (WCHAR_T)*tmpWChar;
+	}
 
-    return res;
+	return res;
 }
 //---------------------------------------------------------------------------//
 uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len)
 {
-    if (!len)
-        len = getLenShortWcharStr(Source) + 1;
+	if (!len)
+		len = getLenShortWcharStr(Source) + 1;
 
-    if (!*Dest)
-        *Dest = new wchar_t[len];
+	if (!*Dest)
+		*Dest = new wchar_t[len];
 
-    wchar_t* tmpWChar = *Dest;
-    WCHAR_T* tmpShort = (WCHAR_T*)Source;
-    uint32_t res = 0;
+	wchar_t* tmpWChar = *Dest;
+	WCHAR_T* tmpShort = (WCHAR_T*)Source;
+	uint32_t res = 0;
 
-    ::memset(*Dest, 0, len * sizeof(wchar_t));
+	::memset(*Dest, 0, len * sizeof(wchar_t));
 #ifdef __linux__
-    size_t succeed = (size_t)-1;
-    const char* fromCode = sizeof(wchar_t) == 2 ? "UTF-16" : "UTF-32";
-    size_t f = len * sizeof(WCHAR_T), t = len * sizeof(wchar_t);
-    iconv_t cd = iconv_open("UTF-32LE", fromCode);
-    if (cd != (iconv_t)-1)
-    {
-        succeed = iconv(cd, (char**)&tmpShort, &f, (char**)&tmpWChar, &t);
-        iconv_close(cd);
-        if(succeed != (size_t)-1)
-            return (uint32_t)succeed;
-    }
+	size_t succeed = (size_t)-1;
+	const char* fromCode = sizeof(wchar_t) == 2 ? "UTF-16" : "UTF-32";
+	size_t f = len * sizeof(WCHAR_T), t = len * sizeof(wchar_t);
+	iconv_t cd = iconv_open("UTF-32LE", fromCode);
+	if (cd != (iconv_t)-1)
+	{
+		succeed = iconv(cd, (char**)&tmpShort, &f, (char**)&tmpWChar, &t);
+		iconv_close(cd);
+		if (succeed != (size_t)-1)
+			return (uint32_t)succeed;
+	}
 #endif //__linux__
-    for (; len; --len, ++res, ++tmpWChar, ++tmpShort)
-    {
-        *tmpWChar = (wchar_t)*tmpShort;
-    }
+	for (; len; --len, ++res, ++tmpWChar, ++tmpShort)
+	{
+		*tmpWChar = (wchar_t)*tmpShort;
+	}
 
-    return res;
+	return res;
 }
 //---------------------------------------------------------------------------//
 uint32_t getLenShortWcharStr(const WCHAR_T* Source)
 {
-    uint32_t res = 0;
-    WCHAR_T *tmpShort = (WCHAR_T*)Source;
+	uint32_t res = 0;
+	WCHAR_T* tmpShort = (WCHAR_T*)Source;
 
-    while (*tmpShort++)
-        ++res;
+	while (*tmpShort++)
+		++res;
 
-    return res;
+	return res;
 }
 //---------------------------------------------------------------------------//
 
 #ifdef LINUX_OR_MACOS
 WcharWrapper::WcharWrapper(const WCHAR_T* str) : m_str_WCHAR(NULL),
-                           m_str_wchar(NULL)
+m_str_wchar(NULL)
 {
-    if (str)
-    {
-        int len = getLenShortWcharStr(str);
-        m_str_WCHAR = new WCHAR_T[len + 1];
-        memset(m_str_WCHAR,   0, sizeof(WCHAR_T) * (len + 1));
-        memcpy(m_str_WCHAR, str, sizeof(WCHAR_T) * len);
-        ::convFromShortWchar(&m_str_wchar, m_str_WCHAR);
-    }
+	if (str)
+	{
+		int len = getLenShortWcharStr(str);
+		m_str_WCHAR = new WCHAR_T[len + 1];
+		memset(m_str_WCHAR, 0, sizeof(WCHAR_T) * (len + 1));
+		memcpy(m_str_WCHAR, str, sizeof(WCHAR_T) * len);
+		::convFromShortWchar(&m_str_wchar, m_str_WCHAR);
+	}
 }
 #endif
 //---------------------------------------------------------------------------//
 WcharWrapper::WcharWrapper(const wchar_t* str) :
 #ifdef LINUX_OR_MACOS
-    m_str_WCHAR(NULL),
+	m_str_WCHAR(NULL),
 #endif 
-    m_str_wchar(NULL)
+	m_str_wchar(NULL)
 {
-    if (str)
-    {
-        int len = wcslen(str);
-        m_str_wchar = new wchar_t[len + 1];
-        memset(m_str_wchar, 0, sizeof(wchar_t) * (len + 1));
-        memcpy(m_str_wchar, str, sizeof(wchar_t) * len);
+	if (str)
+	{
+		size_t len = wcslen(str);
+		m_str_wchar = new wchar_t[len + 1];
+		memset(m_str_wchar, 0, sizeof(wchar_t) * (len + 1));
+		memcpy(m_str_wchar, str, sizeof(wchar_t) * len);
 #ifdef LINUX_OR_MACOS
-        ::convToShortWchar(&m_str_WCHAR, m_str_wchar);
+		::convToShortWchar(&m_str_WCHAR, m_str_wchar);
 #endif
-    }
+	}
 
 }
 //---------------------------------------------------------------------------//
 WcharWrapper::~WcharWrapper()
 {
 #ifdef LINUX_OR_MACOS
-    if (m_str_WCHAR)
-    {
-        delete [] m_str_WCHAR;
-        m_str_WCHAR = NULL;
-    }
+	if (m_str_WCHAR)
+	{
+		delete[] m_str_WCHAR;
+		m_str_WCHAR = NULL;
+	}
 #endif
-    if (m_str_wchar)
-    {
-        delete [] m_str_wchar;
-        m_str_wchar = NULL;
-    }
+	if (m_str_wchar)
+	{
+		delete[] m_str_wchar;
+		m_str_wchar = NULL;
+	}
 }
 //---------------------------------------------------------------------------//

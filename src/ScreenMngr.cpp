@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "ScreenMngr.h"
 #include "json_ext.h"
-#include <X11/extensions/Xrandr.h>
 
 BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
@@ -12,36 +11,37 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, co
 
 #ifdef __linux__
 
+#include <X11/extensions/Xrandr.h>
 #include "screenshot.h"
 #include "XWinBase.h"
 
 class ScreenEnumerator : public WindowHelper
 {
 public:
-    std::wstring Enumerate() {
+	std::wstring Enumerate() {
 		int count_screens = ScreenCount(display);
 		for (int i = 0; i < count_screens; ++i) {
-			Screen *screen = ScreenOfDisplay(display, i);
+			Screen* screen = ScreenOfDisplay(display, i);
 			JSON j;
 			j["id"] = i;
 			j["width"] = screen->width;
 			j["height"] = screen->height;
 			json.push_back(j);
 		}
-        return *this;
+		return *this;
 	}
 };
 
 class DisplayEnumerator : public WindowHelper
 {
 public:
-    std::wstring Enumerate() {
+	std::wstring Enumerate() {
 		int	count;
-        Window root = DefaultRootWindow(display);
+		Window root = DefaultRootWindow(display);
 		XRRMonitorInfo* monitors = XRRGetMonitors(display, root, false, &count);
 		if (count == -1) return {};
 		for (int i = 0; i < count; ++i) {
-			XRRMonitorInfo* info = monitors  + i;
+			XRRMonitorInfo* info = monitors + i;
 			char* name = XGetAtomName(display, info->name);
 			JSON j;
 			j["name"] = name;
@@ -59,7 +59,7 @@ public:
 			json.push_back(j);
 		}
 		XFree(monitors);
-        return *this;
+		return *this;
 	}
 };
 
@@ -80,39 +80,39 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 
 BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 {
-    Display * display = XOpenDisplay(NULL);
-    if (display == NULL) return false;
+	Display* display = XOpenDisplay(NULL);
+	if (display == NULL) return false;
 
 	Window window = hWnd;
 	if (window == 0) window = DefaultRootWindow(display);
 
 	BOOL success = false;
-    XWindowAttributes gwa;
-    XGetWindowAttributes(display, window, &gwa);
-    XImage * image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
-    X11Screenshot screenshot = X11Screenshot(image);
+	XWindowAttributes gwa;
+	XGetWindowAttributes(display, window, &gwa);
+	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
+	X11Screenshot screenshot = X11Screenshot(image);
 	std::vector<char> buffer;
-    if (screenshot.save_to_png(buffer)) {
+	if (screenshot.save_to_png(buffer)) {
 		pvarRetValue->strLen = buffer.size();
 		m_iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
 		TV_VT(pvarRetValue) = VTYPE_BLOB;
 		if (pvarRetValue->pstrVal) {
-	        memcpy((void*)pvarRetValue->pstrVal, &buffer[0], pvarRetValue->strLen);
+			memcpy((void*)pvarRetValue->pstrVal, &buffer[0], pvarRetValue->strLen);
 			success = true;
 		}
 	}
-    XDestroyImage(image);
-    XCloseDisplay(display);
+	XDestroyImage(image);
+	XCloseDisplay(display);
 	return success;
 }
 
 class ScreenHelper : public WindowHelper
 {
-public:	
+public:
 	ScreenHelper() {
-		unsigned long *geometry = NULL;
+		unsigned long* geometry = NULL;
 		unsigned long geometry_size = 0;
-		unsigned long *workarea = NULL;
+		unsigned long* workarea = NULL;
 		unsigned long workarea_size = 0;
 		Window root = DefaultRootWindow(display);
 		if (!GetProperty(root, XA_CARDINAL, "_NET_DESKTOP_GEOMETRY", VXX(&geometry), &geometry_size)) return;
@@ -163,7 +163,7 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 
 #else//__linux__
 
-static JSON RectToJson(const RECT& rect)
+JSON RectToJson(const RECT& rect)
 {
 	JSON json;
 	json["left"] = rect.left;
@@ -234,7 +234,7 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 
 std::wstring ScreenManager::GetScreenInfo()
 {
-	RECT rect, work{0,0,0,0};
+	RECT rect, work{ 0,0,0,0 };
 	rect.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
 	rect.top = GetSystemMetrics(SM_YVIRTUALSCREEN);
 	rect.right = rect.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -401,6 +401,5 @@ BOOL ScreenManager::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 	}
 	return Ret;
 }
-
 
 #endif//__linux__

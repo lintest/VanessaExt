@@ -16,4 +16,10 @@ public:
 	}
 };
 
+#ifdef _WINDOWS
+
+#include <windows.h>
+JSON RectToJson(const RECT& rect);
+#endif//_WINDOW
+
 #endif//__JSON_EXT_H__

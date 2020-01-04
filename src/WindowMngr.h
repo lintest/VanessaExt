@@ -20,6 +20,8 @@ public:
 	static BOOL Activate(tVariant* paParams, const long lSizeArray);
 private:
 	static BOOL WindowManager::SetWindowState(HWND hWnd, int iMode, bool bActivate);
+	int32_t WindowManager::GetWindowState(tVariant* paParams, const long lSizeArray);
+	static bool IsMaximized(HWND hWnd);
 };
 
 #endif //__WINDOWMNGR_H__

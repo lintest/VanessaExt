@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include "XWinBase.h"
 
-static std::string file2str(const std::string &filepath) {
+static std::string file2str(const std::string& filepath) {
 	std::ifstream file(filepath);
 	std::string text;
 	if (file) std::getline(file, text);
@@ -25,36 +25,36 @@ protected:
 		std::string filepath = proc + to_string(pid) + "/cmdline";
 		std::string line = file2str(filepath);
 		if (original) return line;
-		for ( std::string::iterator it = line.begin(); it != line.end(); ++it) {
-    		if (*it == 0) *it = ' ';
+		for (std::string::iterator it = line.begin(); it != line.end(); ++it) {
+			if (*it == 0) *it = ' ';
 		}
 		return line;
 	}
 
 	std::string GetCreationDate(unsigned long pid) {
-			struct stat st;
-			std::string filepath = proc + to_string(pid);
-			stat(filepath.c_str(), &st);
-			time_t t = st.st_mtime;
-			struct tm lt;
-			localtime_r(&t, &lt);
-			char buffer[80];
-			strftime(buffer, sizeof(buffer), "%FT%T", &lt);
-			return buffer;
-		}	
+		struct stat st;
+		std::string filepath = proc + to_string(pid);
+		stat(filepath.c_str(), &st);
+		time_t t = st.st_mtime;
+		struct tm lt;
+		localtime_r(&t, &lt);
+		char buffer[80];
+		strftime(buffer, sizeof(buffer), "%FT%T", &lt);
+		return buffer;
+	}
 
 };
 
 class ClientFinder : public ProcessEnumerator
 {
-private:	
+private:
 	int m_port;
 
 protected:
-    virtual bool EnumWindow(Window window) {
+	virtual bool EnumWindow(Window window) {
 		std::string str = GetWindowClass(window);
 		if (str.substr(0, 4) != "1cv8") return true;
-		unsigned long pid =  GetWindowPid(window);
+		unsigned long pid = GetWindowPid(window);
 		if (NotFound(pid)) return true;
 		json["Window"] = (unsigned long)window;
 		json["Title"] = GetWindowTitle(window);
@@ -65,7 +65,7 @@ protected:
 	}
 
 public:
-    ClientFinder(int port): m_port(port) {}
+	ClientFinder(int port) : m_port(port) {}
 
 private:
 	bool NotFound(unsigned long pid) {
@@ -77,9 +77,9 @@ private:
 			if (line[i] != 0) continue;
 			first = second;
 			second = &line[0] + i + 1;
-			if (strcmp(first, "-TPort") == 0 
-				&& strcmp(port.c_str(), second) == 0) 
-					return false;
+			if (strcmp(first, "-TPort") == 0
+				&& strcmp(port.c_str(), second) == 0)
+				return false;
 		}
 		return true;
 	}
@@ -90,7 +90,7 @@ class ProcessList : public ProcessEnumerator
 private:
 	vector<unsigned long> v;
 protected:
-    virtual bool EnumWindow(Window window) {
+	virtual bool EnumWindow(Window window) {
 		unsigned long pid = GetWindowPid(window);
 		if (std::find(v.begin(), v.end(), pid) != v.end()) return true;
 		v.push_back(pid);
@@ -108,7 +108,7 @@ protected:
 class ProcessInfo : public ProcessEnumerator
 {
 protected:
-    virtual bool EnumWindow(Window window) {}
+	virtual bool EnumWindow(Window window) {}
 public:
 	ProcessInfo(unsigned long pid) {
 		json["CommandLine"] = GetCommandLine(pid);
@@ -273,7 +273,7 @@ public:
 	}
 };
 
-DWORD ProcessManager::ProcessId()
+int64_t ProcessManager::ProcessId()
 {
 	return(GetCurrentProcessId());
 }
@@ -349,7 +349,7 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 	if (!bResult && GetLastError() == -1 && hWnd)
 	{
 		nlohmann::json j = json[0];
-		j["Window"] = (UINT64) hWnd;
+		j["Window"] = (UINT64)hWnd;
 		const int length = GetWindowTextLength(hWnd);
 		if (length != 0) {
 			std::wstring text;
