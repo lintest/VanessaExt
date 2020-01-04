@@ -29,6 +29,7 @@ private:
 		eGetScreenRect,
 		eGetWindowList,
 		eGetWindowInfo,
+		eGetWindowSize,
 		eSetWindowSize,
 		eSetWindowPos,
 		eEnableResizing,

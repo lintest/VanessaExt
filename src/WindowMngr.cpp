@@ -38,7 +38,13 @@ public:
 		json["Class"] = GetWindowClass(window);
 		json["Title"] = GetWindowTitle(window);
 		json["ProcessId"] = GetWindowPid(window);
+	}
+};
 
+class WindowSize : public WindowHelper
+{
+public:
+	WindowSize(Window window) {
 		Window junkroot;
 		int x, y, junkx, junky;
 		unsigned int w, h, bw, depth;
@@ -52,6 +58,7 @@ public:
 		json["Height"] = h;
 		json["Right"] = x + w;
 		json["Bottom"] = y + h;
+		json["Window"] = window;
 	}
 };
 
@@ -68,6 +75,14 @@ std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeAr
 	Window window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	return WindowInfo(window);
+}
+
+std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 1) return {};
+	Window window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
+	return WindowSize(window);
 }
 
 HWND WindowManager::ActiveWindow()
