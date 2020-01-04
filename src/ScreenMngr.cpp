@@ -47,8 +47,8 @@ std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeA
 			MONITORINFOEX mi;
 			mi.cbSize = sizeof(mi);
 			if (::GetMonitorInfo(hMonitor, &mi)) {
-				j["Name"] = WC2MB((mi.szDevice));
-				j["Work"] = RectToJson(mi.rcWork);
+				json["Name"] = WC2MB((mi.szDevice));
+				json["Work"] = RectToJson(mi.rcWork);
 			}
 			nlohmann::json* json = (JSON*)lParam;
 			json->push_back(j);
@@ -251,7 +251,6 @@ BOOL ScreenManager::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 
 #else //_WINDOWS
 
-#include <X11/extensions/Xrandr.h>
 #include "screenshot.h"
 #include "XWinBase.h"
 
@@ -263,43 +262,74 @@ public:
 		for (int i = 0; i < count_screens; ++i) {
 			Screen* screen = ScreenOfDisplay(display, i);
 			JSON j;
-			j["Id"] = i;
-			j["Width"] = screen->width;
-			j["Height"] = screen->height;
+			json["Id"] = i;
+			json["Width"] = screen->width;
+			json["Height"] = screen->height;
 			json.push_back(j);
 		}
-		return *this;
+		return json;
 	}
 };
+
+static void Assign(JSON &json, Display *display, XRRMonitorInfo *info)
+{
+	char* name = XGetAtomName(display, info->name);
+	json["Name"] = name;
+	json["Left"] = info->x;
+	json["Top"] = info->y;
+	json["Width"] = info->width;
+	json["Height"] = info->height;
+	json["mWidth"] = info->mwidth;
+	json["mHeight"] = info->mheight;
+	json["Right"] = info->x + info->width;
+	json["Bottom"] = info->y + info->height;
+	json["Automatic"] = (bool)info->automatic;
+	json["Primary"] = (bool)info->primary;
+	XFree(name);
+}
 
 class DisplayEnumerator : public WindowHelper
 {
 public:
-	std::wstring Enumerate() {
+	std::wstring Enumerate(Window window) {
 		int	count;
 		Window root = DefaultRootWindow(display);
 		XRRMonitorInfo* monitors = XRRGetMonitors(display, root, false, &count);
-		if (count == -1) return {};
+		if (count == -1 || monitors == NULL) return {};
 		for (int i = 0; i < count; ++i) {
-			XRRMonitorInfo* info = monitors + i;
-			char* name = XGetAtomName(display, info->name);
+			if (window != 0) {
+				Rect rect(monitors + i);
+				int s = rect.Sq(Rect(display, window));
+				if (s == 0) continue;
+			}
 			JSON j;
-			j["Name"] = name;
-			j["Left"] = info->x;
-			j["Top"] = info->y;
-			j["Width"] = info->width;
-			j["Height"] = info->height;
-			j["mWidth"] = info->mwidth;
-			j["mHeight"] = info->mheight;
-			j["Right"] = info->x + info->width;
-			j["Bottom"] = info->y + info->height;
-			j["Automatic"] = (bool)info->automatic;
-			j["Primary"] = (bool)info->primary;
-			XFree(name);
+			Assign(j, display, monitors + i);
 			json.push_back(j);
 		}
 		XFree(monitors);
-		return *this;
+		return json;
+	}
+};
+
+class DisplayFinder : public WindowHelper
+{
+public:
+	std::wstring FindDisplay(Window window) {
+		if (window == 0) window = GetActiveWindow();
+		int	count = -1, result = -1; int sq = 0;
+		Window root = DefaultRootWindow(display);
+		XRRMonitorInfo* monitors = XRRGetMonitors(display, root, false, &count);
+		if (count == -1 || monitors == NULL) return {};
+		for (int i = 0; i < count; ++i) {
+			Rect rect(monitors + i);
+			int s = rect.Sq(Rect(display, window));
+			if (s > sq) { result = i; sq = s; }
+		}
+		if (result >= 0) {
+			Assign(json, display, monitors + result);
+		}
+		XFree(monitors);
+		return json;
 	}
 };
 
@@ -310,7 +340,16 @@ std::wstring ScreenManager::GetScreenList()
 
 std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
 {
-	return DisplayEnumerator().Enumerate();
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	return DisplayEnumerator().Enumerate(window);
+}
+
+std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+{
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	return DisplayFinder().FindDisplay(window);
 }
 
 BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
@@ -394,11 +433,6 @@ std::wstring ScreenManager::GetScreenInfo()
 	json["Bottom"] = json["Height"] = DisplayHeight(display, number);
 	XCloseDisplay(display);
 	return json;
-}
-
-std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
-{
-	return {};
 }
 
 #endif //_WINDOWS

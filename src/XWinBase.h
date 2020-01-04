@@ -8,6 +8,7 @@
 #include <fstream>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/Xrandr.h>
 
 #define p_verbose(...) if (envir_verbose) { \
     fprintf(stderr, __VA_ARGS__); \
@@ -24,6 +25,46 @@ class WindowHelper
 protected:
     JSON json;
     Display* display = NULL;
+
+    class Rect 
+    {
+    protected:
+        int left = 0;
+        int top = 0;
+        int right = 0;
+        int bottom = 0;
+        int min(int a, int b) { return a < b ? a : b; }
+        int max(int a, int b) { return a > b ? a : b; }
+    public:
+        Rect(int x, int y, int w, int h)
+            : left(x), top(y), right(x + w), bottom(y + h) {}
+
+        Rect(const Rect &r)
+            : left(r.left), top(r.top), right(r.right), bottom(r.bottom) {}
+
+        Rect(XRRMonitorInfo* i)
+            : left(i->x), top(i->y), right(i->x + i->width), bottom(i->y + i->height) {}
+
+        Rect(Display* display, Window window) {
+            Window junkroot;
+            int x, y, junkx, junky;
+            unsigned int w, h, bw, depth;
+            Status status = XGetGeometry(display, window, &junkroot, &junkx, &junky, &w, &h, &bw, &depth);
+            if (!status) return;
+            Bool ok = XTranslateCoordinates(display, window, junkroot, junkx, junky, &x, &y, &junkroot);
+            if (!ok) return;
+            left = x;
+            top = y;
+            right = x + w;
+            bottom = y + h;
+        }
+
+        int Sq(const Rect &r) {
+            int width = min(right, r.right) - max(left, r.left);
+            int height = min(bottom, r.bottom) - max(top, r.top);
+            return max(width, 0) * max(height, 0);
+        }
+    };
 
 public:
     WindowHelper() {
