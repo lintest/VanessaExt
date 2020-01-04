@@ -71,16 +71,16 @@ std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeAr
 
 std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)
 {
-	if (lSizeArray < 1) return {};
-	Window window = VarToInt(paParams);
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	return WindowInfo(window);
 }
 
 std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
 {
-	if (lSizeArray < 1) return {};
-	Window window = VarToInt(paParams);
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	return WindowSize(window);
 }
