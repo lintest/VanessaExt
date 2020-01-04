@@ -23,9 +23,9 @@ public:
 		for (int i = 0; i < count_screens; ++i) {
 			Screen* screen = ScreenOfDisplay(display, i);
 			JSON j;
-			j["id"] = i;
-			j["width"] = screen->width;
-			j["height"] = screen->height;
+			j["Id"] = i;
+			j["Width"] = screen->width;
+			j["Height"] = screen->height;
 			json.push_back(j);
 		}
 		return *this;
@@ -44,17 +44,17 @@ public:
 			XRRMonitorInfo* info = monitors + i;
 			char* name = XGetAtomName(display, info->name);
 			JSON j;
-			j["name"] = name;
-			j["left"] = info->x;
-			j["top"] = info->y;
-			j["width"] = info->width;
-			j["height"] = info->height;
-			j["mwidth"] = info->mwidth;
-			j["mheight"] = info->mheight;
-			j["right"] = info->x + info->width;
-			j["bottom"] = info->y + info->height;
-			j["automatic"] = (bool)info->automatic;
-			j["primary"] = (bool)info->primary;
+			j["Name"] = name;
+			j["Left"] = info->x;
+			j["Top"] = info->y;
+			j["Width"] = info->width;
+			j["Height"] = info->height;
+			j["mWidth"] = info->mwidth;
+			j["mHeight"] = info->mheight;
+			j["Right"] = info->x + info->width;
+			j["Bottom"] = info->y + info->height;
+			j["Automatic"] = (bool)info->automatic;
+			j["Primary"] = (bool)info->primary;
 			XFree(name);
 			json.push_back(j);
 		}
@@ -123,17 +123,17 @@ public:
 			}
 		};
 		if (geometry_size >= 2) {
-			json["left"] = json["top"] = 0;
-			json["right"] = json["width"] = geometry[0];
-			json["bottom"] = json["height"] = geometry[1];
+			json["Left"] = json["Top"] = 0;
+			json["Right"] = json["Width"] = geometry[0];
+			json["Bottom"] = json["Height"] = geometry[1];
 		}
 		if (workarea_size >= 4) {
 			JSON j;
-			j["left"] = workarea[0];
-			j["top"] = workarea[1];
-			j["width"] = workarea[2];
-			j["height"] = workarea[3];
-			json["work"] = j;
+			j["Left"] = workarea[0];
+			j["Top"] = workarea[1];
+			j["Width"] = workarea[2];
+			j["Height"] = workarea[3];
+			json["Work"] = j;
 		}
 		XFree(geometry);
 		XFree(workarea);
@@ -149,9 +149,9 @@ std::wstring ScreenManager::GetScreenInfo()
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return {};
 	int number = DefaultScreen(display);
-	json["left"] = json["top"] = 0;
-	json["right"] = json["width"] = DisplayWidth(display, number);
-	json["bottom"] = json["height"] = DisplayHeight(display, number);
+	json["Left"] = json["Top"] = 0;
+	json["Right"] = json["Width"] = DisplayWidth(display, number);
+	json["Bottom"] = json["Height"] = DisplayHeight(display, number);
 	XCloseDisplay(display);
 	return json;
 }
@@ -166,12 +166,12 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 nlohmann::json RectToJson(const RECT& rect)
 {
 	nlohmann::json json;
-	json["left"] = rect.left;
-	json["top"] = rect.top;
-	json["right"] = rect.right;
-	json["bottom"] = rect.bottom;
-	json["width"] = rect.right - rect.left;
-	json["height"] = rect.bottom - rect.top;
+	json["Left"] = rect.left;
+	json["Top"] = rect.top;
+	json["Right"] = rect.right;
+	json["Bottom"] = rect.bottom;
+	json["Width"] = rect.right - rect.left;
+	json["Height"] = rect.bottom - rect.top;
 	return json;
 }
 
@@ -196,8 +196,8 @@ std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeA
 			MONITORINFOEX mi;
 			mi.cbSize = sizeof(mi);
 			if (::GetMonitorInfo(hMonitor, &mi)) {
-				j["name"] = WC2MB((mi.szDevice));
-				j["work"] = RectToJson(mi.rcWork);
+				j["Name"] = WC2MB((mi.szDevice));
+				j["Work"] = RectToJson(mi.rcWork);
 			}
 			nlohmann::json* json = (JSON*)lParam;
 			json->push_back(j);
@@ -226,8 +226,8 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 	if (!bResult) return {};
 
 	nlohmann::json json = RectToJson(mi.rcMonitor);
-	json["name"] = WC2MB((mi.szDevice));
-	json["work"] = RectToJson(mi.rcWork);
+	json["Name"] = WC2MB((mi.szDevice));
+	json["Work"] = RectToJson(mi.rcWork);
 	return MB2WC(json.dump());
 }
 
@@ -240,7 +240,7 @@ std::wstring ScreenManager::GetScreenInfo()
 	rect.bottom = rect.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &work, 0);
 	nlohmann::json json = RectToJson(rect);
-	json["work"] = RectToJson(work);
+	json["Work"] = RectToJson(work);
 	return MB2WC(json.dump());
 }
 

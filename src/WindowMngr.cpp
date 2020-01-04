@@ -214,12 +214,12 @@ std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeAr
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	::GetWindowRect(hWnd, &rect);
 	JSON json;
-	json["left"] = rect.left;
-	json["top"] = rect.top;
-	json["right"] = rect.right;
-	json["bottom"] = rect.bottom;
-	json["width"] = rect.right - rect.left;
-	json["height"] = rect.bottom - rect.top;
+	json["Left"] = rect.left;
+	json["Top"] = rect.top;
+	json["Right"] = rect.right;
+	json["Bottom"] = rect.bottom;
+	json["Width"] = rect.right - rect.left;
+	json["Height"] = rect.bottom - rect.top;
 	json["Window"] = (INT64)hWnd;
 	return json;
 }
