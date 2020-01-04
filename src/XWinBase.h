@@ -128,6 +128,20 @@ protected:
         return S(buffer);
     }
 
+	bool IsMaximized(Window window) {
+        bool max_horz = false, max_vert = false;
+        Atom xa_horz = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+		Atom xa_vert = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", False);        
+		unsigned long size, *states = NULL;
+        if (!GetProperty(window, XA_ATOM, "_NET_WM_STATE", VXX(&states), &size)) return false;
+        for (unsigned long i = 0; i < size; i++) {
+            if (states[i] == xa_horz) max_horz = true;
+            if (states[i] == xa_vert) max_vert = true;
+        }
+        return max_horz && max_vert;
+    }
+
+
 public:
     Window GetActiveWindow() {
         Window *buffer = NULL;

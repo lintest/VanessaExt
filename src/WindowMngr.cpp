@@ -37,6 +37,7 @@ public:
 		json["Owner"] = GetWindowOwner(window);
 		json["Class"] = GetWindowClass(window);
 		json["Title"] = GetWindowTitle(window);
+		json["Maximized"] = IsMaximized(window);
 		json["ProcessId"] = GetWindowPid(window);
 	}
 };
@@ -61,6 +62,11 @@ public:
 		json["Window"] = window;
 	}
 };
+
+bool WindowManager::IsMaximized(HWND hWnd)
+{
+
+}
 
 std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
@@ -100,24 +106,27 @@ BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 
 BOOL  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
 {
-	if (lSizeArray < 1) return false;
-	Window window = VarToInt(paParams);
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
 	WindowHelper().Maximize(window, false);
 	return true;
 }
 
 BOOL  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
 {
-	if (lSizeArray < 1) return false;
-	Window window = VarToInt(paParams);
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
 	WindowHelper().Maximize(window, true);
 	return true;
 }
 
 BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
 {
-	if (lSizeArray < 1) return false;
-	Window window = VarToInt(paParams);
+	Window window = 0;
+	if (lSizeArray > 0) window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
 	WindowHelper().Minimize(window);
 	return true;
 }
@@ -126,6 +135,7 @@ BOOL WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	Window window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 2);
 	WindowHelper().SetWindowSize(window, x, y);
@@ -136,6 +146,7 @@ BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	Window window = VarToInt(paParams);
+	if (window == 0) window = ActiveWindow();
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 2);
 	WindowHelper().SetWindowPos(window, x, y);
