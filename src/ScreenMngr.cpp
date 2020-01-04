@@ -163,9 +163,9 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 
 #else//__linux__
 
-JSON RectToJson(const RECT& rect)
+nlohmann::json RectToJson(const RECT& rect)
 {
-	JSON json;
+	nlohmann::json json;
 	json["left"] = rect.left;
 	json["top"] = rect.top;
 	json["right"] = rect.right;
@@ -189,24 +189,23 @@ std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeA
 		lpRect = &rect;
 	}
 
-	JSON json;
+	nlohmann::json json;
 	BOOL bResult = ::EnumDisplayMonitors(hdc, lpRect, [](HMONITOR hMonitor, HDC, LPRECT rect, LPARAM lParam) -> BOOL
 		{
-			JSON j = RectToJson(*rect);
+			nlohmann::json j = RectToJson(*rect);
 			MONITORINFOEX mi;
 			mi.cbSize = sizeof(mi);
 			if (::GetMonitorInfo(hMonitor, &mi)) {
 				j["name"] = WC2MB((mi.szDevice));
 				j["work"] = RectToJson(mi.rcWork);
 			}
-			JSON* json = (JSON*)lParam;
+			nlohmann::json* json = (JSON*)lParam;
 			json->push_back(j);
 			return TRUE;
 		}, (LPARAM)&json);
 
 	if (hdc) ReleaseDC(hWnd, hdc);
-
-	return json;
+	return MB2WC(json.dump());
 }
 
 std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
@@ -226,10 +225,10 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 	BOOL bResult = ::GetMonitorInfo(hMonitor, &mi);
 	if (!bResult) return {};
 
-	JSON json = RectToJson(mi.rcMonitor);
+	nlohmann::json json = RectToJson(mi.rcMonitor);
 	json["name"] = WC2MB((mi.szDevice));
 	json["work"] = RectToJson(mi.rcWork);
-	return json;
+	return MB2WC(json.dump());
 }
 
 std::wstring ScreenManager::GetScreenInfo()
@@ -240,9 +239,9 @@ std::wstring ScreenManager::GetScreenInfo()
 	rect.right = rect.left + GetSystemMetrics(SM_CXVIRTUALSCREEN);
 	rect.bottom = rect.top + GetSystemMetrics(SM_CYVIRTUALSCREEN);
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &work, 0);
-	JSON json = RectToJson(rect);
+	nlohmann::json json = RectToJson(rect);
 	json["work"] = RectToJson(work);
-	return json;
+	return MB2WC(json.dump());
 }
 
 #include <dwmapi.h>

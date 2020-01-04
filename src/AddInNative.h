@@ -26,7 +26,7 @@ private:
 		eGetProcessInfo,
 		eGetDisplayList,
 		eGetDisplayInfo,
-		eGetScreenRect,
+		eGetScreenInfo,
 		eGetWindowList,
 		eGetWindowInfo,
 		eGetWindowSize,

@@ -39,7 +39,7 @@ const std::vector<AddInNative::Alias> AddInNative::m_MethList{
 	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
 	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
 	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
-	Alias(eGetScreenRect   , 0, true , L"GetScreenRect"    , L"ПолучитьРазмерЭкрана"),
+	Alias(eGetScreenInfo   , 0, true , L"GetScreenInfo"    , L"ПолучитьСвойстваЭкрана"),
 	Alias(eGetWindowList   , 1, true , L"GetWindowList"    , L"ПолучитьСписокОкон"),
 	Alias(eGetWindowInfo   , 1, true , L"GetWindowInfo"    , L"ПолучитьСвойстваОкна"),
 	Alias(eGetWindowSize   , 1, true , L"GetWindowSize"    , L"ПолучитьРазмерОкна"),
@@ -349,6 +349,8 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 	switch (lMethodNum) {
 	case eFindTestClient:
 		return VA(pvarRetValue) << ProcessManager::FindTestClient(paParams, lSizeArray);
+	case eGetScreenInfo:
+		return VA(pvarRetValue) << ScreenManager::GetScreenInfo();
 	case eGetProcessList:
 		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
 	case eGetProcessInfo:

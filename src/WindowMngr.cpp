@@ -208,12 +208,18 @@ std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeAr
 
 std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
 {
-	RECT rect;
 	HWND hWnd = 0;
+	RECT rect{0,0,0,0};
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	::GetWindowRect(hWnd, &rect);
-	JSON json = RectToJson(rect);
+	JSON json;
+	json["left"] = rect.left;
+	json["top"] = rect.top;
+	json["right"] = rect.right;
+	json["bottom"] = rect.bottom;
+	json["width"] = rect.right - rect.left;
+	json["height"] = rect.bottom - rect.top;
 	json["Window"] = (INT64)hWnd;
 	return json;
 }
@@ -264,6 +270,7 @@ BOOL WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 	HWND hWnd = VarToHwnd(paParams);
 	int w = VarToInt(paParams + 1);
 	int h = VarToInt(paParams + 2);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	::SetWindowPos(hWnd, 0, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	::UpdateWindow(hWnd);
 	return true;
@@ -275,6 +282,7 @@ BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 	HWND hWnd = VarToHwnd(paParams);
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 2);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	::SetWindowPos(hWnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	::UpdateWindow(hWnd);
 	return true;
@@ -285,6 +293,7 @@ BOOL WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
 	if (lSizeArray < 2) return false;
 	HWND hWnd = VarToHwnd(paParams);
 	BOOL enable = VarToInt(paParams + 1);
+	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	LONG style = ::GetWindowLong(hWnd, GWL_STYLE);
 	style = enable ? (style | WS_SIZEBOX) : (style & ~WS_SIZEBOX);
 	::SetWindowLong(hWnd, GWL_STYLE, style);
