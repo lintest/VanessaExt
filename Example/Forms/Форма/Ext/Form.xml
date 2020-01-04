@@ -119,11 +119,6 @@
 											<CommandName>Form.Command.Распахнуть</CommandName>
 											<ExtendedTooltip name="СписокОконРаспахнутьРасширеннаяПодсказка" id="174"/>
 										</Button>
-										<Button name="СписокОконАктивировать" id="120">
-											<Type>CommandBarButton</Type>
-											<CommandName>Form.Command.Активировать</CommandName>
-											<ExtendedTooltip name="СписокОконАктивироватьРасширеннаяПодсказка" id="121"/>
-										</Button>
 									</ChildItems>
 								</ButtonGroup>
 							</ChildItems>
@@ -347,102 +342,34 @@
 								</Button>
 							</ChildItems>
 						</UsualGroup>
-						<UsualGroup name="ПанельУправленияСтатусом" id="199">
+						<UsualGroup name="ПанельСвойстваОкна" id="199">
 							<Title>
 								<v8:item>
 									<v8:lang>ru</v8:lang>
-									<v8:content>Панель управления статусом</v8:content>
+									<v8:content>Панель свойства окна</v8:content>
 								</v8:item>
 							</Title>
 							<ToolTip>
 								<v8:item>
 									<v8:lang>ru</v8:lang>
-									<v8:content>Панель управления статусом</v8:content>
+									<v8:content>Панель свойства окна</v8:content>
 								</v8:item>
 							</ToolTip>
 							<Group>Horizontal</Group>
 							<Representation>None</Representation>
 							<ShowTitle>false</ShowTitle>
-							<ExtendedTooltip name="ПанельУправленияСтатусомРасширеннаяПодсказка" id="200"/>
+							<ExtendedTooltip name="ПанельСвойстваОкнаРасширеннаяПодсказка" id="200"/>
 							<ChildItems>
-								<Button name="ПолучитьСтатус" id="207">
+								<Button name="ПолучитьСвойстваОкна" id="265">
 									<Type>UsualButton</Type>
-									<CommandName>Form.Command.ПолучитьСтатус</CommandName>
-									<ExtendedTooltip name="ПолучитьСтатусРасширеннаяПодсказка" id="208"/>
+									<CommandName>Form.Command.ПолучитьСвойстваОкна</CommandName>
+									<ExtendedTooltip name="ПолучитьСвойстваОкнаРасширеннаяПодсказка" id="266"/>
 								</Button>
-								<Button name="УстановитьСтатус" id="209">
+								<Button name="ПолучитьРазмерыОкна" id="267">
 									<Type>UsualButton</Type>
-									<CommandName>Form.Command.УстановитьСтатус</CommandName>
-									<ExtendedTooltip name="УстановитьСтатусРасширеннаяПодсказка" id="210"/>
+									<CommandName>Form.Command.ПолучитьРазмерОкна</CommandName>
+									<ExtendedTooltip name="ПолучитьРазмерыОкнаРасширеннаяПодсказка" id="268"/>
 								</Button>
-								<InputField name="СтатусОкна" id="201">
-									<DataPath>СтатусОкна</DataPath>
-									<Width>10</Width>
-									<HorizontalStretch>false</HorizontalStretch>
-									<ListChoiceMode>true</ListChoiceMode>
-									<ChoiceList>
-										<xr:Item>
-											<xr:Presentation/>
-											<xr:CheckState>0</xr:CheckState>
-											<xr:Value xsi:type="FormChoiceListDesTimeValue">
-												<Presentation>
-													<v8:item>
-														<v8:lang>ru</v8:lang>
-														<v8:content>Свернуть</v8:content>
-													</v8:item>
-												</Presentation>
-												<Value xsi:type="xs:decimal">0</Value>
-											</xr:Value>
-										</xr:Item>
-										<xr:Item>
-											<xr:Presentation/>
-											<xr:CheckState>0</xr:CheckState>
-											<xr:Value xsi:type="FormChoiceListDesTimeValue">
-												<Presentation>
-													<v8:item>
-														<v8:lang>ru</v8:lang>
-														<v8:content>Развернуть</v8:content>
-													</v8:item>
-												</Presentation>
-												<Value xsi:type="xs:decimal">1</Value>
-											</xr:Value>
-										</xr:Item>
-										<xr:Item>
-											<xr:Presentation/>
-											<xr:CheckState>0</xr:CheckState>
-											<xr:Value xsi:type="FormChoiceListDesTimeValue">
-												<Presentation>
-													<v8:item>
-														<v8:lang>ru</v8:lang>
-														<v8:content>Распахнуть</v8:content>
-													</v8:item>
-												</Presentation>
-												<Value xsi:type="xs:decimal">2</Value>
-											</xr:Value>
-										</xr:Item>
-										<xr:Item>
-											<xr:Presentation/>
-											<xr:CheckState>0</xr:CheckState>
-											<xr:Value xsi:type="FormChoiceListDesTimeValue">
-												<Presentation>
-													<v8:item>
-														<v8:lang>ru</v8:lang>
-														<v8:content>Не найдено</v8:content>
-													</v8:item>
-												</Presentation>
-												<Value xsi:type="xs:decimal">-1</Value>
-											</xr:Value>
-										</xr:Item>
-									</ChoiceList>
-									<ContextMenu name="СтатусОкнаКонтекстноеМеню" id="202"/>
-									<ExtendedTooltip name="СтатусОкнаРасширеннаяПодсказка" id="203"/>
-								</InputField>
-								<CheckBoxField name="Активировать" id="204">
-									<DataPath>Активировать</DataPath>
-									<CheckBoxType>Auto</CheckBoxType>
-									<ContextMenu name="АктивироватьКонтекстноеМеню" id="205"/>
-									<ExtendedTooltip name="АктивироватьРасширеннаяПодсказка" id="206"/>
-								</CheckBoxField>
 							</ChildItems>
 						</UsualGroup>
 						<LabelDecoration name="ДекорацияИнтервал" id="189">
@@ -607,6 +534,11 @@
 										<Type>CommandBarButton</Type>
 										<CommandName>Form.Command.ПолучитьСписокДисплеев</CommandName>
 										<ExtendedTooltip name="ПолучитьСписокДисплеевРасширеннаяПодсказка" id="250"/>
+									</Button>
+									<Button name="СписокДисплеевПолучитьСвойстваЭкрана" id="269">
+										<Type>CommandBarButton</Type>
+										<CommandName>Form.Command.ПолучитьСвойстваЭкрана</CommandName>
+										<ExtendedTooltip name="СписокДисплеевПолучитьСвойстваЭкранаРасширеннаяПодсказка" id="270"/>
 									</Button>
 								</ChildItems>
 							</AutoCommandBar>
@@ -1876,21 +1808,6 @@
 			</ToolTip>
 			<Action>Распахнуть</Action>
 		</Command>
-		<Command name="Активировать" id="18">
-			<Title>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Активировать</v8:content>
-				</v8:item>
-			</Title>
-			<ToolTip>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Активировать</v8:content>
-				</v8:item>
-			</ToolTip>
-			<Action>Активировать</Action>
-		</Command>
 		<Command name="ПолучитьСписокПроцессов" id="19">
 			<Title>
 				<v8:item>
@@ -1966,36 +1883,6 @@
 			</ToolTip>
 			<Action>НайтиКлиентТестирования</Action>
 		</Command>
-		<Command name="ПолучитьСтатус" id="24">
-			<Title>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Получить статус</v8:content>
-				</v8:item>
-			</Title>
-			<ToolTip>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Получить статус</v8:content>
-				</v8:item>
-			</ToolTip>
-			<Action>ПолучитьСтатус</Action>
-		</Command>
-		<Command name="УстановитьСтатус" id="25">
-			<Title>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Установить статус</v8:content>
-				</v8:item>
-			</Title>
-			<ToolTip>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Установить статус</v8:content>
-				</v8:item>
-			</ToolTip>
-			<Action>УстановитьСтатус</Action>
-		</Command>
 		<Command name="Инфотип" id="26">
 			<Title>
 				<v8:item>
@@ -2055,6 +1942,51 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьПроцессы1С</Action>
+		</Command>
+		<Command name="ПолучитьСвойстваОкна" id="18">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить свойства окна</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить свойства окна</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьСвойстваОкна</Action>
+		</Command>
+		<Command name="ПолучитьРазмерОкна" id="24">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить размер окна</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить размер окна</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьРазмерОкна</Action>
+		</Command>
+		<Command name="ПолучитьСвойстваЭкрана" id="25">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить свойства экрана</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить свойства экрана</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьСвойстваЭкрана</Action>
 		</Command>
 	</Commands>
 </Form>
