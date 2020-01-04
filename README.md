@@ -32,7 +32,6 @@
 - <a href="#GetWindowSize">ПолучитьРазмерОкна (GetWindowSize)</a>
 - <a href="#SetWindowSize">УстановитьРазмерОкна (SetWindowSize)</a>
 - <a href="#SetWindowPos">УстановитьПозициюОкна (SetWindowPos)</a>
-- <a href="#EnableResizing">РазрешитьИзменятьРазмер (EnableResizing)</a>
 - <a href="#MaximixeWindow">РаспахнутьОкно (MaximixeWindow)</a>
 - <a href="#RestoreWindow">РазвернутьОкно (RestoreWindow)</a>
 - <a href="#MinimizeWindow">СвернутьОкно (MinimizeWindow)</a>
