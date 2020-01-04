@@ -423,4 +423,9 @@ BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
+BOOL WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+
 #endif //_WINDOWS

@@ -331,9 +331,9 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 		return WindowManager::Minimize(paParams, lSizeArray);
 	case eRestoreWindow:
 		return WindowManager::Restore(paParams, lSizeArray);
-#ifdef _WINDOWS
 	case eEnableResizing:
 		return WindowManager::EnableResizing(paParams, lSizeArray);
+#ifdef _WINDOWS
 	case eSetWindowState:
 		return WindowManager::SetWindowState(paParams, lSizeArray);
 #endif
