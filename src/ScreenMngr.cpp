@@ -47,8 +47,8 @@ std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeA
 			MONITORINFOEX mi;
 			mi.cbSize = sizeof(mi);
 			if (::GetMonitorInfo(hMonitor, &mi)) {
-				json["Name"] = WC2MB((mi.szDevice));
-				json["Work"] = RectToJson(mi.rcWork);
+				j["Name"] = WC2MB((mi.szDevice));
+				j["Work"] = RectToJson(mi.rcWork);
 			}
 			nlohmann::json* json = (JSON*)lParam;
 			json->push_back(j);
