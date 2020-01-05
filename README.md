@@ -32,7 +32,6 @@
 - <a href="#GetWindowSize">ПолучитьРазмерОкна (GetWindowSize)</a>
 - <a href="#SetWindowSize">УстановитьРазмерОкна (SetWindowSize)</a>
 - <a href="#SetWindowPos">УстановитьПозициюОкна (SetWindowPos)</a>
-- <a href="#EnableResizing">РазрешитьИзменятьРазмер (EnableResizing)</a>
 - <a href="#MaximixeWindow">РаспахнутьОкно (MaximixeWindow)</a>
 - <a href="#RestoreWindow">РазвернутьОкно (RestoreWindow)</a>
 - <a href="#MinimizeWindow">СвернутьОкно (MinimizeWindow)</a>
@@ -92,7 +91,7 @@
 4. Устанавливаем на Linux необходимые пакеты (см. ниже) и дополнения гостевой ОС
 5. Подключаем в VirtualBox общую папку с исходными текстами внешней компоненты
 6. В среде Linux для компиляции библиотек запустить ./build.sh
-7. В среде Window завершения сборки запустить ./compile.bat
+7. В среде Window для завершения сборки запустить ./compile.bat
 
 Сборка для Linux в CentOS 8:
 ```bash
