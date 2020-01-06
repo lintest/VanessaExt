@@ -13,8 +13,9 @@
 
 #include <stdio.h>
 #include <wchar.h>
-#include "AddInNative.h"
 #include <string>
+#include "AddInNative.h"
+#include "version.h"
 
 #define BASE_ERRNO     7
 
@@ -29,6 +30,7 @@ const std::vector<AddInNative::Alias> AddInNative::m_PropList{
 	Alias(eProcessList   , 0, true, L"ProcessList"     , L"СписокПроцессов"),
 	Alias(eDisplayList   , 0, true, L"DisplayList"     , L"СписокДисплеев"),
 	Alias(eScreenInfo    , 0, true, L"ScreenInfo"      , L"СвойстваЭкрана"),
+	Alias(eVersion       , 0, true, L"Version"         , L"Версия"),
 };
 
 const std::vector<AddInNative::Alias> AddInNative::m_MethList{
@@ -264,10 +266,13 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
 	case eProcessId:
 		return VA(pvarPropVal) << ProcessManager::ProcessId();
+	case eVersion:
+		return VA(pvarPropVal) << MB2WC(VER_FILE_VERSION_STR);
 	default:
 		return false;
 	}
 }
+
 //---------------------------------------------------------------------------//
 bool AddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
 {

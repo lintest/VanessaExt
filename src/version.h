@@ -1,5 +1,5 @@
 #define VERSION_MAJOR               0
-#define VERSION_MINOR               4
+#define VERSION_MINOR               6
 #define VERSION_REVISION            0
 #define VERSION_BUILD               0
 
@@ -12,5 +12,7 @@
                                     "." STRINGIZE(VERSION_REVISION) \
                                     "." STRINGIZE(VERSION_BUILD)    
 
-#define VER_FILE_DESCRIPTION_STR    "1C Window Control AddIn"
-#define VER_COPYRIGHT_STR           "Kandrashin Denis, 2019"
+#define VER_FILE_DESCRIPTION_STR    "Window Control 1C AddIn"
+#define VER_COPYRIGHT_STR           "Kandrashin Denis, 2020"
+#define VER_FILENAME                "1cWinCtrl"
+#define VER_FILE_EXT                ".dll" 

@@ -204,6 +204,7 @@
     <ClInclude Include="ProcMngr.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ScreenMngr.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="WindowMngr.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

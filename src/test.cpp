@@ -49,10 +49,18 @@ int main() {
     json = WindowManager::GetWindowSize(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
 */    
-    json = ScreenManager::GetDisplayInfo(NULL, 0);
-    std::wcout << std::endl << json << std::endl << std::endl;
+
+    tVariant pVarActive;
+    pVarActive.intVal = (int)WindowManager::ActiveWindow();
+    pVarActive.vt = VTYPE_I4;
 
     json = ScreenManager::GetScreenInfo();
+    std::wcout << std::endl << json << std::endl << std::endl;
+
+    json = ScreenManager::GetDisplayList(&pVarActive, 1);
+    std::wcout << std::endl << json << std::endl << std::endl;
+
+    json = ScreenManager::GetDisplayInfo(&pVarActive, 1);
     std::wcout << std::endl << json << std::endl << std::endl;
 
     json = WindowManager::GetWindowInfo(NULL, 0);
