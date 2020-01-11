@@ -293,13 +293,13 @@ class DisplayEnumerator : public WindowHelper
 public:
 	std::wstring Enumerate(Window window) {
 		int	count;
+		Rect rect = Rect(display, window);
 		Window root = DefaultRootWindow(display);
 		XRRMonitorInfo* monitors = XRRGetMonitors(display, root, false, &count);
 		if (count == -1 || monitors == NULL) return {};
 		for (int i = 0; i < count; ++i) {
 			if (window != 0) {
-				Rect rect(monitors + i);
-				int s = rect.Sq(Rect(display, window));
+				int s = rect * Rect(monitors + i);
 				if (s == 0) continue;
 			}
 			JSON j;
@@ -315,14 +315,14 @@ class DisplayFinder : public WindowHelper
 {
 public:
 	std::wstring FindDisplay(Window window) {
+		Rect rect = Rect(display, window);
 		if (window == 0) window = GetActiveWindow();
 		int	count = -1, result = -1; int sq = 0;
 		Window root = DefaultRootWindow(display);
 		XRRMonitorInfo* monitors = XRRGetMonitors(display, root, false, &count);
 		if (count == -1 || monitors == NULL) return {};
 		for (int i = 0; i < count; ++i) {
-			Rect rect(monitors + i);
-			int s = rect.Sq(Rect(display, window));
+			int s = rect * Rect(monitors + i);
 			if (s > sq) { result = i; sq = s; }
 		}
 		if (result >= 0) {

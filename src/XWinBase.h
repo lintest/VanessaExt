@@ -36,11 +36,8 @@ protected:
         int min(int a, int b) { return a < b ? a : b; }
         int max(int a, int b) { return a > b ? a : b; }
     public:
-        Rect(int x, int y, int w, int h)
-            : left(x), top(y), right(x + w), bottom(y + h) {}
-
-        Rect(const Rect &r)
-            : left(r.left), top(r.top), right(r.right), bottom(r.bottom) {}
+        Rect() 
+            : left(0), top(0), right(0), bottom(0) {}
 
         Rect(XRRMonitorInfo* i)
             : left(i->x), top(i->y), right(i->x + i->width), bottom(i->y + i->height) {}
@@ -59,7 +56,7 @@ protected:
             bottom = y + h;
         }
 
-        int Sq(const Rect &r) {
+        int operator *(const Rect &r) {
             int width = min(right, r.right) - max(left, r.left);
             int height = min(bottom, r.bottom) - max(top, r.top);
             return max(width, 0) * max(height, 0);
