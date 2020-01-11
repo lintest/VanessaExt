@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib1cWinCtrl", "src\AddInNative.vcxproj", "{55890DF2-D13E-4C89-A01D-79CAD6726246}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test1", "src\test.vcxproj", "{260FC4BA-C29C-4529-96E3-1DA468E9AE41}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "src\test.vcxproj", "{260FC4BA-C29C-4529-96E3-1DA468E9AE41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,9 +28,7 @@ Global
 		{260FC4BA-C29C-4529-96E3-1DA468E9AE41}.Debug|x86.ActiveCfg = Debug|Win32
 		{260FC4BA-C29C-4529-96E3-1DA468E9AE41}.Debug|x86.Build.0 = Debug|Win32
 		{260FC4BA-C29C-4529-96E3-1DA468E9AE41}.Release|x64.ActiveCfg = Release|x64
-		{260FC4BA-C29C-4529-96E3-1DA468E9AE41}.Release|x64.Build.0 = Release|x64
 		{260FC4BA-C29C-4529-96E3-1DA468E9AE41}.Release|x86.ActiveCfg = Release|Win32
-		{260FC4BA-C29C-4529-96E3-1DA468E9AE41}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
