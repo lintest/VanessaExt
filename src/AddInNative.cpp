@@ -179,7 +179,7 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const wchar
 		if (mm->AllocMemory((void**)&pvar->pwstrVal, size * sizeof(WCHAR_T))) {
 			::convToShortWchar((WCHAR_T**)&pvar->pwstrVal, str, size);
 			TV_VT(pvar) = VTYPE_PWSTR;
-			pvar->wstrLen = size;
+			pvar->wstrLen = size - 1;
 		}
 	}
 	return *this;
