@@ -19,12 +19,14 @@
 
 #define BASE_ERRNO     7
 
+#include "ClipMngr.h"
 #include "ProcMngr.h"
 #include "ScreenMngr.h"
 #include "WindowMngr.h"
 
 const std::vector<AddInNative::Alias> AddInNative::m_PropList{
 	Alias(eActiveWindow  , 0, true, L"ActiveWindow"    , L"АктивноеОкно"),
+	Alias(eClipboardText , 0, true, L"ClipboardText"   , L"ТекстБуфераОбмена"),
 	Alias(eProcessId     , 0, true, L"ProcessId"       , L"ИдентификаторПроцесса"),
 	Alias(eWindowList    , 0, true, L"WindowList"      , L"СписокОкон"),
 	Alias(eProcessList   , 0, true, L"ProcessList"     , L"СписокПроцессов"),
@@ -178,7 +180,6 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const wchar
 		unsigned long size = (unsigned long)wcslen(str) + 1;
 		if (mm->AllocMemory((void**)&pvar->pwstrVal, size * sizeof(WCHAR_T))) {
 			::convToShortWchar((WCHAR_T**)&pvar->pwstrVal, str, size);
-			TV_VT(pvar) = VTYPE_PWSTR;
 			pvar->wstrLen = size - 1;
 		}
 	}
@@ -254,6 +255,8 @@ const WCHAR_T* AddInNative::GetPropName(long lPropNum, long lPropAlias)
 bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
+	case eClipboardText:
+		return VA(pvarPropVal) << ClipboardManager::GetText();
 	case eActiveWindow:
 		return VA(pvarPropVal) << (int64_t)WindowManager::ActiveWindow();
 	case eProcessList:
@@ -276,7 +279,17 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 //---------------------------------------------------------------------------//
 bool AddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
 {
-	return false;
+	switch (lPropNum) {
+	case eClipboardText: {
+		wchar_t* str = 0;
+		::convFromShortWchar(&str, varPropVal->pwstrVal);
+		ClipboardManager::SetText(str);
+		delete[] str;
+		return true;
+	}
+	default:
+		return false;
+	}
 }
 //---------------------------------------------------------------------------//
 bool AddInNative::IsPropReadable(const long lPropNum)
@@ -286,7 +299,12 @@ bool AddInNative::IsPropReadable(const long lPropNum)
 //---------------------------------------------------------------------------//
 bool AddInNative::IsPropWritable(const long lPropNum)
 {
-	return false;
+	switch (lPropNum) {
+	case eClipboardText:
+		return true;
+	default:
+		return false;
+	}
 }
 //---------------------------------------------------------------------------//
 long AddInNative::GetNMethods()
@@ -364,14 +382,14 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		return VA(pvarRetValue) << WindowManager::GetWindowInfo(paParams, lSizeArray);
 	case eGetWindowSize:
 		return VA(pvarRetValue) << WindowManager::GetWindowSize(paParams, lSizeArray);
-	case eTakeScreenshot:
-		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
-	case eCaptureWindow:
-		return ScreenManager(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
 	case eGetDisplayList:
 		return VA(pvarRetValue) << ScreenManager::GetDisplayList(paParams, lSizeArray);
 	case eGetDisplayInfo:
 		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
+	case eTakeScreenshot:
+		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
+	case eCaptureWindow:
+		return ScreenManager(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
 	default:
 		return false;
 	}

@@ -16,6 +16,7 @@ private:
 		eWindowList,
 		eDisplayList,
 		eScreenInfo,
+		eClipboardText,
 		eVersion,
 		ePropLast      // Always last
 	};

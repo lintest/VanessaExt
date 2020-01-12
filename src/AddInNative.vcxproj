@@ -200,6 +200,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AddInNative.h" />
+    <ClInclude Include="ClipMngr.h" />
     <ClInclude Include="json_ext.h" />
     <ClInclude Include="ProcMngr.h" />
     <ClInclude Include="resource.h" />
@@ -210,6 +211,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AddInNative.cpp" />
+    <ClCompile Include="ClipMngr.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ProcMngr.cpp" />
     <ClCompile Include="ScreenMngr.cpp" />
