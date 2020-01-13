@@ -5,46 +5,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl
-class AddInNative : public IComponentBase
+class AddInBase : public IComponentBase
 {
-private:
-	enum Props
-	{
-		eActiveWindow = 0,
-		eProcessId,
-		eProcessList,
-		eWindowList,
-		eDisplayList,
-		eScreenInfo,
-		eClipboardText,
-		eVersion,
-		ePropLast      // Always last
-	};
-
-	enum Methods
-	{
-		eFindTestClient = 0,
-		eGetProcessList,
-		eGetProcessInfo,
-		eGetDisplayList,
-		eGetDisplayInfo,
-		eGetScreenInfo,
-		eGetWindowList,
-		eGetWindowInfo,
-		eGetWindowSize,
-		eSetWindowSize,
-		eSetWindowPos,
-		eEnableResizing,
-		eTakeScreenshot,
-		eCaptureWindow,
-		eSetWindowState,
-		eMinimizeWindow,
-		eRestoreWindow,
-		eMaximizeWindow,
-		eActivateWindow,
-		eMethLast      // Always last
-	};
-
+protected:
 	static const int m_AliasCount = 2;
 
 	class Alias {
@@ -55,10 +18,14 @@ private:
 	private:
 		std::wstring names[m_AliasCount];
 	public:
-		Alias(long id, long np, bool fn, wchar_t* strEn, wchar_t* strRu) :
-			id(id),
-			np(np),
-			fn(fn)
+		Alias(long id, long np, bool fn, wchar_t* strEn, wchar_t* strRu)
+			:id(id), np(np), fn(fn)
+		{
+			names[0] = strEn;
+			names[1] = strRu;
+		}
+		Alias(long id, bool fn, wchar_t* strEn, wchar_t* strRu)
+			:id(id), np(0), fn(fn)
 		{
 			names[0] = strEn;
 			names[1] = strRu;
@@ -85,45 +52,42 @@ private:
 
 	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, m_iMemory); }
 
-	static const std::vector<Alias> m_PropList;
-	static const std::vector<Alias> m_MethList;
+	virtual const std::vector<Alias>& PropList() const = 0;
+	virtual const std::vector<Alias>& MethList() const = 0;
+	virtual const wchar_t* ExtensionName() const = 0;
+
 	long FindName(const std::vector<Alias>& names, const WCHAR_T* name);
 	const WCHAR_T* GetName(const std::vector<Alias>& names, long lPropNum, long lPropAlias);
 	long GetNParams(const std::vector<Alias>& names, const long lMethodNum);
 	bool HasRetVal(const std::vector<Alias>& names, const long lMethodNum);
 
 public:
-	AddInNative(void);
-	virtual ~AddInNative();
+	AddInBase(void);
+	virtual ~AddInBase();
 	// IInitDoneBase
-	virtual bool ADDIN_API Init(void*);
-	virtual bool ADDIN_API setMemManager(void* mem);
-	virtual long ADDIN_API GetInfo();
-	virtual void ADDIN_API Done();
+	bool ADDIN_API Init(void*) override;
+	bool ADDIN_API setMemManager(void* mem) override;
+	long ADDIN_API GetInfo() override;
+	void ADDIN_API Done() override;
 	// ILanguageExtenderBase
-	virtual bool ADDIN_API RegisterExtensionAs(WCHAR_T**);
-	virtual long ADDIN_API GetNProps();
-	virtual long ADDIN_API FindProp(const WCHAR_T* wsPropName);
-	virtual const WCHAR_T* ADDIN_API GetPropName(long lPropNum, long lPropAlias);
-	virtual bool ADDIN_API GetPropVal(const long lPropNum, tVariant* pvarPropVal);
-	virtual bool ADDIN_API SetPropVal(const long lPropNum, tVariant* varPropVal);
-	virtual bool ADDIN_API IsPropReadable(const long lPropNum);
-	virtual bool ADDIN_API IsPropWritable(const long lPropNum);
-	virtual long ADDIN_API GetNMethods();
-	virtual long ADDIN_API FindMethod(const WCHAR_T* wsMethodName);
-	virtual const WCHAR_T* ADDIN_API GetMethodName(const long lMethodNum, const long lMethodAlias);
-	virtual long ADDIN_API GetNParams(const long lMethodNum);
-	virtual bool ADDIN_API GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue);
-	virtual bool ADDIN_API HasRetVal(const long lMethodNum);
-	virtual bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray);
-	virtual bool ADDIN_API CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
+	bool ADDIN_API RegisterExtensionAs(WCHAR_T**) override;
+	long ADDIN_API FindProp(const WCHAR_T* wsPropName) override;
+	long ADDIN_API GetNProps() override;
+	const WCHAR_T* ADDIN_API GetPropName(long lPropNum, long lPropAlias) override;
+	bool ADDIN_API IsPropReadable(const long lPropNum) override;
+	bool ADDIN_API IsPropWritable(const long lPropNum) override;
+	long ADDIN_API GetNMethods() override;
+	long ADDIN_API FindMethod(const WCHAR_T* wsMethodName) override;
+	const WCHAR_T* ADDIN_API GetMethodName(const long lMethodNum, const long lMethodAlias) override;
+	long ADDIN_API GetNParams(const long lMethodNum) override;
+	bool ADDIN_API GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue) override;
+	bool ADDIN_API HasRetVal(const long lMethodNum) override;
 	// LocaleBase
-	virtual void ADDIN_API SetLocale(const WCHAR_T* loc);
+	void ADDIN_API SetLocale(const WCHAR_T* loc) override;
 
-private:
+protected:
 	const WCHAR_T* W(const wchar_t* str) const;
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
-	// Attributes
 	IMemoryManager* m_iMemory;
 	IAddInDefBase* m_iConnect;
 };
@@ -151,4 +115,8 @@ private:
 #endif
 	wchar_t* m_str_wchar;
 };
+
+uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
+uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len = 0);
+
 #endif //__ADDINNATIVE_H__

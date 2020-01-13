@@ -21,9 +21,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AddInNative.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="json_ext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,11 +39,14 @@
     <ClInclude Include="ClipMngr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AddInBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AddInNative.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -63,6 +63,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ClipMngr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AddInBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

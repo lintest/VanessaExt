@@ -199,7 +199,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AddInNative.h" />
+    <ClInclude Include="AddInBase.h" />
+    <ClInclude Include="WindowsControl.h" />
     <ClInclude Include="ClipMngr.h" />
     <ClInclude Include="json_ext.h" />
     <ClInclude Include="ProcMngr.h" />
@@ -210,7 +211,8 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AddInNative.cpp" />
+    <ClCompile Include="AddInBase.cpp" />
+    <ClCompile Include="WindowsControl.cpp" />
     <ClCompile Include="ClipMngr.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ProcMngr.cpp" />

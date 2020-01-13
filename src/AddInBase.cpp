@@ -14,8 +14,8 @@
 #include <stdio.h>
 #include <wchar.h>
 #include <string>
-#include "AddInNative.h"
-#include "version.h"
+#include "AddInBase.h"
+#include "WindowsControl.h"
 
 #define BASE_ERRNO     7
 
@@ -24,44 +24,8 @@
 #include "ScreenMngr.h"
 #include "WindowMngr.h"
 
-const std::vector<AddInNative::Alias> AddInNative::m_PropList{
-	Alias(eActiveWindow  , 0, true, L"ActiveWindow"    , L"АктивноеОкно"),
-	Alias(eClipboardText , 0, true, L"ClipboardText"   , L"ТекстБуфераОбмена"),
-	Alias(eProcessId     , 0, true, L"ProcessId"       , L"ИдентификаторПроцесса"),
-	Alias(eWindowList    , 0, true, L"WindowList"      , L"СписокОкон"),
-	Alias(eProcessList   , 0, true, L"ProcessList"     , L"СписокПроцессов"),
-	Alias(eDisplayList   , 0, true, L"DisplayList"     , L"СписокДисплеев"),
-	Alias(eScreenInfo    , 0, true, L"ScreenInfo"      , L"СвойстваЭкрана"),
-	Alias(eVersion       , 0, true, L"Version"         , L"Версия"),
-};
-
-const std::vector<AddInNative::Alias> AddInNative::m_MethList{
-	Alias(eFindTestClient  , 1, true , L"FindTestClient"   , L"НайтиКлиентТестирования"),
-	Alias(eGetProcessList  , 1, true , L"GetProcessList"   , L"ПолучитьСписокПроцессов"),
-	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
-	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
-	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
-	Alias(eGetScreenInfo   , 0, true , L"GetScreenInfo"    , L"ПолучитьСвойстваЭкрана"),
-	Alias(eGetWindowList   , 1, true , L"GetWindowList"    , L"ПолучитьСписокОкон"),
-	Alias(eGetWindowInfo   , 1, true , L"GetWindowInfo"    , L"ПолучитьСвойстваОкна"),
-	Alias(eGetWindowSize   , 1, true , L"GetWindowSize"    , L"ПолучитьРазмерОкна"),
-	Alias(eTakeScreenshot  , 1, true , L"TakeScreenshot"   , L"ПолучитьСнимокЭкрана"),
-	Alias(eCaptureWindow   , 1, true , L"CaptureWindow"    , L"ПолучитьСнимокОкна"),
-	Alias(eEnableResizing  , 2, false, L"EnableResizing"   , L"РазрешитьИзменятьРазмер"),
-	Alias(eSetWindowPos    , 3, false, L"SetWindowPos"     , L"УстановитьПозициюОкна"),
-	Alias(eSetWindowSize   , 3, false, L"SetWindowSize"    , L"УстановитьРазмерОкна"),
-	Alias(eSetWindowState  , 3, false, L"SetWindowState"   , L"УстановитьСтатусОкна"),
-	Alias(eActivateWindow  , 1, false, L"ActivateWindow"   , L"АктивироватьОкно"),
-	Alias(eMaximizeWindow  , 1, false, L"MaximizeWindow"   , L"РаспахнутьОкно"),
-	Alias(eMinimizeWindow  , 1, false, L"MinimizeWindow"   , L"СвернутьОкно"),
-	Alias(eRestoreWindow   , 1, false, L"RestoreWindow"    , L"РазвернутьОкно"),
-};
-
 static const wchar_t g_kClassNames[] = L"WindowsControl";
-static IAddInDefBase* pAsyncEvent = NULL;
 
-uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
-uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len = 0);
 uint32_t getLenShortWcharStr(const WCHAR_T* Source);
 static AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
 static WcharWrapper s_names(g_kClassNames);
@@ -70,7 +34,17 @@ long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
 	if (!*pInterface)
 	{
-		*pInterface = new AddInNative;
+		*pInterface = 0;
+
+		#ifdef __linux__
+			wchar_t* str = 0;
+			::convFromShortWchar(&str, wsName);
+			if (wcscasecmp(L"WindowsControl", str) == 0) *pInterface = new WindowsControl;
+			delete[] str;
+		#else
+			if (wcsicmp(L"WindowsControl", wsName) == 0) *pInterface = new WindowsControl;
+		#endif//__linux__
+	
 		return (long)*pInterface;
 	}
 	return 0;
@@ -99,34 +73,34 @@ const WCHAR_T* GetClassNames()
 //---------------------------------------------------------------------------//
 // WindowManager
 //---------------------------------------------------------------------------//
-AddInNative::AddInNative()
+AddInBase::AddInBase()
 {
 	m_iMemory = 0;
 	m_iConnect = 0;
 }
 //---------------------------------------------------------------------------//
-AddInNative::~AddInNative()
+AddInBase::~AddInBase()
 {
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::Init(void* pConnection)
+bool AddInBase::Init(void* pConnection)
 {
 	m_iConnect = (IAddInDefBase*)pConnection;
 	return m_iConnect != NULL;
 }
 //---------------------------------------------------------------------------//
-long AddInNative::GetInfo()
+long AddInBase::GetInfo()
 {
 	// Component should put supported component technology version 
 	// This component supports 2.0 version
 	return 2000;
 }
 //---------------------------------------------------------------------------//
-void AddInNative::Done()
+void AddInBase::Done()
 {
 }
 //---------------------------------------------------------------------------//
-long AddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
+long AddInBase::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
 {
 	for (Alias alias : names) {
 		for (long i = 0; i < m_AliasCount; i++) {
@@ -144,7 +118,7 @@ long AddInNative::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
 	return -1;
 }
 //---------------------------------------------------------------------------//
-const WCHAR_T* AddInNative::GetName(const std::vector<Alias>& names, long lPropNum, long lPropAlias)
+const WCHAR_T* AddInBase::GetName(const std::vector<Alias>& names, long lPropNum, long lPropAlias)
 {
 	if (lPropNum >= names.size()) return NULL;
 	if (lPropAlias >= m_AliasCount) return NULL;
@@ -156,7 +130,7 @@ const WCHAR_T* AddInNative::GetName(const std::vector<Alias>& names, long lPropN
 	return NULL;
 }
 //---------------------------------------------------------------------------//
-long AddInNative::GetNParams(const std::vector<Alias>& names, const long lMethodNum)
+long AddInBase::GetNParams(const std::vector<Alias>& names, const long lMethodNum)
 {
 	for (Alias alias : names) {
 		if (alias.id == lMethodNum) return alias.np;
@@ -164,7 +138,7 @@ long AddInNative::GetNParams(const std::vector<Alias>& names, const long lMethod
 	return 0;
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethodNum)
+bool AddInBase::HasRetVal(const std::vector<Alias>& names, const long lMethodNum)
 {
 	for (Alias alias : names) {
 		if (alias.id == lMethodNum) return alias.fn;
@@ -172,7 +146,7 @@ bool AddInNative::HasRetVal(const std::vector<Alias>& names, const long lMethodN
 	return 0;
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const wchar_t* str)
+AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(const wchar_t* str)
 {
 	TV_VT(pvar) = VTYPE_PWSTR;
 	pvar->pwstrVal = NULL;
@@ -186,26 +160,26 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const wchar
 	return *this;
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(const std::wstring& str)
+AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(const std::wstring& str)
 {
 	return operator<<(str.c_str());
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int64_t value)
+AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(int64_t value)
 {
 	TV_VT(pvar) = VTYPE_I4;
 	TV_I8(pvar) = value;
 	return *this;
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator<<(int32_t value)
+AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(int32_t value)
 {
 	TV_VT(pvar) = VTYPE_I4;
 	TV_I4(pvar) = value;
 	return *this;
 }
 
-const WCHAR_T* AddInNative::W(const wchar_t* str) const
+const WCHAR_T* AddInBase::W(const wchar_t* str) const
 {
 	WCHAR_T* res = NULL;
 	if (m_iMemory && str && wcslen(str)) {
@@ -220,9 +194,9 @@ const WCHAR_T* AddInNative::W(const wchar_t* str) const
 /////////////////////////////////////////////////////////////////////////////
 // ILanguageExtenderBase
 //---------------------------------------------------------------------------//
-bool AddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
+bool AddInBase::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
-	const wchar_t* wsExtension = L"WindowsControl";
+	const wchar_t* wsExtension = ExtensionName();
 	unsigned long iActualSize = (unsigned long)::wcslen(wsExtension) + 1;
 	WCHAR_T* dest = 0;
 
@@ -236,167 +210,63 @@ bool AddInNative::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 	return false;
 }
 //---------------------------------------------------------------------------//
-long AddInNative::GetNProps()
+long AddInBase::GetNProps()
 {
-	// You may delete next lines and add your own implementation code here
-	return ePropLast;
+	return PropList().size();
 }
 //---------------------------------------------------------------------------//
-long AddInNative::FindProp(const WCHAR_T* wsPropName)
+long AddInBase::FindProp(const WCHAR_T* wsPropName)
 {
-	return FindName(m_PropList, wsPropName);
+	return FindName(PropList(), wsPropName);
 }
 //---------------------------------------------------------------------------//
-const WCHAR_T* AddInNative::GetPropName(long lPropNum, long lPropAlias)
+const WCHAR_T* AddInBase::GetPropName(long lPropNum, long lPropAlias)
 {
-	return GetName(m_PropList, lPropNum, lPropAlias);
+	return GetName(PropList(), lPropNum, lPropAlias);
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
-{
-	switch (lPropNum) {
-	case eClipboardText:
-		return VA(pvarPropVal) << ClipboardManager::GetText();
-	case eActiveWindow:
-		return VA(pvarPropVal) << (int64_t)WindowManager::ActiveWindow();
-	case eProcessList:
-		return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
-	case eWindowList:
-		return VA(pvarPropVal) << WindowManager::GetWindowList(NULL, 0);
-	case eDisplayList:
-		return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
-	case eScreenInfo:
-		return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
-	case eProcessId:
-		return VA(pvarPropVal) << ProcessManager::ProcessId();
-	case eVersion:
-		return VA(pvarPropVal) << MB2WC(VER_FILE_VERSION_STR);
-	default:
-		return false;
-	}
-}
-
-//---------------------------------------------------------------------------//
-bool AddInNative::SetPropVal(const long lPropNum, tVariant* varPropVal)
-{
-	switch (lPropNum) {
-	case eClipboardText: {
-		wchar_t* str = 0;
-		::convFromShortWchar(&str, varPropVal->pwstrVal);
-		ClipboardManager::SetText(str);
-		delete[] str;
-		return true;
-	}
-	default:
-		return false;
-	}
-}
-//---------------------------------------------------------------------------//
-bool AddInNative::IsPropReadable(const long lPropNum)
+bool AddInBase::IsPropReadable(const long lPropNum)
 {
 	return true;
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::IsPropWritable(const long lPropNum)
+bool AddInBase::IsPropWritable(const long lPropNum)
 {
-	switch (lPropNum) {
-	case eClipboardText:
-		return true;
-	default:
-		return false;
-	}
+	return HasRetVal(PropList(), lPropNum);
 }
 //---------------------------------------------------------------------------//
-long AddInNative::GetNMethods()
+long AddInBase::GetNMethods()
 {
-	return eMethLast;
+	return MethList().size();
 }
 //---------------------------------------------------------------------------//
-long AddInNative::FindMethod(const WCHAR_T* wsMethodName)
+long AddInBase::FindMethod(const WCHAR_T* wsMethodName)
 {
-	return FindName(m_MethList, wsMethodName);
+	return FindName(MethList(), wsMethodName);
 }
 //---------------------------------------------------------------------------//
-const WCHAR_T* AddInNative::GetMethodName(const long lMethodNum, const long lMethodAlias)
+const WCHAR_T* AddInBase::GetMethodName(const long lMethodNum, const long lMethodAlias)
 {
-	return GetName(m_MethList, lMethodNum, lMethodAlias);
+	return GetName(MethList(), lMethodNum, lMethodAlias);
 }
 //---------------------------------------------------------------------------//
-long AddInNative::GetNParams(const long lMethodNum)
+long AddInBase::GetNParams(const long lMethodNum)
 {
-	return GetNParams(m_MethList, lMethodNum);
+	return GetNParams(MethList(), lMethodNum);
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
+bool AddInBase::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
 {
 	TV_VT(pvarParamDefValue) = VTYPE_EMPTY;
 	return false;
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::HasRetVal(const long lMethodNum)
+bool AddInBase::HasRetVal(const long lMethodNum)
 {
-	return HasRetVal(m_MethList, lMethodNum);
+	return HasRetVal(MethList(), lMethodNum);
 }
 //---------------------------------------------------------------------------//
-bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
-{
-	switch (lMethodNum)
-	{
-	case eSetWindowPos:
-		return WindowManager::SetWindowPos(paParams, lSizeArray);
-	case eSetWindowSize:
-		return WindowManager::SetWindowSize(paParams, lSizeArray);
-	case eActivateWindow:
-		return WindowManager::Activate(paParams, lSizeArray);
-	case eMaximizeWindow:
-		return WindowManager::Maximize(paParams, lSizeArray);
-	case eMinimizeWindow:
-		return WindowManager::Minimize(paParams, lSizeArray);
-	case eRestoreWindow:
-		return WindowManager::Restore(paParams, lSizeArray);
-	case eEnableResizing:
-		return WindowManager::EnableResizing(paParams, lSizeArray);
-#ifdef _WINDOWS
-	case eSetWindowState:
-		return WindowManager::SetWindowState(paParams, lSizeArray);
-#endif
-	default:
-		return false;
-	}
-}
-//---------------------------------------------------------------------------//
-bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{
-	switch (lMethodNum) {
-	case eFindTestClient:
-		return VA(pvarRetValue) << ProcessManager::FindTestClient(paParams, lSizeArray);
-	case eGetScreenInfo:
-		return VA(pvarRetValue) << ScreenManager::GetScreenInfo();
-	case eGetProcessList:
-		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
-	case eGetProcessInfo:
-		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
-	case eGetWindowList:
-		return VA(pvarRetValue) << WindowManager::GetWindowList(paParams, lSizeArray);
-	case eGetWindowInfo:
-		return VA(pvarRetValue) << WindowManager::GetWindowInfo(paParams, lSizeArray);
-	case eGetWindowSize:
-		return VA(pvarRetValue) << WindowManager::GetWindowSize(paParams, lSizeArray);
-	case eGetDisplayList:
-		return VA(pvarRetValue) << ScreenManager::GetDisplayList(paParams, lSizeArray);
-	case eGetDisplayInfo:
-		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
-	case eTakeScreenshot:
-		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
-	case eCaptureWindow:
-		return ScreenManager(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
-	default:
-		return false;
-	}
-}
-
-//---------------------------------------------------------------------------//
-void AddInNative::SetLocale(const WCHAR_T* loc)
+void AddInBase::SetLocale(const WCHAR_T* loc)
 {
 #if !defined( __linux__ ) && !defined(__APPLE__)
 	_wsetlocale(LC_ALL, loc);
@@ -409,13 +279,13 @@ void AddInNative::SetLocale(const WCHAR_T* loc)
 /////////////////////////////////////////////////////////////////////////////
 // LocaleBase
 //---------------------------------------------------------------------------//
-bool AddInNative::setMemManager(void* mem)
+bool AddInBase::setMemManager(void* mem)
 {
 	m_iMemory = (IMemoryManager*)mem;
 	return m_iMemory != 0;
 }
 //---------------------------------------------------------------------------//
-void AddInNative::addError(uint32_t wcode, const wchar_t* source,
+void AddInBase::addError(uint32_t wcode, const wchar_t* source,
 	const wchar_t* descriptor, long code)
 {
 	if (m_iConnect)
@@ -427,6 +297,7 @@ void AddInNative::addError(uint32_t wcode, const wchar_t* source,
 		::convToShortWchar(&descr, descriptor);
 
 		m_iConnect->AddError(wcode, err, descr, code);
+		delete[] err;
 		delete[] err;
 		delete[] descr;
 	}
