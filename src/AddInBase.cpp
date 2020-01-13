@@ -30,7 +30,7 @@ class WSTR {
 private:
 	const wchar_t* m_str = 0;
 public:
-	WSTR(const WCHAR_T* str) :m_str(str) {)
+	WSTR(const WCHAR_T* str) :m_str(str) {}
 	bool operator ==(const wchar_t* str) const {
 		return wcsicmp(m_str, str) == 0;
 	}
