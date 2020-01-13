@@ -24,30 +24,36 @@ uint32_t getLenShortWcharStr(const WCHAR_T* Source);
 static AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
 static WcharWrapper s_names(g_kClassNames);
 
+#ifdef _WINDOWS
+
 class WSTR {
 private:
 	const wchar_t* m_str = 0;
 public:
-	WSTR(const wchar_t* str) {
-		#ifdef _WINDOWS
-			m_str = str;
-		#else
-			::convFromShortWchar(&m_str, str);
-		#endif
-	}
-	~WSTR() { 
-		#ifndef _WINDOWS
-			delete[] m_str;
-		#endif
-	}
-	bool operator ==(const WCHAR_T* str) const {
-		#ifdef _WINDOWS
-			return wcsicmp(m_str, str) == 0;
-		#else
-			return wcscasecmp(m_str, str) == 0);
-		#endif
+	WSTR(const WCHAR_T* str) :m_str(str) {)
+	bool operator ==(const wchar_t* str) const {
+		return wcsicmp(m_str, str) == 0;
 	}
 };
+
+#else //_WINDOWS
+
+class WSTR {
+private:
+	wchar_t* m_str = 0;
+public:
+	WSTR(const WCHAR_T* str) {
+		::convFromShortWchar(&m_str, str);
+	}
+	~WSTR() { 
+		delete[] m_str;
+	}
+	bool operator ==(const wchar_t* str) const {
+		return wcscasecmp(m_str, str) == 0;
+	}
+};
+
+#endif //_WINDOWS
 
 //---------------------------------------------------------------------------//
 long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
