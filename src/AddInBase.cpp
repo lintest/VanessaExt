@@ -23,24 +23,40 @@ static const wchar_t g_kClassNames[] = L"WindowsControl|ClipboardControl";
 uint32_t getLenShortWcharStr(const WCHAR_T* Source);
 static AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
 static WcharWrapper s_names(g_kClassNames);
+
+class WSTR {
+private:
+	const wchar_t* m_str = 0;
+public:
+	WSTR(const wchar_t* str) {
+		#ifdef _WINDOWS
+			m_str = str;
+		#else
+			::convFromShortWchar(&m_str, str);
+		#endif
+	}
+	~WSTR() { 
+		#ifndef _WINDOWS
+			delete[] m_str;
+		#endif
+	}
+	bool operator ==(const WCHAR_T* str) const {
+		#ifdef _WINDOWS
+			return wcsicmp(m_str, str) == 0;
+		#else
+			return wcscasecmp(m_str, str) == 0);
+		#endif
+	}
+};
+
 //---------------------------------------------------------------------------//
 long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 {
-	if (!*pInterface)
-	{
+	if (!*pInterface) {
 		*pInterface = 0;
-
-		#ifdef __linux__
-			wchar_t* str = 0;
-			::convFromShortWchar(&str, wsName);
-			if (wcscasecmp(L"WindowsControl", str) == 0) *pInterface = new WindowsControl;
-			if (wcscasecmp(L"ClipboardControl", str) == 0) *pInterface = new ClipboardControl;
-			delete[] str;
-		#else
-			if (wcsicmp(L"WindowsControl", wsName) == 0) *pInterface = new WindowsControl;
-			if (wcsicmp(L"ClipboardControl", wsName) == 0) *pInterface = new ClipboardControl;
-		#endif//__linux__
-	
+		WSTR wstr(wsName);
+		if (wstr == L"WindowsControl") *pInterface = new WindowsControl;
+		if (wstr == L"ClipboardControl") *pInterface = new ClipboardControl;
 		return (long)*pInterface;
 	}
 	return 0;
@@ -98,17 +114,10 @@ void AddInBase::Done()
 //---------------------------------------------------------------------------//
 long AddInBase::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
 {
+	WSTR wstr(name);
 	for (Alias alias : names) {
 		for (long i = 0; i < m_AliasCount; i++) {
-#ifdef __linux__
-			wchar_t* str = 0;
-			::convFromShortWchar(&str, name);
-			bool res = (wcscasecmp(alias.Name(i), str) == 0);
-			delete[] str;
-			if (res) return alias.id;
-#else
-			if (wcsicmp(alias.Name(i), name) == 0) return alias.id;
-#endif//__linux__
+			if (wstr == alias.Name(i)) return alias.id;
 		}
 	}
 	return -1;
@@ -141,7 +150,7 @@ bool AddInBase::HasRetVal(const std::vector<Alias>& names, const long lMethodNum
 	}
 	return 0;
 }
-
+//---------------------------------------------------------------------------//
 AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(const wchar_t* str)
 {
 	TV_VT(pvar) = VTYPE_PWSTR;
