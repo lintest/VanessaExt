@@ -200,6 +200,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AddInBase.h" />
+    <ClInclude Include="ClipboardControl.h" />
     <ClInclude Include="WindowsControl.h" />
     <ClInclude Include="ClipMngr.h" />
     <ClInclude Include="json_ext.h" />
@@ -212,6 +213,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AddInBase.cpp" />
+    <ClCompile Include="ClipboardControl.cpp" />
     <ClCompile Include="WindowsControl.cpp" />
     <ClCompile Include="ClipMngr.cpp" />
     <ClCompile Include="dllmain.cpp" />

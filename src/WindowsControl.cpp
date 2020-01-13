@@ -11,9 +11,6 @@
 #include <sys/time.h>
 #endif //_WINDOWS
 
-#include <stdio.h>
-#include <wchar.h>
-#include <string>
 #include "WindowsControl.h"
 #include "version.h"
 

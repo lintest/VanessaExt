@@ -14,6 +14,8 @@ PROJECT(1cWinCtrl)
 SET(AddInNative_SRC 
     AddInBase.cpp
     AddInBase.h
+    ClipboardControl.cpp
+    ClipboardControl.h
     WindowsControl.cpp
     WindowsControl.h
     ProcMngr.cpp

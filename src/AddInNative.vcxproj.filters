@@ -45,6 +45,9 @@
     <ClInclude Include="WindowsControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ClipboardControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -69,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WindowsControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ClipboardControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -16,15 +16,9 @@
 #include <string>
 #include "AddInBase.h"
 #include "WindowsControl.h"
+#include "ClipboardControl.h"
 
-#define BASE_ERRNO     7
-
-#include "ClipMngr.h"
-#include "ProcMngr.h"
-#include "ScreenMngr.h"
-#include "WindowMngr.h"
-
-static const wchar_t g_kClassNames[] = L"WindowsControl";
+static const wchar_t g_kClassNames[] = L"WindowsControl|ClipboardControl";
 
 uint32_t getLenShortWcharStr(const WCHAR_T* Source);
 static AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
@@ -40,9 +34,11 @@ long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 			wchar_t* str = 0;
 			::convFromShortWchar(&str, wsName);
 			if (wcscasecmp(L"WindowsControl", str) == 0) *pInterface = new WindowsControl;
+			if (wcscasecmp(L"ClipboardControl", str) == 0) *pInterface = new ClipboardControl;
 			delete[] str;
 		#else
 			if (wcsicmp(L"WindowsControl", wsName) == 0) *pInterface = new WindowsControl;
+			if (wcsicmp(L"ClipboardControl", wsName) == 0) *pInterface = new ClipboardControl;
 		#endif//__linux__
 	
 		return (long)*pInterface;
