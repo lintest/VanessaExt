@@ -15,9 +15,6 @@ public:
 	BOOL CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 private:
-#ifndef __linux__	
-	BOOL SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue);
-#endif//__linux__
 	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
 	IMemoryManager* m_iMemory;
 };

@@ -412,6 +412,56 @@
 						</UsualGroup>
 					</ChildItems>
 				</Page>
+				<Page name="СтраницаБуферОбмена" id="274">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Буфер обмена</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница буфер обмена</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаБуферОбменаРасширеннаяПодсказка" id="275"/>
+					<ChildItems>
+						<CommandBar name="ПанельБуферОбмена" id="278">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Панель буфер обмена</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Панель буфер обмена</v8:content>
+								</v8:item>
+							</ToolTip>
+							<ExtendedTooltip name="ПанельБуферОбменаРасширеннаяПодсказка" id="279"/>
+							<ChildItems>
+								<Button name="ПолучитьТекстБуфера" id="276">
+									<Type>CommandBarButton</Type>
+									<CommandName>Form.Command.ПолучитьТекстБуфера</CommandName>
+									<ExtendedTooltip name="ПолучитьТекстБуфераРасширеннаяПодсказка" id="277"/>
+								</Button>
+								<Button name="УстановитьТекстБуфера" id="283">
+									<Type>CommandBarButton</Type>
+									<CommandName>Form.Command.УстановитьТекстБуфера</CommandName>
+									<ExtendedTooltip name="УстановитьТекстБуфераРасширеннаяПодсказка" id="284"/>
+								</Button>
+							</ChildItems>
+						</CommandBar>
+						<InputField name="ТекстБуфераОбмена" id="280">
+							<DataPath>ТекстБуфераОбмена</DataPath>
+							<MultiLine>true</MultiLine>
+							<ContextMenu name="ТекстБуфераОбменаКонтекстноеМеню" id="281"/>
+							<ExtendedTooltip name="ТекстБуфераОбменаРасширеннаяПодсказка" id="282"/>
+						</InputField>
+					</ChildItems>
+				</Page>
 				<Page name="СтраницаПроцессы" id="122">
 					<Title>
 						<v8:item>
@@ -1571,6 +1621,21 @@
 				</v8:StringQualifiers>
 			</Type>
 		</Attribute>
+		<Attribute name="ТекстБуфераОбмена" id="20">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Текст буфера обмена</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -1903,20 +1968,20 @@
 			</ToolTip>
 			<Action>НайтиКлиентТестирования</Action>
 		</Command>
-		<Command name="Инфотип" id="26">
+		<Command name="ПолучитьТекстБуфера" id="26">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Инфотип</v8:content>
+					<v8:content>Получить текст буфера</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Инфотип</v8:content>
+					<v8:content>Получить текст буфера</v8:content>
 				</v8:item>
 			</ToolTip>
-			<Action>Инфотип</Action>
+			<Action>ПолучитьТекстБуфера</Action>
 		</Command>
 		<Command name="ПолучитьОкнаПроцесса" id="27">
 			<Title>
@@ -2007,6 +2072,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьСвойстваЭкрана</Action>
+		</Command>
+		<Command name="УстановитьТекстБуфера" id="30">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установить текст буфера</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установить текст буфера</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>УстановитьТекстБуфера</Action>
 		</Command>
 	</Commands>
 </Form>
