@@ -19,8 +19,9 @@
 const wchar_t* ClipboardControl::m_ExtensionName = L"ClipboardControl";
 
 const std::vector<AddInBase::Alias> ClipboardControl::m_PropList{
-	Alias(eClipboardText , true  , L"Text"            , L"Текст"),
-	Alias(eVersion       , false , L"Version"         , L"Версия"),
+	Alias(eText    , true  , L"Text"    , L"Текст"),
+	Alias(eImage   , true  , L"Image"   , L"Картинка"),
+	Alias(eVersion , false , L"Version" , L"Версия"),
 };
 
 const std::vector<AddInBase::Alias> ClipboardControl::m_MethList{
@@ -33,7 +34,9 @@ const std::vector<AddInBase::Alias> ClipboardControl::m_MethList{
 bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
-	case eClipboardText:
+	case eImage:
+		return ClipboardManager(m_iMemory).GetImage(pvarPropVal);
+	case eText:
 		return VA(pvarPropVal) << ClipboardManager::GetText();
 	case eVersion:
 		return VA(pvarPropVal) << MB2WC(VER_FILE_VERSION_STR);
@@ -46,7 +49,7 @@ bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* varPropVal)
 {
 	switch (lPropNum) {
-	case eClipboardText: {
+	case eText: {
 		wchar_t* str = 0;
 		::convFromShortWchar(&str, varPropVal->pwstrVal);
 		ClipboardManager::SetText(str);

@@ -452,6 +452,11 @@
 									<CommandName>Form.Command.УстановитьТекстБуфера</CommandName>
 									<ExtendedTooltip name="УстановитьТекстБуфераРасширеннаяПодсказка" id="284"/>
 								</Button>
+								<Button name="ПолучитьКартинку" id="285">
+									<Type>CommandBarButton</Type>
+									<CommandName>Form.Command.ПолучитьКартинкуИзБуфера</CommandName>
+									<ExtendedTooltip name="ПолучитьКартинкуРасширеннаяПодсказка" id="286"/>
+								</Button>
 							</ChildItems>
 						</CommandBar>
 						<InputField name="ТекстБуфераОбмена" id="280">
@@ -2087,6 +2092,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>УстановитьТекстБуфера</Action>
+		</Command>
+		<Command name="ПолучитьКартинкуИзБуфера" id="31">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить картинку из буфера</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить картинку из буфера</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьКартинкуИзБуфера</Action>
 		</Command>
 	</Commands>
 </Form>

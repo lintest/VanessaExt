@@ -1,7 +1,11 @@
 #include "ImageHelper.h"
 
-#include <gdiplus.h>
 #pragma comment(lib, "Gdiplus.lib")
+
+ImageHelper::ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData) 
+{
+	m_bitmap = Gdiplus::Bitmap::FromBITMAPINFO(gdiBitmapInfo, gdiBitmapData);
+}
 
 class GgiPlusToken {
 private:
@@ -44,7 +48,7 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 	return -1;  // Failure
 }
 
-BOOL ImageHelper::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
+BOOL ImageHelper::Save(IMemoryManager* iMemory, tVariant* pvarRetValue)
 {
 	BOOL Ret = FALSE;
 	Gdiplus::Status status = Gdiplus::Ok;
@@ -58,12 +62,10 @@ BOOL ImageHelper::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 	CLSID clsid;
 	GetEncoderClsid(L"image/png", &clsid); // retrieving JPEG encoder CLSID
 
-	Gdiplus::Bitmap SrcBitmap(hBitmap, 0); // creating bitmap
-
 	IStream* pStream;
 	if (SUCCEEDED(CreateStreamOnHGlobal(0, TRUE, &pStream))) // creating stream
 	{
-		status = SrcBitmap.Save(pStream, &clsid, 0); // saving image to the stream
+		status = m_bitmap->Save(pStream, &clsid, 0); // saving image to the stream
 		if (status == Gdiplus::Ok)
 		{
 			LARGE_INTEGER lOfs;
@@ -75,7 +77,7 @@ BOOL ImageHelper::SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue)
 				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
 					pvarRetValue->strLen = (ULONG)((DWORD_PTR)lSize.QuadPart);
-					m_iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
+					iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
 					TV_VT(pvarRetValue) = VTYPE_BLOB;
 					if (pvarRetValue->pstrVal)
 					{

@@ -2,6 +2,8 @@
 
 #ifdef _WINDOWS
 
+#include "ImageHelper.h"
+
 std::wstring ClipboardManager::GetText()
 {
 	std::wstring result;
@@ -40,11 +42,34 @@ bool ClipboardManager::SetText(const std::wstring& text)
 
 bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 {
-	return false;
+	if (!::OpenClipboard(NULL)) return false;
+	HANDLE hData = ::GetClipboardData(CF_DIBV5);
+	if (hData) {
+		uint8_t* data = reinterpret_cast<uint8_t*>(::GlobalLock(hData));
+		// CF_DIBV5 is composed of a BITMAPV5HEADER + bitmap data
+		ImageHelper image(reinterpret_cast<BITMAPINFO*>(data), data + sizeof(BITMAPV5HEADER));
+		if (image) image.Save(m_iMemory, pvarRetValue);
+		::GlobalUnlock(hData);
+	}
+	::CloseClipboard();
+	return true;
 }
 
 #else //_WINDOWS
 
+bool ClipboardManager::SetText(const std::wstring& text)
+{
+	return false;
+}
 
+std::wstring ClipboardManager::GetText()
+{
+	return {};
+}
+
+bool ClipboardManager::GetImage(tVariant* pvarRetValue)
+{
+	return false;
+}
 
 #endif //_WINDOWS

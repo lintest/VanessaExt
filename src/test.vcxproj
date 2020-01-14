@@ -187,6 +187,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ImageHelper.h" />
     <ClInclude Include="json_ext.h" />
     <ClInclude Include="ProcMngr.h" />
     <ClInclude Include="resource.h" />
@@ -195,6 +196,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ImageHelper.cpp" />
     <ClCompile Include="ProcMngr.cpp" />
     <ClCompile Include="ScreenMngr.cpp" />
     <ClCompile Include="test.cpp" />

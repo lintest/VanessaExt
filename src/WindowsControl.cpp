@@ -22,14 +22,15 @@
 const wchar_t* WindowsControl::m_ExtensionName = L"WindowsControl";
 
 const std::vector<AddInBase::Alias> WindowsControl::m_PropList{
-	Alias(eClipboardText , true  , L"ClipboardText"   , L"ТекстБуфераОбмена"),
-	Alias(eActiveWindow  , false , L"ActiveWindow"    , L"АктивноеОкно"),
-	Alias(eProcessId     , false , L"ProcessId"       , L"ИдентификаторПроцесса"),
-	Alias(eWindowList    , false , L"WindowList"      , L"СписокОкон"),
-	Alias(eProcessList   , false , L"ProcessList"     , L"СписокПроцессов"),
-	Alias(eDisplayList   , false , L"DisplayList"     , L"СписокДисплеев"),
-	Alias(eScreenInfo    , false , L"ScreenInfo"      , L"СвойстваЭкрана"),
-	Alias(eVersion       , false , L"Version"         , L"Версия"),
+	Alias(eClipboardImage , true  , L"ClipboardImage" , L"КартинкаБуфераОбмена"),
+	Alias(eClipboardText  , true  , L"ClipboardText"  , L"ТекстБуфераОбмена"),
+	Alias(eActiveWindow   , false , L"ActiveWindow"   , L"АктивноеОкно"),
+	Alias(eProcessId      , false , L"ProcessId"      , L"ИдентификаторПроцесса"),
+	Alias(eWindowList     , false , L"WindowList"     , L"СписокОкон"),
+	Alias(eProcessList    , false , L"ProcessList"    , L"СписокПроцессов"),
+	Alias(eDisplayList    , false , L"DisplayList"    , L"СписокДисплеев"),
+	Alias(eScreenInfo     , false , L"ScreenInfo"     , L"СвойстваЭкрана"),
+	Alias(eVersion        , false , L"Version"        , L"Версия"),
 };
 
 const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
@@ -61,6 +62,8 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 bool WindowsControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
+	case eClipboardImage:
+		return ClipboardManager(m_iMemory).GetImage(pvarPropVal);
 	case eClipboardText:
 		return VA(pvarPropVal) << ClipboardManager::GetText();
 	case eActiveWindow:

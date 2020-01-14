@@ -11,6 +11,7 @@ class WindowsControl : public AddInBase
 private:
 	enum Props
 	{
+		eClipboardImage,
 		eClipboardText,
 		eActiveWindow,
 		eProcessId,

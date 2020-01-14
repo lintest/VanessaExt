@@ -11,7 +11,8 @@ class ClipboardControl : public AddInBase
 private:
 	enum Props
 	{
-		eClipboardText,
+		eText,
+		eImage,
 		eVersion,
 	};
 
