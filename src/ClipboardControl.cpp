@@ -50,14 +50,14 @@ bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 }
 
 //---------------------------------------------------------------------------//
-bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* varPropVal)
+bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
 	case eImage:
-		return ClipboardManager(this).SetImage(varPropVal);
+		return ClipboardManager(this).SetImage(pvarPropVal);
 	case eText: {
 		wchar_t* str = 0;
-		::convFromShortWchar(&str, varPropVal->pwstrVal);
+		::convFromShortWchar(&str, pvarPropVal->pwstrVal);
 		ClipboardManager(this).SetText(str);
 		delete[] str;
 		return true;
