@@ -1,18 +1,91 @@
 #include "ClipMngr.h"
+#include "json_ext.h"
 
 #ifdef _WINDOWS
 
 #include "ImageHelper.h"
 
-ClipboardManager::ClipboardManager(IMemoryManager* iMemory) 
-{ 
+ClipboardManager::ClipboardManager(IMemoryManager* iMemory)
+{
 	m_isOpened = OpenClipboard(nullptr);
-	m_iMemory = iMemory; 
+	m_iMemory = iMemory;
 }
 
 ClipboardManager::~ClipboardManager()
 {
 	if (m_isOpened) CloseClipboard();
+}
+
+static std::string StandartFormat(UINT format)
+{
+	switch (format) {
+	case CF_TEXT:
+		return "TEXT";
+	case CF_BITMAP:
+		return "BITMAP";
+	case CF_METAFILEPICT:
+		return "METAFILEPICT";
+	case CF_SYLK:
+		return "SYLK";
+	case CF_DIF:
+		return "DIF";
+	case CF_TIFF:
+		return "TIFF";
+	case CF_OEMTEXT:
+		return "OEMTEXT";
+	case CF_DIB:
+		return "DIB";
+	case CF_PALETTE:
+		return "PALETTE";
+	case CF_PENDATA:
+		return "PENDATA";
+	case CF_RIFF:
+		return "RIFF";
+	case CF_WAVE:
+		return "WAVE";
+	case CF_UNICODETEXT:
+		return "UNICODETEXT";
+	case CF_ENHMETAFILE:
+		return "ENHMETAFILE";
+	case CF_HDROP:
+		return "HDROP";
+	case CF_LOCALE:
+		return "LOCALE";
+	case CF_DIBV5:
+		return "DIBV5";
+	case CF_MAX:
+		return "MAX";
+	case CF_OWNERDISPLAY:
+		return "OWNERDISPLAY";
+	case CF_DSPTEXT:
+		return "DSPTEXT";
+	case CF_DSPBITMAP:
+		return "DSPBITMAP";
+	case CF_DSPMETAFILEPICT:
+		return "DSPMETAFILEPICT";
+	case CF_DSPENHMETAFILE:
+		return "DSPENHMETAFILE";
+	default:
+		return {};
+	};
+}
+
+std::wstring ClipboardManager::GetFormat()
+{
+	JSON json;
+	UINT format = 0;
+	while ((format = EnumClipboardFormats(format)) != 0) {
+		std::string name = StandartFormat(format);
+		if (!name.empty()) {
+			json.push_back(name);
+			continue;
+		}
+		TCHAR szFormatName[1024];
+		const int cchMaxCount = sizeof(szFormatName) / sizeof(TCHAR);
+		int cActual = GetClipboardFormatName(format, szFormatName, cchMaxCount);
+		if (cActual) json.push_back(WC2MB(szFormatName));
+	}
+	return json;
 }
 
 std::wstring ClipboardManager::GetText()

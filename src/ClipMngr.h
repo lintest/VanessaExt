@@ -7,6 +7,7 @@ class ClipboardManager {
 public:
 	ClipboardManager(IMemoryManager* iMemory);
 	virtual ~ClipboardManager();
+	std::wstring GetFormat();
 	bool SetText(const std::wstring& text);
 	std::wstring GetText();
 	bool GetImage(tVariant* pvarValue);
