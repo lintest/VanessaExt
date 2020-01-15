@@ -284,7 +284,7 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	std::vector<char> buffer;
 	if (screenshot.save_to_png(buffer)) {
 		pvarRetValue->strLen = buffer.size();
-		m_iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
+		m_addin->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
 		TV_VT(pvarRetValue) = VTYPE_BLOB;
 		if (pvarRetValue->pstrVal) {
 			memcpy((void*)pvarRetValue->pstrVal, &buffer[0], pvarRetValue->strLen);
