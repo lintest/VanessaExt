@@ -67,7 +67,7 @@ public:
     WindowHelper() {
         display = XOpenDisplay(NULL);
 	}
-    ~WindowHelper() {
+    virtual ~WindowHelper() {
         if (display) XCloseDisplay(display);
     }
 
@@ -240,7 +240,7 @@ public:
         return *this;
     }
 
-	~WindowEnumerator() {
+	virtual ~WindowEnumerator() {
         XFree(m_windows);
 	}
 };

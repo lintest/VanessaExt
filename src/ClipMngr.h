@@ -5,12 +5,16 @@
 
 class ClipboardManager {
 public:
-	ClipboardManager(IMemoryManager* iMemory) { m_iMemory = iMemory; }
-	static bool SetText(const std::wstring& text);
-	static std::wstring GetText();
-	bool GetImage(tVariant* pvarRetValue);
+	ClipboardManager(IMemoryManager* iMemory);
+	virtual ~ClipboardManager();
+	bool SetText(const std::wstring& text);
+	std::wstring GetText();
+	bool GetImage(tVariant* pvarValue);
+	bool SetImage(tVariant* pvarValue);
+	bool Empty();
 private:
-	IMemoryManager* m_iMemory;
+	IMemoryManager* m_iMemory = 0;
+	bool m_isOpened = false;
 };
 
 #endif //__CLIPMNGR_H__

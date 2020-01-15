@@ -18,6 +18,7 @@ private:
 
 	enum Methods
 	{
+		eEmpty,
 		eSetData,
 	};
 

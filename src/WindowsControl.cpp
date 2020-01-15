@@ -65,7 +65,7 @@ bool WindowsControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	case eClipboardImage:
 		return ClipboardManager(m_iMemory).GetImage(pvarPropVal);
 	case eClipboardText:
-		return VA(pvarPropVal) << ClipboardManager::GetText();
+		return VA(pvarPropVal) << ClipboardManager(m_iMemory).GetText();
 	case eActiveWindow:
 		return VA(pvarPropVal) << (int64_t)WindowManager::ActiveWindow();
 	case eProcessList:
@@ -92,7 +92,7 @@ bool WindowsControl::SetPropVal(const long lPropNum, tVariant* varPropVal)
 	case eClipboardText: {
 		wchar_t* str = 0;
 		::convFromShortWchar(&str, varPropVal->pwstrVal);
-		ClipboardManager::SetText(str);
+		ClipboardManager(m_iMemory).SetText(str);
 		delete[] str;
 		return true;
 	}
