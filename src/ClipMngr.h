@@ -2,15 +2,22 @@
 #define __CLIPMNGR_H__
 
 #include "stdafx.h"
+#include <map>
 
 class ClipboardManager {
 public:
-	ClipboardManager(IMemoryManager* iMemory) { m_iMemory = iMemory; }
-	static bool SetText(const std::wstring& text);
-	static std::wstring GetText();
-	bool GetImage(tVariant* pvarRetValue);
+	ClipboardManager(AddInNative* addin);
+	virtual ~ClipboardManager();
+	std::wstring GetFormat();
+	bool SetText(const std::wstring& text);
+	std::wstring GetText();
+	bool GetImage(tVariant* pvarValue);
+	bool SetImage(tVariant* pvarValue);
+	bool Empty();
 private:
-	IMemoryManager* m_iMemory;
+	static const std::map<int, std::string> sm_formats;
+	AddInNative* m_addin = nullptr;
+	bool m_isOpened = false;
 };
 
 #endif //__CLIPMNGR_H__

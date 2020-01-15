@@ -80,3 +80,30 @@ int32_t VarToInt(tVariant* paParams)
 	return paParams->lVal;
 }
 
+bool AddInNative::Init(void* pConnection)
+{
+	m_iConnect = (IAddInDefBase*)pConnection;
+	return m_iConnect != NULL;
+}
+
+long AddInNative::GetInfo()
+{
+	// Component should put supported component technology version 
+	// This component supports 2.0 version
+	return 2000;
+}
+
+void AddInNative::Done()
+{
+}
+
+bool AddInNative::setMemManager(void* mem)
+{
+	m_iMemory = (IMemoryManager*)mem;
+	return m_iMemory != 0;
+}
+
+bool ADDIN_API AddInNative::AllocMemory(void** pMemory, unsigned long ulCountByte) const
+{
+	return m_iMemory ? m_iMemory->AllocMemory(pMemory, ulCountByte) : false;
+}

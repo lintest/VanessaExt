@@ -13,11 +13,13 @@ private:
 	{
 		eText,
 		eImage,
+		eFormat,
 		eVersion,
 	};
 
 	enum Methods
 	{
+		eEmpty,
 		eSetData,
 	};
 

@@ -21,11 +21,13 @@ const wchar_t* ClipboardControl::m_ExtensionName = L"ClipboardControl";
 const std::vector<AddInBase::Alias> ClipboardControl::m_PropList{
 	Alias(eText    , true  , L"Text"    , L"Текст"),
 	Alias(eImage   , true  , L"Image"   , L"Картинка"),
+	Alias(eFormat  , false , L"Format"  , L"Формат"),
 	Alias(eVersion , false , L"Version" , L"Версия"),
 };
 
 const std::vector<AddInBase::Alias> ClipboardControl::m_MethList{
-	Alias(eSetData  , 1, true , L"Записать"   , L"SetData"),
+	Alias(eEmpty    , 0, false , L"Очистить"   , L"Empty"),
+	Alias(eSetData  , 1, true  , L"Записать"   , L"SetData"),
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -35,9 +37,11 @@ bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
 	case eImage:
-		return ClipboardManager(m_iMemory).GetImage(pvarPropVal);
+		return ClipboardManager(this).GetImage(pvarPropVal);
 	case eText:
-		return VA(pvarPropVal) << ClipboardManager::GetText();
+		return VA(pvarPropVal) << ClipboardManager(this).GetText();
+	case eFormat:
+		return VA(pvarPropVal) << ClipboardManager(this).GetFormat();
 	case eVersion:
 		return VA(pvarPropVal) << MB2WC(VER_FILE_VERSION_STR);
 	default:
@@ -49,10 +53,12 @@ bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* varPropVal)
 {
 	switch (lPropNum) {
+	case eImage:
+		return ClipboardManager(this).SetImage(varPropVal);
 	case eText: {
 		wchar_t* str = 0;
 		::convFromShortWchar(&str, varPropVal->pwstrVal);
-		ClipboardManager::SetText(str);
+		ClipboardManager(this).SetText(str);
 		delete[] str;
 		return true;
 	}
@@ -63,7 +69,12 @@ bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* varPropVal)
 //---------------------------------------------------------------------------//
 bool ClipboardControl::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 {
-	return false;
+	switch (lMethodNum) {
+	case eEmpty:
+		return ClipboardManager(this).Empty();
+	default:
+		return false;
+	}
 }
 //---------------------------------------------------------------------------//
 bool ClipboardControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)

@@ -1,11 +1,11 @@
-﻿#ifndef __ADDINNATIVE_H__
-#define __ADDINNATIVE_H__
+﻿#ifndef __ADDINBASE_H__
+#define __ADDINBASE_H__
 
 #include "stdafx.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl
-class AddInBase : public IComponentBase
+class AddInBase : public AddInNative
 {
 protected:
 	static const int m_AliasCount = 2;
@@ -38,11 +38,11 @@ protected:
 	class VarinantHelper {
 	private:
 		tVariant* pvar = NULL;
-		IMemoryManager* mm = NULL;
+		AddInNative* addin = NULL;
 	public:
-		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), mm(va.mm) {}
-		VarinantHelper(tVariant* pvar, IMemoryManager* mm) :pvar(pvar), mm(mm) {}
-		VarinantHelper& operator=(const VarinantHelper& va) { pvar = va.pvar; mm = va.mm; return *this; }
+		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), addin(va.addin) {}
+		VarinantHelper(tVariant* pvar, AddInNative* addin) :pvar(pvar), addin(addin) {}
+		VarinantHelper& operator=(const VarinantHelper& va) { pvar = va.pvar; addin = va.addin; return *this; }
 		VarinantHelper& operator<<(const wchar_t* str);
 		VarinantHelper& operator<<(const std::wstring& str);
 		VarinantHelper& operator<<(int32_t value);
@@ -50,7 +50,7 @@ protected:
 		operator BOOL() const { return true; };
 	};
 
-	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, m_iMemory); }
+	VarinantHelper VA(tVariant* pvar) { return VarinantHelper(pvar, this); }
 
 	virtual const std::vector<Alias>& PropList() const = 0;
 	virtual const std::vector<Alias>& MethList() const = 0;
@@ -62,13 +62,8 @@ protected:
 	bool HasRetVal(const std::vector<Alias>& names, const long lMethodNum);
 
 public:
-	AddInBase(void);
-	virtual ~AddInBase();
-	// IInitDoneBase
-	bool ADDIN_API Init(void*) override;
-	bool ADDIN_API setMemManager(void* mem) override;
-	long ADDIN_API GetInfo() override;
-	void ADDIN_API Done() override;
+	AddInBase(void) {}
+	virtual ~AddInBase() {}
 	// ILanguageExtenderBase
 	bool ADDIN_API RegisterExtensionAs(WCHAR_T**) override;
 	long ADDIN_API FindProp(const WCHAR_T* wsPropName) override;
@@ -88,8 +83,6 @@ public:
 protected:
 	const WCHAR_T* W(const wchar_t* str) const;
 	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
-	IMemoryManager* m_iMemory;
-	IAddInDefBase* m_iConnect;
 };
 
 class WcharWrapper
@@ -119,4 +112,4 @@ private:
 uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
 uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len = 0);
 
-#endif //__ADDINNATIVE_H__
+#endif //__ADDINBASE_H__

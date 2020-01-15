@@ -1,16 +1,16 @@
 #include "ImageHelper.h"
 
-#pragma comment(lib, "Gdiplus.lib")
+#ifdef _WINDOWS
 
-ImageHelper::ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData) 
-{
-	m_bitmap = Gdiplus::Bitmap::FromBITMAPINFO(gdiBitmapInfo, gdiBitmapData);
-}
+#include <shlwapi.h>
+#pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "Gdiplus.lib")
 
 class GgiPlusToken {
 private:
 	ULONG_PTR h = NULL;
 public:
+	static bool Init();
 	GgiPlusToken() noexcept {}
 	~GgiPlusToken() { if (h) Gdiplus::GdiplusShutdown(h); }
 	ULONG_PTR* operator &() noexcept { return &h; }
@@ -18,6 +18,47 @@ public:
 };
 
 static GgiPlusToken gdiplusToken;
+
+bool GgiPlusToken::Init()
+{
+	Gdiplus::Status status = Gdiplus::Ok;
+	if (!gdiplusToken) // initialization of gdi+
+	{
+		const Gdiplus::GdiplusStartupInput input;
+		status = Gdiplus::GdiplusStartup(&gdiplusToken, &input, NULL);
+		if (status != Gdiplus::Ok) return false;
+	}
+	return true;
+}
+
+ImageHelper::ImageHelper(HBITMAP hBitmap)
+{
+	if (!GgiPlusToken::Init()) return;
+	m_bitmap = Gdiplus::Bitmap::FromHBITMAP(hBitmap, 0);
+}
+
+ImageHelper::ImageHelper(tVariant* pvarValue)
+{
+	if (!GgiPlusToken::Init()) return;
+	if (IStream* pStream = SHCreateMemStream((BYTE*)pvarValue->pstrVal, pvarValue->strLen)) {
+		m_bitmap = Gdiplus::Bitmap::FromStream(pStream);
+		pStream->Release(); // releasing stream
+	}
+}
+
+ImageHelper::ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData) 
+{
+	if (!GgiPlusToken::Init()) return;
+	m_bitmap = Gdiplus::Bitmap::FromBITMAPINFO(gdiBitmapInfo, gdiBitmapData);
+}
+
+ImageHelper::operator HBITMAP() const 
+{
+	HBITMAP hbitmap = NULL;
+	auto status = m_bitmap->GetHBITMAP(NULL, &hbitmap);
+	if (status != Gdiplus::Ok) return NULL;
+	return hbitmap;
+}
 
 int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 {
@@ -48,24 +89,18 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 	return -1;  // Failure
 }
 
-BOOL ImageHelper::Save(IMemoryManager* iMemory, tVariant* pvarRetValue)
+
+BOOL ImageHelper::Save(AddInNative* addin, tVariant* pvarRetValue)
 {
-	BOOL Ret = FALSE;
-	Gdiplus::Status status = Gdiplus::Ok;
-	if (!gdiplusToken) // initialization of gdi+
-	{
-		const Gdiplus::GdiplusStartupInput input;
-		status = Gdiplus::GdiplusStartup(&gdiplusToken, &input, NULL);
-		if (status != Gdiplus::Ok) return FALSE;
-	}
+	if (!GgiPlusToken::Init()) return false;
 
 	CLSID clsid;
 	GetEncoderClsid(L"image/png", &clsid); // retrieving JPEG encoder CLSID
 
-	IStream* pStream;
-	if (SUCCEEDED(CreateStreamOnHGlobal(0, TRUE, &pStream))) // creating stream
+	BOOL Ret = FALSE;
+	if (IStream* pStream = SHCreateMemStream(NULL, 0)) // creating stream
 	{
-		status = m_bitmap->Save(pStream, &clsid, 0); // saving image to the stream
+		Gdiplus::Status status = m_bitmap->Save(pStream, &clsid, 0); // saving image to the stream
 		if (status == Gdiplus::Ok)
 		{
 			LARGE_INTEGER lOfs;
@@ -77,7 +112,7 @@ BOOL ImageHelper::Save(IMemoryManager* iMemory, tVariant* pvarRetValue)
 				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
 					pvarRetValue->strLen = (ULONG)((DWORD_PTR)lSize.QuadPart);
-					iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
+					addin->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
 					TV_VT(pvarRetValue) = VTYPE_BLOB;
 					if (pvarRetValue->pstrVal)
 					{
@@ -93,3 +128,5 @@ BOOL ImageHelper::Save(IMemoryManager* iMemory, tVariant* pvarRetValue)
 	}
 	return Ret;
 }
+
+#endif //_WINDOWS

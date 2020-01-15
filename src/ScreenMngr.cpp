@@ -127,7 +127,7 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 	HGDIOBJ object = SelectObject(hDC, hBitmap);
 	BitBlt(hDC, 0, 0, w, h, hScreen, x, y, SRCCOPY);
 
-	const BOOL result = ImageHelper(hBitmap).Save(m_iMemory, pvarRetValue);
+	const BOOL result = ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
 
 	SelectObject(hDC, object);
 	DeleteDC(hDC);
@@ -151,7 +151,7 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	SelectObject(hDC, hBitmap);
 	PrintWindow(hWnd, hDC, 0);
 
-	const BOOL result = ImageHelper(hBitmap).Save(m_iMemory, pvarRetValue);
+	const BOOL result = ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
 
 	ReleaseDC(NULL, hdcScreen);
 	DeleteDC(hDC);
