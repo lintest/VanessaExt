@@ -5,10 +5,9 @@
 
 #include "ImageHelper.h"
 
-ClipboardManager::ClipboardManager(IMemoryManager* iMemory)
+ClipboardManager::ClipboardManager(AddInNative* addin) : m_addin(addin)
 {
 	m_isOpened = OpenClipboard(nullptr);
-	m_iMemory = iMemory;
 }
 
 ClipboardManager::~ClipboardManager()
@@ -101,11 +100,11 @@ bool ClipboardManager::GetImage(tVariant* pvarValue)
 {
 	if (!m_isOpened) return false;
 	HANDLE hData = ::GetClipboardData(CF_DIBV5);
-	if (hData && m_iMemory) {
+	if (hData && m_addin) {
 		uint8_t* data = reinterpret_cast<uint8_t*>(::GlobalLock(hData));
 		// CF_DIBV5 is composed of a BITMAPV5HEADER + bitmap data
 		ImageHelper image(reinterpret_cast<BITMAPINFO*>(data), data + sizeof(BITMAPV5HEADER));
-		if (image) image.Save(m_iMemory, pvarValue);
+		if (image) image.Save(m_addin, pvarValue);
 		::GlobalUnlock(hData);
 	}
 	return true;

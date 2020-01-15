@@ -6,7 +6,7 @@
 
 class ClipboardManager {
 public:
-	ClipboardManager(IMemoryManager* iMemory);
+	ClipboardManager(AddInNative* addin);
 	virtual ~ClipboardManager();
 	std::wstring GetFormat();
 	bool SetText(const std::wstring& text);
@@ -15,9 +15,8 @@ public:
 	bool SetImage(tVariant* pvarValue);
 	bool Empty();
 private:
-	const std::string StdName(UINT format) const;
 	static const std::map<int, std::string> sm_formats;
-	IMemoryManager* m_iMemory = 0;
+	AddInNative* m_addin = nullptr;
 	bool m_isOpened = false;
 };
 

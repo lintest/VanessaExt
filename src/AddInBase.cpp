@@ -45,7 +45,7 @@ public:
 	WSTR(const WCHAR_T* str) {
 		::convFromShortWchar(&m_str, str);
 	}
-	~WSTR() { 
+	~WSTR() {
 		delete[] m_str;
 	}
 	bool operator ==(const wchar_t* str) const {
@@ -89,34 +89,7 @@ const WCHAR_T* GetClassNames()
 	return s_names;
 }
 //---------------------------------------------------------------------------//
-// WindowManager
-//---------------------------------------------------------------------------//
-AddInBase::AddInBase()
-{
-	m_iMemory = 0;
-	m_iConnect = 0;
-}
-//---------------------------------------------------------------------------//
-AddInBase::~AddInBase()
-{
-}
-//---------------------------------------------------------------------------//
-bool AddInBase::Init(void* pConnection)
-{
-	m_iConnect = (IAddInDefBase*)pConnection;
-	return m_iConnect != NULL;
-}
-//---------------------------------------------------------------------------//
-long AddInBase::GetInfo()
-{
-	// Component should put supported component technology version 
-	// This component supports 2.0 version
-	return 2000;
-}
-//---------------------------------------------------------------------------//
-void AddInBase::Done()
-{
-}
+// AddInBase
 //---------------------------------------------------------------------------//
 long AddInBase::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
 {
@@ -161,9 +134,9 @@ AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(const wchar_t* 
 {
 	TV_VT(pvar) = VTYPE_PWSTR;
 	pvar->pwstrVal = NULL;
-	if (mm && str && wcslen(str)) {
+	if (addin && str && wcslen(str)) {
 		unsigned long size = (unsigned long)wcslen(str) + 1;
-		if (mm->AllocMemory((void**)&pvar->pwstrVal, size * sizeof(WCHAR_T))) {
+		if (addin->AllocMemory((void**)&pvar->pwstrVal, size * sizeof(WCHAR_T))) {
 			::convToShortWchar((WCHAR_T**)&pvar->pwstrVal, str, size);
 			pvar->wstrLen = size - 1;
 		}
@@ -193,9 +166,9 @@ AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(int32_t value)
 const WCHAR_T* AddInBase::W(const wchar_t* str) const
 {
 	WCHAR_T* res = NULL;
-	if (m_iMemory && str && wcslen(str)) {
+	if (str && wcslen(str)) {
 		unsigned long size = (unsigned long)wcslen(str) + 1;
-		if (m_iMemory->AllocMemory((void**)res, size * sizeof(WCHAR_T))) {
+		if (AllocMemory((void**)res, size * sizeof(WCHAR_T))) {
 			::convToShortWchar(&res, str, size);
 		}
 	}
@@ -209,15 +182,10 @@ bool AddInBase::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 {
 	const wchar_t* wsExtension = ExtensionName();
 	unsigned long iActualSize = (unsigned long)::wcslen(wsExtension) + 1;
-	WCHAR_T* dest = 0;
-
-	if (m_iMemory)
-	{
-		if (m_iMemory->AllocMemory((void**)wsExtensionName, iActualSize * sizeof(WCHAR_T)))
-			::convToShortWchar(wsExtensionName, wsExtension, iActualSize);
+	if (AllocMemory((void**)wsExtensionName, iActualSize * sizeof(WCHAR_T))) {
+		::convToShortWchar(wsExtensionName, wsExtension, iActualSize);
 		return true;
 	}
-
 	return false;
 }
 //---------------------------------------------------------------------------//
@@ -289,12 +257,6 @@ void AddInBase::SetLocale(const WCHAR_T* loc)
 }
 /////////////////////////////////////////////////////////////////////////////
 // LocaleBase
-//---------------------------------------------------------------------------//
-bool AddInBase::setMemManager(void* mem)
-{
-	m_iMemory = (IMemoryManager*)mem;
-	return m_iMemory != 0;
-}
 //---------------------------------------------------------------------------//
 void AddInBase::addError(uint32_t wcode, const wchar_t* source,
 	const wchar_t* descriptor, long code)

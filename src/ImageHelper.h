@@ -15,7 +15,7 @@ public:
 	ImageHelper(tVariant* pvarValue);
 	ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData);
 	virtual ~ImageHelper() { if (m_bitmap) delete m_bitmap; }
-	BOOL Save(IMemoryManager* iMemory, tVariant* pvarRetValue);
+	BOOL Save(AddInNative* addin, tVariant* pvarRetValue);
 	operator bool() const { return m_bitmap; }
 	operator HBITMAP() const;
 private:

@@ -37,11 +37,11 @@ bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
 	case eImage:
-		return ClipboardManager(m_iMemory).GetImage(pvarPropVal);
+		return ClipboardManager(this).GetImage(pvarPropVal);
 	case eText:
-		return VA(pvarPropVal) << ClipboardManager(m_iMemory).GetText();
+		return VA(pvarPropVal) << ClipboardManager(this).GetText();
 	case eFormat:
-		return VA(pvarPropVal) << ClipboardManager(m_iMemory).GetFormat();
+		return VA(pvarPropVal) << ClipboardManager(this).GetFormat();
 	case eVersion:
 		return VA(pvarPropVal) << MB2WC(VER_FILE_VERSION_STR);
 	default:
@@ -54,11 +54,11 @@ bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* varPropVal)
 {
 	switch (lPropNum) {
 	case eImage:
-		return ClipboardManager(m_iMemory).SetImage(varPropVal);
+		return ClipboardManager(this).SetImage(varPropVal);
 	case eText: {
 		wchar_t* str = 0;
 		::convFromShortWchar(&str, varPropVal->pwstrVal);
-		ClipboardManager(m_iMemory).SetText(str);
+		ClipboardManager(this).SetText(str);
 		delete[] str;
 		return true;
 	}
@@ -71,7 +71,7 @@ bool ClipboardControl::CallAsProc(const long lMethodNum, tVariant* paParams, con
 {
 	switch (lMethodNum) {
 	case eEmpty:
-		return ClipboardManager(m_iMemory).Empty();
+		return ClipboardManager(this).Empty();
 	default:
 		return false;
 	}

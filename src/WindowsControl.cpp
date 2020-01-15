@@ -63,9 +63,9 @@ bool WindowsControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
 	case eClipboardImage:
-		return ClipboardManager(m_iMemory).GetImage(pvarPropVal);
+		return ClipboardManager(this).GetImage(pvarPropVal);
 	case eClipboardText:
-		return VA(pvarPropVal) << ClipboardManager(m_iMemory).GetText();
+		return VA(pvarPropVal) << ClipboardManager(this).GetText();
 	case eActiveWindow:
 		return VA(pvarPropVal) << (int64_t)WindowManager::ActiveWindow();
 	case eProcessList:
@@ -92,7 +92,7 @@ bool WindowsControl::SetPropVal(const long lPropNum, tVariant* varPropVal)
 	case eClipboardText: {
 		wchar_t* str = 0;
 		::convFromShortWchar(&str, varPropVal->pwstrVal);
-		ClipboardManager(m_iMemory).SetText(str);
+		ClipboardManager(this).SetText(str);
 		delete[] str;
 		return true;
 	}
@@ -150,9 +150,9 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 	case eGetDisplayInfo:
 		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
 	case eTakeScreenshot:
-		return ScreenManager(m_iMemory).CaptureScreen(pvarRetValue, paParams, lSizeArray);
+		return ScreenManager(this).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
-		return ScreenManager(m_iMemory).CaptureWindow(pvarRetValue, paParams, lSizeArray);
+		return ScreenManager(this).CaptureWindow(pvarRetValue, paParams, lSizeArray);
 	default:
 		return false;
 	}

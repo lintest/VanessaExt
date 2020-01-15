@@ -90,7 +90,7 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 }
 
 
-BOOL ImageHelper::Save(IMemoryManager* iMemory, tVariant* pvarRetValue)
+BOOL ImageHelper::Save(AddInNative* addin, tVariant* pvarRetValue)
 {
 	if (!GgiPlusToken::Init()) return false;
 
@@ -112,7 +112,7 @@ BOOL ImageHelper::Save(IMemoryManager* iMemory, tVariant* pvarRetValue)
 				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
 					pvarRetValue->strLen = (ULONG)((DWORD_PTR)lSize.QuadPart);
-					iMemory->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
+					addin->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
 					TV_VT(pvarRetValue) = VTYPE_BLOB;
 					if (pvarRetValue->pstrVal)
 					{
