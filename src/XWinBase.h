@@ -2,6 +2,7 @@
 #define __XWINBASE_H__
 
 #include "stdafx.h"
+#include "json_ext.h"
 
 #ifndef _WINDOWS
 

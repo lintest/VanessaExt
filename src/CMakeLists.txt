@@ -20,6 +20,8 @@ SET(AddInNative_SRC
     WindowsControl.h
     ProcMngr.cpp
     ProcMngr.h
+    ClipMngr.cpp 
+    ClipMngr.h 
     ScreenMngr.cpp 
     ScreenMngr.h 
     WindowMngr.cpp

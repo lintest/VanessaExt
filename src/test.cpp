@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <string>
 #include <types.h>
+#include "ClipMngr.h"
 #include "ProcMngr.h"
 #include "ScreenMngr.h"
 #include "WindowMngr.h"
@@ -48,7 +49,6 @@ int main() {
 
     json = WindowManager::GetWindowSize(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
-*/    
 
     tVariant pVarActive;
     pVarActive.intVal = (int)WindowManager::ActiveWindow();
@@ -65,6 +65,8 @@ int main() {
 
     json = WindowManager::GetWindowInfo(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
+*/    
+    std::wcout << std::endl << ClipboardManager::GetText() << std::endl << std::endl;
 
     return 0;
 }

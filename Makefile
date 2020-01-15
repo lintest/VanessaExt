@@ -10,6 +10,7 @@ LIBRARIES	:= -lX11 -lpng -lXrandr
 EXECUTABLE	:= test
 
 SRC = \
+	src/ClipMngr.cpp \
 	src/ProcMngr.cpp \
 	src/ScreenMngr.cpp \
 	src/WindowMngr.cpp \

@@ -1,6 +1,7 @@
 TARGET=AddInNative.so
 
 SOURCES=AddInNative.cpp \
+	ClipMngr.cpp \
 	ProcMngr.cpp \
 	ScreenMngr.cpp \
 	WindowMngr.cpp \
