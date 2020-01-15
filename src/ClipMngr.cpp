@@ -16,74 +16,50 @@ ClipboardManager::~ClipboardManager()
 	if (m_isOpened) CloseClipboard();
 }
 
-static std::string StandartFormat(UINT format)
-{
-	switch (format) {
-	case CF_TEXT:
-		return "TEXT";
-	case CF_BITMAP:
-		return "BITMAP";
-	case CF_METAFILEPICT:
-		return "METAFILEPICT";
-	case CF_SYLK:
-		return "SYLK";
-	case CF_DIF:
-		return "DIF";
-	case CF_TIFF:
-		return "TIFF";
-	case CF_OEMTEXT:
-		return "OEMTEXT";
-	case CF_DIB:
-		return "DIB";
-	case CF_PALETTE:
-		return "PALETTE";
-	case CF_PENDATA:
-		return "PENDATA";
-	case CF_RIFF:
-		return "RIFF";
-	case CF_WAVE:
-		return "WAVE";
-	case CF_UNICODETEXT:
-		return "UNICODETEXT";
-	case CF_ENHMETAFILE:
-		return "ENHMETAFILE";
-	case CF_HDROP:
-		return "HDROP";
-	case CF_LOCALE:
-		return "LOCALE";
-	case CF_DIBV5:
-		return "DIBV5";
-	case CF_MAX:
-		return "MAX";
-	case CF_OWNERDISPLAY:
-		return "OWNERDISPLAY";
-	case CF_DSPTEXT:
-		return "DSPTEXT";
-	case CF_DSPBITMAP:
-		return "DSPBITMAP";
-	case CF_DSPMETAFILEPICT:
-		return "DSPMETAFILEPICT";
-	case CF_DSPENHMETAFILE:
-		return "DSPENHMETAFILE";
-	default:
-		return {};
-	};
-}
+const std::map<int, std::string> ClipboardManager::sm_formats{
+	{ CF_TEXT            , "TEXT"            },
+	{ CF_BITMAP          , "BITMAP"        	 },
+	{ CF_METAFILEPICT    , "METAFILEPICT"  	 },
+	{ CF_SYLK            , "SYLK"          	 },
+	{ CF_DIF             , "DIF"           	 },
+	{ CF_TIFF            , "TIFF"          	 },
+	{ CF_OEMTEXT         , "OEMTEXT"       	 },
+	{ CF_DIB             , "DIB"           	 },
+	{ CF_PALETTE         , "PALETTE"       	 },
+	{ CF_PENDATA         , "PENDATA"       	 },
+	{ CF_RIFF            , "RIFF"          	 },
+	{ CF_WAVE            , "WAVE"          	 },
+	{ CF_UNICODETEXT     , "UNICODETEXT"   	 },
+	{ CF_ENHMETAFILE     , "ENHMETAFILE"   	 },
+	{ CF_HDROP           , "HDROP"         	 },
+	{ CF_LOCALE          , "LOCALE"        	 },
+	{ CF_DIBV5           , "DIBV5"         	 },
+	{ CF_MAX             , "MAX"           	 },
+	{ CF_OWNERDISPLAY    , "OWNERDISPLAY"  	 },
+	{ CF_DSPTEXT         , "DSPTEXT"       	 },
+	{ CF_DSPBITMAP       , "DSPBITMAP"     	 },
+	{ CF_DSPMETAFILEPICT , "DSPMETAFILEPICT" },
+	{ CF_DSPENHMETAFILE  , "DSPENHMETAFILE"  },
+};
 
 std::wstring ClipboardManager::GetFormat()
 {
 	JSON json;
 	UINT format = 0;
 	while ((format = EnumClipboardFormats(format)) != 0) {
-		std::string name = StandartFormat(format);
-		if (!name.empty()) {
-			json.push_back(name);
-			continue;
+		JSON j;
+		j["key"] = format;
+		auto it = sm_formats.find(format);
+		if (it != sm_formats.end()) {
+			j["name"] = it->second;
 		}
-		TCHAR szFormatName[1024];
-		const int cchMaxCount = sizeof(szFormatName) / sizeof(TCHAR);
-		int cActual = GetClipboardFormatName(format, szFormatName, cchMaxCount);
-		if (cActual) json.push_back(WC2MB(szFormatName));
+		else {
+			TCHAR szFormatName[1024];
+			const int cchMaxCount = sizeof(szFormatName) / sizeof(TCHAR);
+			int cActual = GetClipboardFormatName(format, szFormatName, cchMaxCount);
+			if (cActual) j["name"] = WC2MB(szFormatName);
+		}
+		json.push_back(j);
 	}
 	return json;
 }

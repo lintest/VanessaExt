@@ -2,6 +2,7 @@
 #define __CLIPMNGR_H__
 
 #include "stdafx.h"
+#include <map>
 
 class ClipboardManager {
 public:
@@ -14,6 +15,8 @@ public:
 	bool SetImage(tVariant* pvarValue);
 	bool Empty();
 private:
+	const std::string StdName(UINT format) const;
+	static const std::map<int, std::string> sm_formats;
 	IMemoryManager* m_iMemory = 0;
 	bool m_isOpened = false;
 };
