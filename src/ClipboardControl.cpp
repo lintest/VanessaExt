@@ -21,6 +21,7 @@ const wchar_t* ClipboardControl::m_ExtensionName = L"ClipboardControl";
 const std::vector<AddInBase::Alias> ClipboardControl::m_PropList{
 	Alias(eText    , true  , L"Text"    , L"Текст"),
 	Alias(eImage   , true  , L"Image"   , L"Картинка"),
+	Alias(eFiles   , true  , L"Files"   , L"СписокФайлов"),
 	Alias(eFormat  , false , L"Format"  , L"Формат"),
 	Alias(eVersion , false , L"Version" , L"Версия"),
 };
@@ -40,6 +41,8 @@ bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		return ClipboardManager(this).GetImage(pvarPropVal);
 	case eText:
 		return VA(pvarPropVal) << ClipboardManager(this).GetText();
+	case eFiles:
+		return VA(pvarPropVal) << ClipboardManager(this).GetFiles();
 	case eFormat:
 		return VA(pvarPropVal) << ClipboardManager(this).GetFormat();
 	case eVersion:

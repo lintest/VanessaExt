@@ -13,6 +13,7 @@ private:
 	{
 		eText,
 		eImage,
+		eFiles,
 		eFormat,
 		eVersion,
 	};
