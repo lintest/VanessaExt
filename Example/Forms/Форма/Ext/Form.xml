@@ -562,6 +562,11 @@
 											<CommandName>Form.Command.ПолучитьКартинкуИзБуфера</CommandName>
 											<ExtendedTooltip name="ПолучитьКартинкуРасширеннаяПодсказка" id="286"/>
 										</Button>
+										<Button name="ПолучитьСписокФайлов" id="331">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.ПолучитьСписокФайлов</CommandName>
+											<ExtendedTooltip name="ПолучитьСписокФайловРасширеннаяПодсказка" id="332"/>
+										</Button>
 										<Button name="ОчиститьБуферОбмена" id="291">
 											<Type>UsualButton</Type>
 											<CommandName>Form.Command.ОчиститьБуферОбмена</CommandName>
@@ -2448,6 +2453,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>КопироватьСнимокВБуферОбмена</Action>
+		</Command>
+		<Command name="ПолучитьСписокФайлов" id="38">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить список файлов</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить список файлов</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьСписокФайлов</Action>
 		</Command>
 	</Commands>
 </Form>

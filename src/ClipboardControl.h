@@ -13,6 +13,7 @@ private:
 	{
 		eText,
 		eImage,
+		eFiles,
 		eFormat,
 		eVersion,
 	};
@@ -32,7 +33,7 @@ private:
 
 public:
 	bool ADDIN_API GetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
-	bool ADDIN_API SetPropVal(const long lPropNum, tVariant* varPropVal) override;
+	bool ADDIN_API SetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
 	bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray) override;
 	bool ADDIN_API CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray) override;
 };

@@ -86,12 +86,14 @@ bool WindowsControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 }
 
 //---------------------------------------------------------------------------//
-bool WindowsControl::SetPropVal(const long lPropNum, tVariant* varPropVal)
+bool WindowsControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
+	case eClipboardImage:
+		return ClipboardManager(this).SetImage(pvarPropVal);
 	case eClipboardText: {
 		wchar_t* str = 0;
-		::convFromShortWchar(&str, varPropVal->pwstrVal);
+		::convFromShortWchar(&str, pvarPropVal->pwstrVal);
 		ClipboardManager(this).SetText(str);
 		delete[] str;
 		return true;
