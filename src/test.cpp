@@ -66,7 +66,8 @@ int main() {
     json = WindowManager::GetWindowInfo(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
 */    
-    std::wcout << std::endl << ClipboardManager::GetText() << std::endl << std::endl;
+    json = ClipboardManager(nullptr).GetFiles();
+    std::wcout << std::endl << json << std::endl << std::endl;
 
     return 0;
 }

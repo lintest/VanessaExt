@@ -68,13 +68,13 @@ std::wstring ClipboardManager::GetText()
 	if (!m_isOpened) return {};
 	std::wstring result;
 	if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-		if (HGLOBAL hglobal = GetClipboardData(CF_UNICODETEXT)) {
+		if (HGLOBAL hglobal = ::GetClipboardData(CF_UNICODETEXT)) {
 			result = static_cast<LPWSTR>(GlobalLock(hglobal));
 			GlobalUnlock(hglobal);
 		}
 	}
 	else if (IsClipboardFormatAvailable(CF_TEXT)) {
-		if (HGLOBAL hglobal = GetClipboardData(CF_TEXT)) {
+		if (HGLOBAL hglobal = ::GetClipboardData(CF_TEXT)) {
 			result = MB2WC(static_cast<LPSTR>(GlobalLock(hglobal)));
 			GlobalUnlock(hglobal);
 		}
@@ -141,6 +141,25 @@ bool ClipboardManager::SetImage(tVariant* pvarValue)
 	SetClipboardData(CF_DIB, hmem);
 	DeleteObject(hbitmap);
 	return true;
+}
+
+std::wstring ClipboardManager::GetFiles()
+{
+	JSON json;
+	if (HGLOBAL hGlobal = ::GetClipboardData(CF_HDROP)) {
+		if (HDROP hDrop = (HDROP)GlobalLock(hGlobal)) {
+			UINT fileCount = DragQueryFile(hDrop, 0xFFFFFFFF, 0, 0);
+			for (UINT i = 0; i < fileCount; ++i) {
+				UINT size = DragQueryFile(hDrop, i, 0, 0) + 1;
+				std::vector<wchar_t> buffer(size);
+				DragQueryFile(hDrop, i, buffer.data(), size);
+				std::wstring filename = buffer.data();
+				json.push_back(WC2MB(filename));
+			}
+			GlobalUnlock(hGlobal);
+		}
+	}
+	return json;
 }
 
 bool ClipboardManager::Empty()

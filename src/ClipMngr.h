@@ -11,6 +11,7 @@ public:
 	std::wstring GetFormat();
 	bool SetText(const std::wstring& text);
 	std::wstring GetText();
+	std::wstring GetFiles();
 	bool GetImage(tVariant* pvarValue);
 	bool SetImage(tVariant* pvarValue);
 	bool Empty();
