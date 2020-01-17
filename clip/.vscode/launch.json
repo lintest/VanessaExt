@@ -5,7 +5,7 @@
             "name": "C++ Debug (gdb)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/test",
+            "program": "${workspaceFolder}/test_xcb",
             "preLaunchTask": "Build C++ project",
             "args": ["Test Clipboard"],
             "stopAtEntry": false,

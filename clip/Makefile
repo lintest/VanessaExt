@@ -1,4 +1,4 @@
-TARGET=test
+TARGET=test_xcb
 
 SOURCES=xcb_clip.cpp
 
@@ -22,7 +22,7 @@ all: $(TARGET)
 	@rm -f $*.d.tmp
 
 $(TARGET): $(OBJECTS) Makefile
-	g++ $(CXXLAGS) $(OBJECTS) -o $(TARGET) $(addprefix -l, $(LIBS)) `libpng-config --ldflags` `pkg-config --libs xcb`
+	g++ $(CXXLAGS) $(OBJECTS) -o $(TARGET) $(addprefix -l, $(LIBS)) `libpng-config --ldflags` `pkg-config --libs xcb` 
 
 clean:
 	-rm $(TARGET) *.o *.d

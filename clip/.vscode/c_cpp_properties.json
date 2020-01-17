@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/../include"
+                "/usr/include/libpng16",
+                "/usr/include/xcb"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
