@@ -1,19 +1,21 @@
 TARGET=AddInNative.so
 
 SOURCES=AddInNative.cpp \
+	ClipMngr.cpp \
 	ProcMngr.cpp \
 	ScreenMngr.cpp \
 	WindowMngr.cpp \
 	screenshot.cpp \
 	screenshot.h \
 	dllmain.cpp \
+	xcb_clip.cpp \
 	stdafx.cpp 
 
 LIBS=pthread
 
 OBJECTS=$(SOURCES:.cpp=.o)
 INCLUDES=-I../include
-CXXLAGS=$(CXXFLAGS) $(INCLUDES) -m64 -fPIC -fpermissive
+CXXLAGS=$(CXXFLAGS) $(INCLUDES) -m64 -fPIC -fpermissive -lX11 `libpng-config --cflags` `pkg-config --cflags xcb`
 
 all: $(TARGET)
 
@@ -29,7 +31,7 @@ all: $(TARGET)
 	@rm -f $*.d.tmp
 
 $(TARGET): $(OBJECTS) Makefile
-	g++ $(CXXLAGS) -shared $(OBJECTS) -o $(TARGET) $(addprefix -l, $(LIBS))
+	g++ $(CXXLAGS) -shared $(OBJECTS) -o $(TARGET) $(addprefix -l, $(LIBS)) `libpng-config --ldflags` `pkg-config --libs xcb`
 
 clean:
 	-rm $(TARGET) *.o *.d

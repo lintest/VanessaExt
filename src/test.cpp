@@ -2,9 +2,12 @@
 #include <cstdio>
 #include <string>
 #include <types.h>
+#include "ClipMngr.h"
 #include "ProcMngr.h"
 #include "ScreenMngr.h"
 #include "WindowMngr.h"
+
+#include "xcb_clip.h"
 
 int main() {
     setlocale(LC_ALL, "");
@@ -48,7 +51,6 @@ int main() {
 
     json = WindowManager::GetWindowSize(NULL, 0);
     std::wcout << std::endl << json << std::endl << std::endl;
-*/    
 
     tVariant pVarActive;
     pVarActive.intVal = (int)WindowManager::ActiveWindow();
@@ -64,6 +66,23 @@ int main() {
     std::wcout << std::endl << json << std::endl << std::endl;
 
     json = WindowManager::GetWindowInfo(NULL, 0);
+    std::wcout << std::endl << json << std::endl << std::endl;
+
+    json = ClipboardManager(nullptr).GetFiles();
+    std::wcout << std::endl << json << std::endl << std::endl;
+*/
+
+    clip::image image;
+    clip::get_image(image);
+
+    std::string new_content = "test";
+    clip::set_text(new_content);
+
+    std::string clipboard;
+    clip::get_text(clipboard);
+    std::cout << "'" << clipboard << "' copied\n";
+
+    json = ClipboardManager(nullptr).GetFiles();
     std::wcout << std::endl << json << std::endl << std::endl;
 
     return 0;

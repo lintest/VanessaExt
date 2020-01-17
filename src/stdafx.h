@@ -34,4 +34,19 @@ int32_t VarToInt(tVariant* paParams);
 HWND VarToHwnd(tVariant* paParams);
 #endif //_WINDOWS
 
+class AddInNative : public IComponentBase
+{
+public:
+	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
+	// IInitDoneBase
+	bool ADDIN_API Init(void*) override;
+	bool ADDIN_API setMemManager(void* mem) override;
+	long ADDIN_API GetInfo() override;
+	void ADDIN_API Done() override;
+private:
+	IMemoryManager* m_iMemory = nullptr;
+protected:
+	IAddInDefBase* m_iConnect = nullptr;
+};
+
 #endif //__STDAFX_H__

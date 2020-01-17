@@ -2,6 +2,7 @@
 #define __XWINBASE_H__
 
 #include "stdafx.h"
+#include "json_ext.h"
 
 #ifndef _WINDOWS
 
@@ -67,7 +68,7 @@ public:
     WindowHelper() {
         display = XOpenDisplay(NULL);
 	}
-    ~WindowHelper() {
+    virtual ~WindowHelper() {
         if (display) XCloseDisplay(display);
     }
 
@@ -240,7 +241,7 @@ public:
         return *this;
     }
 
-	~WindowEnumerator() {
+	virtual ~WindowEnumerator() {
         XFree(m_windows);
 	}
 };

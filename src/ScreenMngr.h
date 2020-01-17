@@ -7,7 +7,7 @@
 
 class ScreenManager {
 public:
-	ScreenManager(IMemoryManager* iMemory) { m_iMemory = iMemory; }
+	ScreenManager(AddInNative* addin) : m_addin(addin) { }
 	static std::wstring GetScreenInfo();
 	static std::wstring GetScreenList();
 	static std::wstring GetDisplayInfo(tVariant* paParams, const long lSizeArray);
@@ -15,11 +15,8 @@ public:
 	BOOL CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
 private:
-#ifndef __linux__	
-	BOOL SaveBitmap(HBITMAP hBitmap, tVariant* pvarRetValue);
-#endif//__linux__
 	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
-	IMemoryManager* m_iMemory;
+	AddInNative* m_addin;
 };
 
 #endif //__SCREENMNGR_H__
