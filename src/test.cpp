@@ -72,6 +72,9 @@ int main() {
     std::wcout << std::endl << json << std::endl << std::endl;
 */
 
+    clip::image image;
+    clip::get_image(image);
+
     std::string new_content = "test";
     clip::set_text(new_content);
 

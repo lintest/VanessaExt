@@ -171,6 +171,15 @@ bool ClipboardManager::Empty()
 
 #include "xcb_clip.h"
 
+#include <vector>
+
+namespace clip {
+	namespace x11 {
+		bool write_png(const clip::image& image, std::vector<uint8_t>& output);
+		bool read_png(const uint8_t* buf, const size_t len, clip::image* output_image, clip::image_spec* output_spec);
+	}
+}	
+
 ClipboardManager::ClipboardManager(AddInNative* addin) : m_addin(addin)
 {
 }
@@ -199,12 +208,15 @@ bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 
 bool ClipboardManager::SetImage(tVariant* pvarValue)
 {
-	return false;
+	clip::image image;
+	clip::x11::read_png((uint8_t*)pvarValue->pstrVal, pvarValue->strLen, &image, nullptr);	
+	clip::set_image(image);
+	return true;
 }
 
 bool ClipboardManager::Empty()
 {
-	return false;
+	clip::clear();
 }
 
 std::wstring ClipboardManager::GetFiles()
