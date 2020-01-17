@@ -14,3 +14,4 @@ AddIn.zip
 *.d
 *.so
 
+clip/test_xcb

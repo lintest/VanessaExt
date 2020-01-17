@@ -171,6 +171,14 @@ bool ClipboardManager::Empty()
 
 #include "xcb_clip.h"
 
+ClipboardManager::ClipboardManager(AddInNative* addin) : m_addin(addin)
+{
+}
+
+ClipboardManager::~ClipboardManager()
+{
+}
+
 bool ClipboardManager::SetText(const std::wstring& text)
 {
 	clip::set_text(WC2MB(text));
@@ -197,6 +205,11 @@ bool ClipboardManager::SetImage(tVariant* pvarValue)
 bool ClipboardManager::Empty()
 {
 	return false;
+}
+
+std::wstring ClipboardManager::GetFiles()
+{
+	return {};
 }
 
 #endif //_WINDOWS

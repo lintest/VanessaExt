@@ -79,5 +79,8 @@ int main() {
     clip::get_text(clipboard);
     std::cout << "'" << clipboard << "' copied\n";
 
+    json = ClipboardManager(nullptr).GetFiles();
+    std::wcout << std::endl << json << std::endl << std::endl;
+
     return 0;
 }
