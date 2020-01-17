@@ -201,9 +201,21 @@ std::wstring ClipboardManager::GetText()
 	return MB2WC(text);
 }
 
+#include <iostream>
+#include <cstdio>
+
 bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 {
-	return false;
+    clip::image image;
+    clip::get_image(image);
+	std::vector<uint8_t> buffer;
+	clip::x11::write_png(image, buffer);
+	if (buffer.empty()) return true;
+	m_addin->AllocMemory((void**)&pvarRetValue->pstrVal, buffer.size());
+	memcpy(pvarRetValue->pstrVal, buffer.data(), buffer.size());
+	pvarRetValue->strLen = buffer.size();
+	TV_VT(pvarRetValue) = VTYPE_BLOB;
+	return true;
 }
 
 bool ClipboardManager::SetImage(tVariant* pvarValue)
