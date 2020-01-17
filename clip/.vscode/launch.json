@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/test",
             "preLaunchTask": "Build C++ project",
-            "args": [],
+            "args": ["Test Clipboard"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

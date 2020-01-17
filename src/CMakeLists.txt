@@ -28,6 +28,8 @@ SET(AddInNative_SRC
     WindowMngr.h
     screenshot.cpp
     screenshot.h
+	xcb_clip.cpp
+	xcb_clip.h
     json.hpp
     dllmain.cpp
     stdafx.cpp

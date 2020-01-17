@@ -169,14 +169,19 @@ bool ClipboardManager::Empty()
 
 #else //_WINDOWS
 
+#include "xcb_clip.h"
+
 bool ClipboardManager::SetText(const std::wstring& text)
 {
-	return false;
+	clip::set_text(WC2MB(text));
+	return true;
 }
 
 std::wstring ClipboardManager::GetText()
 {
-	return {};
+	std::string text;
+	clip::get_text(text);
+	return MB2WC(text);
 }
 
 bool ClipboardManager::GetImage(tVariant* pvarRetValue)

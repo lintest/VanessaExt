@@ -2,11 +2,11 @@ TARGET=test
 
 SOURCES=xcb_clip.cpp
 
-LIBS=pthread
+LIBS=pthread X11 xcb
 
 OBJECTS=$(SOURCES:.cpp=.o)
 INCLUDES=
-CXXLAGS=$(CXXFLAGS) $(INCLUDES) -m64 -fPIC -fpermissive -lX11 -lpng -lxcb -lpthread
+CXXLAGS=$(CXXFLAGS) $(INCLUDES) -m64 -fPIC -fpermissive -lX11 `libpng-config --cflags` `pkg-config --cflags xcb`
 
 all: $(TARGET)
 
@@ -22,7 +22,7 @@ all: $(TARGET)
 	@rm -f $*.d.tmp
 
 $(TARGET): $(OBJECTS) Makefile
-	g++ $(CXXLAGS) -shared $(OBJECTS) -o $(TARGET) $(addprefix -l, $(LIBS))
+	g++ $(CXXLAGS) $(OBJECTS) -o $(TARGET) $(addprefix -l, $(LIBS)) `libpng-config --ldflags` `pkg-config --libs xcb`
 
 clean:
 	-rm $(TARGET) *.o *.d

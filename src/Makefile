@@ -8,13 +8,14 @@ SOURCES=AddInNative.cpp \
 	screenshot.cpp \
 	screenshot.h \
 	dllmain.cpp \
+	xcb_clip.cpp \
 	stdafx.cpp 
 
 LIBS=pthread
 
 OBJECTS=$(SOURCES:.cpp=.o)
 INCLUDES=-I../include
-CXXLAGS=$(CXXFLAGS) $(INCLUDES) -m64 -fPIC -fpermissive
+CXXLAGS=$(CXXFLAGS) $(INCLUDES) -m64 -fPIC -fpermissive `libpng-config --cflags --ldflags`
 
 all: $(TARGET)
 
