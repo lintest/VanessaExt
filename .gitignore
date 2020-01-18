@@ -3,15 +3,18 @@
 ################################################################################
 
 /build64
-/build/
+/build32
+/build
+/bind64
+/bind32
 /bin64
+/bin32
 /bin
 /.vc
+/.vs
 /Example/fileversion
 AddIn.zip
 *.epf
 *.o
 *.d
 *.so
-
-clip/test_xcb
