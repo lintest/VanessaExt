@@ -9,11 +9,11 @@ public:
 	ClipboardManager(AddInNative* addin);
 	virtual ~ClipboardManager();
 	std::wstring GetFormat();
-	bool SetText(const std::wstring& text);
+	bool SetText(tVariant* pvarValue);
 	std::wstring GetText();
 	std::wstring GetFiles();
 	bool GetImage(tVariant* pvarValue);
-	bool SetImage(tVariant* pvarValue);
+	bool SetImage(tVariant* paParams, const long lSizeArray = 1);
 	bool Empty();
 private:
 	static const std::map<int, std::string> sm_formats;

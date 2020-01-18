@@ -552,10 +552,15 @@
 											<ContextMenu name="ДекорацияБуферКонтекстноеМеню" id="300"/>
 											<ExtendedTooltip name="ДекорацияБуферРасширеннаяПодсказка" id="301"/>
 										</LabelDecoration>
-										<Button name="КопироватьКартинкуВБуфер" id="287">
+										<Button name="ПоместитьКартинкуВБуфер" id="287">
 											<Type>UsualButton</Type>
-											<CommandName>Form.Command.КопироватьКартинкуВБуфер</CommandName>
-											<ExtendedTooltip name="КопироватьКартинкуВБуферРасширеннаяПодсказка" id="288"/>
+											<CommandName>Form.Command.ПоместитьКартинкуВБуфер</CommandName>
+											<ExtendedTooltip name="ПоместитьКартинкуВБуферРасширеннаяПодсказка" id="288"/>
+										</Button>
+										<Button name="ПоместитьКартинкуТекст" id="333">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.ПоместитьКартинкуТекст</CommandName>
+											<ExtendedTooltip name="ПоместитьКартинкуТекстРасширеннаяПодсказка" id="334"/>
 										</Button>
 										<Button name="ПолучитьКартинку" id="285">
 											<Type>UsualButton</Type>
@@ -2364,17 +2369,17 @@
 			</ToolTip>
 			<Action>ПолучитьКартинкуИзБуфера</Action>
 		</Command>
-		<Command name="КопироватьКартинкуВБуфер" id="32">
+		<Command name="ПоместитьКартинкуВБуфер" id="32">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Копировать картинку в буфер</v8:content>
+					<v8:content>Поместить картинку в буфер</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Копировать картинку в буфер</v8:content>
+					<v8:content>Поместить картинку в буфер</v8:content>
 				</v8:item>
 			</ToolTip>
 			<Action>КопироватьКартинкуВБуфер</Action>
@@ -2468,6 +2473,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьСписокФайлов</Action>
+		</Command>
+		<Command name="ПоместитьКартинкуТекст" id="39">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Поместить картинку + текст</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Поместить картинку текст</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>УстановитьТекстКартинку</Action>
 		</Command>
 	</Commands>
 </Form>

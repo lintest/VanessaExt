@@ -24,10 +24,13 @@ typedef int64_t HWND;
 #define LINUX_OR_MACOS
 #endif
 
-std::wstring MB2WC(const std::string& source);
+uint32_t convToShortWchar(WCHAR_T** Dest, const wchar_t* Source, uint32_t len = 0);
+uint32_t convFromShortWchar(wchar_t** Dest, const WCHAR_T* Source, uint32_t len = 0);
 
+std::wstring MB2WC(const std::string& source);
 std::string WC2MB(const std::wstring& source);
 
+std::wstring VarToStr(tVariant* paParams);
 int32_t VarToInt(tVariant* paParams);
 
 #ifdef _WINDOWS

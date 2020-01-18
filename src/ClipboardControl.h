@@ -11,7 +11,7 @@ class ClipboardControl : public AddInBase
 private:
 	enum Props
 	{
-		eText,
+		eText = 0,
 		eImage,
 		eFiles,
 		eFormat,
@@ -20,8 +20,9 @@ private:
 
 	enum Methods
 	{
-		eEmpty,
+		eEmpty = 0,
 		eSetData,
+		eSetImage,
 	};
 
 	static const wchar_t* m_ExtensionName;

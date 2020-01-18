@@ -11,7 +11,7 @@ class WindowsControl : public AddInBase
 private:
 	enum Props
 	{
-		eClipboardImage,
+		eClipboardImage = 0,
 		eClipboardText,
 		eActiveWindow,
 		eProcessId,
@@ -24,7 +24,7 @@ private:
 
 	enum Methods
 	{
-		eFindTestClient,
+		eFindTestClient = 0,
 		eGetProcessList,
 		eGetProcessInfo,
 		eGetDisplayList,

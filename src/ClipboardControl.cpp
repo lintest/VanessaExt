@@ -27,8 +27,9 @@ const std::vector<AddInBase::Alias> ClipboardControl::m_PropList{
 };
 
 const std::vector<AddInBase::Alias> ClipboardControl::m_MethList{
-	Alias(eEmpty    , 0, false , L"Очистить"   , L"Empty"),
-	Alias(eSetData  , 1, true  , L"Записать"   , L"SetData"),
+	Alias(eEmpty    , 0, false , L"Очистить"         , L"Empty"),
+	Alias(eSetData  , 2, false , L"ЗаписатьДанные"   , L"SetData"),
+	Alias(eSetImage , 2, false , L"ЗаписатьКартинку" , L"SetImage"),
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -59,11 +60,7 @@ bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	case eImage:
 		return ClipboardManager(this).SetImage(pvarPropVal);
 	case eText: {
-		wchar_t* str = 0;
-		::convFromShortWchar(&str, pvarPropVal->pwstrVal);
-		ClipboardManager(this).SetText(str);
-		delete[] str;
-		return true;
+		return ClipboardManager(this).SetText(pvarPropVal);
 	}
 	default:
 		return false;
@@ -75,6 +72,8 @@ bool ClipboardControl::CallAsProc(const long lMethodNum, tVariant* paParams, con
 	switch (lMethodNum) {
 	case eEmpty:
 		return ClipboardManager(this).Empty();
+	case eSetImage:
+		return ClipboardManager(this).SetImage(paParams, lSizeArray);
 	default:
 		return false;
 	}

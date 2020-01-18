@@ -116,10 +116,11 @@ std::wstring ClipboardManager::GetFiles()
 	return json;
 }
 
-bool ClipboardManager::SetText(const std::wstring& text)
+bool ClipboardManager::SetText(tVariant* pvarValue)
 {
 	if (!m_isOpened) return false;
 	EmptyClipboard();
+	std::wstring text = VarToStr(pvarValue);
 	size_t size = (text.size() + 1) * sizeof(wchar_t);
 	if (HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, size)) {
 		memcpy(GlobalLock(hglobal), text.c_str(), size);
@@ -144,11 +145,11 @@ bool ClipboardManager::GetImage(tVariant* pvarValue)
 	return true;
 }
 
-bool ClipboardManager::SetImage(tVariant* pvarValue)
+bool ClipboardManager::SetImage(tVariant* paParams, const long lSizeArray)
 {
 	if (!m_isOpened) return false;
 
-	ImageHelper image(pvarValue);
+	ImageHelper image(paParams);
 	if (!image) return false;
 
 	HBITMAP hbitmap(image);
@@ -164,6 +165,7 @@ bool ClipboardManager::SetImage(tVariant* pvarValue)
 	auto hdc = GetDC(NULL);
 	GetDIBits(hdc, hbitmap, 0, bi.biHeight, vec.data(), (BITMAPINFO*)&bi, 0);
 	ReleaseDC(NULL, hdc);
+	DeleteObject(hbitmap);
 
 	auto hmem = GlobalAlloc(GMEM_MOVEABLE, sizeof bi + vec.size());
 	auto buffer = (BYTE*)GlobalLock(hmem);
@@ -173,7 +175,19 @@ bool ClipboardManager::SetImage(tVariant* pvarValue)
 
 	EmptyClipboard();
 	SetClipboardData(CF_DIB, hmem);
-	DeleteObject(hbitmap);
+	GlobalFree(hmem);
+
+	if (lSizeArray > 1) {
+		std::wstring text = VarToStr(paParams + 1);
+		size_t size = (text.size() + 1) * sizeof(wchar_t);
+		if (HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, size)) {
+			memcpy(GlobalLock(hglobal), text.c_str(), size);
+			GlobalUnlock(hglobal);
+			SetClipboardData(CF_UNICODETEXT, hglobal);
+			GlobalFree(hglobal);
+		}
+	}
+
 	return true;
 }
 
@@ -203,8 +217,9 @@ ClipboardManager::~ClipboardManager()
 {
 }
 
-bool ClipboardManager::SetText(const std::wstring& text)
+bool ClipboardManager::SetText(tVariant* pvarValue)
 {
+	std::wstring text = VarToStr(pvarValue);
 	clip::set_text(WC2MB(text));
 	return true;
 }
@@ -233,10 +248,10 @@ bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 	return true;
 }
 
-bool ClipboardManager::SetImage(tVariant* pvarValue)
+bool ClipboardManager::SetImage(tVariant* paParams, const long lSizeArray)
 {
 	clip::image image;
-	clip::x11::read_png((uint8_t*)pvarValue->pstrVal, pvarValue->strLen, &image, nullptr);
+	clip::x11::read_png((uint8_t*)paParams->pstrVal, paParams->strLen, &image, nullptr);
 	clip::set_image(image);
 	return true;
 }
