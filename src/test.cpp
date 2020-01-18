@@ -70,7 +70,6 @@ int main() {
 
     json = ClipboardManager(nullptr).GetFiles();
     std::wcout << std::endl << json << std::endl << std::endl;
-*/
 
     clip::image image;
     clip::get_image(image);
@@ -81,7 +80,7 @@ int main() {
     std::string clipboard;
     clip::get_text(clipboard);
     std::cout << "'" << clipboard << "' copied\n";
-
+*/
     json = ClipboardManager(nullptr).GetFiles();
     std::wcout << std::endl << json << std::endl << std::endl;
 

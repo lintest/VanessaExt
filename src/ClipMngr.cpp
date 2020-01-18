@@ -63,6 +63,25 @@ std::wstring ClipboardManager::GetFormat()
 	return json;
 }
 
+static std::vector<std::wstring> FileList()
+{
+	std::vector<std::wstring> result;
+	if (HGLOBAL hGlobal = ::GetClipboardData(CF_HDROP)) {
+		if (HDROP hDrop = (HDROP)GlobalLock(hGlobal)) {
+			UINT fileCount = DragQueryFile(hDrop, 0xFFFFFFFF, 0, 0);
+			for (UINT i = 0; i < fileCount; ++i) {
+				UINT size = DragQueryFile(hDrop, i, 0, 0) + 1;
+				std::vector<wchar_t> buffer(size);
+				DragQueryFile(hDrop, i, buffer.data(), size);
+				std::wstring filename = buffer.data();
+				result.push_back(filename);
+			}
+			GlobalUnlock(hGlobal);
+		}
+	}
+	return result;
+}
+
 std::wstring ClipboardManager::GetText()
 {
 	if (!m_isOpened) return {};
@@ -79,7 +98,22 @@ std::wstring ClipboardManager::GetText()
 			GlobalUnlock(hglobal);
 		}
 	}
+	else if (IsClipboardFormatAvailable(CF_HDROP)) {
+		for (auto& it : FileList()) {
+			result.append(it).append(L"\r\n");
+		}
+	}
+
 	return result;
+}
+
+std::wstring ClipboardManager::GetFiles()
+{
+	JSON json;
+	for (auto& it : FileList()) {
+		json.push_back(WC2MB(it));
+	}
+	return json;
 }
 
 bool ClipboardManager::SetText(const std::wstring& text)
@@ -143,25 +177,6 @@ bool ClipboardManager::SetImage(tVariant* pvarValue)
 	return true;
 }
 
-std::wstring ClipboardManager::GetFiles()
-{
-	JSON json;
-	if (HGLOBAL hGlobal = ::GetClipboardData(CF_HDROP)) {
-		if (HDROP hDrop = (HDROP)GlobalLock(hGlobal)) {
-			UINT fileCount = DragQueryFile(hDrop, 0xFFFFFFFF, 0, 0);
-			for (UINT i = 0; i < fileCount; ++i) {
-				UINT size = DragQueryFile(hDrop, i, 0, 0) + 1;
-				std::vector<wchar_t> buffer(size);
-				DragQueryFile(hDrop, i, buffer.data(), size);
-				std::wstring filename = buffer.data();
-				json.push_back(WC2MB(filename));
-			}
-			GlobalUnlock(hGlobal);
-		}
-	}
-	return json;
-}
-
 bool ClipboardManager::Empty()
 {
 	return ::EmptyClipboard();
@@ -178,7 +193,7 @@ namespace clip {
 		bool write_png(const clip::image& image, std::vector<uint8_t>& output);
 		bool read_png(const uint8_t* buf, const size_t len, clip::image* output_image, clip::image_spec* output_spec);
 	}
-}	
+}
 
 ClipboardManager::ClipboardManager(AddInNative* addin) : m_addin(addin)
 {
@@ -206,8 +221,8 @@ std::wstring ClipboardManager::GetText()
 
 bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 {
-    clip::image image;
-    clip::get_image(image);
+	clip::image image;
+	clip::get_image(image);
 	std::vector<uint8_t> buffer;
 	clip::x11::write_png(image, buffer);
 	if (buffer.empty()) return true;
@@ -221,7 +236,7 @@ bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 bool ClipboardManager::SetImage(tVariant* pvarValue)
 {
 	clip::image image;
-	clip::x11::read_png((uint8_t*)pvarValue->pstrVal, pvarValue->strLen, &image, nullptr);	
+	clip::x11::read_png((uint8_t*)pvarValue->pstrVal, pvarValue->strLen, &image, nullptr);
 	clip::set_image(image);
 	return true;
 }
