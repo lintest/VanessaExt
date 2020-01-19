@@ -22,6 +22,7 @@ private:
 	{
 		eEmpty = 0,
 		eSetData,
+		eSetText,
 		eSetImage,
 	};
 

@@ -28,8 +28,9 @@ const std::vector<AddInBase::Alias> ClipboardControl::m_PropList{
 
 const std::vector<AddInBase::Alias> ClipboardControl::m_MethList{
 	Alias(eEmpty    , 0, false , L"Очистить"         , L"Empty"),
-	Alias(eSetData  , 2, false , L"ЗаписатьДанные"   , L"SetData"),
-	Alias(eSetImage , 2, false , L"ЗаписатьКартинку" , L"SetImage"),
+	Alias(eSetText  , 1, false , L"ЗаписатьТекст"    , L"SetText"),
+	Alias(eSetData  , 1, false , L"ЗаписатьДанные"   , L"SetData"),
+	Alias(eSetImage , 1, false , L"ЗаписатьКартинку" , L"SetImage"),
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -72,8 +73,10 @@ bool ClipboardControl::CallAsProc(const long lMethodNum, tVariant* paParams, con
 	switch (lMethodNum) {
 	case eEmpty:
 		return ClipboardManager(this).Empty();
+	case eSetText:
+		return ClipboardManager(this).SetText(paParams, false);
 	case eSetImage:
-		return ClipboardManager(this).SetImage(paParams, lSizeArray);
+		return ClipboardManager(this).SetImage(paParams, false);
 	default:
 		return false;
 	}

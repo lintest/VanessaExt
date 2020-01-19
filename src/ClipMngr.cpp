@@ -116,10 +116,10 @@ std::wstring ClipboardManager::GetFiles()
 	return json;
 }
 
-bool ClipboardManager::SetText(tVariant* pvarValue)
+bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 {
 	if (!m_isOpened) return false;
-	EmptyClipboard();
+	if (bEmpty) EmptyClipboard();
 	std::wstring text = VarToStr(pvarValue);
 	size_t size = (text.size() + 1) * sizeof(wchar_t);
 	if (HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, size)) {
@@ -145,7 +145,7 @@ bool ClipboardManager::GetImage(tVariant* pvarValue)
 	return true;
 }
 
-bool ClipboardManager::SetImage(tVariant* paParams, const long lSizeArray)
+bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 
@@ -173,20 +173,9 @@ bool ClipboardManager::SetImage(tVariant* paParams, const long lSizeArray)
 	memcpy(buffer + sizeof bi, vec.data(), vec.size());
 	GlobalUnlock(hmem);
 
-	EmptyClipboard();
+	if (bEmpty) EmptyClipboard();
 	SetClipboardData(CF_DIB, hmem);
 	GlobalFree(hmem);
-
-	if (lSizeArray > 1) {
-		std::wstring text = VarToStr(paParams + 1);
-		size_t size = (text.size() + 1) * sizeof(wchar_t);
-		if (HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, size)) {
-			memcpy(GlobalLock(hglobal), text.c_str(), size);
-			GlobalUnlock(hglobal);
-			SetClipboardData(CF_UNICODETEXT, hglobal);
-			GlobalFree(hglobal);
-		}
-	}
 
 	return true;
 }
@@ -217,7 +206,7 @@ ClipboardManager::~ClipboardManager()
 {
 }
 
-bool ClipboardManager::SetText(tVariant* pvarValue)
+bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 {
 	std::wstring text = VarToStr(pvarValue);
 	clip::set_text(WC2MB(text));
@@ -248,7 +237,7 @@ bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 	return true;
 }
 
-bool ClipboardManager::SetImage(tVariant* paParams, const long lSizeArray)
+bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
 {
 	clip::image image;
 	clip::x11::read_png((uint8_t*)paParams->pstrVal, paParams->strLen, &image, nullptr);
