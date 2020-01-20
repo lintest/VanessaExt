@@ -567,6 +567,15 @@
 											<CommandName>Form.Command.ПолучитьКартинкуИзБуфера</CommandName>
 											<ExtendedTooltip name="ПолучитьКартинкуРасширеннаяПодсказка" id="286"/>
 										</Button>
+										<LabelDecoration name="ДекорацияФайлы" id="337">
+											<ContextMenu name="ДекорацияФайлыКонтекстноеМеню" id="338"/>
+											<ExtendedTooltip name="ДекорацияФайлыРасширеннаяПодсказка" id="339"/>
+										</LabelDecoration>
+										<Button name="ПоместитьФайлыВБуфер" id="335">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.ПоместитьФайлыВБуфер</CommandName>
+											<ExtendedTooltip name="ПоместитьФайлыВБуферРасширеннаяПодсказка" id="336"/>
+										</Button>
 										<Button name="ПолучитьСписокФайлов" id="331">
 											<Type>UsualButton</Type>
 											<CommandName>Form.Command.ПолучитьСписокФайлов</CommandName>
@@ -2488,6 +2497,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>УстановитьТекстКартинку</Action>
+		</Command>
+		<Command name="ПоместитьФайлыВБуфер" id="40">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Поместить файлы в буфер</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Поместить файлы в буфер</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПоместитьФайлыВБуфер</Action>
 		</Command>
 	</Commands>
 </Form>
