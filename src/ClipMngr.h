@@ -14,6 +14,7 @@ public:
 	bool GetImage(tVariant* pvarValue);
 	bool SetText(tVariant* pvarValue, bool bEmpty = true);
 	bool SetImage(tVariant* paParams, bool bEmpty = true);
+	bool SetFiles(tVariant* paParams, bool bEmpty = true);
 	bool Empty();
 private:
 	static const std::map<int, std::string> sm_formats;

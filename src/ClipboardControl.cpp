@@ -20,8 +20,8 @@ const wchar_t* ClipboardControl::m_ExtensionName = L"ClipboardControl";
 
 const std::vector<AddInBase::Alias> ClipboardControl::m_PropList{
 	Alias(eText    , true  , L"Text"    , L"Текст"),
+	Alias(eFiles   , true  , L"Files"   , L"Файлы"),
 	Alias(eImage   , true  , L"Image"   , L"Картинка"),
-	Alias(eFiles   , true  , L"Files"   , L"СписокФайлов"),
 	Alias(eFormat  , false , L"Format"  , L"Формат"),
 	Alias(eVersion , false , L"Version" , L"Версия"),
 };
@@ -31,6 +31,7 @@ const std::vector<AddInBase::Alias> ClipboardControl::m_MethList{
 	Alias(eSetText  , 1, false , L"ЗаписатьТекст"    , L"SetText"),
 	Alias(eSetData  , 1, false , L"ЗаписатьДанные"   , L"SetData"),
 	Alias(eSetImage , 1, false , L"ЗаписатьКартинку" , L"SetImage"),
+	Alias(eSetFiles , 1, false , L"ЗаписатьФайлы"   ,  L"SetFiles"),
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -62,6 +63,8 @@ bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		return ClipboardManager(this).SetImage(pvarPropVal);
 	case eText: {
 		return ClipboardManager(this).SetText(pvarPropVal);
+	case eFiles:
+		return ClipboardManager(this).SetFiles(pvarPropVal);
 	}
 	default:
 		return false;
@@ -77,6 +80,8 @@ bool ClipboardControl::CallAsProc(const long lMethodNum, tVariant* paParams, con
 		return ClipboardManager(this).SetText(paParams, false);
 	case eSetImage:
 		return ClipboardManager(this).SetImage(paParams, false);
+	case eSetFiles:
+		return ClipboardManager(this).SetFiles(paParams, false);
 	default:
 		return false;
 	}
@@ -86,4 +91,3 @@ bool ClipboardControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue,
 {
 	return false;
 }
-

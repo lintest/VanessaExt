@@ -131,6 +131,38 @@ bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 	return true;
 }
 
+#include <Shlobj.h> // DROPFILES
+
+bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
+{
+	if (!m_isOpened) return false;
+	if (bEmpty) EmptyClipboard();
+	nlohmann::json json = nlohmann::json::parse(WC2MB(paParams->pwstrVal));
+	if (json.is_array()) {
+		int clpSize = sizeof(DROPFILES);
+		for (auto element : json) {
+			std::wstring filename = MB2WC(element);
+			clpSize += (filename.size() + 1) * sizeof(TCHAR);
+		}
+		HDROP hDrop = (HDROP)GlobalAlloc(GHND, clpSize);
+		DROPFILES* df = (DROPFILES*)GlobalLock(hDrop);
+		df->pFiles = sizeof(DROPFILES); // string offset
+		df->fWide = TRUE; // unicode file names
+
+		// copy the command line args to the allocated memory
+		TCHAR* dstStart = (TCHAR*)&df[1];
+		for (auto element : json) {
+			std::wstring filename = MB2WC(element);
+			size_t len = filename.size() + 1;
+			wmemcpy(dstStart, filename.c_str(), len);
+			dstStart = &dstStart[len]; // + 1 => get beyond '\0'
+		}
+		GlobalUnlock(hDrop);
+		SetClipboardData(CF_HDROP, hDrop);
+	}
+	return true;
+}
+
 bool ClipboardManager::GetImage(tVariant* pvarValue)
 {
 	if (!m_isOpened) return false;
@@ -220,9 +252,6 @@ std::wstring ClipboardManager::GetText()
 	return MB2WC(text);
 }
 
-#include <iostream>
-#include <cstdio>
-
 bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 {
 	clip::image image;
@@ -248,11 +277,17 @@ bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
 bool ClipboardManager::Empty()
 {
 	clip::clear();
+	return true;
 }
 
 std::wstring ClipboardManager::GetFiles()
 {
 	return {};
+}
+
+bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty = true)
+{
+	return false;
 }
 
 #endif //_WINDOWS

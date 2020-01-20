@@ -24,6 +24,7 @@ private:
 		eSetData,
 		eSetText,
 		eSetImage,
+		eSetFiles,
 	};
 
 	static const wchar_t* m_ExtensionName;

@@ -369,3 +369,9 @@ reboot
 ```bsl
 ДвоичныеДанные = ВнешняяКомпонента.ПолучитьСнимокОкна(ДескрипторОкна);
 ```
+
+***
+
+При разработке использовались библиотеки:
+- [cpp-c11-make-screenshot by Roman Shuvalov](https://github.com/Butataki/cpp-x11-make-screenshot)
+- [Clip Library by David Capello](https://github.com/dacap/clip)
