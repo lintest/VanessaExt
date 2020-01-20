@@ -12,7 +12,7 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, co
 #ifdef _WINDOWS
 
 #include <dwmapi.h>
-#pragma comment(lib, "Dwmapi.lib")
+#pragma comment(lib, "dwmapi.lib")
 
 #include "ImageHelper.h"
 

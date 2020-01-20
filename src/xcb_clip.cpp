@@ -29,6 +29,8 @@
 //                                                                             //
 /////////////////////////////////////////////////////////////////////////////////
 
+#ifndef _WINDOWS
+
 #define HAVE_PNG_H
 
 #include "xcb_clip.h"
@@ -1593,3 +1595,5 @@ void image::move_image(image&& image) {
 }
 
 } // namespace clip
+
+#endif //_WINDOWS

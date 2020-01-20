@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <comdef.h>
-#include <Wbemidl.h>
+#include <wbemidl.h>
 #pragma comment(lib, "wbemuuid.lib")
 
 class ProcessEnumerator {

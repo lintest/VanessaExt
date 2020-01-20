@@ -56,6 +56,9 @@ if [ $build64 -eq 1 ]; then
     cd ..
 fi    
 
+# cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=OFF -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-x86_64-w64-mingw32.cmake -D WINDOWS:BOOL=ON --build ..
+# cmake --build .
+
 if [ -z $1 ]; then
     cmake -E remove_directory build32
     cmake -E remove_directory build64

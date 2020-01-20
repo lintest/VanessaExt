@@ -18,6 +18,8 @@ SET(AddInNative_SRC
     ClipboardControl.h
     WindowsControl.cpp
     WindowsControl.h
+    ImageHelper.cpp
+    ImageHelper.h
     ProcMngr.cpp
     ProcMngr.h
     ClipMngr.cpp 
@@ -44,7 +46,7 @@ SET(AddInDef_SRC)
 
 if (WINDOWS)
     SET(AddInDef_SRC AddInNative.def)
-    add_definitions(-DUNICODE -DWIN32 -D_USRDLL -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -DADDINCPP_EXPORTS)
+    add_definitions(-DUNICODE -D_WINDOWS -DWIN32 -D_USRDLL -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE -DADDINCPP_EXPORTS)
     IF(TARGET_PLATFORM_32)
         add_definitions(-D_USE_32BIT_TIME_T )
     ENDIF()
@@ -58,3 +60,7 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
        CXX_STANDARD 11
        CXX_STANDARD_REQUIRED ON
    )
+
+if (WINDOWS)
+    target_link_libraries(${PROJECT_NAME} shlwapi gdiplus)
+endif()

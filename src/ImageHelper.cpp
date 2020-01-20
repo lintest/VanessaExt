@@ -3,8 +3,8 @@
 #ifdef _WINDOWS
 
 #include <shlwapi.h>
-#pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "Gdiplus.lib")
+#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "gdiplus.lib")
 
 class GgiPlusToken {
 private:
