@@ -131,7 +131,7 @@ bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 	return true;
 }
 
-#include <Shlobj.h> // DROPFILES
+#include <shlobj.h> // DROPFILES
 
 bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
 {
