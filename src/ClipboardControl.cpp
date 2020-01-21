@@ -55,13 +55,17 @@ bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	}
 }
 
+#define ASSERT(c, m) if (!(c)) { addError(m); return false; }
+
 //---------------------------------------------------------------------------//
 bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
 	switch (lPropNum) {
 	case eImage:
+		ASSERT(TV_VT(pvarPropVal) == VTYPE_BLOB, L"Parameter type mismatch.");
 		return ClipboardManager(this).SetImage(pvarPropVal);
 	case eText: {
+		ASSERT(TV_VT(pvarPropVal) == VTYPE_PWSTR, L"Parameter type mismatch.");
 		return ClipboardManager(this).SetText(pvarPropVal);
 	case eFiles:
 		return ClipboardManager(this).SetFiles(pvarPropVal);

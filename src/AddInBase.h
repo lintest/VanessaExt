@@ -82,7 +82,6 @@ public:
 
 protected:
 	const WCHAR_T* W(const wchar_t* str) const;
-	void addError(uint32_t wcode, const wchar_t* source, const wchar_t* descriptor, long code);
 };
 
 class WcharWrapper

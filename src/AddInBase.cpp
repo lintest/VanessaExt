@@ -255,26 +255,6 @@ void AddInBase::SetLocale(const WCHAR_T* loc)
 	//setlocale(LC_ALL, char_locale);
 #endif
 }
-/////////////////////////////////////////////////////////////////////////////
-// LocaleBase
-//---------------------------------------------------------------------------//
-void AddInBase::addError(uint32_t wcode, const wchar_t* source,
-	const wchar_t* descriptor, long code)
-{
-	if (m_iConnect)
-	{
-		WCHAR_T* err = 0;
-		WCHAR_T* descr = 0;
-
-		::convToShortWchar(&err, source);
-		::convToShortWchar(&descr, descriptor);
-
-		m_iConnect->AddError(wcode, err, descr, code);
-		delete[] err;
-		delete[] err;
-		delete[] descr;
-	}
-}
 //---------------------------------------------------------------------------//
 #ifdef LINUX_OR_MACOS
 WcharWrapper::WcharWrapper(const WCHAR_T* str) : m_str_WCHAR(NULL),

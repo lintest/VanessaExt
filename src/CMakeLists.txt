@@ -62,5 +62,5 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
    )
 
 if (WINDOWS)
-    target_link_libraries(${PROJECT_NAME} shlwapi gdiplus)
+    target_link_libraries(${PROJECT_NAME} gdiplus)
 endif()

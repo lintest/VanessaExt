@@ -46,9 +46,9 @@ public:
 	bool ADDIN_API setMemManager(void* mem) override;
 	long ADDIN_API GetInfo() override;
 	void ADDIN_API Done() override;
+	void addError(const wchar_t* descriptor);
 private:
 	IMemoryManager* m_iMemory = nullptr;
-protected:
 	IAddInDefBase* m_iConnect = nullptr;
 };
 

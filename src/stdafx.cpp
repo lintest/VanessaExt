@@ -108,6 +108,21 @@ bool ADDIN_API AddInNative::AllocMemory(void** pMemory, unsigned long ulCountByt
 	return m_iMemory ? m_iMemory->AllocMemory(pMemory, ulCountByte) : false;
 }
 
+void AddInNative::addError(const wchar_t* descriptor)
+{
+	if (m_iConnect) {
+		WCHAR_T* err = 0;
+		WCHAR_T* descr = 0;
+		const wchar_t* source = L"1cWinCtrl";
+		::convToShortWchar(&err, source);
+		::convToShortWchar(&descr, descriptor);
+		uint32_t wcode = ADDIN_E_VERY_IMPORTANT;
+		m_iConnect->AddError(wcode, err, descr, -1);
+		delete[] descr;
+		delete[] err;
+	}
+}
+
 std::wstring VarToStr(tVariant* paParams)
 {
 	wchar_t* str = nullptr;
