@@ -2,8 +2,6 @@
 
 #ifdef _WINDOWS
 
-#include <shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "gdiplus.lib")
 
 class GgiPlusToken {
@@ -31,6 +29,19 @@ bool GgiPlusToken::Init()
 	return true;
 }
 
+typedef IStream* (STDAPICALLTYPE* SHCreateMemStreamType)(const BYTE* pInit, UINT cbInit);
+
+static IStream* CreateMemoryStream(const BYTE* pInit, UINT cbInit)
+{
+	static SHCreateMemStreamType SHCreateMemStreamFunc = nullptr;
+	if (!SHCreateMemStreamFunc) {
+		HMODULE lib = LoadLibrary(L"shlwapi.dll");
+		SHCreateMemStreamFunc = reinterpret_cast<SHCreateMemStreamType>(GetProcAddress(lib, "SHCreateMemStream"));
+	}
+	if (SHCreateMemStreamFunc) return SHCreateMemStreamFunc(pInit, cbInit);
+	return nullptr;
+}
+
 ImageHelper::ImageHelper(HBITMAP hBitmap)
 {
 	if (!GgiPlusToken::Init()) return;
@@ -40,19 +51,19 @@ ImageHelper::ImageHelper(HBITMAP hBitmap)
 ImageHelper::ImageHelper(tVariant* pvarValue)
 {
 	if (!GgiPlusToken::Init()) return;
-	if (IStream* pStream = SHCreateMemStream((BYTE*)pvarValue->pstrVal, pvarValue->strLen)) {
+	if (IStream* pStream = CreateMemoryStream((BYTE*)pvarValue->pstrVal, pvarValue->strLen)) {
 		m_bitmap = Gdiplus::Bitmap::FromStream(pStream);
 		pStream->Release(); // releasing stream
 	}
 }
 
-ImageHelper::ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData) 
+ImageHelper::ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData)
 {
 	if (!GgiPlusToken::Init()) return;
 	m_bitmap = Gdiplus::Bitmap::FromBITMAPINFO(gdiBitmapInfo, gdiBitmapData);
 }
 
-ImageHelper::operator HBITMAP() const 
+ImageHelper::operator HBITMAP() const
 {
 	HBITMAP hbitmap = NULL;
 	auto status = m_bitmap->GetHBITMAP(NULL, &hbitmap);
@@ -89,7 +100,6 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 	return -1;  // Failure
 }
 
-
 BOOL ImageHelper::Save(AddInNative* addin, tVariant* pvarRetValue)
 {
 	if (!GgiPlusToken::Init()) return false;
@@ -98,7 +108,7 @@ BOOL ImageHelper::Save(AddInNative* addin, tVariant* pvarRetValue)
 	GetEncoderClsid(L"image/png", &clsid); // retrieving JPEG encoder CLSID
 
 	BOOL Ret = FALSE;
-	if (IStream* pStream = SHCreateMemStream(NULL, 0)) // creating stream
+	if (IStream* pStream = CreateMemoryStream(NULL, 0)) // creating stream
 	{
 		Gdiplus::Status status = m_bitmap->Save(pStream, &clsid, 0); // saving image to the stream
 		if (status == Gdiplus::Ok)
