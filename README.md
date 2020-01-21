@@ -110,9 +110,6 @@ sudo apt update
 sudo apt install -y build-essential cmake git
 sudo apt install -y gcc-multilib g++-multilib
 sudo apt install -y uuid-dev libx11-dev libxrandr-dev libpng-dev
-sudo apt install -y gcc-mingw-w64-i686 g++-mingw-w64-i686
-sudo apt install -y gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64
-sudo apt install -y mingw-w64-i686-dev mingw-w64-x86-64-dev
 git clone https://github.com/lintest/1cWinCtrl.git
 cd 1cWinCtrl
 ./build.sh
