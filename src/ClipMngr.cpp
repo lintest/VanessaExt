@@ -87,15 +87,15 @@ std::wstring ClipboardManager::GetText()
 	if (!m_isOpened) return {};
 	std::wstring result;
 	if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-		if (HGLOBAL hglobal = ::GetClipboardData(CF_UNICODETEXT)) {
-			result = static_cast<LPWSTR>(GlobalLock(hglobal));
-			GlobalUnlock(hglobal);
+		if (HGLOBAL hGlobal = ::GetClipboardData(CF_UNICODETEXT)) {
+			result = static_cast<LPWSTR>(GlobalLock(hGlobal));
+			GlobalUnlock(hGlobal);
 		}
 	}
 	else if (IsClipboardFormatAvailable(CF_TEXT)) {
-		if (HGLOBAL hglobal = ::GetClipboardData(CF_TEXT)) {
-			result = MB2WC(static_cast<LPSTR>(GlobalLock(hglobal)));
-			GlobalUnlock(hglobal);
+		if (HGLOBAL hGlobal = ::GetClipboardData(CF_TEXT)) {
+			result = MB2WC(static_cast<LPSTR>(GlobalLock(hGlobal)));
+			GlobalUnlock(hGlobal);
 		}
 	}
 	else if (IsClipboardFormatAvailable(CF_HDROP)) {
@@ -122,11 +122,11 @@ bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 	if (bEmpty) EmptyClipboard();
 	std::wstring text = VarToStr(pvarValue);
 	size_t size = (text.size() + 1) * sizeof(wchar_t);
-	if (HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE, size)) {
-		memcpy(GlobalLock(hglobal), text.c_str(), size);
-		GlobalUnlock(hglobal);
-		SetClipboardData(CF_UNICODETEXT, hglobal);
-		GlobalFree(hglobal);
+	if (HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, size)) {
+		memcpy(GlobalLock(hGlobal), text.c_str(), size);
+		GlobalUnlock(hGlobal);
+		SetClipboardData(CF_UNICODETEXT, hGlobal);
+		GlobalFree(hGlobal);
 	}
 	return true;
 }
@@ -166,6 +166,22 @@ bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
 bool ClipboardManager::GetImage(tVariant* pvarValue)
 {
 	if (!m_isOpened) return false;
+
+	static UINT CF_PNG = RegisterClipboardFormat(L"PNG");
+	if (IsClipboardFormatAvailable(CF_PNG)) {
+		HANDLE hData = ::GetClipboardData(CF_PNG);
+		if (hData && m_addin) {
+			void* data = ::GlobalLock(hData);
+			SIZE_T size = ::GlobalSize(hData);
+			m_addin->AllocMemory((void**)&pvarValue->pstrVal, size);
+			memcpy(pvarValue->pstrVal, data, size);
+			pvarValue->strLen = size;
+			TV_VT(pvarValue) = VTYPE_BLOB;
+			::GlobalUnlock(hData);
+			return true;
+		}
+	}
+
 	HANDLE hData = ::GetClipboardData(CF_DIBV5);
 	if (hData && m_addin) {
 		uint8_t* data = reinterpret_cast<uint8_t*>(::GlobalLock(hData));
@@ -184,30 +200,40 @@ bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
 	ImageHelper image(paParams);
 	if (!image) return false;
 
-	HBITMAP hbitmap(image);
-	if (!hbitmap) return false;
-
-	BITMAP bm;
-	GetObject(hbitmap, sizeof bm, &bm);
-
-	BITMAPINFOHEADER bi =
-	{ sizeof bi, bm.bmWidth, bm.bmHeight, 1, bm.bmBitsPixel, BI_RGB };
-
-	std::vector<BYTE> vec(bm.bmWidthBytes * bm.bmHeight);
-	auto hdc = GetDC(NULL);
-	GetDIBits(hdc, hbitmap, 0, bi.biHeight, vec.data(), (BITMAPINFO*)&bi, 0);
-	ReleaseDC(NULL, hdc);
-	DeleteObject(hbitmap);
-
-	auto hmem = GlobalAlloc(GMEM_MOVEABLE, sizeof bi + vec.size());
-	auto buffer = (BYTE*)GlobalLock(hmem);
-	memcpy(buffer, &bi, sizeof bi);
-	memcpy(buffer + sizeof bi, vec.data(), vec.size());
-	GlobalUnlock(hmem);
-
 	if (bEmpty) EmptyClipboard();
-	SetClipboardData(CF_DIB, hmem);
-	GlobalFree(hmem);
+
+	std::vector<BYTE> vec;
+	if (image.Save(vec)) {
+		static UINT CF_PNG = RegisterClipboardFormat(L"PNG");
+		if (auto hGlobal = GlobalAlloc(GMEM_MOVEABLE, vec.size())) {
+			auto buffer = (BYTE*)GlobalLock(hGlobal);
+			memcpy(buffer, vec.data(), vec.size());
+			SetClipboardData(CF_PNG, hGlobal);
+			GlobalUnlock(hGlobal);
+			GlobalFree(hGlobal);
+		}
+	}
+
+	HBITMAP hBitmap(image);
+	if (hBitmap) {
+		BITMAP bm;
+		GetObject(hBitmap, sizeof bm, &bm);
+		BITMAPINFOHEADER bi = { sizeof bi, bm.bmWidth, bm.bmHeight, 1, bm.bmBitsPixel, BI_RGB };
+		std::vector<BYTE> vec(bm.bmWidthBytes * bm.bmHeight);
+		auto hDC = GetDC(NULL);
+		GetDIBits(hDC, hBitmap, 0, bi.biHeight, vec.data(), (BITMAPINFO*)&bi, 0);
+		ReleaseDC(NULL, hDC);
+		DeleteObject(hBitmap);
+
+		if (auto hGlobal = GlobalAlloc(GMEM_MOVEABLE, sizeof bi + vec.size())) {
+			auto buffer = (BYTE*)GlobalLock(hGlobal);
+			memcpy(buffer, &bi, sizeof bi);
+			memcpy(buffer + sizeof bi, vec.data(), vec.size());
+			SetClipboardData(CF_DIB, hGlobal);
+			GlobalUnlock(hGlobal);
+			GlobalFree(hGlobal);
+		}
+	}
 
 	return true;
 }

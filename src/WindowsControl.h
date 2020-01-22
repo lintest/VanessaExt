@@ -43,6 +43,7 @@ private:
 		eMaximizeWindow,
 		eMinimizeWindow,
 		eRestoreWindow,
+		eEmptyClipboard,
 	};
 
 	static const wchar_t* m_ExtensionName;

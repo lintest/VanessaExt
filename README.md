@@ -43,6 +43,9 @@
 - <a href="#TakeScreenshot">ПолучитьСнимокЭкрана (TakeScreenshot)</a>
 - <a href="#CaptureWindow">ПолучитьСнимокОкна (CaptureWindow)</a>
 
+Работа с буфером обмена:
+- <a href="#EmptyClipboard">ОчиститьБуферОбмена (EmptyClipboard)</a>
+
 ### Общая информация
 
 Внешняя компонента поддерживает как синхронный, так и асинхронный вызов.
@@ -85,7 +88,7 @@
 ### Сборка проекта
 
 Готовая сборка внешней компоненты находится в файле 
-[/Example/Templates/SetWindow/Ext/Template.bin](https://github.com/lintest/1cWinCtrl/raw/master/Example/Templates/SetWindow/Ext/Template.bin)
+[/Example/Templates/_1cWinCtrl/Ext/Template.bin](https://github.com/lintest/1cWinCtrl/raw/master/Example/Templates/_1cWinCtrl/Ext/Template.bin)
 
 Порядок самостоятельной сборки внешней компоненты из исходников:
 1. Для сборки компоненты необходимо установить Visual Studio Community 2019
@@ -156,11 +159,11 @@ reboot
 
 ### <a name="ClipboardText">ТекстБуфераОбмена / ClipboardText</a>
 Тип значения: Строка (чтение и запись)
-- Предоставляет доступ к сореджимому буфера обмена в текстовом формате. 
+- Предоставляет доступ к содержимому буфера обмена в текстовом формате. 
 
 ### <a name="ClipboardImage">КартинкаБуфераОбмена / ClipboardImage</a>
 Тип значения: Двоичные данные (чтение и запись)
-- Предоставляет доступ к сореджимому буфера обмена в формате картинки PNG. 
+- Предоставляет доступ к содержимому буфера обмена в формате картинки PNG. 
 
 ```bsl
 ПотокВПамяти = Новый ПотокВПамяти;
@@ -365,6 +368,13 @@ reboot
 
 ```bsl
 ДвоичныеДанные = ВнешняяКомпонента.ПолучитьСнимокОкна(ДескрипторОкна);
+```
+
+### <a name="EmptyClipboard">ОчиститьБуферОбмена() / EmptyClipboard</a>
+Очищает буфер обмена.
+
+```bsl
+ВнешняяКомпонента.ОчиститьБуферОбмена();
 ```
 
 ***

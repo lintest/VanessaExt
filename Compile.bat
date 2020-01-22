@@ -3,6 +3,6 @@
 
 oscript .\MakePack.os
 
-copy /b .\AddIn.zip .\Example\Templates\SetWindow\Ext\Template.bin
+copy /b .\AddIn.zip .\Example\Templates\_1cWinCtrl\Ext\Template.bin
 
 oscript .\tools\Compile.os .\

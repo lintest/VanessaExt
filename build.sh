@@ -9,15 +9,16 @@ if [ ! -z $SCL ]; then
 fi
 
 if [ -n "$1" ]; then
+    build32=0
+    build64=0
+    clear=0
     if [ $1 -eq 32 ]; then
         build32=1
-        build64=0
     fi
     if [ $1 -eq 64 ]; then
-        build32=0
         build64=1
     fi
-    if [ "$1" = "clear" ]; then
+    if [ "$1" = 0 ]; then
         clear=1
     fi
 else

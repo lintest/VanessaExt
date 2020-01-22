@@ -100,6 +100,37 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 	return -1;  // Failure
 }
 
+BOOL ImageHelper::Save(std::vector<BYTE>& vec)
+{
+	if (!GgiPlusToken::Init()) return false;
+
+	CLSID clsid;
+	GetEncoderClsid(L"image/png", &clsid); // retrieving JPEG encoder CLSID
+
+	BOOL Ret = FALSE;
+	if (IStream* pStream = CreateMemoryStream(NULL, 0)) // creating stream
+	{
+		Gdiplus::Status status = m_bitmap->Save(pStream, &clsid, 0); // saving image to the stream
+		if (status == Gdiplus::Ok) {
+			const LARGE_INTEGER lOfs{0};
+			ULARGE_INTEGER lSize;
+			if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_END, &lSize))) // retrieving size of stream data (seek to end)
+			{
+				vec.resize(lSize.QuadPart);
+				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
+				{
+					if (SUCCEEDED(pStream->Read(vec.data(), vec.size(), 0))) // reading stream to buffer
+					{
+						Ret = TRUE;
+					}
+				}
+			}
+		}
+		pStream->Release(); // releasing stream
+	}
+	return Ret;
+}
+
 BOOL ImageHelper::Save(AddInNative* addin, tVariant* pvarRetValue)
 {
 	if (!GgiPlusToken::Init()) return false;
@@ -113,12 +144,10 @@ BOOL ImageHelper::Save(AddInNative* addin, tVariant* pvarRetValue)
 		Gdiplus::Status status = m_bitmap->Save(pStream, &clsid, 0); // saving image to the stream
 		if (status == Gdiplus::Ok)
 		{
-			LARGE_INTEGER lOfs;
+			const LARGE_INTEGER lOfs{ 0 };
 			ULARGE_INTEGER lSize;
-			lOfs.QuadPart = 0;
 			if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_END, &lSize))) // retrieving size of stream data (seek to end)
 			{
-				lOfs.QuadPart = 0;
 				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
 					pvarRetValue->strLen = (ULONG)((DWORD_PTR)lSize.QuadPart);
