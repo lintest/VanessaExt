@@ -32,6 +32,7 @@ std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeA
 {
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	if (!IsWindow(hWnd)) hWnd = 0;
 
 	HDC hdc = NULL;
 	RECT rect;
@@ -66,7 +67,7 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (!hWnd) hWnd = ::GetForegroundWindow();
-	if (!hWnd) return {};
+	if (!IsWindow(hWnd)) return {};
 
 	RECT rect;
 	GetWindowRect(hWnd, &rect);
@@ -102,11 +103,12 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 	const int mode = lSizeArray == 0 ? 0 : VarToInt(paParams);
 	if (mode == 2) return CaptureWindow(pvarRetValue, 0);
 
-	HWND hWnd = ::GetForegroundWindow();
-	UpdateWindow(hWnd);
+		HWND hWnd = ::GetForegroundWindow();
+		if (IsWindow(hWnd)) UpdateWindow(hWnd);
 
 	LONG x, y, w, h;
 	if (mode == 1) {
+		if (!IsWindow(hWnd)) return true;
 		RECT rect;
 		DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect));
 		x = rect.left;
@@ -140,16 +142,16 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 {
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return true;
 
 	RECT rc;
 	GetClientRect(hWnd, &rc);
-	DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rc, sizeof(rc));
 
 	HDC hdcScreen = GetDC(NULL);
 	HDC hDC = CreateCompatibleDC(hdcScreen);
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
 	SelectObject(hDC, hBitmap);
-	PrintWindow(hWnd, hDC, 0);
+	PrintWindow(hWnd, hDC, PW_CLIENTONLY);
 
 	const BOOL result = ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
 

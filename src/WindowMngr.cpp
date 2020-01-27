@@ -39,7 +39,7 @@ std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeAr
 
 	if (lSizeArray > 0) param.pid = VarToInt(paParams);
 
-	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
 				Param* p = (Param*)lParam;
@@ -61,6 +61,7 @@ std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeAr
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return {};
 	JSON json = WindowInfo(hWnd);
 	json["Maximized"] = IsMaximized(hWnd);
 	return json;
@@ -72,6 +73,7 @@ std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeAr
 	RECT rect{0,0,0,0};
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return {};
 	::GetWindowRect(hWnd, &rect);
 	JSON json;
 	json["Left"] = rect.left;
@@ -95,7 +97,7 @@ HWND WindowManager::CurrentWindow()
 	std::pair<HWND, DWORD> params = { 0, pid };
 
 	// Enumerate the windows using a lambda to process each window
-	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			auto pParams = (std::pair<HWND, DWORD>*)(lParam);
 			WCHAR buffer[256];
@@ -124,36 +126,39 @@ HWND WindowManager::CurrentWindow()
 	return 0;
 }
 
-BOOL WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
+bool WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	HWND hWnd = VarToHwnd(paParams);
 	int w = VarToInt(paParams + 1);
 	int h = VarToInt(paParams + 2);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return true;
 	::SetWindowPos(hWnd, 0, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	::UpdateWindow(hWnd);
 	return true;
 }
 
-BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
+bool WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	HWND hWnd = VarToHwnd(paParams);
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 2);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return true;
 	::SetWindowPos(hWnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	::UpdateWindow(hWnd);
 	return true;
 }
 
-BOOL WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
+bool WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 2) return false;
 	HWND hWnd = VarToHwnd(paParams);
-	BOOL enable = VarToInt(paParams + 1);
+	bool enable = VarToInt(paParams + 1);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return true;
 	LONG style = ::GetWindowLong(hWnd, GWL_STYLE);
 	style = enable ? (style | WS_SIZEBOX) : (style & ~WS_SIZEBOX);
 	::SetWindowLong(hWnd, GWL_STYLE, style);
@@ -161,34 +166,38 @@ BOOL WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
+bool WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return true;
 	return SetWindowState(hWnd, 0, true);
 }
 
-BOOL WindowManager::Restore(tVariant* paParams, const long lSizeArray)
+bool WindowManager::Restore(tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return true;
 	return SetWindowState(hWnd, 1, true);
 }
 
-BOOL WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
+bool WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return true;
 	return SetWindowState(hWnd, 2, true);
 }
 
-BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
+bool WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	HWND hWnd = VarToHwnd(paParams);
+	if (!IsWindow(hWnd)) return true;
 
 	if (IsWindow(hWnd)) {
 		if (IsWindowVisible(hWnd)) {
@@ -217,6 +226,7 @@ int32_t WindowManager::GetWindowState(tVariant* paParams, const long lSizeArray)
 	HWND hWnd = 0;
 	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return 0;
 
 	WINDOWPLACEMENT place;
 	memset(&place, 0, sizeof(WINDOWPLACEMENT));
@@ -235,7 +245,7 @@ int32_t WindowManager::GetWindowState(tVariant* paParams, const long lSizeArray)
 	}
 }
 
-BOOL WindowManager::SetWindowState(tVariant* paParams, const long lSizeArray)
+bool WindowManager::SetWindowState(tVariant* paParams, const long lSizeArray)
 {
 	HWND hWnd = 0;
 	int iMode = 1;
@@ -244,10 +254,11 @@ BOOL WindowManager::SetWindowState(tVariant* paParams, const long lSizeArray)
 	if (lSizeArray > 1) iMode = (paParams + 1)->intVal;
 	if (lSizeArray > 2) bActivate = (paParams + 2)->bVal;
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
+	if (!IsWindow(hWnd)) return true;
 	return SetWindowState(hWnd, iMode, bActivate);
 }
 
-BOOL WindowManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)
+bool WindowManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)
 {
 	if (IsWindow(hWnd)) {
 		if (IsWindowVisible(hWnd)) {
@@ -366,7 +377,7 @@ HWND WindowManager::ActiveWindow()
 	return WindowHelper().GetActiveWindow();
 }
 
-BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
+bool WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	Window window = VarToInt(paParams);
@@ -374,7 +385,7 @@ BOOL WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
+bool  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
@@ -383,7 +394,7 @@ BOOL  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
+bool  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
@@ -392,7 +403,7 @@ BOOL  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
+bool WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
@@ -401,7 +412,7 @@ BOOL WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
+bool WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	Window window = VarToInt(paParams);
@@ -412,7 +423,7 @@ BOOL WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
+bool WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	Window window = VarToInt(paParams);
@@ -423,7 +434,7 @@ BOOL WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
+bool WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
 {
 	return true;
 }
