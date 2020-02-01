@@ -45,6 +45,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eGetWindowSize   , 1, true , L"GetWindowSize"    , L"ПолучитьРазмерОкна"),
 	Alias(eTakeScreenshot  , 1, true , L"TakeScreenshot"   , L"ПолучитьСнимокЭкрана"),
 	Alias(eCaptureWindow   , 1, true , L"CaptureWindow"    , L"ПолучитьСнимокОкна"),
+	Alias(eCaptureProcess  , 1, true , L"CaptureProcess"   , L"ПолучитьСнимокПроцесса"),
 	Alias(eEnableResizing  , 2, false, L"EnableResizing"   , L"РазрешитьИзменятьРазмер"),
 	Alias(eSetWindowPos    , 3, false, L"SetWindowPos"     , L"УстановитьПозициюОкна"),
 	Alias(eSetWindowSize   , 3, false, L"SetWindowSize"    , L"УстановитьРазмерОкна"),
@@ -154,6 +155,8 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 		return ScreenManager(this).CaptureScreen(pvarRetValue, paParams, lSizeArray);
 	case eCaptureWindow:
 		return ScreenManager(this).CaptureWindow(pvarRetValue, paParams, lSizeArray);
+	case eCaptureProcess:
+		return ScreenManager(this).CaptureProcess(pvarRetValue, paParams, lSizeArray);
 	default:
 		return false;
 	}

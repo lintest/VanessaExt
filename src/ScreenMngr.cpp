@@ -103,8 +103,8 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 	const int mode = lSizeArray == 0 ? 0 : VarToInt(paParams);
 	if (mode == 2) return CaptureWindow(pvarRetValue, 0);
 
-		HWND hWnd = ::GetForegroundWindow();
-		if (IsWindow(hWnd)) UpdateWindow(hWnd);
+	HWND hWnd = ::GetForegroundWindow();
+	if (IsWindow(hWnd)) UpdateWindow(hWnd);
 
 	LONG x, y, w, h;
 	if (mode == 1) {
@@ -162,6 +162,40 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	return result;
 }
 
+BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+{
+	class Param {
+	public:
+		DWORD pid = 0;
+		std::map<HWND, bool> map;
+	};
+	Param p;
+	p.pid = VarToInt(paParams);
+	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+		{
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
+				Param* p = (Param*)lParam;
+				DWORD dwProcessId;
+				WCHAR buffer[256];
+				::GetWindowThreadProcessId(hWnd, &dwProcessId);
+				if (p->pid == dwProcessId
+					&& ::GetClassName(hWnd, buffer, 256)
+					&& (wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+						|| wcscmp(L"V8TopLevelFrameSDIsec", buffer) == 0)
+					) {
+					if (p->map.find(hWnd) == p->map.end()) p->map[hWnd] = true;
+					HWND hParent = ::GetWindow(hWnd, GW_OWNER);
+					if (hParent) p->map[hParent] = false;
+				}
+			}
+			return TRUE;
+		}, (LPARAM)&p);
+	for (auto it = p.map.begin(); it != p.map.end(); it++) {
+		if (it->second) return CaptureWindow(pvarRetValue, it->first);
+	}
+	return true;
+}
+
 #else //_WINDOWS
 
 #include "screenshot.h"
@@ -184,7 +218,7 @@ public:
 	}
 };
 
-static void Assign(JSON &json, Display *display, XRRMonitorInfo *info)
+static void Assign(JSON& json, Display* display, XRRMonitorInfo* info)
 {
 	char* name = XGetAtomName(display, info->name);
 	json["Name"] = name;

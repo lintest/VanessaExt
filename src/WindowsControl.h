@@ -35,6 +35,7 @@ private:
 		eGetWindowSize,
 		eTakeScreenshot,
 		eCaptureWindow,
+		eCaptureProcess,
 		eEnableResizing,
 		eSetWindowPos,
 		eSetWindowSize,
