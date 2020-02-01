@@ -35,6 +35,7 @@
 - <a href="#GetWindowSize">ПолучитьРазмерОкна (GetWindowSize)</a>
 - <a href="#SetWindowSize">УстановитьРазмерОкна (SetWindowSize)</a>
 - <a href="#SetWindowPos">УстановитьПозициюОкна (SetWindowPos)</a>
+- <a href="#ActivateWindow">АктивироватьОкно (ActivateWindow)</a>
 - <a href="#MaximixeWindow">РаспахнутьОкно (MaximixeWindow)</a>
 - <a href="#RestoreWindow">РазвернутьОкно (RestoreWindow)</a>
 - <a href="#MinimizeWindow">СвернутьОкно (MinimizeWindow)</a>
@@ -157,7 +158,7 @@ reboot
 вызывается внешняя компонента.
 
 ### <a name="ActiveWindow">АктивноеОкно / ActiveWindow</a>
-Тип значения: Целое число (только чтение)
+Тип значения: Целое число (чтение и запись)
 - Дескриптор приоритетного окна (окна, с которым пользователь в настоящее время работает). 
 
 ### <a name="ClipboardText">ТекстБуфераОбмена / ClipboardText</a>
@@ -326,6 +327,15 @@ reboot
 	- Height - высота высота (Число)
 	- Window - дескриптор окна (Число)
 
+### <a name="ActivateWindow">АктивироватьОкно(ДескрипторОкна) / ActivateWindow</a>
+Активирует окно по дескриптору.
+
+Параметры функции:
+- **ДескрипторОкна** (обязательный), Тип: Целое число
+
+```bsl
+ВнешняяКомпонента.АктивироватьОкно(ДескрипторОкна);
+```
 ### <a name="MaximixeWindow">РаспахнутьОкно(ДескрипторОкна) / MaximixeWindow</a>
 Распахиват (максимизирует) окно, разворачивая его на всё рабочую область экрана.
 
