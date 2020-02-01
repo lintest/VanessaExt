@@ -311,7 +311,7 @@ std::wstring ClipboardManager::GetFiles()
 	return {};
 }
 
-bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty = true)
+bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
 {
 	return false;
 }
