@@ -333,6 +333,43 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	return success;
 }
 
+class ProcWindows : public WindowEnumerator
+{
+private:
+	const unsigned long m_pid = 0;
+	std::map<Window, bool> m_map;
+protected:
+	virtual bool EnumWindow(Window window) {
+		unsigned long pid = GetWindowPid(window);
+		if (m_pid == pid) {
+			if (m_map.find(window) == m_map.end()) m_map[window] = true;
+			Window parent = GetWindowOwner(window);
+			if (parent) m_map[parent] = false;
+		}
+		return true;
+	}
+public:
+	ProcWindows(unsigned long pid)
+		: WindowEnumerator(), m_pid(pid) {}
+		
+	static Window TopWindow(unsigned long pid) {
+		ProcWindows p(pid);
+		p.Enumerate();
+		for (auto it = p.m_map.begin(); it != p.m_map.end(); it++) {
+			if (it->second) return it->first;
+		}
+		return 0;
+	}
+};
+
+BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray <= 0) return false;
+	Window window = ProcWindows::TopWindow(VarToInt(paParams));
+	if (window) return CaptureWindow(pvarRetValue, window);
+	return true;
+}
+
 class ScreenHelper : public WindowHelper
 {
 public:
