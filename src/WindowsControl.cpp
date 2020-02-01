@@ -24,7 +24,7 @@ const wchar_t* WindowsControl::m_ExtensionName = L"WindowsControl";
 const std::vector<AddInBase::Alias> WindowsControl::m_PropList{
 	Alias(eClipboardImage , true  , L"ClipboardImage" , L"КартинкаБуфераОбмена"),
 	Alias(eClipboardText  , true  , L"ClipboardText"  , L"ТекстБуфераОбмена"),
-	Alias(eActiveWindow   , false , L"ActiveWindow"   , L"АктивноеОкно"),
+	Alias(eActiveWindow   , true  , L"ActiveWindow"   , L"АктивноеОкно"),
 	Alias(eProcessId      , false , L"ProcessId"      , L"ИдентификаторПроцесса"),
 	Alias(eWindowList     , false , L"WindowList"     , L"СписокОкон"),
 	Alias(eProcessList    , false , L"ProcessList"    , L"СписокПроцессов"),
@@ -93,6 +93,8 @@ bool WindowsControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		return ClipboardManager(this).SetImage(pvarPropVal);
 	case eClipboardText:
 		return ClipboardManager(this).SetText(pvarPropVal);
+	case eActiveWindow:
+		return WindowManager::Activate(pvarPropVal, 1);
 	default:
 		return false;
 	}
