@@ -587,6 +587,11 @@
 										<CommandName>Form.Command.ПолучитьСвойстваПроцесса</CommandName>
 										<ExtendedTooltip name="СписокПроцессовПолучитьСвойстваПроцессаРасширеннаяПодсказка" id="170"/>
 									</Button>
+									<Button name="СписокПроцессовПолучитьСнимокПроцесса" id="340">
+										<Type>CommandBarButton</Type>
+										<CommandName>Form.Command.ПолучитьСнимокПроцесса</CommandName>
+										<ExtendedTooltip name="СписокПроцессовПолучитьСнимокПроцессаРасширеннаяПодсказка" id="341"/>
+									</Button>
 								</ChildItems>
 							</AutoCommandBar>
 							<ExtendedTooltip name="СписокПроцессовРасширеннаяПодсказка" id="127"/>
@@ -2238,6 +2243,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>КопироватьСнимокВБуферОбмена</Action>
+		</Command>
+		<Command name="ПолучитьСнимокПроцесса" id="12">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить снимок процесса</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить снимок процесса</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьСнимокПроцесса</Action>
 		</Command>
 	</Commands>
 </Form>

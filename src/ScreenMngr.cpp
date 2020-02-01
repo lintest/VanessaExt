@@ -180,8 +180,9 @@ BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, c
 				::GetWindowThreadProcessId(hWnd, &dwProcessId);
 				if (p->pid == dwProcessId
 					&& ::GetClassName(hWnd, buffer, 256)
-					&& (wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
-						|| wcscmp(L"V8TopLevelFrameSDIsec", buffer) == 0)
+					&& (wcscmp(L"V8TopLevelFrameSDIsec", buffer) == 0
+						|| wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+						|| wcscmp(L"V8TopLevelFrame", buffer) == 0)
 					) {
 					if (p->map.find(hWnd) == p->map.end()) p->map[hWnd] = true;
 					HWND hParent = ::GetWindow(hWnd, GW_OWNER);
