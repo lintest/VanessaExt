@@ -152,14 +152,11 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
 	SelectObject(hDC, hBitmap);
 	PrintWindow(hWnd, hDC, PW_CLIENTONLY);
-
-	const BOOL result = ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
-
+	ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
 	ReleaseDC(NULL, hdcScreen);
 	DeleteDC(hDC);
 	DeleteObject(hBitmap);
-
-	return result;
+	return true;
 }
 
 BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
@@ -170,6 +167,7 @@ BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, c
 		std::map<HWND, bool> map;
 	};
 	Param p;
+	Sleep(100);
 	p.pid = VarToInt(paParams);
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{

@@ -55,6 +55,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eMinimizeWindow  , 1, false, L"MinimizeWindow"   , L"СвернутьОкно"),
 	Alias(eRestoreWindow   , 1, false, L"RestoreWindow"    , L"РазвернутьОкно"),
 	Alias(eEmptyClipboard  , 0, false, L"EmptyClipboard"   , L"ОчиститьБуферОбмена"),
+	Alias(eSleep           , 1, false, L"Sleep"            , L"Пауза"),
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -121,6 +122,8 @@ bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return WindowManager::EnableResizing(paParams, lSizeArray);
 	case eEmptyClipboard:
 		return ClipboardManager(this).Empty();
+	case eSleep:
+		return ProcessManager::Sleep(paParams, lSizeArray);
 #ifdef _WINDOWS
 	case eSetWindowState:
 		return WindowManager::SetWindowState(paParams, lSizeArray);

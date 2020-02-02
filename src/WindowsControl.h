@@ -45,6 +45,7 @@ private:
 		eMinimizeWindow,
 		eRestoreWindow,
 		eEmptyClipboard,
+		eSleep,
 	};
 
 	static const wchar_t* m_ExtensionName;

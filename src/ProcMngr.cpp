@@ -223,6 +223,12 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 	return {};
 }
 
+bool ProcessManager::Sleep(tVariant* paParams, const long lSizeArray)
+{
+	::Sleep(VarToInt(paParams));
+	return true;
+}
+
 #else //_WINDOWS
 
 #include <unistd.h>
@@ -360,6 +366,13 @@ std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSize
 	if (lSizeArray < 1) return 0;
 	unsigned long pid = VarToInt(paParams);
 	return ProcessInfo(pid);
+}
+
+bool ProcessManager::Sleep(tVariant* paParams, const long lSizeArray)
+{
+	unsigned long ms = VarToInt(paParams);
+	::usleep(ms * 1000);
+	return true;
 }
 
 #endif //_WINDOWS
