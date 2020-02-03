@@ -128,15 +128,12 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
 	HGDIOBJ object = SelectObject(hDC, hBitmap);
 	BitBlt(hDC, 0, 0, w, h, hScreen, x, y, SRCCOPY);
-
-	const BOOL result = ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
-
+	ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
 	SelectObject(hDC, object);
 	DeleteDC(hDC);
 	ReleaseDC(NULL, hScreen);
 	DeleteObject(hBitmap);
-
-	return result;
+	return true;
 }
 
 BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
@@ -146,7 +143,6 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 
 	RECT rc;
 	GetClientRect(hWnd, &rc);
-
 	HDC hdcScreen = GetDC(NULL);
 	HDC hDC = CreateCompatibleDC(hdcScreen);
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
@@ -159,6 +155,26 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	return true;
 }
 
+static BOOL ImmediateCapture(AddInNative* addin, tVariant* pvarRetValue, HWND hWnd)
+{
+	RECT rc;
+	DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rc, sizeof(rc));
+	LONG w = rc.right - rc.left;
+	LONG h = rc.bottom - rc.top;
+	UpdateWindow(hWnd);
+	HDC hdcScreen = GetDC(hWnd);
+	HDC hDC = CreateCompatibleDC(hdcScreen);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, w, h);
+	HGDIOBJ object = SelectObject(hDC, hBitmap);
+	BitBlt(hDC, 0, 0, w, h, hdcScreen, 0, 0, SRCCOPY);
+	ImageHelper(hBitmap).Save(addin, pvarRetValue);
+	SelectObject(hDC, object);
+	DeleteObject(hBitmap);
+	ReleaseDC(NULL, hdcScreen);
+	DeleteDC(hDC);
+	return true;
+}
+
 BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	class Param {
@@ -167,7 +183,6 @@ BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, c
 		std::map<HWND, bool> map;
 	};
 	Param p;
-	Sleep(100);
 	p.pid = VarToInt(paParams);
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
@@ -190,7 +205,7 @@ BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, c
 			return TRUE;
 		}, (LPARAM)&p);
 	for (auto it = p.map.begin(); it != p.map.end(); it++) {
-		if (it->second) return CaptureWindow(pvarRetValue, it->first);
+		if (it->second) return ImmediateCapture(m_addin, pvarRetValue, it->first);
 	}
 	return true;
 }
