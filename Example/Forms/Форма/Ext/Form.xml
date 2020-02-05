@@ -540,6 +540,11 @@
 											<CommandName>Form.Command.ОчиститьБуферОбмена</CommandName>
 											<ExtendedTooltip name="ОчиститьБуферОбменаРасширеннаяПодсказка" id="292"/>
 										</Button>
+										<Button name="Пауза" id="342">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.ПаузаSleep</CommandName>
+											<ExtendedTooltip name="ПаузаРасширеннаяПодсказка" id="343"/>
+										</Button>
 									</ChildItems>
 								</UsualGroup>
 							</ChildItems>
@@ -2258,6 +2263,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьСнимокПроцесса</Action>
+		</Command>
+		<Command name="ПаузаSleep" id="13">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Пауза — Sleep</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Пауза sleep</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПаузаSleep</Action>
 		</Command>
 	</Commands>
 </Form>
