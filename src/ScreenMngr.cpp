@@ -101,33 +101,19 @@ std::wstring ScreenManager::GetScreenInfo()
 BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	const int mode = lSizeArray == 0 ? 0 : VarToInt(paParams);
-	if (mode == 2) return CaptureWindow(pvarRetValue, 0);
+	if (mode) return CaptureWindow(pvarRetValue, 0);
 
 	HWND hWnd = ::GetForegroundWindow();
 	if (IsWindow(hWnd)) UpdateWindow(hWnd);
 
-	LONG x, y, w, h;
-	if (mode == 1) {
-		if (!IsWindow(hWnd)) return true;
-		RECT rect;
-		DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof(rect));
-		x = rect.left;
-		y = rect.top;
-		w = rect.right - rect.left;
-		h = rect.bottom - rect.top;
-	}
-	else {
-		x = 0;
-		y = 0;
-		w = GetSystemMetrics(SM_CXSCREEN);
-		h = GetSystemMetrics(SM_CYSCREEN);
-	}
+	LONG w = GetSystemMetrics(SM_CXSCREEN);
+	LONG h = GetSystemMetrics(SM_CYSCREEN);
 
 	HDC hScreen = GetDC(NULL);
 	HDC hDC = CreateCompatibleDC(hScreen);
 	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
 	HGDIOBJ object = SelectObject(hDC, hBitmap);
-	BitBlt(hDC, 0, 0, w, h, hScreen, x, y, SRCCOPY);
+	BitBlt(hDC, 0, 0, w, h, hScreen, 0, 0, SRCCOPY);
 	ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
 	SelectObject(hDC, object);
 	DeleteDC(hDC);
@@ -152,26 +138,6 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	ReleaseDC(NULL, hdcScreen);
 	DeleteDC(hDC);
 	DeleteObject(hBitmap);
-	return true;
-}
-
-static BOOL ImmediateCapture(AddInNative* addin, tVariant* pvarRetValue, HWND hWnd)
-{
-	RECT rc;
-	DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &rc, sizeof(rc));
-	LONG w = rc.right - rc.left;
-	LONG h = rc.bottom - rc.top;
-	UpdateWindow(hWnd);
-	HDC hdcScreen = GetDC(hWnd);
-	HDC hDC = CreateCompatibleDC(hdcScreen);
-	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, w, h);
-	HGDIOBJ object = SelectObject(hDC, hBitmap);
-	BitBlt(hDC, 0, 0, w, h, hdcScreen, 0, 0, SRCCOPY);
-	ImageHelper(hBitmap).Save(addin, pvarRetValue);
-	SelectObject(hDC, object);
-	DeleteObject(hBitmap);
-	ReleaseDC(NULL, hdcScreen);
-	DeleteDC(hDC);
 	return true;
 }
 
@@ -205,7 +171,7 @@ BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, c
 			return TRUE;
 		}, (LPARAM)&p);
 	for (auto it = p.map.begin(); it != p.map.end(); it++) {
-		if (it->second) return ImmediateCapture(m_addin, pvarRetValue, it->first);
+		if (it->second) return CaptureWindow(pvarRetValue, it->first);
 	}
 	return true;
 }
