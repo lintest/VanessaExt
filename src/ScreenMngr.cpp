@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <math.h>
 #include "ScreenMngr.h"
 #include "json_ext.h"
 
@@ -174,6 +175,45 @@ BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, c
 		if (it->second) return CaptureWindow(pvarRetValue, it->first);
 	}
 	return true;
+}
+
+std::wstring ScreenManager::GetCursorPos()
+{
+	POINT pos;
+	::GetCursorPos(&pos);
+	JSON json;
+	json["x"] = pos.x;
+	json["y"] = pos.y;
+	return json;
+}
+
+BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 2) return false;
+	const int x = VarToInt(paParams);
+	const int y = VarToInt(paParams + 1);
+	return ::SetCursorPos(x, y);
+}
+
+BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 3) return false;
+	const int x = VarToInt(paParams);
+	const int y = VarToInt(paParams + 1);
+	double t = (paParams + 2)->dblVal;
+	if (TV_VT(paParams + 2) == VTYPE_I4) t = (paParams + 2)->lVal;
+	if (t > 0) {
+		POINT pos;
+		::GetCursorPos(&pos);
+		double d = ::sqrt((x - pos.x) ^ 2 + (y - pos.y) ^ 2) / t / 100;
+		double dX = d * (x - pos.x);
+		double dY = d * (y - pos.y);
+		for (double z = 0; z < t; z += 0.01) {
+			::SetCursorPos(round(dX * z), round(dY * z));
+			::Sleep(10);
+		}
+	}
+	return ::SetCursorPos(x, y);
 }
 
 #else //_WINDOWS

@@ -30,6 +30,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_PropList{
 	Alias(eProcessList    , false , L"ProcessList"    , L"СписокПроцессов"),
 	Alias(eDisplayList    , false , L"DisplayList"    , L"СписокДисплеев"),
 	Alias(eScreenInfo     , false , L"ScreenInfo"     , L"СвойстваЭкрана"),
+	Alias(eCursorPos      , false , L"CursorPos"      , L"ПозицияКурсора"),
 	Alias(eVersion        , false , L"Version"        , L"Версия"),
 };
 
@@ -55,6 +56,9 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eMinimizeWindow  , 1, false, L"MinimizeWindow"   , L"СвернутьОкно"),
 	Alias(eRestoreWindow   , 1, false, L"RestoreWindow"    , L"РазвернутьОкно"),
 	Alias(eEmptyClipboard  , 0, false, L"EmptyClipboard"   , L"ОчиститьБуферОбмена"),
+	Alias(eGetCursorPos    , 0, true , L"GetCursorPos"     , L"ПолучитьПозициюКурсора"),
+	Alias(eSetCursorPos    , 2, false, L"SetCursorPos"     , L"УстановитьПозициюКурсора"),
+	Alias(eMoveCursorPos   , 3, false, L"MoveCursorPos"    , L"ПереместитьКурсор"),
 	Alias(eSleep           , 1, false, L"Sleep"            , L"Пауза"),
 };
 
@@ -78,6 +82,8 @@ bool WindowsControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
 	case eScreenInfo:
 		return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
+	case eCursorPos:
+		return VA(pvarPropVal) << ScreenManager::GetCursorPos();
 	case eProcessId:
 		return VA(pvarPropVal) << ProcessManager::ProcessId();
 	case eVersion:
@@ -122,6 +128,10 @@ bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return WindowManager::EnableResizing(paParams, lSizeArray);
 	case eEmptyClipboard:
 		return ClipboardManager(this).Empty();
+	case eSetCursorPos:
+		return ScreenManager::SetCursorPos(paParams, lSizeArray);
+	case eMoveCursorPos:
+		return ScreenManager::MoveCursorPos(paParams, lSizeArray);
 	case eSleep:
 		return ProcessManager::Sleep(paParams, lSizeArray);
 #ifdef _WINDOWS
@@ -160,6 +170,8 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 		return ScreenManager(this).CaptureWindow(pvarRetValue, paParams, lSizeArray);
 	case eCaptureProcess:
 		return ScreenManager(this).CaptureProcess(pvarRetValue, paParams, lSizeArray);
+	case eGetCursorPos:
+		return VA(pvarRetValue) << ScreenManager::GetCursorPos();
 	default:
 		return false;
 	}

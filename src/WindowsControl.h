@@ -19,6 +19,7 @@ private:
 		eWindowList,
 		eDisplayList,
 		eScreenInfo,
+		eCursorPos,
 		eVersion,
 	};
 
@@ -45,6 +46,9 @@ private:
 		eMinimizeWindow,
 		eRestoreWindow,
 		eEmptyClipboard,
+		eGetCursorPos,
+		eSetCursorPos,
+		eMoveCursorPos,
 		eSleep,
 	};
 

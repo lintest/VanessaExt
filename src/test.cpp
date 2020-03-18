@@ -84,5 +84,7 @@ int main() {
     json = ClipboardManager(nullptr).GetFiles();
     std::wcout << std::endl << json << std::endl << std::endl;
 
+    std::wcout << ScreenManager::GetCursorPos() << std::endl;
+
     return 0;
 }
