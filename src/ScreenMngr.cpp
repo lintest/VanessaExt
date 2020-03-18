@@ -439,4 +439,48 @@ std::wstring ScreenManager::GetScreenInfo()
 	return json;
 }
 
+std::wstring ScreenManager::GetCursorPos()
+{
+	Display *dsp = XOpenDisplay( NULL );
+	if( !dsp ) return {};
+
+	int screenNumber = DefaultScreen(dsp);
+
+	XEvent event;
+
+	/* get info about current pointer position */
+	XQueryPointer(dsp, RootWindow(dsp, DefaultScreen(dsp)),
+		&event.xbutton.root, &event.xbutton.window,
+		&event.xbutton.x_root, &event.xbutton.y_root,
+		&event.xbutton.x, &event.xbutton.y,
+		&event.xbutton.state
+	);
+
+	XCloseDisplay( dsp );
+
+	JSON json;
+	json["x"] = event.xbutton.x;
+	json["y"] = event.xbutton.y;
+	return json;
+}
+
+BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 2) return false;
+	const int x = VarToInt(paParams);
+	const int y = VarToInt(paParams + 1);
+	Display *display = XOpenDisplay(0);
+    Window root_window = XRootWindow(display, 0);
+    XSelectInput(display, root_window, KeyReleaseMask);
+    XWarpPointer(display, None, root_window, 0, 0, 0, 0, x, y);
+    XFlush(display);
+    XCloseDisplay(display);
+	return true;
+}
+
+BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+
 #endif //_WINDOWS

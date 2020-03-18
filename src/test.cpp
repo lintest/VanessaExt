@@ -86,5 +86,13 @@ int main() {
 
     std::wcout << ScreenManager::GetCursorPos() << std::endl;
 
+    tVariant pVarActive[2];
+    pVarActive[0].intVal = 800;
+    pVarActive[0].vt = VTYPE_I4;
+    pVarActive[1].intVal = 800;
+    pVarActive[1].vt = VTYPE_I4;
+
+    ScreenManager::SetCursorPos(&pVarActive[0], 2);
+
     return 0;
 }
