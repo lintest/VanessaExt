@@ -638,6 +638,7 @@
 							<ChildItems>
 								<InputField name="ТекстJavaScript" id="389">
 									<DataPath>ТекстJavaScript</DataPath>
+									<AutoMaxWidth>false</AutoMaxWidth>
 									<MultiLine>true</MultiLine>
 									<ContextMenu name="ТекстJavaScriptКонтекстноеМеню" id="390"/>
 									<ExtendedTooltip name="ТекстJavaScriptРасширеннаяПодсказка" id="391"/>
@@ -648,13 +649,14 @@
 									<ContextMenu name="ТекстJSONКонтекстноеМеню" id="393"/>
 									<ExtendedTooltip name="ТекстJSONРасширеннаяПодсказка" id="394"/>
 								</InputField>
-								<TextDocumentField name="РезультатJSON" id="395">
-									<DataPath>РезультатJSON</DataPath>
-									<ContextMenu name="РезультатJSONКонтекстноеМеню" id="396"/>
-									<ExtendedTooltip name="РезультатJSONРасширеннаяПодсказка" id="397"/>
-								</TextDocumentField>
 							</ChildItems>
 						</UsualGroup>
+						<TextDocumentField name="РезультатJSON" id="395">
+							<DataPath>РезультатJSON</DataPath>
+							<Height>3</Height>
+							<ContextMenu name="РезультатJSONКонтекстноеМеню" id="396"/>
+							<ExtendedTooltip name="РезультатJSONРасширеннаяПодсказка" id="397"/>
+						</TextDocumentField>
 					</ChildItems>
 				</Page>
 				<Page name="СтраницаБуферОбмена" id="274">
