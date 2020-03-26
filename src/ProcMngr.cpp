@@ -390,8 +390,8 @@ static std::wstring SocketError(std::string message)
 std::wstring ProcessManager::WebSocket(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 2) return {};
-	std::string url = WC2MB(paParams->pwstrVal);
-	std::string msg = WC2MB((paParams + 1)->pwstrVal);
+	std::string url = WC2MB(VarToStr(paParams));
+	std::string msg = WC2MB(VarToStr(paParams + 1));
 	try {
 		msg = nlohmann::json::parse(msg).dump();
 	}
