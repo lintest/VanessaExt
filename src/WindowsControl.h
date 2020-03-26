@@ -48,7 +48,7 @@ private:
 		eEmptyClipboard,
 		eGetCursorPos,
 		eSetCursorPos,
-		eMoveCursorPos,
+		eWebSocket,
 		eSleep,
 	};
 

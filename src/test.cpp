@@ -3,7 +3,6 @@
 #include <string>
 #include <types.h>
 #include "ClipMngr.h"
-#include "ProcMngr.h"
 #include "ScreenMngr.h"
 #include "WindowMngr.h"
 
@@ -80,7 +79,7 @@ int main() {
     std::string clipboard;
     clip::get_text(clipboard);
     std::cout << "'" << clipboard << "' copied\n";
-*/
+
     json = ClipboardManager(nullptr).GetFiles();
     std::wcout << std::endl << json << std::endl << std::endl;
 
@@ -93,6 +92,6 @@ int main() {
     pVarActive[1].vt = VTYPE_I4;
 
     ScreenManager::SetCursorPos(&pVarActive[0], 2);
-
+*/
     return 0;
 }

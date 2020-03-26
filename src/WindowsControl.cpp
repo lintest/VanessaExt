@@ -58,7 +58,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eEmptyClipboard  , 0, false, L"EmptyClipboard"   , L"ОчиститьБуферОбмена"),
 	Alias(eGetCursorPos    , 0, true , L"GetCursorPos"     , L"ПолучитьПозициюКурсора"),
 	Alias(eSetCursorPos    , 2, false, L"SetCursorPos"     , L"УстановитьПозициюКурсора"),
-	Alias(eMoveCursorPos   , 3, false, L"MoveCursorPos"    , L"ПереместитьКурсор"),
+	Alias(eWebSocket       , 2, true,  L"WebSocket"        , L"ВебСокет"),
 	Alias(eSleep           , 1, false, L"Sleep"            , L"Пауза"),
 };
 
@@ -130,8 +130,6 @@ bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return ClipboardManager(this).Empty();
 	case eSetCursorPos:
 		return ScreenManager::SetCursorPos(paParams, lSizeArray);
-	case eMoveCursorPos:
-		return ScreenManager::MoveCursorPos(paParams, lSizeArray);
 	case eSleep:
 		return ProcessManager::Sleep(paParams, lSizeArray);
 #ifdef _WINDOWS
@@ -172,6 +170,8 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 		return ScreenManager(this).CaptureProcess(pvarRetValue, paParams, lSizeArray);
 	case eGetCursorPos:
 		return VA(pvarRetValue) << ScreenManager::GetCursorPos();
+	case eWebSocket:
+		return VA(pvarRetValue) << ProcessManager::WebSocket(paParams, lSizeArray);
 	default:
 		return false;
 	}

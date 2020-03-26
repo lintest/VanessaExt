@@ -1,0 +1,22 @@
+﻿function border(timeout = 10000) {
+    let px = value => (typeof (value) == 'number' ? value + 'px' : value);
+    let style = {
+        color: 'red',
+        style: 'solid',
+        size: 10,
+    };
+    let coordinates = {left: 100, top: 100, width: 400, height: 300};
+    let node = document.createElement('div');
+    node.style.position = 'fixed';
+    node.style.zIndex = 999999;
+    node.style.left = px(coordinates.left);
+    node.style.top = px(coordinates.top);
+    node.style.width = px(coordinates.width);
+    node.style.height = px(coordinates.height);
+    node.style.borderWidth = px(style.size);
+    node.style.borderStyle = style.style;
+    node.style.borderColor = style.color;
+    window.top.document.body.appendChild(node);
+    if (timeout) setTimeout(() => { if (node) node.remove() }, timeout);
+    return node;
+}; border();

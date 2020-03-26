@@ -376,3 +376,34 @@ bool ProcessManager::Sleep(tVariant* paParams, const long lSizeArray)
 }
 
 #endif //_WINDOWS
+
+#include "WebSocket.h"
+
+static std::wstring SocketError(std::string message)
+{
+	nlohmann::json json, j;
+	j["message"] = message;
+	json["error"] = j;
+	return MB2WC(json.dump());
+}
+
+std::wstring ProcessManager::WebSocket(tVariant* paParams, const long lSizeArray)
+{
+	if (lSizeArray < 2) return {};
+	std::string url = WC2MB(paParams->pwstrVal);
+	std::string msg = WC2MB((paParams + 1)->pwstrVal);
+	try {
+		msg = nlohmann::json::parse(msg).dump();
+	}
+	catch (nlohmann::json::parse_error e) {
+		return SocketError("JSON parse error");
+	}
+
+	std::string res;
+	if (doWebSocket(url, msg, res)) {
+		return MB2WC(res);
+	}
+	else {
+		return SocketError(res);
+	}
+}
