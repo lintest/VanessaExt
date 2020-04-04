@@ -26,6 +26,8 @@ SET(AddInNative_SRC
     ClipMngr.h 
     ScreenMngr.cpp 
     ScreenMngr.h 
+    WebSocket.h
+    WebSocket.cpp
     WindowMngr.cpp
     WindowMngr.h
     screenshot.cpp

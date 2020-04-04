@@ -101,22 +101,18 @@
 
 Порядок самостоятельной сборки внешней компоненты из исходников:
 1. Для сборки компоненты необходимо установить Visual Studio Community 2019
-2. Чтобы работала сборка примера обработки EPF надо установить OneScript версии 1.0.20 или выше
-3. Устанавливаем VirtualBox и разворачиваем в минимальной конфигурации Ubuntu 18.04 или CentOS 8
-4. Устанавливаем на Linux необходимые пакеты (см. ниже) и дополнения гостевой ОС
-5. Подключаем в VirtualBox общую папку с исходными текстами внешней компоненты
-6. В среде Linux для компиляции библиотек запустить ./build.sh
-7. В среде Window для завершения сборки запустить ./compile.bat
-
-
-```Batchfile
-b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage
-```
+2. Скачиваем и устанавливаем библиотеку [**boost**](http://www.boost.org/users/download/)
+3. Чтобы работала сборка примера обработки EPF надо установить OneScript версии 1.0.20 или выше
+4. Устанавливаем VirtualBox и разворачиваем в минимальной конфигурации Ubuntu 18.04 или CentOS 8
+5. Устанавливаем на Linux необходимые пакеты (см. ниже) и дополнения гостевой ОС
+6. Подключаем в VirtualBox общую папку с исходными текстами внешней компоненты
+7. В среде Linux для компиляции библиотек запустить ./build.sh
+8. В среде Window для завершения сборки запустить ./compile.bat
 
 Сборка для Linux в CentOS 8:
 ```bash
 yum -y group install "Development Tools"
-yum -y install cmake glibc-devel.i686 glibc-devel libuuid-devel 
+yum -y install cmake glibc-devel.i686 glibc-devel libuuid-devel
 yum -y install libstdc++-devel.i686 gtk2-devel.i686 glib2-devel.i686
 yum -y install libstdc++-devel.x86_64 gtk2-devel.x86_64 glib2-devel.x86_64
 git clone https://github.com/lintest/1cWinCtrl.git
@@ -133,6 +129,11 @@ sudo apt install -y uuid-dev libx11-dev libxrandr-dev libpng-dev
 git clone https://github.com/lintest/1cWinCtrl.git
 cd 1cWinCtrl
 ./build.sh
+```
+
+Сборка библотеки [**boost**](https://www.boost.org/doc/libs/1_72_0/more/getting_started/windows.html#prepare-to-use-a-boost-library-binary) для Windows
+```Batchfile
+b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage
 ```
 
 Установка на VirtualBox дополнений гостевой ОС для Linux:
