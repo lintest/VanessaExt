@@ -271,6 +271,16 @@ bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 	return true;
 }
 
+std::wstring ClipboardManager::GetFormat()
+{
+  clip::lock l;
+  if (l.locked()) {
+	if (l.is_convertible(clip::text_format())) return L"[{\"key\":1,\"name\":\"TEXT\"}]";
+  	if (l.is_convertible(clip::image_format())) return L"[{\"key\":2,\"name\":\"PNG\"}]";
+  }
+  return {};
+}
+
 std::wstring ClipboardManager::GetText()
 {
 	std::string text;
@@ -313,7 +323,7 @@ std::wstring ClipboardManager::GetFiles()
 
 bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
 {
-	return false;
+	return true;
 }
 
 #endif //_WINDOWS

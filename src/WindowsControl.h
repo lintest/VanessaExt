@@ -13,6 +13,7 @@ private:
 	{
 		eClipboardImage = 0,
 		eClipboardText,
+		eClipboardFormat,
 		eActiveWindow,
 		eProcessId,
 		eProcessList,
