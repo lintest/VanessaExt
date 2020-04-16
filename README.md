@@ -136,6 +136,11 @@ cd 1cWinCtrl
 b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage
 ```
 
+Сборка библотеки [**boost**] для Linux
+```Batchfile
+./b2 cxxflags=-fPIC
+```
+
 Установка на VirtualBox дополнений гостевой ОС для Linux:
 ```bash
 mkdir -p /media/cdrom
