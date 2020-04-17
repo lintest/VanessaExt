@@ -14,6 +14,7 @@
 /.vs
 /Example/fileversion
 AddIn.zip
+XxCompile.bat
 *.epf
 *.o
 *.d
