@@ -789,6 +789,11 @@
 													<CommandName>Form.Command.ЭмуляцияВводаТекста</CommandName>
 													<ExtendedTooltip name="ЭмуляцияВводаТекстаРасширеннаяПодсказка" id="422"/>
 												</Button>
+												<Button name="НажатиеГорячейКлавиши" id="425">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.НажатиеГорячейКлавиши</CommandName>
+													<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
+												</Button>
 												<Button name="ОчиститьТекст" id="304">
 													<Type>CommandBarButton</Type>
 													<CommandName>Form.Command.ОчиститьТекст</CommandName>
@@ -2872,8 +2877,22 @@
 					<v8:content>Эмуляция ввода текста</v8:content>
 				</v8:item>
 			</ToolTip>
-			<Shortcut>F12</Shortcut>
 			<Action>ЭмуляцияВвода</Action>
+		</Command>
+		<Command name="НажатиеГорячейКлавиши" id="36">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Ctrl+F11</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Нажатие горячей клавиши</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НажатиеГорячейКлавиши</Action>
 		</Command>
 	</Commands>
 </Form>

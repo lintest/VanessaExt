@@ -60,6 +60,9 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eGetCursorPos    , 0, true , L"GetCursorPos"     , L"ПолучитьПозициюКурсора"),
 	Alias(eSetCursorPos    , 2, false, L"SetCursorPos"     , L"УстановитьПозициюКурсора"),
 	Alias(eMoveCursorPos   , 3, false, L"MoveCursorPos"    , L"ПереместитьПозициюКурсора"),
+	Alias(eEmulateClick    , 3, false, L"EmulateClick"     , L"ЭмуляцияНажатияМыши"),
+	Alias(eEmulateMouse    , 3, false, L"EmulateMouse"     , L"ЭмуляцияДвиженияМыши"),
+ 	Alias(eEmulateHotkey   , 2, false, L"EmulateHotkey"    , L"ЭмуляцияНажатияКлавиши"),
 	Alias(eEmulateText     , 2, false, L"EmulateText"      , L"ЭмуляцияВводаТекста"),
 	Alias(eWebSocket       , 2, true,  L"WebSocket"        , L"ВебСокет"),
 	Alias(eSleep           , 1, false, L"Sleep"            , L"Пауза"),
@@ -137,6 +140,12 @@ bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return ScreenManager::SetCursorPos(paParams, lSizeArray);
 	case eMoveCursorPos:
 		return ScreenManager::MoveCursorPos(paParams, lSizeArray);
+	case eEmulateClick:
+		return ScreenManager::EmulateClick(paParams, lSizeArray);
+	case eEmulateMouse:
+		return ScreenManager::EmulateMouse(paParams, lSizeArray);
+	case eEmulateHotkey:
+		return ScreenManager::EmulateHotkey(paParams, lSizeArray);
 	case eEmulateText:
 		return ScreenManager::EmulateText(paParams, lSizeArray);
 	case eSleep:

@@ -200,28 +200,68 @@ BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray) 
+BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+
+BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
+{
+	class Hotkey
+		: private std::vector<INPUT>
+	{
+	public:
+		void add(WORD key) {
+			INPUT ip;
+			ip.type = INPUT_KEYBOARD;
+			ip.ki.wScan = 0;
+			ip.ki.time = 0;
+			ip.ki.dwExtraInfo = 0;
+			ip.ki.dwFlags = 0;
+			ip.ki.wVk = key;
+			push_back(ip);
+		}
+		void send() {
+			SendInput(size(), data(), sizeof(INPUT));
+			std::reverse(begin(), end());
+			for (auto it = begin(); it != end(); ++it) it->ki.dwFlags = KEYEVENTF_KEYUP;
+			SendInput(size(), data(), sizeof(INPUT));
+		}
+	};
+
+	Sleep(100);
+	DWORD key = VarToInt(paParams);
+	DWORD flag = VarToInt(paParams + 1);
+	Hotkey hotkey;
+	if (flag & 0x04) hotkey.add(VK_SHIFT);
+	if (flag & 0x08) hotkey.add(VK_CONTROL);
+	if (flag & 0x10) hotkey.add(VK_MENU);
+	hotkey.add(key);
+	hotkey.send();
+
+	return true;
+}
+
+BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 {
 	Sleep(100);
 	std::wstring text = VarToStr(paParams);
-	int pause = VarToInt(paParams + 1);
+	DWORD pause = VarToInt(paParams + 1);
 	for (auto ch : text) {
-		std::vector<INPUT> input(2);
-		INPUT *ip = input.data();
-		ip->type = INPUT_KEYBOARD;
-		ip->ki.dwFlags = KEYEVENTF_UNICODE;
-		ip->ki.wVk = 0;
-		ip->ki.wScan = ch;
-		ip->ki.time = 0;
-		ip->ki.dwExtraInfo = 0;
-		ip = input.data() + 1;
-		ip->type = INPUT_KEYBOARD;
-		ip->ki.dwFlags = KEYEVENTF_KEYUP;
-		ip->ki.wVk = 0x41;
-		ip->ki.wScan = 0;
-		ip->ki.time = 0;
-		ip->ki.dwExtraInfo = 0;
-		SendInput(input.size(), input.data(), sizeof(INPUT));
+		INPUT ip;
+		ip.type = INPUT_KEYBOARD;
+		ip.ki.wVk = 0;
+		ip.ki.wScan = ch;
+		ip.ki.time = 0;
+		ip.ki.dwExtraInfo = 0;
+		ip.ki.dwFlags = KEYEVENTF_UNICODE;
+		SendInput(1, &ip, sizeof(INPUT));
+		ip.ki.dwFlags |= KEYEVENTF_KEYUP;
+		SendInput(1, &ip, sizeof(INPUT));
 		if (pause) Sleep(pause);
 	}
 	return true;
@@ -381,7 +421,7 @@ protected:
 public:
 	ProcWindows(unsigned long pid)
 		: WindowEnumerator(), m_pid(pid) {}
-		
+
 	static Window TopWindow(unsigned long pid) {
 		ProcWindows p(pid);
 		p.Enumerate();
@@ -452,8 +492,8 @@ std::wstring ScreenManager::GetScreenInfo()
 
 std::wstring ScreenManager::GetCursorPos()
 {
-	Display *dsp = XOpenDisplay( NULL );
-	if( !dsp ) return {};
+	Display* dsp = XOpenDisplay(NULL);
+	if (!dsp) return {};
 
 	int screenNumber = DefaultScreen(dsp);
 
@@ -467,7 +507,7 @@ std::wstring ScreenManager::GetCursorPos()
 		&event.xbutton.state
 	);
 
-	XCloseDisplay( dsp );
+	XCloseDisplay(dsp);
 
 	JSON json;
 	json["x"] = event.xbutton.x;
@@ -480,16 +520,31 @@ BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
 	if (lSizeArray < 2) return false;
 	const int x = VarToInt(paParams);
 	const int y = VarToInt(paParams + 1);
-	Display *display = XOpenDisplay(0);
-    Window root_window = XRootWindow(display, 0);
-    XSelectInput(display, root_window, KeyReleaseMask);
-    XWarpPointer(display, None, root_window, 0, 0, 0, 0, x, y);
-    XFlush(display);
-    XCloseDisplay(display);
+	Display* display = XOpenDisplay(0);
+	Window root_window = XRootWindow(display, 0);
+	XSelectInput(display, root_window, KeyReleaseMask);
+	XWarpPointer(display, None, root_window, 0, 0, 0, 0, x, y);
+	XFlush(display);
+	XCloseDisplay(display);
 	return true;
 }
 
 BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+
+BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+
+BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+
+BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 {
 	return true;
 }
