@@ -47,8 +47,10 @@ private:
 		eMinimizeWindow,
 		eRestoreWindow,
 		eEmptyClipboard,
+		eMoveCursorPos,
 		eGetCursorPos,
 		eSetCursorPos,
+		eEmulateText,
 		eWebSocket,
 		eSleep,
 	};

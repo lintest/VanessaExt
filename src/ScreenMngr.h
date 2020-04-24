@@ -18,6 +18,8 @@ public:
 public:
 	static std::wstring GetCursorPos();
 	static BOOL SetCursorPos(tVariant* paParams, const long lSizeArray);
+	static BOOL MoveCursorPos(tVariant* paParams, const long lSizeArray);
+	static BOOL EmulateText(tVariant* paParams, const long lSizeArray);
 private:
 	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
 	AddInNative* m_addin;

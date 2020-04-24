@@ -27,6 +27,7 @@
 					<v8:content>Группа заголовок</v8:content>
 				</v8:item>
 			</ToolTip>
+			<Group>Horizontal</Group>
 			<Representation>None</Representation>
 			<ShowTitle>false</ShowTitle>
 			<ExtendedTooltip name="ГруппаЗаголовокРасширеннаяПодсказка" id="93"/>
@@ -783,14 +784,14 @@
 											<HorizontalStretch>false</HorizontalStretch>
 											<ExtendedTooltip name="ПанельКартикаБуфераРасширеннаяПодсказка" id="290"/>
 											<ChildItems>
-												<Button name="ТекстДляПримера" id="306">
+												<Button name="ЭмуляцияВводаТекста" id="421">
 													<Type>CommandBarButton</Type>
-													<CommandName>Form.Command.ЗаполнитьТекстПримера</CommandName>
-													<ExtendedTooltip name="ТекстДляПримераРасширеннаяПодсказка" id="307"/>
+													<CommandName>Form.Command.ЭмуляцияВводаТекста</CommandName>
+													<ExtendedTooltip name="ЭмуляцияВводаТекстаРасширеннаяПодсказка" id="422"/>
 												</Button>
 												<Button name="ОчиститьТекст" id="304">
 													<Type>CommandBarButton</Type>
-													<CommandName>Form.Command.ОчиститьТекстПримера</CommandName>
+													<CommandName>Form.Command.ОчиститьТекст</CommandName>
 													<ExtendedTooltip name="ОчиститьТекстРасширеннаяПодсказка" id="305"/>
 												</Button>
 											</ChildItems>
@@ -2668,35 +2669,20 @@
 			</ToolTip>
 			<Action>ОчиститьБуферОбмена</Action>
 		</Command>
-		<Command name="ОчиститьТекстПримера" id="35">
+		<Command name="ОчиститьТекст" id="35">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Очистить текст примера</v8:content>
+					<v8:content>Очистить текст</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Очистить текст примера</v8:content>
+					<v8:content>Очистить текст</v8:content>
 				</v8:item>
 			</ToolTip>
 			<Action>ОчиститьТекст</Action>
-		</Command>
-		<Command name="ЗаполнитьТекстПримера" id="36">
-			<Title>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Заполнить текст примера</v8:content>
-				</v8:item>
-			</Title>
-			<ToolTip>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Заполнить текст примера</v8:content>
-				</v8:item>
-			</ToolTip>
-			<Action>ЗаполнитьТекст</Action>
 		</Command>
 		<Command name="КопироватьСнимокВБуферОбмена" id="37">
 			<Title>
@@ -2872,6 +2858,22 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ФорматБуфераОбмена</Action>
+		</Command>
+		<Command name="ЭмуляцияВводаТекста" id="45">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Эмуляция ввода текста</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Эмуляция ввода текста</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Shortcut>F12</Shortcut>
+			<Action>ЭмуляцияВвода</Action>
 		</Command>
 	</Commands>
 </Form>

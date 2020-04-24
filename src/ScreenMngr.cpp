@@ -195,6 +195,39 @@ BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
 	return ::SetCursorPos(x, y);
 }
 
+BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+
+BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray) 
+{
+	Sleep(100);
+	std::wstring text = VarToStr(paParams);
+	std::vector<INPUT> input;
+	input.resize(text.size() * 2);
+	INPUT* ip = input.data();
+	for (auto ch : text) {
+		ip->type = INPUT_KEYBOARD;
+		ip->ki.wVk = 0;
+		ip->ki.dwFlags = KEYEVENTF_UNICODE;
+		ip->ki.wScan = ch;
+		ip->ki.time = 1000;
+		ip->ki.dwExtraInfo = 0;
+		ip++;
+
+		ip->type = INPUT_KEYBOARD;
+		ip->ki.wScan = 0; 
+		ip->ki.time = 0;
+		ip->ki.dwExtraInfo = 0;
+		ip->ki.wVk = 0x41; 
+		ip->ki.dwFlags = KEYEVENTF_KEYUP; 
+		ip++;
+	}
+	SendInput(input.size(), input.data(), sizeof(INPUT));
+	return true;
+}
+
 #else //_WINDOWS
 
 #include "screenshot.h"
@@ -454,6 +487,16 @@ BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
     XWarpPointer(display, None, root_window, 0, 0, 0, 0, x, y);
     XFlush(display);
     XCloseDisplay(display);
+	return true;
+}
+
+BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
+{
+	return true;
+}
+
+BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
+{
 	return true;
 }
 
