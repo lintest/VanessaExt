@@ -20,6 +20,7 @@ public:
 	static BOOL SetCursorPos(tVariant* paParams, const long lSizeArray);
 	static BOOL MoveCursorPos(tVariant* paParams, const long lSizeArray);
 	static BOOL EmulateClick(tVariant* paParams, const long lSizeArray);
+	static BOOL EmulateDblClick(tVariant* paParams, const long lSizeArray);
 	static BOOL EmulateHotkey(tVariant* paParams, const long lSizeArray);
 	static BOOL EmulateMouse(tVariant* paParams, const long lSizeArray);
 	static BOOL EmulateText(tVariant* paParams, const long lSizeArray);

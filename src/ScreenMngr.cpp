@@ -200,43 +200,24 @@ BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
+BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
+{
+	DWORD dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
+	mouse_event(dwFlags, 0, 0, 0, 0);
+	mouse_event(dwFlags, 0, 0, 0, 0);
+	return true;
+}
+
 BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 {
-	std::vector<INPUT> input(2);
-
-	DWORD button = VarToInt(paParams);
-	DWORD flagDown, flagUp;
-
-	switch (button) {
-	case 1: {
-		flagDown = MOUSEEVENTF_RIGHTDOWN;
-		flagUp = MOUSEEVENTF_RIGHTUP;
-	} break;
-	case 2: {
-		flagDown = MOUSEEVENTF_MIDDLEDOWN;
-		flagUp = MOUSEEVENTF_MIDDLEUP;
-	} break;
-	case 3: {
-		flagDown = MOUSEEVENTF_XDOWN;
-		flagUp = MOUSEEVENTF_XUP;
-	} break;
-	default: {
-		flagDown = MOUSEEVENTF_LEFTDOWN;
-		flagUp = MOUSEEVENTF_LEFTUP;
+	DWORD dwFlags;
+	switch (VarToInt(paParams)) {
+	case 1: dwFlags = MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP; break;
+	case 2: dwFlags = MOUSEEVENTF_MIDDLEDOWN | MOUSEEVENTF_MIDDLEUP; break;
+	case 3: dwFlags = MOUSEEVENTF_XDOWN | MOUSEEVENTF_XUP; break;
+	default: dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
 	}
-	}
-
-	INPUT* ip = input.data();
-	::ZeroMemory(ip, sizeof(INPUT));
-	ip->type = INPUT_MOUSE;
-	ip->mi.dwFlags = flagDown;
-
-	ip++;
-	::ZeroMemory(ip, sizeof(INPUT));
-	ip->type = INPUT_MOUSE;
-	ip->mi.dwFlags = flagUp;
-
-	::SendInput(input.size(), input.data(), sizeof(INPUT));
+	mouse_event(dwFlags, 0, 0, 0, 0);
 	return true;
 }
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)

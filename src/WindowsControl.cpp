@@ -61,6 +61,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eSetCursorPos    , 2, false, L"SetCursorPos"     , L"УстановитьПозициюКурсора"),
 	Alias(eMoveCursorPos   , 3, false, L"MoveCursorPos"    , L"ПереместитьПозициюКурсора"),
 	Alias(eEmulateClick    , 1, false, L"EmulateClick"     , L"ЭмуляцияНажатияМыши"),
+	Alias(eEmulateDblClick , 0, false, L"EmulateDblClick"  , L"ЭмуляцияДвойногоНажатия"),
 	Alias(eEmulateMouse    , 4, false, L"EmulateMouse"     , L"ЭмуляцияДвиженияМыши"),
  	Alias(eEmulateHotkey   , 2, false, L"EmulateHotkey"    , L"ЭмуляцияНажатияКлавиши"),
 	Alias(eEmulateText     , 2, false, L"EmulateText"      , L"ЭмуляцияВводаТекста"),
@@ -142,6 +143,8 @@ bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return ScreenManager::MoveCursorPos(paParams, lSizeArray);
 	case eEmulateClick:
 		return ScreenManager::EmulateClick(paParams, lSizeArray);
+	case eEmulateDblClick:
+		return ScreenManager::EmulateDblClick(paParams, lSizeArray);
 	case eEmulateMouse:
 		return ScreenManager::EmulateMouse(paParams, lSizeArray);
 	case eEmulateHotkey:

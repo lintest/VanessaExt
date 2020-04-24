@@ -423,6 +423,12 @@
 													<CommandName>Form.Command.НайтиКлиентТестирования</CommandName>
 													<ExtendedTooltip name="НайтиКлиентТестированияРасширеннаяПодсказка" id="195"/>
 												</Button>
+												<Button name="ЭмуляцияДвойногоНажатия" id="442">
+													<Type>CommandBarButton</Type>
+													<OnlyInAllActions>false</OnlyInAllActions>
+													<CommandName>Form.Command.ЭмуляцияДвойногоНажатия</CommandName>
+													<ExtendedTooltip name="ЭмуляцияДвойногоНажатияРасширеннаяПодсказка" id="443"/>
+												</Button>
 												<Button name="ЭмуляцияЛевойКнопкиМыши" id="438">
 													<Type>CommandBarButton</Type>
 													<OnlyInAllActions>false</OnlyInAllActions>
@@ -567,10 +573,10 @@
 													<Title formatted="false">
 														<v8:item>
 															<v8:lang>ru</v8:lang>
-															<v8:content>Для эмуляции 
-нажатия левой кнопки 
-мыши нажмите F11,
-правой кнопки F12</v8:content>
+															<v8:content>Для эмуляции нажатия 
+левой кнопки нажмите F11,
+правой кнопки мыши F12
+двойного щелчка F5</v8:content>
 														</v8:item>
 													</Title>
 													<ContextMenu name="ДекорацияМышьКонтекстноеМеню" id="432"/>
@@ -966,6 +972,7 @@
 					<ChildItems>
 						<Table name="СписокПроцессов" id="124">
 							<Representation>List</Representation>
+							<ReadOnly>true</ReadOnly>
 							<ChangeRowSet>false</ChangeRowSet>
 							<AutoInsertNewRow>true</AutoInsertNewRow>
 							<EnableStartDrag>true</EnableStartDrag>
@@ -1022,6 +1029,9 @@
 								<ContextMenu name="СписокПроцессовУправлениеПоискомКонтекстноеМеню" id="135"/>
 								<ExtendedTooltip name="СписокПроцессовУправлениеПоискомРасширеннаяПодсказка" id="136"/>
 							</SearchControlAddition>
+							<Events>
+								<Event name="Selection">СписокПроцессовВыбор</Event>
+							</Events>
 							<ChildItems>
 								<InputField name="СписокПроцессовProcessId" id="137">
 									<DataPath>СписокПроцессов.ProcessId</DataPath>
@@ -3008,6 +3018,22 @@
 			</ToolTip>
 			<Shortcut>F12</Shortcut>
 			<Action>ЭмуляцияПравойКнопкиМыши</Action>
+		</Command>
+		<Command name="ЭмуляцияДвойногоНажатия" id="49">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Эмуляция двойного нажатия</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Эмуляция двойного нажатия</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Shortcut>F5</Shortcut>
+			<Action>ЭмуляцияДвойногоНажатия</Action>
 		</Command>
 	</Commands>
 </Form>

@@ -51,6 +51,7 @@ private:
 		eGetCursorPos,
 		eSetCursorPos,
 		eEmulateClick,
+		eEmulateDblClick,
 		eEmulateHotkey,
 		eEmulateMouse,
 		eEmulateText,
