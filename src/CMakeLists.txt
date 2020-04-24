@@ -78,12 +78,12 @@ if (Boost_NO_SYSTEM_PATHS)
   set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
 endif (Boost_NO_SYSTEM_PATHS)
 
-find_package(Boost REQUIRED regex date_time system filesystem thread graph program_options)
+# find_package(Boost REQUIRED regex date_time system filesystem thread graph program_options)
 
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
 message("========================")
-message(${Boost_INCLUDE_DIRS})
-message(${Boost_LIBRARIES})
+message("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
 message("========================")

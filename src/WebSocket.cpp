@@ -1,8 +1,8 @@
 ﻿#include "WebSocket.h"
 
 #ifdef _WINDOWS
+
 #define _WIN32_WINNT 0x0601
-#endif
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
@@ -18,8 +18,6 @@ namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
-
-#ifdef _WINDOWS
 
 std::string cp1251_to_utf8(const char* str) {
 	std::string res;
@@ -46,15 +44,6 @@ std::string cp1251_to_utf8(const char* str) {
 	delete[] cres;
 	return res;
 }
-
-#else
-
-std::string cp1251_to_utf8(const char* str) 
-{
-	return "error";
-}
-
-#endif
 
 // Sends a WebSocket message 
 bool doWebSocket(std::string& url, std::string& msg, std::string& res)
@@ -121,3 +110,14 @@ bool doWebSocket(std::string& url, std::string& msg, std::string& res)
 	}
 	return true;
 }
+
+#else
+
+bool doWebSocket(std::string& url, std::string& msg, std::string& res)
+{
+	res = "Error: method WebSocket for Linux is not implemented";
+	return false;
+}
+
+#endif
+
