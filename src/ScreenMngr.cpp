@@ -202,10 +202,74 @@ BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
 
 BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 {
+	std::vector<INPUT> input(2);
+
+	DWORD button = VarToInt(paParams);
+	DWORD flagDown, flagUp;
+
+	switch (button) {
+	case 1: {
+		flagDown = MOUSEEVENTF_RIGHTDOWN;
+		flagUp = MOUSEEVENTF_RIGHTUP;
+	} break;
+	case 2: {
+		flagDown = MOUSEEVENTF_MIDDLEDOWN;
+		flagUp = MOUSEEVENTF_MIDDLEUP;
+	} break;
+	case 3: {
+		flagDown = MOUSEEVENTF_XDOWN;
+		flagUp = MOUSEEVENTF_XUP;
+	} break;
+	default: {
+		flagDown = MOUSEEVENTF_LEFTDOWN;
+		flagUp = MOUSEEVENTF_LEFTUP;
+	}
+	}
+
+	INPUT* ip = input.data();
+	::ZeroMemory(ip, sizeof(INPUT));
+	ip->type = INPUT_MOUSE;
+	ip->mi.dwFlags = flagDown;
+
+	ip++;
+	::ZeroMemory(ip, sizeof(INPUT));
+	ip->type = INPUT_MOUSE;
+	ip->mi.dwFlags = flagUp;
+
+	::SendInput(input.size(), input.data(), sizeof(INPUT));
 	return true;
 }
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
+	POINT pos;
+	::GetCursorPos(&pos);
+
+	double x = VarToInt(paParams);
+	double y = VarToInt(paParams + 1);
+	DWORD count = VarToInt(paParams + 2);
+	DWORD pause = VarToInt(paParams + 3);
+
+	double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
+	double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
+	double fx = 65535.0f / fScreenWidth;
+	double fy = 65535.0f / fScreenHeight;
+
+	int px = 3, py = 2;
+	if (abs(pos.x - x) < abs(pos.y - y)) {
+		px = 2; py = 3;
+	}
+
+	INPUT ip;
+	::ZeroMemory(&ip, sizeof(ip));
+	ip.type = INPUT_MOUSE;
+	ip.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+	for (double i = count - 1; i >= 0; i--) {
+		ip.mi.dx = fx * (x + (pos.x - x) * pow(i, px) / pow(1000.0, px));
+		ip.mi.dy = fy * (y + (pos.y - y) * pow(i, py) / pow(1000.0, py));
+		SendInput(1, &ip, sizeof(INPUT));
+		if (pause) Sleep(pause);
+	}
+
 	return true;
 }
 
@@ -217,32 +281,30 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 	public:
 		void add(WORD key) {
 			INPUT ip;
+			::ZeroMemory(&ip, sizeof(ip));
 			ip.type = INPUT_KEYBOARD;
-			ip.ki.wScan = 0;
-			ip.ki.time = 0;
-			ip.ki.dwExtraInfo = 0;
-			ip.ki.dwFlags = 0;
 			ip.ki.wVk = key;
 			push_back(ip);
 		}
 		void send() {
 			SendInput(size(), data(), sizeof(INPUT));
 			std::reverse(begin(), end());
-			for (auto it = begin(); it != end(); ++it) it->ki.dwFlags = KEYEVENTF_KEYUP;
+			for (auto it = begin(); it != end(); ++it) {
+				it->ki.dwFlags = KEYEVENTF_KEYUP;
+			}
 			SendInput(size(), data(), sizeof(INPUT));
 		}
 	};
 
 	Sleep(100);
-	DWORD key = VarToInt(paParams);
-	DWORD flag = VarToInt(paParams + 1);
 	Hotkey hotkey;
-	if (flag & 0x04) hotkey.add(VK_SHIFT);
-	if (flag & 0x08) hotkey.add(VK_CONTROL);
-	if (flag & 0x10) hotkey.add(VK_MENU);
+	DWORD key = VarToInt(paParams);
+	DWORD flags = VarToInt(paParams + 1);
+	if (flags & 0x04) hotkey.add(VK_SHIFT);
+	if (flags & 0x08) hotkey.add(VK_CONTROL);
+	if (flags & 0x10) hotkey.add(VK_MENU);
 	hotkey.add(key);
 	hotkey.send();
-
 	return true;
 }
 
@@ -253,12 +315,10 @@ BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 	DWORD pause = VarToInt(paParams + 1);
 	for (auto ch : text) {
 		INPUT ip;
+		::ZeroMemory(&ip, sizeof(ip));
 		ip.type = INPUT_KEYBOARD;
-		ip.ki.wVk = 0;
-		ip.ki.wScan = ch;
-		ip.ki.time = 0;
-		ip.ki.dwExtraInfo = 0;
 		ip.ki.dwFlags = KEYEVENTF_UNICODE;
+		ip.ki.wScan = ch;
 		SendInput(1, &ip, sizeof(INPUT));
 		ip.ki.dwFlags |= KEYEVENTF_KEYUP;
 		SendInput(1, &ip, sizeof(INPUT));
