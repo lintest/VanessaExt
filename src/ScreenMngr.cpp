@@ -204,27 +204,26 @@ BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 {
 	Sleep(100);
 	std::wstring text = VarToStr(paParams);
-	std::vector<INPUT> input;
-	input.resize(text.size() * 2);
-	INPUT* ip = input.data();
+	int pause = VarToInt(paParams + 1);
 	for (auto ch : text) {
+		std::vector<INPUT> input(2);
+		INPUT *ip = input.data();
 		ip->type = INPUT_KEYBOARD;
-		ip->ki.wVk = 0;
 		ip->ki.dwFlags = KEYEVENTF_UNICODE;
+		ip->ki.wVk = 0;
 		ip->ki.wScan = ch;
-		ip->ki.time = 1000;
-		ip->ki.dwExtraInfo = 0;
-		ip++;
-
-		ip->type = INPUT_KEYBOARD;
-		ip->ki.wScan = 0; 
 		ip->ki.time = 0;
 		ip->ki.dwExtraInfo = 0;
-		ip->ki.wVk = 0x41; 
-		ip->ki.dwFlags = KEYEVENTF_KEYUP; 
-		ip++;
+		ip = input.data() + 1;
+		ip->type = INPUT_KEYBOARD;
+		ip->ki.dwFlags = KEYEVENTF_KEYUP;
+		ip->ki.wVk = 0x41;
+		ip->ki.wScan = 0;
+		ip->ki.time = 0;
+		ip->ki.dwExtraInfo = 0;
+		SendInput(input.size(), input.data(), sizeof(INPUT));
+		if (pause) Sleep(pause);
 	}
-	SendInput(input.size(), input.data(), sizeof(INPUT));
 	return true;
 }
 
