@@ -222,21 +222,21 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 }
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
-	POINT pos;
-	::GetCursorPos(&pos);
+	POINT p;
+	::GetCursorPos(&p);
 
 	double x = VarToInt(paParams);
 	double y = VarToInt(paParams + 1);
-	DWORD count = VarToInt(paParams + 2);
+	double count = VarToInt(paParams + 2) / 2;
 	DWORD pause = VarToInt(paParams + 3);
 
-	double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
-	double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-	double fx = 65535.0f / fScreenWidth;
-	double fy = 65535.0f / fScreenHeight;
+	double fx = 65535.0f / (::GetSystemMetrics(SM_CXSCREEN) - 1);
+	double fy = 65535.0f / (::GetSystemMetrics(SM_CYSCREEN) - 1);
+	double dx = x - p.x;
+	double dy = y - p.y;
 
 	int px = 3, py = 2;
-	if (abs(pos.x - x) < abs(pos.y - y)) {
+	if (abs(dx) < abs(dy)) {
 		px = 2; py = 3;
 	}
 
@@ -244,9 +244,15 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 	::ZeroMemory(&ip, sizeof(ip));
 	ip.type = INPUT_MOUSE;
 	ip.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-	for (double i = count - 1; i >= 0; i--) {
-		ip.mi.dx = fx * (x + (pos.x - x) * pow(i, px) / pow(1000.0, px));
-		ip.mi.dy = fy * (y + (pos.y - y) * pow(i, py) / pow(1000.0, py));
+	for (double i = 1; i <= count; i++) {
+		ip.mi.dx = fx * (p.x + dx * pow(i, px) / pow(count, px) / 2);
+		ip.mi.dy = fy * (p.y + dy * pow(i, py) / pow(count, py) / 2);
+		SendInput(1, &ip, sizeof(INPUT));
+		if (pause) Sleep(pause);
+	}
+	for (double i = count - 1 ; i >= 0; i--) {
+		ip.mi.dx = fx * (x - dx * pow(i, px) / pow(count, px) / 2);
+		ip.mi.dy = fy * (y - dy * pow(i, py) / pow(count, py) / 2);
 		SendInput(1, &ip, sizeof(INPUT));
 		if (pause) Sleep(pause);
 	}
