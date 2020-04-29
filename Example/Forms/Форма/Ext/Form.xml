@@ -579,10 +579,7 @@
 													<Title formatted="false">
 														<v8:item>
 															<v8:lang>ru</v8:lang>
-															<v8:content>Для эмуляции нажатия 
-левой кнопки нажмите F11,
-правой кнопки мыши F12
-двойного щелчка F5</v8:content>
+															<v8:content>Нажатие мыши F11 и F12</v8:content>
 														</v8:item>
 													</Title>
 													<ContextMenu name="ДекорацияМышьКонтекстноеМеню" id="432"/>
