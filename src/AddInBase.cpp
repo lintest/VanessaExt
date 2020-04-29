@@ -139,6 +139,7 @@ AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(const wchar_t* 
 		if (addin->AllocMemory((void**)&pvar->pwstrVal, size * sizeof(WCHAR_T))) {
 			::convToShortWchar((WCHAR_T**)&pvar->pwstrVal, str, size);
 			pvar->wstrLen = size - 1;
+			while (pvar->wstrLen && pvar->pwstrVal[pvar->wstrLen - 1] == 0) pvar->wstrLen--;
 		}
 	}
 	return *this;
