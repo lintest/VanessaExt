@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "AddInBase.h"
 
+class WebSocketBase;
+
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl
 class WindowsControl : public AddInBase
@@ -55,10 +57,13 @@ private:
 		eEmulateHotkey,
 		eEmulateMouse,
 		eEmulateText,
+		eOpenWebSocket,
+		eSendWebSocket,
 		eWebSocket,
 		eSleep,
 	};
 
+	WebSocketBase* webSocket = NULL;
 	static const wchar_t* m_ExtensionName;
 	static const std::vector<Alias> m_PropList;
 	static const std::vector<Alias> m_MethList;

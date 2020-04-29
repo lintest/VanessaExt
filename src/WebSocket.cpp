@@ -19,6 +19,24 @@ namespace websocket = beast::websocket; // from <boost/beast/websocket.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
+class WebSocket
+	: public WebSocketBase
+{
+private:
+	net::io_context ioc;
+	tcp::resolver resolver{ ioc };
+	websocket::stream<tcp::socket> ws{ ioc };
+public:
+	virtual ~WebSocket() {}
+	bool open(const std::string& url, std::string& res) override;
+	bool send(const std::string& msg, std::string& res) override;
+};
+
+WebSocketBase* WebSocketBase::create()
+{
+	return new WebSocket;
+}
+
 std::string cp1251_to_utf8(const char* str) {
 	std::string res;
 	int result_u, result_c;
@@ -45,8 +63,7 @@ std::string cp1251_to_utf8(const char* str) {
 	return res;
 }
 
-// Sends a WebSocket message 
-bool doWebSocket(std::string& url, std::string& msg, std::string& res)
+bool WebSocket::open(const std::string& url, std::string& res)
 {
 	try {
 		boost::regex ex("(ws)://([^/ :]+):?([^/ ]*)(/?[^ #?]*)");
@@ -61,13 +78,6 @@ bool doWebSocket(std::string& url, std::string& msg, std::string& res)
 		auto const host = std::string(what[2].first, what[2].second);
 		auto const port = std::string(what[3].first, what[3].second);
 		auto const path = std::string(what[4].first, what[4].second);
-
-		// The io_context is required for all I/O
-		net::io_context ioc;
-
-		// These objects perform our I/O
-		tcp::resolver resolver{ ioc };
-		websocket::stream<tcp::socket> ws{ ioc };
 
 		// Look up the domain name
 		auto const results = resolver.resolve(host, port);
@@ -86,7 +96,20 @@ bool doWebSocket(std::string& url, std::string& msg, std::string& res)
 
 		// Perform the websocket handshake
 		ws.handshake(host, path);
+	}
+	catch (std::exception const& e)
+	{
+		std::stringstream ss;
+		ss << "Error: " << cp1251_to_utf8(e.what());
+		res = ss.str();
+		return false;
+	}
+	return true;
+}
 
+bool WebSocket::send(const std::string& msg, std::string& res)
+{
+	try {
 		// Send the message
 		ws.write(net::buffer(msg));
 
@@ -109,6 +132,13 @@ bool doWebSocket(std::string& url, std::string& msg, std::string& res)
 		return false;
 	}
 	return true;
+}
+
+// Sends a WebSocket message 
+bool doWebSocket(std::string& url, std::string& msg, std::string& res)
+{
+	WebSocket ws;
+	return ws.open(url, res) && ws.send(msg, res);
 }
 
 #else

@@ -383,7 +383,13 @@ bool ProcessManager::Sleep(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
+std::wstring OpenWebSocket(WebSocketBase** ws, tVariant* paParams, const long lSizeArray) { return {}; }
+std::wstring SendWebSocket(WebSocketBase* ws, tVariant* paParams, const long lSizeArray) { return {}; }
+std::wstring WebSocket(tVariant* paParams, const long lSizeArray) { return {}; }
+
 #endif //_WINDOWS
+
+#ifdef _WINDOWS
 
 #include "WebSocket.h"
 
@@ -415,3 +421,36 @@ std::wstring ProcessManager::WebSocket(tVariant* paParams, const long lSizeArray
 		return SocketError(res);
 	}
 }
+
+std::wstring ProcessManager::OpenWebSocket(WebSocketBase** ws, tVariant* paParams, const long lSizeArray)
+{
+	std::string res, url = WC2MB(VarToStr(paParams));
+	WebSocketBase* socket = WebSocketBase::create();
+	if (socket && socket->open(url, res)) {
+		if (*ws) delete* ws;
+		*ws = socket;
+		return MB2WC(res);
+	}
+	else {
+		delete socket;
+		return SocketError(res);
+	}
+	return {};
+}
+
+std::wstring ProcessManager::SendWebSocket(WebSocketBase* ws, tVariant* paParams, const long lSizeArray)
+{
+	if (!ws) return SocketError("Error: WebSocket closed");
+
+	std::string res, msg = WC2MB(VarToStr(paParams));
+	try {
+		msg = nlohmann::json::parse(msg).dump();
+	}
+	catch (nlohmann::json::parse_error e) {
+		return SocketError("JSON parse error");
+	}
+
+	return ws->send(msg, res) ? MB2WC(res) : SocketError(res);
+}
+
+#endif //_WINDOWS

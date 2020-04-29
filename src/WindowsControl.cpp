@@ -65,6 +65,8 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eEmulateMouse    , 4, false, L"EmulateMouse"     , L"ЭмуляцияДвиженияМыши"),
  	Alias(eEmulateHotkey   , 2, false, L"EmulateHotkey"    , L"ЭмуляцияНажатияКлавиши"),
 	Alias(eEmulateText     , 2, false, L"EmulateText"      , L"ЭмуляцияВводаТекста"),
+	Alias(eOpenWebSocket   , 1, true,  L"OpenWebSocket"    , L"ОткрытьВебСокет"),
+	Alias(eSendWebSocket   , 1, true,  L"SendWebSocket"    , L"ПослатьВебСокет"),
 	Alias(eWebSocket       , 2, true,  L"WebSocket"        , L"ВебСокет"),
 	Alias(eSleep           , 1, false, L"Sleep"            , L"Пауза"),
 };
@@ -191,6 +193,10 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 		return ScreenManager(this).CaptureProcess(pvarRetValue, paParams, lSizeArray);
 	case eGetCursorPos:
 		return VA(pvarRetValue) << ScreenManager::GetCursorPos();
+	case eOpenWebSocket:
+		return VA(pvarRetValue) << ProcessManager::OpenWebSocket(&webSocket, paParams, lSizeArray);
+	case eSendWebSocket:
+		return VA(pvarRetValue) << ProcessManager::SendWebSocket(webSocket, paParams, lSizeArray);
 	case eWebSocket:
 		return VA(pvarRetValue) << ProcessManager::WebSocket(paParams, lSizeArray);
 	default:
