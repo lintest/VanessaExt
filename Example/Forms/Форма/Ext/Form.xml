@@ -728,12 +728,14 @@
 						</UsualGroup>
 						<InputField name="АдресВебКлиента" id="378">
 							<DataPath>АдресВебКлиента</DataPath>
+							<ReadOnly>true</ReadOnly>
 							<AutoMaxWidth>false</AutoMaxWidth>
 							<ContextMenu name="АдресВебКлиентаКонтекстноеМеню" id="379"/>
 							<ExtendedTooltip name="АдресВебКлиентаРасширеннаяПодсказка" id="380"/>
 						</InputField>
 						<InputField name="АдресВебСокет" id="406">
 							<DataPath>АдресВебСокет</DataPath>
+							<ReadOnly>true</ReadOnly>
 							<AutoMaxWidth>false</AutoMaxWidth>
 							<ContextMenu name="АдресВебСокетКонтекстноеМеню" id="407"/>
 							<ExtendedTooltip name="АдресВебСокетРасширеннаяПодсказка" id="408"/>

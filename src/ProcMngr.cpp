@@ -427,7 +427,7 @@ std::wstring ProcessManager::OpenWebSocket(WebSocketBase** ws, tVariant* paParam
 	std::string res, url = WC2MB(VarToStr(paParams));
 	WebSocketBase* socket = WebSocketBase::create();
 	if (socket && socket->open(url, res)) {
-		if (*ws) delete* ws;
+		if (*ws) delete (*ws);
 		*ws = socket;
 		return MB2WC(res);
 	}
