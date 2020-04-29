@@ -423,6 +423,12 @@
 													<CommandName>Form.Command.НайтиКлиентТестирования</CommandName>
 													<ExtendedTooltip name="НайтиКлиентТестированияРасширеннаяПодсказка" id="195"/>
 												</Button>
+												<Button name="ВызовКонтекстаСервера" id="444">
+													<Type>CommandBarButton</Type>
+													<OnlyInAllActions>false</OnlyInAllActions>
+													<CommandName>Form.Command.ВызовКонтекстаСервера</CommandName>
+													<ExtendedTooltip name="ВызовКонтекстаСервераРасширеннаяПодсказка" id="445"/>
+												</Button>
 												<Button name="ЭмуляцияДвойногоНажатия" id="442">
 													<Type>CommandBarButton</Type>
 													<OnlyInAllActions>false</OnlyInAllActions>
@@ -3036,6 +3042,21 @@
 			</ToolTip>
 			<Shortcut>F5</Shortcut>
 			<Action>ЭмуляцияДвойногоНажатия</Action>
+		</Command>
+		<Command name="ВызовКонтекстаСервера" id="50">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Вызов контекста сервера</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Вызов контекста сервера</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ВызовКонтекстаСервера</Action>
 		</Command>
 	</Commands>
 </Form>
