@@ -1078,6 +1078,7 @@
 					<ChildItems>
 						<Table name="СписокДисплеев" id="215">
 							<Representation>List</Representation>
+							<ReadOnly>true</ReadOnly>
 							<ChangeRowSet>false</ChangeRowSet>
 							<AutoInsertNewRow>true</AutoInsertNewRow>
 							<EnableStartDrag>true</EnableStartDrag>
@@ -1273,6 +1274,7 @@
 					<ChildItems>
 						<Table name="СписокОкон" id="3">
 							<Representation>List</Representation>
+							<ReadOnly>true</ReadOnly>
 							<ChangeRowSet>false</ChangeRowSet>
 							<HeightInTableRows>3</HeightInTableRows>
 							<AutoInsertNewRow>true</AutoInsertNewRow>
