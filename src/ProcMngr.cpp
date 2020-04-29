@@ -248,6 +248,11 @@ private:
 	const std::string proc = "/proc/";
 
 protected:
+	std::string GetProcessName(unsigned long pid, bool original = false) {
+		std::string filepath = proc + to_string(pid) + "/comm";
+		return file2str(filepath);
+	}
+
 	std::string GetCommandLine(unsigned long pid, bool original = false) {
 		std::string filepath = proc + to_string(pid) + "/cmdline";
 		std::string line = file2str(filepath);
@@ -283,6 +288,7 @@ protected:
 		if (str.substr(0, 4) != "1cv8") return true;
 		unsigned long pid = GetWindowPid(window);
 		if (NotFound(pid)) return true;
+		json["Name"] = GetProcessName(pid);
 		json["Window"] = (unsigned long)window;
 		json["Title"] = GetWindowTitle(window);
 		json["CommandLine"] = GetCommandLine(pid);
@@ -322,6 +328,7 @@ protected:
 		if (std::find(v.begin(), v.end(), pid) != v.end()) return true;
 		v.push_back(pid);
 		JSON j;
+		j["Name"] = GetProcessName(pid);
 		j["Window"] = (unsigned long)window;
 		j["Title"] = GetWindowTitle(window);
 		j["CommandLine"] = GetCommandLine(pid);
@@ -338,6 +345,7 @@ protected:
 	virtual bool EnumWindow(Window window) {}
 public:
 	ProcessInfo(unsigned long pid) {
+		json["Name"] = GetProcessName(pid);
 		json["CommandLine"] = GetCommandLine(pid);
 		json["CreationDate"] = GetCreationDate(pid);
 		json["ProcessId"] = pid;
