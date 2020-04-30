@@ -50,8 +50,8 @@
 - <a href="#EmulateText">ЭмуляцияВводаТекста (EmulateText)</a>
 
 Обмен данными по протоколу WebSocket (только для Windows):
-- <a href="#OpenSocket">ОткрытьВебСокет (OpenWebSocket)</a>
-- <a href="#SendSocket">ПослатьВебСокет (SendWebSocket)</a>
+- <a href="#OpenWebSocket">ОткрытьВебСокет (OpenWebSocket)</a>
+- <a href="#SendWebSocket">ПослатьВебСокет (SendWebSocket)</a>
 - <a href="#WebSocket">ВебСокет (WebSocket)</a>
 
 Захват изображения экрана:
