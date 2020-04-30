@@ -59,20 +59,21 @@ private:
 		eEmulateText,
 		eOpenWebSocket,
 		eSendWebSocket,
+		eCloseWebSocket,
 		eWebSocket,
 		eSleep,
 	};
 
-	WebSocketBase* webSocket = NULL;
+	WebSocketBase* webSocket = nullptr;
 	static const wchar_t* m_ExtensionName;
 	static const std::vector<Alias> m_PropList;
 	static const std::vector<Alias> m_MethList;
 	const wchar_t* ExtensionName() const override { return m_ExtensionName; };
 	const std::vector<Alias>& PropList() const override { return m_PropList; };
 	const std::vector<Alias>& MethList() const override { return m_MethList; };
-
+	bool CloseWebSocket() { if (webSocket) delete webSocket; webSocket = nullptr; return true; }
 public:
-	virtual ~WindowsControl() { if (webSocket) delete webSocket; }
+	virtual ~WindowsControl() { CloseWebSocket(); }
 	bool ADDIN_API GetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
 	bool ADDIN_API SetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
 	bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray) override;

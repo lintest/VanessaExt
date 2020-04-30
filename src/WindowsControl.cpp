@@ -63,10 +63,11 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eEmulateClick    , 1, false, L"EmulateClick"     , L"ЭмуляцияНажатияМыши"),
 	Alias(eEmulateDblClick , 0, false, L"EmulateDblClick"  , L"ЭмуляцияДвойногоНажатия"),
 	Alias(eEmulateMouse    , 4, false, L"EmulateMouse"     , L"ЭмуляцияДвиженияМыши"),
- 	Alias(eEmulateHotkey   , 2, false, L"EmulateHotkey"    , L"ЭмуляцияНажатияКлавиши"),
+	Alias(eEmulateHotkey   , 2, false, L"EmulateHotkey"    , L"ЭмуляцияНажатияКлавиши"),
 	Alias(eEmulateText     , 2, false, L"EmulateText"      , L"ЭмуляцияВводаТекста"),
 	Alias(eOpenWebSocket   , 1, true,  L"OpenWebSocket"    , L"ОткрытьВебСокет"),
 	Alias(eSendWebSocket   , 1, true,  L"SendWebSocket"    , L"ПослатьВебСокет"),
+	Alias(eCloseWebSocket  , 0, false, L"CloseWebSocket"   , L"ЗакрытьВебСокет"),
 	Alias(eWebSocket       , 2, true,  L"WebSocket"        , L"ВебСокет"),
 	Alias(eSleep           , 1, false, L"Sleep"            , L"Пауза"),
 };
@@ -159,6 +160,8 @@ bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 	case eSetWindowState:
 		return WindowManager::SetWindowState(paParams, lSizeArray);
 #endif
+	case eCloseWebSocket:
+		return CloseWebSocket();
 	default:
 		return false;
 	}
