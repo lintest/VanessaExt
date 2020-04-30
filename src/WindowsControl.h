@@ -72,6 +72,7 @@ private:
 	const std::vector<Alias>& MethList() const override { return m_MethList; };
 
 public:
+	virtual ~WindowsControl() { if (webSocket) delete webSocket; }
 	bool ADDIN_API GetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
 	bool ADDIN_API SetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
 	bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray) override;
