@@ -321,9 +321,12 @@ private:
 class ProcessList : public ProcessEnumerator
 {
 private:
+	bool m_filter = false;
 	vector<unsigned long> v;
 protected:
 	virtual bool EnumWindow(Window window) {
+		std::string str = GetWindowClass(window);
+		if (str.substr(0, 4) != "1cv8") return true;
 		unsigned long pid = GetWindowPid(window);
 		if (std::find(v.begin(), v.end(), pid) != v.end()) return true;
 		v.push_back(pid);
@@ -337,6 +340,8 @@ protected:
 		json.push_back(j);
 		return true;
 	}
+public:
+	ProcessList(bool filter) : m_filter(filter) {}
 };
 
 class ProcessInfo : public ProcessEnumerator
@@ -366,7 +371,9 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 
 std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
 {
-	return ProcessList().Enumerate();
+	bool filter = false;
+	if (lSizeArray > 0) filter = VarToInt(paParams);
+	return ProcessList(filter).Enumerate();
 }
 
 std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSizeArray)

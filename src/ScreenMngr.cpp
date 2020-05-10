@@ -451,6 +451,29 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	return success;
 }
 
+#include <iostream>
+
+BOOL ScreenManager::PrintWindow(unsigned window)
+{
+	Display* display = XOpenDisplay(NULL);
+	if (display == NULL) return false;
+
+	if (window == 0) window = DefaultRootWindow(display);
+
+	BOOL success = false;
+	XWindowAttributes gwa;
+	XGetWindowAttributes(display, window, &gwa);
+	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
+	X11Screenshot screenshot = X11Screenshot(image);
+	std::vector<char> buffer;
+	if (screenshot.save_to_png(buffer)) {
+	    std::wcout << std::endl << buffer.size() << std::endl << std::endl;
+	}
+	XDestroyImage(image);
+	XCloseDisplay(display);
+	return success;
+}
+
 class ProcWindows : public WindowEnumerator
 {
 private:
