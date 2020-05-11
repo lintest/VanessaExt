@@ -69,7 +69,7 @@ fi
 if [ -z $1 ]; then
     cmake -E remove_directory build32
     cmake -E remove_directory build64
-    strip -s bin/lib1cWinCtrl*.so
+    strip -s bin/libVanessaExt*.so
     rm -f *.{debug,a}
 fi
 

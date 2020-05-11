@@ -113,7 +113,7 @@ void AddInNative::addError(const wchar_t* descriptor)
 	if (m_iConnect) {
 		WCHAR_T* err = 0;
 		WCHAR_T* descr = 0;
-		const wchar_t* source = L"1cWinCtrl";
+		const wchar_t* source = L"VanessaExt";
 		::convToShortWchar(&err, source);
 		::convToShortWchar(&descr, descriptor);
 		uint32_t wcode = ADDIN_E_VERY_IMPORTANT;

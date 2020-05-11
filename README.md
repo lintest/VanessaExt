@@ -1,11 +1,17 @@
-# 1cWinCtrl - внешняя компонента 1С 
+# VanessaExt - внешняя компонента 1С
 
-Предназначена для управления окнами Windows и Linux, разработана по технологии Native API.
+Компонента разработана как составная часть инструмента тестирования прикладных решений 
+Vanessa Automation, хотя имеет самостоятельную ценность и может быть использована 
+в составе других продуктов.
+
+Предназначена для Windows и Linux, разработана по технологии Native API.
 
 ### Возможности компоненты:
 - Получение списка окон и списка процессов
 - Управление размерами и положением окна
 - Получение снимка окна и снимка экрана
+- Обмен данными по протоколу WebSocket
+- Эмуляция действий пользователя
 - Доступ к данным буфера обмена
 
 ### Свойства
@@ -87,7 +93,7 @@
 ```
 
 Далее по тексту все примеры будут приводиться для синхронных вызовов. В публикуемом примере
-[**1cWinCtrl.epf**](https://github.com/lintest/1cWinCtrl/releases) используются только асинхронные вызовы.
+[**VanessaExt.epf**](https://github.com/lintest/VanessaExt/releases) используются только асинхронные вызовы.
 
 Многие свойства и методы компоненты возвращают сложные типы данных, которые сериализованы 
 в строку формата JSON. Поэтому имеет смысл объявить в вызывающем модуле универсальную 
@@ -108,7 +114,7 @@
 ### Сборка проекта
 
 Готовая сборка внешней компоненты находится в файле 
-[/Example/Templates/_1cWinCtrl/Ext/Template.bin](https://github.com/lintest/1cWinCtrl/raw/master/Example/Templates/_1cWinCtrl/Ext/Template.bin)
+[/Example/Templates/VanessaExt/Ext/Template.bin](https://github.com/lintest/VanessaExt/raw/master/Example/Templates/VanessaExt/Ext/Template.bin)
 
 Порядок самостоятельной сборки внешней компоненты из исходников:
 1. Для сборки компоненты необходимо установить Visual Studio Community 2019
@@ -126,8 +132,8 @@ yum -y group install "Development Tools"
 yum -y install cmake glibc-devel.i686 glibc-devel libuuid-devel
 yum -y install libstdc++-devel.i686 gtk2-devel.i686 glib2-devel.i686
 yum -y install libstdc++-devel.x86_64 gtk2-devel.x86_64 glib2-devel.x86_64
-git clone https://github.com/lintest/1cWinCtrl.git
-cd 1cWinCtrl
+git clone https://github.com/lintest/VanessaExt.git
+cd VanessaExt
 ./build.sh
 ```
 
@@ -137,8 +143,8 @@ sudo apt update
 sudo apt install -y build-essential cmake git
 sudo apt install -y gcc-multilib g++-multilib
 sudo apt install -y uuid-dev libx11-dev libxrandr-dev libpng-dev
-git clone https://github.com/lintest/1cWinCtrl.git
-cd 1cWinCtrl
+git clone https://github.com/lintest/VanessaExt.git
+cd VanessaExt
 ./build.sh
 ```
 
@@ -167,7 +173,7 @@ reboot
 ## Установка и подключение
 
 Для создания объекта экземпляра внешней компоненты используйте имя **WindowsControl**.
-В прилагаемом примере файлы внешней компоненты хранятся в макете **_1cWinCtrl**, реквизит формы 
+В прилагаемом примере файлы внешней компоненты хранятся в макете **VanessaExt**, реквизит формы 
 **МестоположениеКомпоненты** используется для передачи макета компоненты между сервером и клиентом.
 Для установки и подключения внешней компоненты рекомендуется использовать следующий программный код:
 
@@ -177,7 +183,7 @@ reboot
 
 &НаСервере
 Процедура ПриСозданииНаСервере(Отказ, СтандартнаяОбработка)
-	МакетКомпоненты = РеквизитФормыВЗначение("Объект").ПолучитьМакет("_1cWinCtrl");
+	МакетКомпоненты = РеквизитФормыВЗначение("Объект").ПолучитьМакет("VanessaExt");
 	МестоположениеКомпоненты = ПоместитьВоВременноеХранилище(МакетКомпоненты, УникальныйИдентификатор);
 КонецПроцедуры
 
