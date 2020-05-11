@@ -43,7 +43,10 @@ protected:
         Rect(XRRMonitorInfo* i)
             : left(i->x), top(i->y), right(i->x + i->width), bottom(i->y + i->height) {}
 
-        Rect(Display* display, Window window) {
+        Rect(Display* display, Window window)
+            : left(0), top(0), right(0), bottom(0)
+        {
+            if (!window) return;
             Window junkroot;
             int x, y, junkx, junky;
             unsigned int w, h, bw, depth;

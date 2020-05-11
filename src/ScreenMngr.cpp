@@ -328,9 +328,9 @@ public:
 		for (int i = 0; i < count_screens; ++i) {
 			Screen* screen = ScreenOfDisplay(display, i);
 			JSON j;
-			json["Id"] = i;
-			json["Width"] = screen->width;
-			json["Height"] = screen->height;
+			j["Id"] = i;
+			j["Width"] = screen->width;
+			j["Height"] = screen->height;
 			json.push_back(j);
 		}
 		return json;
