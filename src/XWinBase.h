@@ -220,6 +220,8 @@ public:
 	}
 };
 
+#include <iostream>
+
 class WindowEnumerator : public WindowHelper
 {
 private:
@@ -235,6 +237,8 @@ public:
         if (GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
         if (GetProperty(root, XA_WINDOW, "_WIN_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
         m_count = 0; // Cannot get client list properties.
+	    std::wcout << std::endl << "DefaultRootWindow: " << root << std::endl << std::endl;
+	    std::wcout << std::endl << "Window count: " << m_count << std::endl << std::endl;
     }
 
     std::wstring Enumerate() {
