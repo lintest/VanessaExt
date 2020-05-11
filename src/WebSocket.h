@@ -7,7 +7,7 @@
 
 class WebSocketBase {
 public:
-	virtual ~WebSocketBase() {}
+	virtual ~WebSocketBase() = default;
 	static WebSocketBase* create();
 	virtual bool open(const std::string& url, std::string& res) = 0;
 	virtual bool send(const std::string& msg, std::string& res) = 0;

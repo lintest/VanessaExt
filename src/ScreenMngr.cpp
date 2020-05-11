@@ -99,6 +99,11 @@ std::wstring ScreenManager::GetScreenInfo()
 	return MB2WC(json.dump());
 }
 
+std::wstring ScreenManager::GetScreenList()
+{
+	return {};
+}
+
 BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	const int mode = lSizeArray == 0 ? 0 : VarToInt(paParams);
@@ -134,7 +139,7 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	HDC hDC = CreateCompatibleDC(hdcScreen);
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
 	SelectObject(hDC, hBitmap);
-	PrintWindow(hWnd, hDC, PW_CLIENTONLY);
+	::PrintWindow(hWnd, hDC, PW_CLIENTONLY);
 	ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
 	ReleaseDC(NULL, hdcScreen);
 	DeleteDC(hDC);
@@ -460,29 +465,6 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 			memcpy((void*)pvarRetValue->pstrVal, &buffer[0], pvarRetValue->strLen);
 			success = true;
 		}
-	}
-	XDestroyImage(image);
-	XCloseDisplay(display);
-	return success;
-}
-
-#include <iostream>
-
-BOOL ScreenManager::PrintWindow(unsigned window)
-{
-	Display* display = XOpenDisplay(NULL);
-	if (display == NULL) return false;
-
-	if (window == 0) window = DefaultRootWindow(display);
-
-	BOOL success = false;
-	XWindowAttributes gwa;
-	XGetWindowAttributes(display, window, &gwa);
-	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
-	X11Screenshot screenshot = X11Screenshot(image);
-	std::vector<char> buffer;
-	if (screenshot.save_to_png(buffer)) {
-	    std::wcout << std::endl << buffer.size() << std::endl << std::endl;
 	}
 	XDestroyImage(image);
 	XCloseDisplay(display);
