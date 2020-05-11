@@ -9,7 +9,7 @@ foreach(policy CMP0068)
   endif()
 endforeach()
 
-PROJECT(1cWinCtrl)
+PROJECT(VanessaExt)
 
 SET(AddInNative_SRC 
     AddInBase.cpp
@@ -32,8 +32,8 @@ SET(AddInNative_SRC
     WindowMngr.h
     screenshot.cpp
     screenshot.h
-	xcb_clip.cpp
-	xcb_clip.h
+    xcb_clip.cpp
+    xcb_clip.h
     json.hpp
     dllmain.cpp
     stdafx.cpp

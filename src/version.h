@@ -1,6 +1,6 @@
 #define VERSION_MAJOR               1
 #define VERSION_MINOR               0
-#define VERSION_REVISION            2
+#define VERSION_REVISION            3
 #define VERSION_BUILD               0
 
 #define STRINGIZE2(s) #s
@@ -14,5 +14,5 @@
 
 #define VER_FILE_DESCRIPTION_STR    "Window Control 1C AddIn"
 #define VER_COPYRIGHT_STR           "Kandrashin Denis, 2020"
-#define VER_FILENAME                "1cWinCtrl"
+#define VER_FILENAME                "VanessaExt"
 #define VER_FILE_EXT                ".dll" 

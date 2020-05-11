@@ -114,7 +114,7 @@ ENDIF()
 
 # identification AddIn
 SET(MYCOMPANY "Lintest")
-SET(ADN_NAME "1cWinCtrl")
+SET(ADN_NAME "VanessaExt")
 
 #set you version file
 IF(EXISTS "${CMAKE_SOURCE_DIR}/../lib/VerInfo.txt")

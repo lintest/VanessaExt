@@ -49,10 +49,10 @@
 	ЗаписьXML.ЗаписатьНачалоЭлемента("bundle");	
 	ЗаписьXML.ЗаписатьАтрибут("xmlns", "http://v8.1c.ru/8.2/addin/bundle");
 	
-	ДобавитьЭлемент("Windows" , "i386"   , "bin32/lib1cWinCtrlWin32.dll");
-	ДобавитьЭлемент("Windows" , "x86_64" , "bin64/lib1cWinCtrlWin64.dll");
-	ДобавитьЭлемент("Linux"   , "i386"   , "bin/lib1cWinCtrlLin32.so");
-	ДобавитьЭлемент("Linux"   , "x86_64" , "bin/lib1cWinCtrlLin64.so");
+	ДобавитьЭлемент("Windows" , "i386"   , "bin32/libVanessaExtWin32.dll");
+	ДобавитьЭлемент("Windows" , "x86_64" , "bin64/libVanessaExtWin64.dll");
+	ДобавитьЭлемент("Linux"   , "i386"   , "bin/libVanessaExtLin32.so");
+	ДобавитьЭлемент("Linux"   , "x86_64" , "bin/libVanessaExtLin64.so");
 	
 	ЗаписьXML.ЗаписатьКонецЭлемента();
 	ЗаписьXML.Закрыть();
