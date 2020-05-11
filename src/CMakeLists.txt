@@ -9,7 +9,7 @@ foreach(policy CMP0068)
   endif()
 endforeach()
 
-PROJECT(1cWinCtrl)
+PROJECT(VanessaExt)
 
 SET(AddInNative_SRC 
     AddInBase.cpp

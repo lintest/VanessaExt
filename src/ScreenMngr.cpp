@@ -251,7 +251,7 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 		SendInput(1, &ip, sizeof(INPUT));
 		if (pause) Sleep(pause);
 	}
-	for (double i = count - 1 ; i >= 0; i--) {
+	for (double i = count - 1; i >= 0; i--) {
 		ip.mi.dx = fx * (x - dx * pow(i, px) / cx);
 		ip.mi.dy = fy * (y - dy * pow(i, py) / cy);
 		SendInput(1, &ip, sizeof(INPUT));
@@ -275,6 +275,7 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 			push_back(ip);
 		}
 		void send() {
+			if (size() == 0) return;
 			SendInput(size(), data(), sizeof(INPUT));
 			std::reverse(begin(), end());
 			for (auto it = begin(); it != end(); ++it) {
@@ -286,12 +287,26 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 
 	Sleep(100);
 	Hotkey hotkey;
-	DWORD key = VarToInt(paParams);
-	DWORD flags = VarToInt(paParams + 1);
-	if (flags & 0x04) hotkey.add(VK_SHIFT);
-	if (flags & 0x08) hotkey.add(VK_CONTROL);
-	if (flags & 0x10) hotkey.add(VK_MENU);
-	hotkey.add(key);
+	if (TV_VT(paParams) == VTYPE_PWSTR) {
+		try {
+			if (paParams->pwstrVal == nullptr) return false;
+			auto json = JSON::parse(WC2MB(paParams->pwstrVal));
+			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
+				hotkey.add(it.value());
+			}
+		}
+		catch (nlohmann::json::parse_error e) {
+			return false;
+		}
+	}
+	else {
+		DWORD key = VarToInt(paParams);
+		DWORD flags = VarToInt(paParams + 1);
+		if (flags & 0x04) hotkey.add(VK_SHIFT);
+		if (flags & 0x08) hotkey.add(VK_CONTROL);
+		if (flags & 0x10) hotkey.add(VK_MENU);
+		hotkey.add(key);
+	}
 	hotkey.send();
 	return true;
 }

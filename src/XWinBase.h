@@ -43,7 +43,7 @@ protected:
         Rect(XRRMonitorInfo* i)
             : left(i->x), top(i->y), right(i->x + i->width), bottom(i->y + i->height) {}
 
-        Rect(Display* display, Window window) 
+        Rect(Display* display, Window window)
             : left(0), top(0), right(0), bottom(0)
         {
             if (!window) return;
@@ -220,6 +220,8 @@ public:
 	}
 };
 
+#include <iostream>
+
 class WindowEnumerator : public WindowHelper
 {
 private:
@@ -235,6 +237,8 @@ public:
         if (GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
         if (GetProperty(root, XA_WINDOW, "_WIN_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
         m_count = 0; // Cannot get client list properties.
+	    std::wcout << std::endl << "DefaultRootWindow: " << root << std::endl << std::endl;
+	    std::wcout << std::endl << "Window count: " << m_count << std::endl << std::endl;
     }
 
     std::wstring Enumerate() {

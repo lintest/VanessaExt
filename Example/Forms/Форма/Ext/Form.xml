@@ -867,11 +867,6 @@
 													<CommandName>Form.Command.ЭмуляцияВводаТекста</CommandName>
 													<ExtendedTooltip name="ЭмуляцияВводаТекстаРасширеннаяПодсказка" id="422"/>
 												</Button>
-												<Button name="НажатиеГорячейКлавиши" id="425">
-													<Type>CommandBarButton</Type>
-													<CommandName>Form.Command.НажатиеГорячейКлавиши</CommandName>
-													<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
-												</Button>
 												<Button name="ОчиститьТекст" id="304">
 													<Type>CommandBarButton</Type>
 													<CommandName>Form.Command.ОчиститьТекст</CommandName>
@@ -953,6 +948,47 @@
 											<Type>UsualButton</Type>
 											<CommandName>Form.Command.ПаузаSleep</CommandName>
 											<ExtendedTooltip name="ПаузаРасширеннаяПодсказка" id="343"/>
+										</Button>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаГорячиеКлавиши" id="446">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа горячие клавиши</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа горячие клавиши</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаГорячиеКлавишиРасширеннаяПодсказка" id="447"/>
+									<ChildItems>
+										<Button name="КлавишаWindowsE" id="448">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.НажатиеКлавишиWinE</CommandName>
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Win+E</v8:content>
+												</v8:item>
+											</Title>
+											<ExtendedTooltip name="КлавишаWindowsEРасширеннаяПодсказка" id="449"/>
+										</Button>
+										<Button name="НажатиеГорячейКлавиши" id="425">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.НажатиеКлавишиCtrlF2</CommandName>
+											<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
+										</Button>
+										<Button name="НажатиеКлавишиNumLock" id="450">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.НажатиеКлавишиNumLock</CommandName>
+											<ExtendedTooltip name="НажатиеКлавишиNumLockРасширеннаяПодсказка" id="451"/>
 										</Button>
 									</ChildItems>
 								</UsualGroup>
@@ -2963,7 +2999,7 @@
 			</ToolTip>
 			<Action>ЭмуляцияВвода</Action>
 		</Command>
-		<Command name="НажатиеГорячейКлавиши" id="36">
+		<Command name="НажатиеКлавишиCtrlF2" id="36">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
@@ -2973,10 +3009,10 @@
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Нажатие горячей клавиши</v8:content>
+					<v8:content>Нажатие клавиши Ctrl+F2</v8:content>
 				</v8:item>
 			</ToolTip>
-			<Action>НажатиеГорячейКлавиши</Action>
+			<Action>НажатиеКлавишиCtrlF2</Action>
 		</Command>
 		<Command name="ЭмуляцияДвиженияМыши" id="46">
 			<Title>
@@ -3056,6 +3092,36 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ВызовКонтекстаСервера</Action>
+		</Command>
+		<Command name="НажатиеКлавишиWinE" id="51">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Нажатие клавишы Win+E</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Нажатие клавишы Win+E</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НажатиеКлавишиWinE</Action>
+		</Command>
+		<Command name="НажатиеКлавишиNumLock" id="52">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Num Lock</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Нажатие клавиши Num Lock</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НажатиеКлавишиNumLock</Action>
 		</Command>
 	</Commands>
 </Form>
