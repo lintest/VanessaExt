@@ -32,8 +32,8 @@ SET(AddInNative_SRC
     WindowMngr.h
     screenshot.cpp
     screenshot.h
-	xcb_clip.cpp
-	xcb_clip.h
+    xcb_clip.cpp
+    xcb_clip.h
     json.hpp
     dllmain.cpp
     stdafx.cpp
@@ -67,6 +67,8 @@ if (WINDOWS)
     target_link_libraries(${PROJECT_NAME} gdiplus)
 endif()
 
+FIND_PACKAGE(X11 COMPONENTS Xtst)
+
 set(Boost_USE_STATIC_LIBS ON) 
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME ON) 
@@ -81,6 +83,7 @@ endif (Boost_NO_SYSTEM_PATHS)
 # find_package(Boost REQUIRED regex date_time system filesystem thread graph program_options)
 
 include_directories(${Boost_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} ${X11_XTest_LIB})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
 message("========================")

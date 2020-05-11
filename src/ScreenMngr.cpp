@@ -319,6 +319,7 @@ BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 
 #include "screenshot.h"
 #include "XWinBase.h"
+#include <X11/extensions/XTest.h>
 
 class ScreenEnumerator : public WindowHelper
 {
@@ -607,6 +608,31 @@ BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
 
 BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 {
+    Display *display = XOpenDisplay(NULL);
+	if (!display) return false;
+
+	unsigned int button = 1;
+	switch (VarToInt(paParams)) {
+	case 1: button = 3; break;
+	case 2: button = 2; break;
+	}
+    XTestFakeButtonEvent(display, button, true, CurrentTime);
+    XTestFakeButtonEvent(display, button, false, CurrentTime);
+    XFlush(display);
+    XCloseDisplay(display);
+	return true;
+}
+
+BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
+{
+    Display *display = XOpenDisplay(NULL);
+	if (!display) return false;
+    XTestFakeButtonEvent(display, 1, true, CurrentTime);
+    XTestFakeButtonEvent(display, 1, false, CurrentTime);
+    XTestFakeButtonEvent(display, 1, true, CurrentTime);
+    XTestFakeButtonEvent(display, 1, false, CurrentTime);
+    XFlush(display);
+    XCloseDisplay(display);
 	return true;
 }
 
