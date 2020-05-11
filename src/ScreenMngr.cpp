@@ -291,7 +291,8 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 	if (TV_VT(paParams) == VTYPE_PWSTR) {
 		try {
 			if (paParams->pwstrVal == nullptr) return false;
-			auto json = JSON::parse(WC2MB(paParams->pwstrVal));
+			std::wstring text = VarToStr(paParams);
+			auto json = JSON::parse(WC2MB(text));
 			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
 				hotkey.add(it.value());
 			}
@@ -705,11 +706,85 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 
 BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 {
+	class Hotkey
+		: private std::vector<KeyCode>
+	{
+	private:
+		Display* m_display;
+	public:
+		Hotkey() {
+		    m_display = XOpenDisplay(NULL);
+		}
+		virtual ~Hotkey() {
+			if (m_display) XCloseDisplay(m_display);
+		}
+		void add(KeySym keysym) {
+			KeyCode keycode = XKeysymToKeycode(m_display, keysym);
+			std::wcout << std::endl << keysym << " : " << keycode << std::endl;
+			push_back(keycode);
+		}
+		void send() {
+			if (!m_display) return;
+			if (size() == 0) return;
+			for (auto it = begin(); it != end(); ++it) {
+				XTestFakeKeyEvent(m_display, *it, true, CurrentTime);
+			}
+			std::reverse(begin(), end());
+			for (auto it = begin(); it != end(); ++it) {
+				XTestFakeKeyEvent(m_display, *it, false, CurrentTime);
+			}
+			XFlush(m_display);
+		}
+	};
+
+	usleep(100 * 1000);
+	Hotkey hotkey;
+	if (TV_VT(paParams) == VTYPE_PWSTR) {
+		try {
+			std::wcout << L"EmulateHotkey";
+			if (paParams->pwstrVal == nullptr) return false;
+			std::wstring text = VarToStr(paParams);
+			std::wcout << std::endl << text << std::endl;
+			auto json = JSON::parse(WC2MB(text));
+			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
+				hotkey.add(it.value());
+			}
+		}
+		catch (nlohmann::json::parse_error e) {
+			return false;
+		}
+	}
+	else {
+		auto key = VarToInt(paParams);
+		auto flags = VarToInt(paParams + 1);
+		if (flags & 0x04) hotkey.add(XK_Shift_L);
+		if (flags & 0x08) hotkey.add(XK_Control_L);
+		if (flags & 0x10) hotkey.add(XK_Alt_L);
+		hotkey.add(key);
+	}
+	hotkey.send();
 	return true;
 }
 
 BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 {
+	std::wcout << L"EmulateText";
+    Display *display = XOpenDisplay(NULL);
+	if (!display) return false;
+	usleep(100 * 1000);
+	std::wstring text = VarToStr(paParams);
+	auto pause = VarToInt(paParams + 1);
+	for (auto ch : text) {
+		std::wstring w; w += ch;
+		KeySym keysym = XStringToKeysym(WC2MB(w).data());
+		KeyCode keycode = XKeysymToKeycode(display, keysym);
+		std::wcout << std::endl << w << " : " << keysym << " : " << keycode << std::endl;
+		XTestFakeKeyEvent(display, keycode, true, CurrentTime);
+		XTestFakeKeyEvent(display, keycode, false, CurrentTime);
+		XFlush(display);
+		if (pause) usleep(pause * 1000);
+	}
+	XCloseDisplay(display);
 	return true;
 }
 
