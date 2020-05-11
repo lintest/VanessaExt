@@ -220,6 +220,7 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 	mouse_event(dwFlags, 0, 0, 0, 0);
 	return true;
 }
+
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
 	double x = VarToInt(paParams);
@@ -335,6 +336,7 @@ BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 #include "screenshot.h"
 #include "XWinBase.h"
 #include <X11/extensions/XTest.h>
+#include <unistd.h>
 
 class ScreenEnumerator : public WindowHelper
 {
@@ -653,6 +655,51 @@ BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
 
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
+    Display *display = XOpenDisplay(NULL);
+	if (!display) return false;
+
+	double x2 = VarToInt(paParams);
+	double y2 = VarToInt(paParams + 1);
+	double count = VarToInt(paParams + 2);
+	DWORD pause = VarToInt(paParams + 3);
+
+	XEvent event;
+	XQueryPointer(display, RootWindow(display, DefaultScreen(display)),
+		&event.xbutton.root, &event.xbutton.window,
+		&event.xbutton.x_root, &event.xbutton.y_root,
+		&event.xbutton.x, &event.xbutton.y,
+		&event.xbutton.state
+	);
+	double x1 = event.xbutton.x;
+	double y1 = event.xbutton.y;
+
+	double dx = x2 - x1;
+	double dy = y2 - y1;
+	int px = 3, py = 2;
+	if (abs(dx) < abs(dy)) {
+		px = 2; py = 3;
+	}
+	count /= 2;
+	double cx = pow(count, px) * 2;
+	double cy = pow(count, py) * 2;
+
+	for (double i = 1; i <= count; i++) {
+		int xx = round(x1 + dx * pow(i, px) / cx);
+		int yy = round(y1 + dy * pow(i, py) / cy);
+		XTestFakeMotionEvent(display, DefaultScreen(display), xx, yy, CurrentTime);
+	    XFlush(display);
+	if (pause) usleep(pause * 1000);
+	}
+	for (double i = count - 1; i >= 0; i--) {
+		int xx = round(x2 - dx * pow(i, px) / cx);
+		int yy = round(y2 - dy * pow(i, py) / cy);
+		XTestFakeMotionEvent(display, DefaultScreen(display), xx, yy, CurrentTime);
+	    XFlush(display);
+		if (pause) usleep(pause * 1000);
+	}
+
+	XCloseDisplay(display);
+
 	return true;
 }
 
