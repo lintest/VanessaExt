@@ -350,7 +350,8 @@ public:
 
 bool WindowManager::IsMaximized(HWND hWnd)
 {
-
+	//TODO
+	return false;
 }
 
 std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)

@@ -139,7 +139,7 @@ bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
 	if (bEmpty) EmptyClipboard();
 	nlohmann::json json = nlohmann::json::parse(WC2MB(paParams->pwstrVal));
 	if (json.is_array()) {
-		int clpSize = sizeof(DROPFILES);
+		SIZE_T clpSize = sizeof(DROPFILES);
 		for (auto element : json) {
 			std::wstring filename = MB2WC(element);
 			clpSize += (filename.size() + 1) * sizeof(TCHAR);
@@ -173,9 +173,9 @@ bool ClipboardManager::GetImage(tVariant* pvarValue)
 		if (hData && m_addin) {
 			void* data = ::GlobalLock(hData);
 			SIZE_T size = ::GlobalSize(hData);
-			m_addin->AllocMemory((void**)&pvarValue->pstrVal, size);
+			m_addin->AllocMemory((void**)&pvarValue->pstrVal, (unsigned long)size);
 			memcpy(pvarValue->pstrVal, data, size);
-			pvarValue->strLen = size;
+			pvarValue->strLen = (uint32_t)size;
 			TV_VT(pvarValue) = VTYPE_BLOB;
 			::GlobalUnlock(hData);
 			return true;

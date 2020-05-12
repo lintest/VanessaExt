@@ -347,7 +347,7 @@ public:
 class ProcessInfo : public ProcessEnumerator
 {
 protected:
-	virtual bool EnumWindow(Window window) {}
+	virtual bool EnumWindow(Window window) { return false; } 
 public:
 	ProcessInfo(unsigned long pid) {
 		json["Name"] = GetProcessName(pid);

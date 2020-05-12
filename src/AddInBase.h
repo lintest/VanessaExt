@@ -18,13 +18,13 @@ protected:
 	private:
 		std::wstring names[m_AliasCount];
 	public:
-		Alias(long id, long np, bool fn, wchar_t* strEn, wchar_t* strRu)
+		Alias(long id, long np, bool fn, const wchar_t* strEn, const wchar_t* strRu)
 			:id(id), np(np), fn(fn)
 		{
 			names[0] = strEn;
 			names[1] = strRu;
 		}
-		Alias(long id, bool fn, wchar_t* strEn, wchar_t* strRu)
+		Alias(long id, bool fn, const wchar_t* strEn, const wchar_t* strRu)
 			:id(id), np(0), fn(fn)
 		{
 			names[0] = strEn;

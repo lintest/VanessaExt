@@ -192,7 +192,7 @@ bool AddInBase::RegisterExtensionAs(WCHAR_T** wsExtensionName)
 //---------------------------------------------------------------------------//
 long AddInBase::GetNProps()
 {
-	return PropList().size();
+	return (long)PropList().size();
 }
 //---------------------------------------------------------------------------//
 long AddInBase::FindProp(const WCHAR_T* wsPropName)
@@ -217,7 +217,7 @@ bool AddInBase::IsPropWritable(const long lPropNum)
 //---------------------------------------------------------------------------//
 long AddInBase::GetNMethods()
 {
-	return MethList().size();
+	return (long)MethList().size();
 }
 //---------------------------------------------------------------------------//
 long AddInBase::FindMethod(const WCHAR_T* wsMethodName)

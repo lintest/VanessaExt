@@ -19,8 +19,8 @@ public:
 	static bool Minimize(tVariant* paParams, const long lSizeArray);
 	static bool Activate(tVariant* paParams, const long lSizeArray);
 private:
-	static bool WindowManager::SetWindowState(HWND hWnd, int iMode, bool bActivate);
-	int32_t WindowManager::GetWindowState(tVariant* paParams, const long lSizeArray);
+	static bool SetWindowState(HWND hWnd, int iMode, bool bActivate);
+	int32_t GetWindowState(tVariant* paParams, const long lSizeArray);
 	static bool IsMaximized(HWND hWnd);
 };
 

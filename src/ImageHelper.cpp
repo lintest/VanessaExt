@@ -119,7 +119,7 @@ BOOL ImageHelper::Save(std::vector<BYTE>& vec)
 				vec.resize(lSize.QuadPart);
 				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
-					if (SUCCEEDED(pStream->Read(vec.data(), vec.size(), 0))) // reading stream to buffer
+					if (SUCCEEDED(pStream->Read(vec.data(), (ULONG)vec.size(), 0))) // reading stream to buffer
 					{
 						Ret = TRUE;
 					}

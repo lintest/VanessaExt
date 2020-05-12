@@ -3,8 +3,7 @@
 
 #include "stdafx.h"
 #include "AddInBase.h"
-
-class WebSocketBase;
+#include "WebSocket.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl

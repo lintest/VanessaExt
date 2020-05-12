@@ -252,14 +252,14 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 	ip.type = INPUT_MOUSE;
 	ip.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
 	for (double i = 1; i <= count; i++) {
-		ip.mi.dx = fx * (p.x + dx * pow(i, px) / cx);
-		ip.mi.dy = fy * (p.y + dy * pow(i, py) / cy);
+		ip.mi.dx = LONG(fx * (p.x + dx * pow(i, px) / cx));
+		ip.mi.dy = LONG(fy * (p.y + dy * pow(i, py) / cy));
 		SendInput(1, &ip, sizeof(INPUT));
 		if (pause) Sleep(pause);
 	}
 	for (double i = count - 1; i >= 0; i--) {
-		ip.mi.dx = fx * (x - dx * pow(i, px) / cx);
-		ip.mi.dy = fy * (y - dy * pow(i, py) / cy);
+		ip.mi.dx = LONG(fx * (x - dx * pow(i, px) / cx));
+		ip.mi.dy = LONG(fy * (y - dy * pow(i, py) / cy));
 		SendInput(1, &ip, sizeof(INPUT));
 		if (pause) Sleep(pause);
 	}
@@ -282,12 +282,12 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 		}
 		void send() {
 			if (size() == 0) return;
-			SendInput(size(), data(), sizeof(INPUT));
+			SendInput((UINT)size(), data(), sizeof(INPUT));
 			std::reverse(begin(), end());
 			for (auto it = begin(); it != end(); ++it) {
 				it->ki.dwFlags = KEYEVENTF_KEYUP;
 			}
-			SendInput(size(), data(), sizeof(INPUT));
+			SendInput((UINT)size(), data(), sizeof(INPUT));
 		}
 	};
 
@@ -307,8 +307,8 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 		}
 	}
 	else {
-		DWORD key = VarToInt(paParams);
-		DWORD flags = VarToInt(paParams + 1);
+		WORD key = VarToInt(paParams);
+		WORD flags = VarToInt(paParams + 1);
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);

@@ -103,7 +103,7 @@ protected:
         return true;
     }
 
-    int SendMessage(Window window, char *msg, 
+    int SendMessage(Window window, const char *msg, 
         unsigned long data0 = 0, unsigned long data1 = 0, 
         unsigned long data2 = 0, unsigned long data3 = 0,
         unsigned long data4 = 0) 
@@ -189,8 +189,8 @@ public:
         Window *buffer = NULL;
         unsigned long size;
         Window root = DefaultRootWindow(display);
-        if (!GetProperty(root, XA_WINDOW, "_NET_ACTIVE_WINDOW", VXX(&buffer), &size)) return NULL;
-        Window result = buffer ? *buffer : NULL;
+        if (!GetProperty(root, XA_WINDOW, "_NET_ACTIVE_WINDOW", VXX(&buffer), &size)) return 0;
+        Window result = buffer ? *buffer : 0;
         XFree(buffer);
         return result;
     }

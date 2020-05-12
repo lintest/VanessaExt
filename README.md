@@ -141,11 +141,12 @@ cd VanessaExt
 
 Сборка для Linux в Ubuntu 18.04:
 ```bash
+sudo dpkg --add-architecture i386
 sudo apt update
 sudo apt install -y build-essential cmake git
 sudo apt install -y gcc-multilib g++-multilib
 sudo apt install -y uuid-dev libx11-dev libxrandr-dev libpng-dev
-sudo apt install -y libxtst-dev:i386 libxtst-dev:x86_64
+sudo apt install -y libxtst-dev libxtst-dev:i386
 git clone https://github.com/lintest/VanessaExt.git
 cd VanessaExt
 ./build.sh
