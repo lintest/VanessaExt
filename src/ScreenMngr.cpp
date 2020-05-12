@@ -225,6 +225,7 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 	mouse_event(dwFlags, 0, 0, 0, 0);
 	return true;
 }
+
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
 	double x = VarToInt(paParams);
@@ -295,7 +296,8 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 	if (TV_VT(paParams) == VTYPE_PWSTR) {
 		try {
 			if (paParams->pwstrVal == nullptr) return false;
-			auto json = JSON::parse(WC2MB(paParams->pwstrVal));
+			std::wstring text = VarToStr(paParams);
+			auto json = JSON::parse(WC2MB(text));
 			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
 				hotkey.add(it.value());
 			}
@@ -339,6 +341,8 @@ BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 
 #include "screenshot.h"
 #include "XWinBase.h"
+#include <X11/extensions/XTest.h>
+#include <unistd.h>
 
 class ScreenEnumerator : public WindowHelper
 {
@@ -604,21 +608,165 @@ BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
 
 BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 {
+    Display *display = XOpenDisplay(NULL);
+	if (!display) return false;
+
+	unsigned int button = 1;
+	switch (VarToInt(paParams)) {
+	case 1: button = 3; break;
+	case 2: button = 2; break;
+	}
+    XTestFakeButtonEvent(display, button, true, CurrentTime);
+    XTestFakeButtonEvent(display, button, false, CurrentTime);
+    XFlush(display);
+    XCloseDisplay(display);
+	return true;
+}
+
+BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
+{
+    Display *display = XOpenDisplay(NULL);
+	if (!display) return false;
+    XTestFakeButtonEvent(display, 1, true, CurrentTime);
+    XTestFakeButtonEvent(display, 1, false, CurrentTime);
+    XTestFakeButtonEvent(display, 1, true, CurrentTime);
+    XTestFakeButtonEvent(display, 1, false, CurrentTime);
+    XFlush(display);
+    XCloseDisplay(display);
 	return true;
 }
 
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
+    Display *display = XOpenDisplay(NULL);
+	if (!display) return false;
+
+	double x2 = VarToInt(paParams);
+	double y2 = VarToInt(paParams + 1);
+	double count = VarToInt(paParams + 2);
+	DWORD pause = VarToInt(paParams + 3);
+
+	XEvent event;
+	XQueryPointer(display, RootWindow(display, DefaultScreen(display)),
+		&event.xbutton.root, &event.xbutton.window,
+		&event.xbutton.x_root, &event.xbutton.y_root,
+		&event.xbutton.x, &event.xbutton.y,
+		&event.xbutton.state
+	);
+	double x1 = event.xbutton.x;
+	double y1 = event.xbutton.y;
+
+	double dx = x2 - x1;
+	double dy = y2 - y1;
+	int px = 3, py = 2;
+	if (abs(dx) < abs(dy)) {
+		px = 2; py = 3;
+	}
+	count /= 2;
+	double cx = pow(count, px) * 2;
+	double cy = pow(count, py) * 2;
+
+	for (double i = 1; i <= count; i++) {
+		int xx = round(x1 + dx * pow(i, px) / cx);
+		int yy = round(y1 + dy * pow(i, py) / cy);
+		XTestFakeMotionEvent(display, DefaultScreen(display), xx, yy, CurrentTime);
+	    XFlush(display);
+	if (pause) usleep(pause * 1000);
+	}
+	for (double i = count - 1; i >= 0; i--) {
+		int xx = round(x2 - dx * pow(i, px) / cx);
+		int yy = round(y2 - dy * pow(i, py) / cy);
+		XTestFakeMotionEvent(display, DefaultScreen(display), xx, yy, CurrentTime);
+	    XFlush(display);
+		if (pause) usleep(pause * 1000);
+	}
+
+	XCloseDisplay(display);
+
 	return true;
 }
 
 BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 {
+	class Hotkey
+		: private std::vector<KeyCode>
+	{
+	private:
+		Display* m_display;
+	public:
+		Hotkey() {
+		    m_display = XOpenDisplay(NULL);
+		}
+		virtual ~Hotkey() {
+			if (m_display) XCloseDisplay(m_display);
+		}
+		void add(KeySym keysym) {
+			KeyCode keycode = XKeysymToKeycode(m_display, keysym);
+			std::wcout << std::endl << keysym << " : " << keycode << std::endl;
+			push_back(keycode);
+		}
+		void send() {
+			if (!m_display) return;
+			if (size() == 0) return;
+			for (auto it = begin(); it != end(); ++it) {
+				XTestFakeKeyEvent(m_display, *it, true, CurrentTime);
+			}
+			std::reverse(begin(), end());
+			for (auto it = begin(); it != end(); ++it) {
+				XTestFakeKeyEvent(m_display, *it, false, CurrentTime);
+			}
+			XFlush(m_display);
+		}
+	};
+
+	usleep(100 * 1000);
+	Hotkey hotkey;
+	if (TV_VT(paParams) == VTYPE_PWSTR) {
+		try {
+			std::wcout << L"EmulateHotkey";
+			if (paParams->pwstrVal == nullptr) return false;
+			std::wstring text = VarToStr(paParams);
+			std::wcout << std::endl << text << std::endl;
+			auto json = JSON::parse(WC2MB(text));
+			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
+				hotkey.add(it.value());
+			}
+		}
+		catch (nlohmann::json::parse_error e) {
+			return false;
+		}
+	}
+	else {
+		auto key = VarToInt(paParams);
+		auto flags = VarToInt(paParams + 1);
+		if (flags & 0x04) hotkey.add(XK_Shift_L);
+		if (flags & 0x08) hotkey.add(XK_Control_L);
+		if (flags & 0x10) hotkey.add(XK_Alt_L);
+		hotkey.add(key);
+	}
+	hotkey.send();
 	return true;
 }
 
 BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 {
+	std::wcout << L"EmulateText";
+    Display *display = XOpenDisplay(NULL);
+	if (!display) return false;
+	usleep(100 * 1000);
+	std::wstring text = VarToStr(paParams);
+	auto pause = VarToInt(paParams + 1);
+	for (auto ch : text) {
+		std::wstring w; w += ch;
+		KeySym keysym = XStringToKeysym(WC2MB(w).data());
+		KeyCode keycode = XKeysymToKeycode(display, keysym);
+		std::wcout << std::endl << w << " : " << keysym << " : " << keycode << std::endl;
+		XTestFakeKeyEvent(display, keycode, true, CurrentTime);
+		XTestFakeKeyEvent(display, keycode, false, CurrentTime);
+		XFlush(display);
+		if (pause) usleep(pause * 1000);
+	}
+	XCloseDisplay(display);
 	return true;
 }
 
