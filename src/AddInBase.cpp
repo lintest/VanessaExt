@@ -237,7 +237,6 @@ long AddInBase::GetNParams(const long lMethodNum)
 //---------------------------------------------------------------------------//
 bool AddInBase::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
 {
-	TV_VT(pvarParamDefValue) = VTYPE_EMPTY;
 	return false;
 }
 //---------------------------------------------------------------------------//

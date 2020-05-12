@@ -78,6 +78,7 @@ public:
 	bool ADDIN_API SetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
 	bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray) override;
 	bool ADDIN_API CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray) override;
+	bool ADDIN_API GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue) override;
 };
 
 #endif //__WINDOWSCONTROL_H__

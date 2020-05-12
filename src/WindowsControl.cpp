@@ -49,7 +49,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eCaptureWindow   , 1, true , L"CaptureWindow"    , L"ПолучитьСнимокОкна"),
 	Alias(eCaptureProcess  , 1, true , L"CaptureProcess"   , L"ПолучитьСнимокПроцесса"),
 	Alias(eEnableResizing  , 2, false, L"EnableResizing"   , L"РазрешитьИзменятьРазмер"),
-	Alias(eSetWindowPos    , 3, false, L"SetWindowPos"     , L"УстановитьПозициюОкна"),
+	Alias(eSetWindowPos    , 5, false, L"SetWindowPos"     , L"УстановитьПозициюОкна"),
 	Alias(eSetWindowSize   , 3, false, L"SetWindowSize"    , L"УстановитьРазмерОкна"),
 	Alias(eSetWindowState  , 3, false, L"SetWindowState"   , L"УстановитьСтатусОкна"),
 	Alias(eActivateWindow  , 1, false, L"ActivateWindow"   , L"АктивироватьОкно"),
@@ -207,3 +207,19 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 	}
 }
 
+static bool DefInt(tVariant* pvar, int value = 0)
+{
+	TV_VT(pvar) = VTYPE_I4;
+	TV_I4(pvar) = value;
+	return true;
+}
+
+bool WindowsControl::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
+{
+	switch (lMethodNum) {
+	case eSetWindowPos: if (lParamNum > 0) return DefInt(pvarParamDefValue);
+	case eEmulateClick: if (lParamNum == 0) return DefInt(pvarParamDefValue);
+	case eEmulateHotkey: if (lParamNum == 1) return DefInt(pvarParamDefValue);
+	}
+	return false;
+}

@@ -141,13 +141,17 @@ bool WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 
 bool WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 {
-	if (lSizeArray < 3) return false;
+	if (lSizeArray < 5) return false;
 	HWND hWnd = VarToHwnd(paParams);
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 2);
+	int w = VarToInt(paParams + 3);
+	int h = VarToInt(paParams + 4);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	if (!IsWindow(hWnd)) return true;
-	::SetWindowPos(hWnd, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+	UINT uFlags = SWP_NOZORDER | SWP_NOOWNERZORDER;
+	if (w == 0 && h == 0) uFlags |= SWP_NOSIZE;
+	::SetWindowPos(hWnd, 0, x, y, w, h, uFlags);
 	::UpdateWindow(hWnd);
 	return true;
 }
@@ -425,12 +429,14 @@ bool WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 
 bool WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 {
-	if (lSizeArray < 3) return false;
+	if (lSizeArray < 5) return false;
 	Window window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	int x = VarToInt(paParams + 1);
 	int y = VarToInt(paParams + 2);
-	WindowHelper().SetWindowPos(window, x, y);
+	int w = VarToInt(paParams + 3);
+	int h = VarToInt(paParams + 4);
+	WindowHelper().SetWindowPos(window, x, y, w, h);
 	return true;
 }
 

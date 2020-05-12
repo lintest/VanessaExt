@@ -211,8 +211,9 @@ public:
 		XLowerWindow(display, window);
     }
 
-	void SetWindowPos(Window window, unsigned long x, unsigned long y) {
-		XMoveWindow(display, window, x, y);
+	void SetWindowPos(Window window, unsigned long x, unsigned long y, unsigned long w, unsigned long h) {
+        if (w && h) XMoveResizeWindow(display, window, x, y, w, h);
+		else XMoveWindow(display, window, x, y);
 	}
 
 	void SetWindowSize(Window window, unsigned long w, unsigned long h) {

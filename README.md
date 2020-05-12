@@ -133,7 +133,7 @@ yum -y group install "Development Tools"
 yum -y install cmake glibc-devel.i686 glibc-devel libuuid-devel
 yum -y install libstdc++-devel.i686 gtk2-devel.i686 glib2-devel.i686
 yum -y install libstdc++-devel.x86_64 gtk2-devel.x86_64 glib2-devel.x86_64
-sudo apt install -y libxtst-devel.i686 libxtst-devel.x86_64
+yum -y install libxtst-devel.i686 libxtst-devel.x86_64
 git clone https://github.com/lintest/VanessaExt.git
 cd VanessaExt
 ./build.sh
@@ -588,12 +588,12 @@ reboot
 ВнешняяКомпонента.ЭмуляцияНажатияКлавиши(Клавиша, Флаги);
 ```
 
-Другой вариант вызова функции, когда в первый параметр передаётся строка
+Альтернативный вариант вызова функции, в первом параметра передаётся строка
 в формате JSON, представляющая собой массив с кодами виртуальных клавиш.
-Второй параметр при этом игнорируется.
+Второй параметр при этом необязателен и игнорируется.
 ```bsl
 ТекстJSON = "[91, 69]"; // Win+E
-ВнешняяКомпонента.ЭмуляцияНажатияКлавиши(ТекстJSON, 0);
+ВнешняяКомпонента.ЭмуляцияНажатияКлавиши(ТекстJSON);
 ```
 
 ### <a name="EmulateText">ЭмуляцияВводаТекста(Текст, Таймаут) /EmulateText</a>

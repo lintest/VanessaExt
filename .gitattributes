@@ -51,6 +51,7 @@
 # uncomment the group further below
 ###############################################################################
 
+*.sh         text eol=lf
 *.sln        text eol=crlf
 *.csproj     text eol=crlf
 *.vbproj     text eol=crlf
