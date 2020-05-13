@@ -104,8 +104,8 @@ long AddInBase::FindName(const std::vector<Alias>& names, const WCHAR_T* name)
 //---------------------------------------------------------------------------//
 const WCHAR_T* AddInBase::GetName(const std::vector<Alias>& names, long lPropNum, long lPropAlias)
 {
-	if (lPropNum >= names.size()) return NULL;
 	if (lPropAlias >= m_AliasCount) return NULL;
+	if (lPropNum >= (long)names.size()) return NULL;
 	for (Alias alias : names) {
 		if (alias.id == lPropNum) {
 			return W((wchar_t*)alias.Name(lPropAlias));
