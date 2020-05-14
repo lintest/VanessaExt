@@ -206,6 +206,7 @@
     <ClInclude Include="AddInBase.h" />
     <ClInclude Include="ClipboardControl.h" />
     <ClInclude Include="ImageHelper.h" />
+    <ClInclude Include="ProcessControl.h" />
     <ClInclude Include="WebSocket.h" />
     <ClInclude Include="WindowsControl.h" />
     <ClInclude Include="ClipMngr.h" />
@@ -221,6 +222,7 @@
     <ClCompile Include="AddInBase.cpp" />
     <ClCompile Include="ClipboardControl.cpp" />
     <ClCompile Include="ImageHelper.cpp" />
+    <ClCompile Include="ProcessControl.cpp" />
     <ClCompile Include="WebSocket.cpp" />
     <ClCompile Include="WindowsControl.cpp" />
     <ClCompile Include="ClipMngr.cpp" />

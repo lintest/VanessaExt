@@ -16,9 +16,10 @@
 #include <string>
 #include "AddInBase.h"
 #include "WindowsControl.h"
+#include "ProcessControl.h"
 #include "ClipboardControl.h"
 
-static const wchar_t g_kClassNames[] = L"WindowsControl|ClipboardControl";
+static const wchar_t g_kClassNames[] = L"WindowsControl|ClipboardControl|ProcessControl";
 
 uint32_t getLenShortWcharStr(const WCHAR_T* Source);
 static AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
@@ -62,6 +63,7 @@ long GetClassObject(const WCHAR_T* wsName, IComponentBase** pInterface)
 		*pInterface = 0;
 		WSTR wstr(wsName);
 		if (wstr == L"WindowsControl") *pInterface = new WindowsControl;
+		if (wstr == L"ProcessControl") *pInterface = new ProcessControl;
 		if (wstr == L"ClipboardControl") *pInterface = new ClipboardControl;
 		return (long)*pInterface;
 	}

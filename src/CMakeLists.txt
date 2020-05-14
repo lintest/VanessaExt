@@ -20,6 +20,7 @@ SET(AddInNative_SRC
     WindowsControl.h
     ImageHelper.cpp
     ImageHelper.h
+    ProcessControl.cpp
     ProcMngr.cpp
     ProcMngr.h
     ClipMngr.cpp 
