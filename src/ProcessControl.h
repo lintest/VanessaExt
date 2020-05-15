@@ -14,17 +14,19 @@ class ProcessControl : public AddInBase
 private:
 	enum Props
 	{
-		eProcessId,
-		eVersion,
+		eProcessId = 0,
+		eExitCode,
+		eIsActive,
 	};
 
 	enum Methods
 	{
 		eCreate = 0,
-		eWrite,
-		eRead,
-		eBreak,
+		eTerminare,
+		eInputData,
+		eOutput,
 		eSleep,
+		eWait,
 	};
 
 	static const wchar_t* m_ExtensionName;
@@ -46,9 +48,12 @@ private:
 	HANDLE hInPipeR, hInPipeW, hOutPipeR, hOutPipeW;
 #endif //_WINDOWS
 	bool Create(tVariant* paParams, const long lSizeArray);
-	bool Break(tVariant* paParams, const long lSizeArray);
-	bool Write(tVariant* paParams, const long lSizeArray);
+	bool Terminate(tVariant* paParams, const long lSizeArray);
+	bool Input(tVariant* paParams, const long lSizeArray);
+	int32_t Wait(tVariant* paParams, const long lSizeArray);
 	int32_t ProcessId();
+	int32_t ExitCode();
+	bool IsActive();
 public:
 	ProcessControl();
 	~ProcessControl();

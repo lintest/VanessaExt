@@ -3,14 +3,16 @@
 const wchar_t* ProcessControl::m_ExtensionName = L"ProcessControl";
 
 const std::vector<AddInBase::Alias> ProcessControl::m_PropList{
-	Alias(eVersion  , false , L"Version" , L"Версия"),
+	Alias(eProcessId , false , L"ProcessId" , L"ИдентификаторПроцесса"),
+	Alias(eExitCode  , false , L"ExitCode"  , L"КодВозврата"),
+	Alias(eIsActive  , false , L"IsActive"  , L"Активный"),
 };
 
 const std::vector<AddInBase::Alias> ProcessControl::m_MethList{
-	Alias(eCreate , 2, false, L"Create" , L"Создать"),
-	Alias(eWrite  , 1, false, L"Write"  , L"Записать"),
-	Alias(eRead   , 0, false, L"Read"   , L"Прочитать"),
-	Alias(eBreak  , 0, false, L"Break"  , L"Прервать"),
+	Alias(eCreate    , 3, false, L"Create"     , L"Создать"),
+	Alias(eWait      , 1, false, L"Wait"       , L"Ждать"),
+	Alias(eTerminare , 0, false, L"Terminate"  , L"Прервать"),
+	Alias(eInputData , 1, false, L"InputData"  , L"ВвестиДанные"),
 };
 
 bool ProcessControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
@@ -18,6 +20,10 @@ bool ProcessControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	switch (lPropNum) {
 	case eProcessId:
 		return VA(pvarPropVal) << ProcessId();
+	case eExitCode:
+		return VA(pvarPropVal) << ExitCode();
+	case eIsActive:
+		return VA(pvarPropVal) << IsActive();
 	default:
 		return false;
 	}
@@ -38,10 +44,10 @@ bool ProcessControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 	{
 	case eCreate:
 		return Create(paParams, lSizeArray);
-	case eBreak:
-		return Break(paParams, lSizeArray);
-	case eWrite:
-		return Write(paParams, lSizeArray);
+	case eTerminare:
+		return Terminate(paParams, lSizeArray);
+	case eInputData:
+		return Input(paParams, lSizeArray);
 	default:
 		return false;
 	}
@@ -50,6 +56,8 @@ bool ProcessControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 bool ProcessControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	switch (lMethodNum) {
+	case eWait:
+		return VA(pvarRetValue) << Wait(paParams, lSizeArray);
 	default:
 		return false;
 	}
@@ -65,19 +73,15 @@ static bool DefInt(tVariant* pvar, int value = 0)
 bool ProcessControl::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
 {
 	switch (lMethodNum) {
-	case eCreate: if (lParamNum == 1) return DefInt(pvarParamDefValue);
+	case eCreate: if (lParamNum > 0) return DefInt(pvarParamDefValue);
 	}
 	return false;
 }
 
 #ifdef _WINDOWS
 
-ProcessControl::ProcessControl() 
+ProcessControl::ProcessControl()
 {
-	ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
-	ZeroMemory(&pi, sizeof(pi));
-
 	SECURITY_ATTRIBUTES saAttr;
 	saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
 	saAttr.bInheritHandle = TRUE;
@@ -89,13 +93,9 @@ ProcessControl::ProcessControl()
 	SetHandleInformation(hInPipeW, HANDLE_FLAG_INHERIT, 0);
 	SetHandleInformation(hOutPipeR, HANDLE_FLAG_INHERIT, 0);
 
-//	si.hStdError = hOutPipeW;
-//	si.hStdOutput = hOutPipeW;
-	si.hStdInput = hInPipeR;
-	si.dwFlags |= STARTF_USESTDHANDLES;
 }
 
-ProcessControl::~ProcessControl() 
+ProcessControl::~ProcessControl()
 {
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
@@ -103,6 +103,11 @@ ProcessControl::~ProcessControl()
 
 bool ProcessControl::Create(tVariant* paParams, const long lSizeArray)
 {
+	ZeroMemory(&pi, sizeof(pi));
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	si.hStdInput = hInPipeR;
+	si.dwFlags = STARTF_USESTDHANDLES;
 	if (VarToInt(paParams + 1) == 0) {
 		si.dwFlags |= STARTF_USESHOWWINDOW;
 		si.wShowWindow = SW_HIDE;
@@ -111,21 +116,46 @@ bool ProcessControl::Create(tVariant* paParams, const long lSizeArray)
 	return ::CreateProcessW(NULL, wsCommandLine, NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
 }
 
-bool ProcessControl::Break(tVariant* paParams, const long lSizeArray)
+bool ProcessControl::Terminate(tVariant* paParams, const long lSizeArray)
 {
 	return ::TerminateProcess(pi.hProcess, 0);
 }
 
-bool ProcessControl::Write(tVariant* paParams, const long lSizeArray)
+int32_t ProcessControl::Wait(tVariant* paParams, const long lSizeArray)
+{
+	DWORD msec = VarToInt(paParams);
+	if (msec == 0) msec = INFINITE;
+	switch (::WaitForSingleObject(pi.hProcess, msec)) {
+	case 0: return 0;
+	case WAIT_TIMEOUT: return 1;
+	default: return -1;
+	}
+}
+
+bool ProcessControl::Input(tVariant* paParams, const long lSizeArray)
 {
 	DWORD dwWritten;
 	std::wstring text = VarToStr(paParams);
-	return WriteFile(hInPipeW, text.c_str(), text.size(), &dwWritten, NULL);
+	return ::WriteFile(hInPipeW, text.c_str(), (DWORD)text.size(), &dwWritten, NULL);
 }
 
 int32_t ProcessControl::ProcessId()
 {
 	return (int32_t)pi.dwProcessId;
+}
+
+int32_t ProcessControl::ExitCode()
+{
+	DWORD code;
+	::GetExitCodeProcess(pi.hProcess, &code);
+	return (int32_t)code;
+}
+
+bool ProcessControl::IsActive()
+{
+	DWORD code;
+	::GetExitCodeProcess(pi.hProcess, &code);
+	return code == STILL_ACTIVE;
 }
 
 #else //_WINDOWS
@@ -143,12 +173,12 @@ bool ProcessControl::Create(tVariant* paParams, const long lSizeArray)
 	return false;
 }
 
-bool ProcessControl::Break(tVariant* paParams, const long lSizeArray)
+bool ProcessControl::Terminate(tVariant* paParams, const long lSizeArray)
 {
 	return false;
 }
 
-bool ProcessControl::Write(tVariant* paParams, const long lSizeArray)
+bool ProcessControl::InputData(tVariant* paParams, const long lSizeArray)
 {
 	return false;
 }
@@ -156,6 +186,16 @@ bool ProcessControl::Write(tVariant* paParams, const long lSizeArray)
 int32_t ProcessControl::ProcessId()
 {
 	return 0;
+}
+
+int32_t ProcessControl::ExitCode()
+{
+	return 0;
+}
+
+bool ProcessControl::IsActive()
+{
+	return false;
 }
 
 #endif //_WINDOWS

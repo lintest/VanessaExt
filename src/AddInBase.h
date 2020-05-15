@@ -47,6 +47,7 @@ protected:
 		VarinantHelper& operator<<(const std::wstring& str);
 		VarinantHelper& operator<<(int32_t value);
 		VarinantHelper& operator<<(int64_t value);
+		VarinantHelper& operator<<(bool value);
 		operator BOOL() const { return true; };
 	};
 

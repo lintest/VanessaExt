@@ -166,6 +166,13 @@ AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(int32_t value)
 	return *this;
 }
 
+AddInBase::VarinantHelper& AddInBase::VarinantHelper::operator<<(bool value)
+{
+	TV_VT(pvar) = VTYPE_BOOL;
+	TV_BOOL(pvar) = value;
+	return *this;
+}
+
 const WCHAR_T* AddInBase::W(const wchar_t* str) const
 {
 	WCHAR_T* res = NULL;
