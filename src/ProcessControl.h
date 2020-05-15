@@ -46,6 +46,8 @@ private:
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	HANDLE hInPipeR, hInPipeW, hOutPipeR, hOutPipeW;
+#else
+	int m_pipe[2] = {0 , 0};
 #endif //_WINDOWS
 	bool Create(tVariant* paParams, const long lSizeArray);
 	bool Terminate(tVariant* paParams, const long lSizeArray);

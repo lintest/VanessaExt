@@ -160,17 +160,43 @@ bool ProcessControl::IsActive()
 
 #else //_WINDOWS
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+
+#define PIPE_READ 0
+#define PIPE_WRITE 1
+
 ProcessControl::ProcessControl()
 {
+	pipe(m_pipe);
 }
 
 ProcessControl::~ProcessControl()
 {
+	close(m_pipe[PIPE_READ]);
+	close(m_pipe[PIPE_WRITE]);
 }
 
-bool ProcessControl::Create(tVariant* paParams, const long lSizeArray)
+bool ProcessControl::Create(tVariant *paParams, const long lSizeArray)
 {
-	return false;
+	std::string cmd = WC2MB(VarToStr(paParams));
+	int child = fork();
+	if (0 == child) {
+		if (dup2(m_pipe[PIPE_READ], STDIN_FILENO) == -1) exit(errno);
+		close(m_pipe[PIPE_READ]);
+		close(m_pipe[PIPE_WRITE]);
+		int result = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);		
+		exit(result);
+	}
+	else if (child > 0) {
+		close(m_pipe[PIPE_READ]);
+	}
+	else {
+		return false;
+	}
+	return true;
 }
 
 bool ProcessControl::Terminate(tVariant* paParams, const long lSizeArray)
@@ -178,9 +204,11 @@ bool ProcessControl::Terminate(tVariant* paParams, const long lSizeArray)
 	return false;
 }
 
-bool ProcessControl::InputData(tVariant* paParams, const long lSizeArray)
+bool ProcessControl::Input(tVariant* paParams, const long lSizeArray)
 {
-	return false;
+	std::string text = WC2MB(VarToStr(paParams));
+	auto res = write(m_pipe[PIPE_WRITE], text.data(), text.size());	
+	return res >= 0;
 }
 
 int32_t ProcessControl::ProcessId()
