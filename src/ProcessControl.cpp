@@ -10,7 +10,8 @@ const std::vector<AddInBase::Alias> ProcessControl::m_PropList{
 
 const std::vector<AddInBase::Alias> ProcessControl::m_MethList{
 	Alias(eCreate    , 3, false, L"Create"     , L"Создать"),
-	Alias(eWait      , 1, false, L"Wait"       , L"Ждать"),
+	Alias(eWait      , 1, true,  L"Wait"       , L"Ждать"),
+	Alias(eSleep     , 1, false, L"Sleep"      , L"Пауза"),
 	Alias(eTerminare , 0, false, L"Terminate"  , L"Прервать"),
 	Alias(eInputData , 1, false, L"InputData"  , L"ВвестиДанные"),
 };
@@ -48,8 +49,6 @@ bool ProcessControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return Terminate(paParams, lSizeArray);
 	case eInputData:
 		return Input(paParams, lSizeArray);
-	case eWait:
-		return Wait(paParams, lSizeArray);
 	case eSleep:
 		return Sleep(paParams, lSizeArray);
 	default:
