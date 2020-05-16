@@ -48,6 +48,10 @@ bool ProcessControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return Terminate(paParams, lSizeArray);
 	case eInputData:
 		return Input(paParams, lSizeArray);
+	case eWait:
+		return Wait(paParams, lSizeArray);
+	case eSleep:
+		return Sleep(paParams, lSizeArray);
 	default:
 		return false;
 	}
@@ -139,6 +143,12 @@ bool ProcessControl::Input(tVariant* paParams, const long lSizeArray)
 	return ::WriteFile(hInPipeW, text.c_str(), (DWORD)text.size(), &dwWritten, NULL);
 }
 
+bool ProcessControl::Sleep(tVariant* paParams, const long lSizeArray)
+{
+	::Sleep(VarToInt(paParams));
+	return true;
+}
+
 int32_t ProcessControl::ProcessId()
 {
 	return (int32_t)pi.dwProcessId;
@@ -209,6 +219,13 @@ bool ProcessControl::Input(tVariant* paParams, const long lSizeArray)
 	std::string text = WC2MB(VarToStr(paParams));
 	auto res = write(m_pipe[PIPE_WRITE], text.data(), text.size());	
 	return res >= 0;
+}
+
+bool ProcessControl::Sleep(tVariant* paParams, const long lSizeArray)
+{
+	unsigned long ms = VarToInt(paParams);
+	::usleep(ms * 1000);
+	return true;
 }
 
 int32_t ProcessControl::ProcessId()

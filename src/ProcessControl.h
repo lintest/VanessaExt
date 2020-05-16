@@ -52,6 +52,7 @@ private:
 	bool Create(tVariant* paParams, const long lSizeArray);
 	bool Terminate(tVariant* paParams, const long lSizeArray);
 	bool Input(tVariant* paParams, const long lSizeArray);
+	bool Sleep(tVariant* paParams, const long lSizeArray);
 	int32_t Wait(tVariant* paParams, const long lSizeArray);
 	int32_t ProcessId();
 	int32_t ExitCode();
