@@ -68,6 +68,7 @@ bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		ASSERT(TV_VT(pvarPropVal) == VTYPE_PWSTR, L"Parameter type mismatch.");
 		return ClipboardManager(this).SetText(pvarPropVal);
 	case eFiles:
+		ASSERT(TV_VT(pvarPropVal) == VTYPE_PWSTR, L"Parameter type mismatch.");
 		return ClipboardManager(this).SetFiles(pvarPropVal);
 	}
 	default:
@@ -77,21 +78,24 @@ bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 //---------------------------------------------------------------------------//
 bool ClipboardControl::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
 {
-	switch (lMethodNum) {
-	case eEmpty:
-		return ClipboardManager(this).Empty();
-	case eSetText:
-		return ClipboardManager(this).SetText(paParams, false);
-	case eSetImage:
-		return ClipboardManager(this).SetImage(paParams, false);
-	case eSetFiles:
-		return ClipboardManager(this).SetFiles(paParams, false);
-	default:
-		return false;
-	}
+	return false;
 }
 //---------------------------------------------------------------------------//
 bool ClipboardControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
-	return false;
+	switch (lMethodNum) {
+	case eEmpty:
+		return VA(pvarRetValue) << ClipboardManager(this).Empty();
+	case eSetText:
+		ASSERT(TV_VT(paParams) == VTYPE_PWSTR, L"Parameter type mismatch.");
+		return VA(pvarRetValue) << ClipboardManager(this).SetText(paParams, false);
+	case eSetImage:
+		ASSERT(TV_VT(paParams) == VTYPE_BLOB, L"Parameter type mismatch.");
+		return VA(pvarRetValue) << ClipboardManager(this).SetImage(paParams, false);
+	case eSetFiles:
+		ASSERT(TV_VT(paParams) == VTYPE_PWSTR, L"Parameter type mismatch.");
+		return VA(pvarRetValue) << ClipboardManager(this).SetFiles(paParams, false);
+	default:
+		return false;
+	}
 }

@@ -127,8 +127,9 @@ bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 		GlobalUnlock(hGlobal);
 		SetClipboardData(CF_UNICODETEXT, hGlobal);
 		GlobalFree(hGlobal);
+		return true;
 	}
-	return true;
+	else return false;
 }
 
 #include <shlobj.h> // DROPFILES
@@ -212,7 +213,9 @@ bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
 			GlobalUnlock(hGlobal);
 			GlobalFree(hGlobal);
 		}
+		else return false;
 	}
+	else return false;
 
 	HBITMAP hBitmap(image);
 	if (hBitmap) {
@@ -232,10 +235,10 @@ bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
 			SetClipboardData(CF_DIB, hGlobal);
 			GlobalUnlock(hGlobal);
 			GlobalFree(hGlobal);
+			return true;
 		}
 	}
-
-	return true;
+	return false;
 }
 
 bool ClipboardManager::Empty()
@@ -267,8 +270,7 @@ ClipboardManager::~ClipboardManager()
 bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 {
 	std::wstring text = VarToStr(pvarValue);
-	clip::set_text(WC2MB(text));
-	return true;
+	return clip::set_text(WC2MB(text));
 }
 
 std::wstring ClipboardManager::GetFormat()
@@ -306,8 +308,7 @@ bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
 {
 	clip::image image;
 	clip::x11::read_png((uint8_t*)paParams->pstrVal, paParams->strLen, &image, nullptr);
-	clip::set_image(image);
-	return true;
+	return clip::set_image(image);
 }
 
 bool ClipboardManager::Empty()
