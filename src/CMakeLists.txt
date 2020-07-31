@@ -14,6 +14,8 @@ PROJECT(VanessaExt)
 SET(AddInNative_SRC 
     AddInBase.cpp
     AddInBase.h
+    FileFinder.cpp
+    FileFinder.h
     ClipboardControl.cpp
     ClipboardControl.h
     WindowsControl.cpp

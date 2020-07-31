@@ -13,7 +13,7 @@ static void lower(std::wstring& text)
 	std::use_facet<std::ctype<wchar_t> >(std::locale()).tolower(&text[0], &text[0] + text.size());
 }
 
-FileFinder::FileFinder(const std::wstring& text, bool ignoreCase) 
+FileFinder::FileFinder(const std::wstring& text, bool ignoreCase)
 	: m_text(text), m_ignoreCase(ignoreCase)
 {
 	if (ignoreCase) lower(m_text);
@@ -42,12 +42,12 @@ bool FileFinder::search(const std::wstring& path)
 #include <tchar.h>
 #include <stdio.h>
 
-std::string time2str(FILETIME &time) {
+std::string time2str(FILETIME& time) {
 	SYSTEMTIME st;
 	FileTimeToSystemTime(&time, &st);
 	char* format = "%d-%02d-%02dT%02d:%02d:%02d.%03dZ";
 	char buffer[255];
-	wsprintfA(buffer, 
+	wsprintfA(buffer,
 		format,
 		st.wYear,
 		st.wMonth,
@@ -98,30 +98,82 @@ void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
 	FindClose(hFind);
 }
 
-#else
-
-#include <boost/regex.hpp>
-#include <boost/filesystem.hpp>
-
-int find()
-{
-	std::wstring path = L"C:\\Cpp\\SmartEngine";
-	const boost::regex my_filter{ "/*\\.exe/" };
-
-	boost::filesystem::directory_iterator end_itr; // Default ctor yields past-the-end
-	for (boost::filesystem::directory_iterator i(path); i != end_itr; ++i)
-	{
-		if (!boost::filesystem::is_regular_file(i->status())) continue;
-		boost::smatch what;
-		if (!boost::regex_match(i->path().filename().string(), what, my_filter)) continue;
-		std::wcout << i->path() << std::endl;
-	}
-}
-
-#endif //_WINDOWS
-
 std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask)
 {
 	dirs(path, mask);
 	return MB2WC(m_json.dump());
 }
+
+#else
+
+#include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
+
+#include <boost/regex.hpp>
+#include <boost/algorithm/string/replace.hpp>
+
+static void EscapeRegex(std::wstring& regex)
+{
+	// Escape all regex special chars
+	boost::replace_all(regex, "\\", "\\\\");
+	boost::replace_all(regex, "^", "\\^");
+	boost::replace_all(regex, ".", "\\.");
+	boost::replace_all(regex, "$", "\\$");
+	boost::replace_all(regex, "|", "\\|");
+	boost::replace_all(regex, "(", "\\(");
+	boost::replace_all(regex, ")", "\\)");
+	boost::replace_all(regex, "{", "\\{");
+	boost::replace_all(regex, "{", "\\}");
+	boost::replace_all(regex, "[", "\\[");
+	boost::replace_all(regex, "]", "\\]");
+	boost::replace_all(regex, "*", "\\*");
+	boost::replace_all(regex, "+", "\\+");
+	boost::replace_all(regex, "?", "\\?");
+	boost::replace_all(regex, "/", "\\/");
+
+	// Convert chars '*?' back to their regex equivalents
+	boost::replace_all(regex, "\\?", ".");
+	boost::replace_all(regex, "\\*", ".*");
+}
+
+#include <unistd.h>
+#include <sys/stat.h>
+
+static std::string time2str(time_t t) 
+{
+	struct tm lt;
+	localtime_r(&t, &lt);
+	char buffer[80];
+	strftime(buffer, sizeof(buffer), "%FT%T", &lt);
+}
+
+void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
+{
+	boost::wregex pattern(mask, m_ignoreCase ? boost::regex::icase : boost::regex::normal);
+	boost::filesystem::recursive_directory_iterator end_itr; // Default ctor yields past-the-end
+	for (boost::filesystem::recursive_directory_iterator i(root); i != end_itr; ++i) {
+		if (boost::filesystem::is_regular_file(i->status())) {
+			boost::wsmatch what;
+			if (!boost::regex_match(i->path().filename().wstring(), what, pattern)) continue;
+			if (search(i->path().wstring())) {
+				nlohmann::json j;
+				j["path"] = WC2MB(i->path().wstring());
+				j["name"] = WC2MB(i->path().filename().wstring());
+				j["size"] = boost::filesystem::file_size(i->path().wstring());
+				j["date"] = time2str(boost::filesystem::last_write_time(i->path().wstring()));
+				m_json.push_back(j);
+			}
+		}
+	}
+}
+
+std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask)
+{
+	std::wstring regex = mask;
+	EscapeRegex(regex);
+	dirs(path, L"^" + regex + L"$");
+	return MB2WC(m_json.dump());
+}
+
+#endif //_WINDOWS
+
