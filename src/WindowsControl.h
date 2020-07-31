@@ -60,6 +60,7 @@ private:
 		eSendWebSocket,
 		eCloseWebSocket,
 		eWebSocket,
+		eFindFiles,
 		eSleep,
 	};
 

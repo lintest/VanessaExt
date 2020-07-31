@@ -205,6 +205,7 @@
   <ItemGroup>
     <ClInclude Include="AddInBase.h" />
     <ClInclude Include="ClipboardControl.h" />
+    <ClInclude Include="FileFinder.h" />
     <ClInclude Include="ImageHelper.h" />
     <ClInclude Include="ProcessControl.h" />
     <ClInclude Include="WebSocket.h" />
@@ -221,6 +222,7 @@
   <ItemGroup>
     <ClCompile Include="AddInBase.cpp" />
     <ClCompile Include="ClipboardControl.cpp" />
+    <ClCompile Include="FileFinder.cpp" />
     <ClCompile Include="ImageHelper.cpp" />
     <ClCompile Include="ProcessControl.cpp" />
     <ClCompile Include="WebSocket.cpp" />

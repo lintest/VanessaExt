@@ -32,6 +32,7 @@ std::string WC2MB(const std::wstring& source);
 
 std::wstring VarToStr(tVariant* paParams);
 int32_t VarToInt(tVariant* paParams);
+bool VarToBool(tVariant* paParams);
 
 #ifdef _WINDOWS
 HWND VarToHwnd(tVariant* paParams);

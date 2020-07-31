@@ -80,6 +80,11 @@ int32_t VarToInt(tVariant* paParams)
 	return paParams->lVal;
 }
 
+bool VarToBool(tVariant* paParams)
+{
+	return paParams->bVal;
+}
+
 bool AddInNative::Init(void* pConnection)
 {
 	m_iConnect = (IAddInDefBase*)pConnection;

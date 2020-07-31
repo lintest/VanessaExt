@@ -15,6 +15,7 @@
 #include "version.h"
 
 #include "ClipMngr.h"
+#include "FileFinder.h"
 #include "ProcMngr.h"
 #include "ScreenMngr.h"
 #include "WindowMngr.h"
@@ -69,6 +70,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eSendWebSocket   , 1, true,  L"SendWebSocket"    , L"ПослатьВебСокет"),
 	Alias(eCloseWebSocket  , 0, false, L"CloseWebSocket"   , L"ЗакрытьВебСокет"),
 	Alias(eWebSocket       , 2, true,  L"WebSocket"        , L"ВебСокет"),
+	Alias(eFindFiles       , 4, true,  L"FindFiles"        , L"НайтиФайлы"),
 	Alias(eSleep           , 1, false, L"Sleep"            , L"Пауза"),
 };
 
@@ -202,6 +204,8 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 		return VA(pvarRetValue) << ProcessManager::SendWebSocket(webSocket, paParams, lSizeArray);
 	case eWebSocket:
 		return VA(pvarRetValue) << ProcessManager::WebSocket(paParams, lSizeArray);
+	case eFindFiles:
+		return VA(pvarRetValue) << FileFinder(VarToStr(paParams + 2), VarToBool(paParams + 3)).find(VarToStr(paParams), VarToStr(paParams + 1));
 	default:
 		return false;
 	}
@@ -214,12 +218,20 @@ static bool DefInt(tVariant* pvar, int value = 0)
 	return true;
 }
 
+static bool DefBool(tVariant* pvar, bool value = false)
+{
+	TV_VT(pvar) = VTYPE_BOOL;
+	TV_BOOL(pvar) = value;
+	return true;
+}
+
 bool WindowsControl::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
 {
 	switch (lMethodNum) {
 	case eSetWindowPos: if (lParamNum > 0) return DefInt(pvarParamDefValue);
 	case eEmulateClick: if (lParamNum == 0) return DefInt(pvarParamDefValue);
 	case eEmulateHotkey: if (lParamNum == 1) return DefInt(pvarParamDefValue);
+	case eFindFiles: if (lParamNum == 3) return DefBool(pvarParamDefValue, true);
 	}
 	return false;
 }

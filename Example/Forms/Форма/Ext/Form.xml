@@ -1015,6 +1015,7 @@
 							<Representation>List</Representation>
 							<ReadOnly>true</ReadOnly>
 							<ChangeRowSet>false</ChangeRowSet>
+							<HeightInTableRows>3</HeightInTableRows>
 							<AutoInsertNewRow>true</AutoInsertNewRow>
 							<EnableStartDrag>true</EnableStartDrag>
 							<EnableDrag>true</EnableDrag>
@@ -1121,6 +1122,7 @@
 							<Representation>List</Representation>
 							<ReadOnly>true</ReadOnly>
 							<ChangeRowSet>false</ChangeRowSet>
+							<HeightInTableRows>3</HeightInTableRows>
 							<AutoInsertNewRow>true</AutoInsertNewRow>
 							<EnableStartDrag>true</EnableStartDrag>
 							<EnableDrag>true</EnableDrag>
@@ -1553,6 +1555,7 @@
 						<Table name="СвойстваОбъекта" id="150">
 							<Representation>List</Representation>
 							<ChangeRowSet>false</ChangeRowSet>
+							<HeightInTableRows>3</HeightInTableRows>
 							<AutoInsertNewRow>true</AutoInsertNewRow>
 							<EnableStartDrag>true</EnableStartDrag>
 							<EnableDrag>true</EnableDrag>
@@ -1600,6 +1603,174 @@
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="СвойстваОбъектаЗначениеКонтекстноеМеню" id="167"/>
 									<ExtendedTooltip name="СвойстваОбъектаЗначениеРасширеннаяПодсказка" id="168"/>
+								</InputField>
+							</ChildItems>
+						</Table>
+					</ChildItems>
+				</Page>
+				<Page name="СтраницаПоискФайлов" id="452">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Поиск файлов</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница поиск файлов</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаПоискФайловРасширеннаяПодсказка" id="453"/>
+					<ChildItems>
+						<UsualGroup name="ГруппаПоискФайлов" id="476">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа поиск файлов</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа поиск файлов</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаПоискФайловРасширеннаяПодсказка" id="477"/>
+							<ChildItems>
+								<UsualGroup name="ГруппаПоиск1" id="492">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа поиск1</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа поиск1</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаПоиск1РасширеннаяПодсказка" id="493"/>
+									<ChildItems>
+										<InputField name="Директория" id="478">
+											<DataPath>Директория</DataPath>
+											<ContextMenu name="ДиректорияКонтекстноеМеню" id="479"/>
+											<ExtendedTooltip name="ДиректорияРасширеннаяПодсказка" id="480"/>
+										</InputField>
+										<InputField name="МаскаПоиска" id="481">
+											<DataPath>МаскаПоиска</DataPath>
+											<ContextMenu name="МаскаПоискаКонтекстноеМеню" id="482"/>
+											<ExtendedTooltip name="МаскаПоискаРасширеннаяПодсказка" id="483"/>
+										</InputField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаПоиск2" id="494">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа поиск2</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа поиск2</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаПоиск2РасширеннаяПодсказка" id="495"/>
+									<ChildItems>
+										<InputField name="ИскомыйТекст" id="489">
+											<DataPath>ИскомыйТекст</DataPath>
+											<ContextMenu name="ИскомыйТекстКонтекстноеМеню" id="490"/>
+											<ExtendedTooltip name="ИскомыйТекстРасширеннаяПодсказка" id="491"/>
+										</InputField>
+										<CheckBoxField name="ИгнорироватьРегистр" id="484">
+											<DataPath>ИгнорироватьРегистр</DataPath>
+											<TitleLocation>Right</TitleLocation>
+											<CheckBoxType>Auto</CheckBoxType>
+											<ContextMenu name="ИгнорироватьРегистрКонтекстноеМеню" id="485"/>
+											<ExtendedTooltip name="ИгнорироватьРегистрРасширеннаяПодсказка" id="486"/>
+										</CheckBoxField>
+										<Button name="НайтиФайлы" id="487">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.НайтиФайлы</CommandName>
+											<ExtendedTooltip name="НайтиФайлыРасширеннаяПодсказка" id="488"/>
+										</Button>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</UsualGroup>
+						<Table name="СписокФайлов" id="454">
+							<Representation>List</Representation>
+							<ReadOnly>true</ReadOnly>
+							<ChangeRowSet>false</ChangeRowSet>
+							<ChangeRowOrder>false</ChangeRowOrder>
+							<HeightInTableRows>3</HeightInTableRows>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>СписокФайлов</DataPath>
+							<RowFilter xsi:nil="true"/>
+							<ContextMenu name="СписокФайловКонтекстноеМеню" id="455"/>
+							<AutoCommandBar name="СписокФайловКоманднаяПанель" id="456">
+								<Autofill>false</Autofill>
+							</AutoCommandBar>
+							<ExtendedTooltip name="СписокФайловРасширеннаяПодсказка" id="457"/>
+							<SearchStringAddition name="СписокФайловСтрокаПоиска" id="458">
+								<AdditionSource>
+									<Item>СписокФайлов</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="СписокФайловСтрокаПоискаКонтекстноеМеню" id="459"/>
+								<ExtendedTooltip name="СписокФайловСтрокаПоискаРасширеннаяПодсказка" id="460"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="СписокФайловСостояниеПросмотра" id="461">
+								<AdditionSource>
+									<Item>СписокФайлов</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="СписокФайловСостояниеПросмотраКонтекстноеМеню" id="462"/>
+								<ExtendedTooltip name="СписокФайловСостояниеПросмотраРасширеннаяПодсказка" id="463"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="СписокФайловУправлениеПоиском" id="464">
+								<AdditionSource>
+									<Item>СписокФайлов</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="СписокФайловУправлениеПоискомКонтекстноеМеню" id="465"/>
+								<ExtendedTooltip name="СписокФайловУправлениеПоискомРасширеннаяПодсказка" id="466"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="СписокФайловname" id="467">
+									<DataPath>СписокФайлов.name</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СписокФайловnameКонтекстноеМеню" id="468"/>
+									<ExtendedTooltip name="СписокФайловnameРасширеннаяПодсказка" id="469"/>
+								</InputField>
+								<InputField name="СписокФайловpath" id="470">
+									<DataPath>СписокФайлов.path</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СписокФайловpathКонтекстноеМеню" id="471"/>
+									<ExtendedTooltip name="СписокФайловpathРасширеннаяПодсказка" id="472"/>
+								</InputField>
+								<InputField name="СписокФайловsize" id="473">
+									<DataPath>СписокФайлов.size</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СписокФайловsizeКонтекстноеМеню" id="474"/>
+									<ExtendedTooltip name="СписокФайловsizeРасширеннаяПодсказка" id="475"/>
+								</InputField>
+								<InputField name="СписокФайловdate" id="496">
+									<DataPath>СписокФайлов.date</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="СписокФайловdateКонтекстноеМеню" id="497"/>
+									<ExtendedTooltip name="СписокФайловdateРасширеннаяПодсказка" id="498"/>
 								</InputField>
 							</ChildItems>
 						</Table>
@@ -2325,6 +2496,134 @@
 					<v8:FractionDigits>0</v8:FractionDigits>
 					<v8:AllowedSign>Any</v8:AllowedSign>
 				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="СписокФайлов" id="29">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Список файлов</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="name" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Имя файла</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="path" id="2">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Полный путь</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="size" id="3">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Размер</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="date" id="4">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Дата</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:dateTime</v8:Type>
+						<v8:DateQualifiers>
+							<v8:DateFractions>DateTime</v8:DateFractions>
+						</v8:DateQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
+		<Attribute name="Директория" id="30">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Директория</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="МаскаПоиска" id="31">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Маска</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ИгнорироватьРегистр" id="32">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Игнорировать регистр</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ИскомыйТекст" id="33">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Текст</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
 			</Type>
 		</Attribute>
 	</Attributes>
@@ -3122,6 +3421,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>НажатиеКлавишиNumLock</Action>
+		</Command>
+		<Command name="НайтиФайлы" id="53">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти файлы</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти файлы</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НайтиФайлыКомпонентой</Action>
 		</Command>
 	</Commands>
 </Form>
