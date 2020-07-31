@@ -19,10 +19,12 @@ FileFinder::FileFinder(const std::wstring& text, bool ignoreCase)
 	if (ignoreCase) lower(m_text);
 }
 
+#ifdef _WINDOWS
+
 static std::wstring read(const std::wstring& filename)
 {
 	std::wifstream wif(filename);
-	wif.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t>));
+	wif.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
 	std::wstringstream wss;
 	wss << wif.rdbuf();
 	return wss.str();
@@ -35,8 +37,6 @@ bool FileFinder::search(const std::wstring& path)
 	auto it = std::search(file.begin(), file.end(), m_text.begin(), m_text.end());
 	return it != file.end();
 }
-
-#ifdef _WINDOWS
 
 #include <windows.h>
 #include <tchar.h>
@@ -105,6 +105,21 @@ std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask
 }
 
 #else
+
+void FileFinder::dirs(const std::wstring& root, const std::wstring& mask) {}
+
+void FileFinder::files(const std::wstring& root, const std::wstring& mask) {}
+
+bool FileFinder::search(const std::wstring& path) {}
+
+std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask)
+{
+	return {};
+}
+
+#endif //_WINDOWS
+
+#ifdef XXXXX
 
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
@@ -176,4 +191,3 @@ std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask
 }
 
 #endif //_WINDOWS
-
