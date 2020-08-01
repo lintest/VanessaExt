@@ -68,7 +68,7 @@ void FileFinder::files(const std::wstring& root, const std::wstring& mask)
 	do {
 		if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
 		std::wstring path = root + L"\\" + std::wstring(file.cFileName);
-		if (search(path)) {
+		if (m_text.empty() || search(path)) {
 			nlohmann::json j;
 			j["path"] = WC2MB(path);
 			j["name"] = WC2MB(file.cFileName);
@@ -154,7 +154,7 @@ static void EscapeRegex(std::wstring& regex)
 #include <unistd.h>
 #include <sys/stat.h>
 
-static std::string time2str(time_t t) 
+static std::string time2str(time_t t)
 {
 	struct tm lt;
 	localtime_r(&t, &lt);
@@ -170,7 +170,7 @@ void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
 		if (boost::filesystem::is_regular_file(i->status())) {
 			boost::wsmatch what;
 			if (!boost::regex_match(i->path().filename().wstring(), what, pattern)) continue;
-			if (search(i->path().wstring())) {
+			if (m_text.empty() || search(i->path().wstring())) {
 				nlohmann::json j;
 				j["path"] = WC2MB(i->path().wstring());
 				j["name"] = WC2MB(i->path().filename().wstring());
