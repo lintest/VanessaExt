@@ -188,6 +188,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ClipMngr.h" />
+    <ClInclude Include="FileFinder.h" />
     <ClInclude Include="ImageHelper.h" />
     <ClInclude Include="json_ext.h" />
     <ClInclude Include="ProcMngr.h" />
@@ -199,6 +200,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClipMngr.cpp" />
+    <ClCompile Include="FileFinder.cpp" />
     <ClCompile Include="ImageHelper.cpp" />
     <ClCompile Include="ScreenMngr.cpp" />
     <ClCompile Include="test.cpp" />

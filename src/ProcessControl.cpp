@@ -32,10 +32,7 @@ bool ProcessControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 
 bool ProcessControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 {
-	switch (lPropNum) {
-	default:
-		return false;
-	}
+	return false;
 }
 
 //---------------------------------------------------------------------------//
