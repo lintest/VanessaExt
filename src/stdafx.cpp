@@ -130,6 +130,7 @@ void AddInNative::addError(const wchar_t* descriptor)
 
 std::wstring VarToStr(tVariant* paParams)
 {
+	if (paParams->pwstrVal == nullptr) return {};
 	wchar_t* str = nullptr;
 	::convFromShortWchar(&str, paParams->pwstrVal);
 	std::wstring result = str;

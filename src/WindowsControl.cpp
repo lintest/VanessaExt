@@ -211,6 +211,13 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 	}
 }
 
+static bool DefStr(tVariant* pvar)
+{
+	TV_VT(pvar) = VTYPE_PWSTR;
+	TV_BOOL(pvar) = nullptr;
+	return true;
+}
+
 static bool DefInt(tVariant* pvar, int value = 0)
 {
 	TV_VT(pvar) = VTYPE_I4;
