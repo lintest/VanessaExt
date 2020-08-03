@@ -48,7 +48,6 @@ private:
 		eMinimizeWindow,
 		eRestoreWindow,
 		eEmptyClipboard,
-		eMoveCursorPos,
 		eGetCursorPos,
 		eSetCursorPos,
 		eEmulateClick,

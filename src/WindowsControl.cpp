@@ -60,7 +60,6 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eEmptyClipboard  , 0, false, L"EmptyClipboard"   , L"ОчиститьБуферОбмена"),
 	Alias(eGetCursorPos    , 0, true , L"GetCursorPos"     , L"ПолучитьПозициюКурсора"),
 	Alias(eSetCursorPos    , 2, false, L"SetCursorPos"     , L"УстановитьПозициюКурсора"),
-	Alias(eMoveCursorPos   , 3, false, L"MoveCursorPos"    , L"ПереместитьПозициюКурсора"),
 	Alias(eEmulateClick    , 1, false, L"EmulateClick"     , L"ЭмуляцияНажатияМыши"),
 	Alias(eEmulateDblClick , 0, false, L"EmulateDblClick"  , L"ЭмуляцияДвойногоНажатия"),
 	Alias(eEmulateMouse    , 4, false, L"EmulateMouse"     , L"ЭмуляцияДвиженияМыши"),
@@ -145,8 +144,6 @@ bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return ClipboardManager(this).Empty();
 	case eSetCursorPos:
 		return ScreenManager::SetCursorPos(paParams, lSizeArray);
-	case eMoveCursorPos:
-		return ScreenManager::MoveCursorPos(paParams, lSizeArray);
 	case eEmulateClick:
 		return ScreenManager::EmulateClick(paParams, lSizeArray);
 	case eEmulateDblClick:
@@ -239,7 +236,7 @@ bool WindowsControl::GetParamDefValue(const long lMethodNum, const long lParamNu
 {
 	switch (lMethodNum) {
 	case eSetWindowPos: if (lParamNum > 0) return DefInt(pvarParamDefValue);
-	case eEmulateClick: if (lParamNum == 0) return DefInt(pvarParamDefValue);
+	case eEmulateClick: if (lParamNum >= 0) return DefInt(pvarParamDefValue);
 	case eEmulateMouse: if (lParamNum == 0) return DefInt(pvarParamDefValue);
 	case eEmulateWheel: if (lParamNum == 1) return DefInt(pvarParamDefValue);
 	case eEmulateHotkey: if (lParamNum == 1) return DefInt(pvarParamDefValue);

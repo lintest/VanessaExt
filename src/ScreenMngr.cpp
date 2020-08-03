@@ -200,10 +200,49 @@ BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
 	return ::SetCursorPos(x, y);
 }
 
-BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
+class Hotkey
+	: private std::vector<INPUT>
 {
-	return true;
-}
+public:
+	void add(WORD key) {
+		INPUT ip;
+		::ZeroMemory(&ip, sizeof(ip));
+		ip.type = INPUT_KEYBOARD;
+		ip.ki.wVk = key;
+		push_back(ip);
+	}
+	bool add(std::wstring text) {
+		try {
+			auto json = JSON::parse(WC2MB(text));
+			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
+				add((WORD)it.value());
+			}
+		}
+		catch (nlohmann::json::parse_error e) {
+			return false;
+		}
+	}
+	void send() {
+		if (size() == 0) return;
+		SendInput((UINT)size(), data(), sizeof(INPUT));
+		std::reverse(begin(), end());
+		for (auto it = begin(); it != end(); ++it) {
+			it->ki.dwFlags = KEYEVENTF_KEYUP;
+		}
+		SendInput((UINT)size(), data(), sizeof(INPUT));
+	}
+	void down() {
+		if (size() == 0) return;
+		SendInput((UINT)size(), data(), sizeof(INPUT));
+	}
+	void up() {
+		std::reverse(begin(), end());
+		for (auto it = begin(); it != end(); ++it) {
+			it->ki.dwFlags = KEYEVENTF_KEYUP;
+		}
+		SendInput((UINT)size(), data(), sizeof(INPUT));
+	}
+};
 
 BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
 {
@@ -222,14 +261,42 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 	case 3: dwFlags = MOUSEEVENTF_XDOWN | MOUSEEVENTF_XUP; break;
 	default: dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
 	}
+	Hotkey hotkey;
+	tVariant* pvarKeys = paParams + 1;
+	if (TV_VT(pvarKeys) == VTYPE_PWSTR) {
+		if (pvarKeys->pwstrVal == nullptr) return false;
+		if (!hotkey.add(VarToStr(pvarKeys))) return false;
+	}
+	else if (TV_VT(pvarKeys) == VTYPE_I4) {
+		WORD flags = VarToInt(pvarKeys);
+		if (flags & 0x04) hotkey.add(VK_SHIFT);
+		if (flags & 0x08) hotkey.add(VK_CONTROL);
+		if (flags & 0x10) hotkey.add(VK_MENU);
+	}
+	hotkey.down();
 	mouse_event(dwFlags, 0, 0, 0, 0);
+	hotkey.up();
 	return true;
 }
 
 BOOL ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
 {
+	Hotkey hotkey;
+	tVariant* pvarKeys = paParams + 1;
+	if (TV_VT(pvarKeys) == VTYPE_PWSTR) {
+		if (pvarKeys->pwstrVal == nullptr) return false;
+		if (!hotkey.add(VarToStr(pvarKeys))) return false;
+	}
+	else if (TV_VT(pvarKeys) == VTYPE_I4) {
+		WORD flags = VarToInt(pvarKeys);
+		if (flags & 0x04) hotkey.add(VK_SHIFT);
+		if (flags & 0x08) hotkey.add(VK_CONTROL);
+		if (flags & 0x10) hotkey.add(VK_MENU);
+	}
+	hotkey.down();
 	DWORD delta = VarToInt(paParams) < 0 ? -WHEEL_DELTA : WHEEL_DELTA;
 	mouse_event(MOUSEEVENTF_WHEEL, 0, 0, delta, 0);
+	hotkey.up();
 	return true;
 }
 
@@ -276,42 +343,11 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 
 BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 {
-	class Hotkey
-		: private std::vector<INPUT>
-	{
-	public:
-		void add(WORD key) {
-			INPUT ip;
-			::ZeroMemory(&ip, sizeof(ip));
-			ip.type = INPUT_KEYBOARD;
-			ip.ki.wVk = key;
-			push_back(ip);
-		}
-		void send() {
-			if (size() == 0) return;
-			SendInput((UINT)size(), data(), sizeof(INPUT));
-			std::reverse(begin(), end());
-			for (auto it = begin(); it != end(); ++it) {
-				it->ki.dwFlags = KEYEVENTF_KEYUP;
-			}
-			SendInput((UINT)size(), data(), sizeof(INPUT));
-		}
-	};
-
 	Sleep(100);
 	Hotkey hotkey;
 	if (TV_VT(paParams) == VTYPE_PWSTR) {
-		try {
-			if (paParams->pwstrVal == nullptr) return false;
-			std::wstring text = VarToStr(paParams);
-			auto json = JSON::parse(WC2MB(text));
-			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
-				hotkey.add(it.value());
-			}
-		}
-		catch (nlohmann::json::parse_error e) {
-			return false;
-		}
+		if (paParams->pwstrVal == nullptr) return false;
+		if (!hotkey.add(VarToStr(paParams))) return false;
 	}
 	else {
 		WORD key = VarToInt(paParams);
@@ -319,7 +355,7 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);
-		hotkey.add(key);
+		if (key) hotkey.add(key);
 	}
 	hotkey.send();
 	return true;
@@ -608,14 +644,9 @@ BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::MoveCursorPos(tVariant* paParams, const long lSizeArray)
-{
-	return true;
-}
-
 BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 {
-    Display *display = XOpenDisplay(NULL);
+	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 
 	unsigned int button = 1;
@@ -623,10 +654,10 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 	case 1: button = 3; break;
 	case 2: button = 2; break;
 	}
-    XTestFakeButtonEvent(display, button, true, CurrentTime);
-    XTestFakeButtonEvent(display, button, false, CurrentTime);
-    XFlush(display);
-    XCloseDisplay(display);
+	XTestFakeButtonEvent(display, button, true, CurrentTime);
+	XTestFakeButtonEvent(display, button, false, CurrentTime);
+	XFlush(display);
+	XCloseDisplay(display);
 	return true;
 }
 
@@ -644,20 +675,20 @@ BOOL ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
 
 BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
 {
-    Display *display = XOpenDisplay(NULL);
+	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
-    XTestFakeButtonEvent(display, 1, true, CurrentTime);
-    XTestFakeButtonEvent(display, 1, false, CurrentTime);
-    XTestFakeButtonEvent(display, 1, true, CurrentTime);
-    XTestFakeButtonEvent(display, 1, false, CurrentTime);
-    XFlush(display);
-    XCloseDisplay(display);
+	XTestFakeButtonEvent(display, 1, true, CurrentTime);
+	XTestFakeButtonEvent(display, 1, false, CurrentTime);
+	XTestFakeButtonEvent(display, 1, true, CurrentTime);
+	XTestFakeButtonEvent(display, 1, false, CurrentTime);
+	XFlush(display);
+	XCloseDisplay(display);
 	return true;
 }
 
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
-    Display *display = XOpenDisplay(NULL);
+	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 
 	double x2 = VarToInt(paParams);
@@ -689,14 +720,14 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 		int xx = round(x1 + dx * pow(i, px) / cx);
 		int yy = round(y1 + dy * pow(i, py) / cy);
 		XTestFakeMotionEvent(display, DefaultScreen(display), xx, yy, CurrentTime);
-	    XFlush(display);
-	if (pause) usleep(pause * 1000);
+		XFlush(display);
+		if (pause) usleep(pause * 1000);
 	}
 	for (double i = count - 1; i >= 0; i--) {
 		int xx = round(x2 - dx * pow(i, px) / cx);
 		int yy = round(y2 - dy * pow(i, py) / cy);
 		XTestFakeMotionEvent(display, DefaultScreen(display), xx, yy, CurrentTime);
-	    XFlush(display);
+		XFlush(display);
 		if (pause) usleep(pause * 1000);
 	}
 
@@ -714,7 +745,7 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 		Display* m_display;
 	public:
 		Hotkey() {
-		    m_display = XOpenDisplay(NULL);
+			m_display = XOpenDisplay(NULL);
 		}
 		virtual ~Hotkey() {
 			if (m_display) XCloseDisplay(m_display);
@@ -770,7 +801,7 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 {
 	std::wcout << L"EmulateText";
-    Display *display = XOpenDisplay(NULL);
+	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 	usleep(100 * 1000);
 	std::wstring text = VarToStr(paParams);

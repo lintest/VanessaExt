@@ -52,6 +52,7 @@
 - <a href="#EmulateMouse">ЭмуляцияДвиженияМыши (EmulateMouse)</a>
 - <a href="#EmulateClick">ЭмуляцияНажатияМыши (EmulateClick)</a>
 - <a href="#EmulateDblClick">ЭмуляцияДвойногоНажатия (EmulateDblClick)</a>
+- <a href="#EmulateWheel">ЭмуляцияКолесаМыши (EmulateWheel)</a>
 - <a href="#EmulateHotkey">ЭмуляцияНажатияКлавиши (EmulateHotkey)</a>
 - <a href="#EmulateText">ЭмуляцияВводаТекста (EmulateText)</a>
 
@@ -565,6 +566,18 @@ reboot
 
 ```bsl
 ВнешняяКомпонента.ЭмуляцияДвойногоНажатия();
+```
+
+### <a name="EmulateWheel">ЭмуляцияКолесаМыши(Направление) / EmulateWheel</a>
+Эмулирует вращение колеса мыши.
+
+Параметры процедуры:
+- **КнопкаМыши** (обязательный), Тип: Целое число
+    - (+1) - Вращение вперёд
+    - (-1) - Вращение назад
+
+```bsl
+ВнешняяКомпонента.ЭмуляцияКолесаМыши(1);
 ```
 
 ### <a name="EmulateHotkey">ЭмуляцияНажатияКлавиши(Клавиша, Флаги) / EmulateHotkey</a>
