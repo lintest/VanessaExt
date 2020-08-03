@@ -226,6 +226,13 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
+BOOL ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
+{
+	DWORD delta = VarToInt(paParams) < 0 ? -WHEEL_DELTA : WHEEL_DELTA;
+	mouse_event(MOUSEEVENTF_WHEEL, 0, 0, delta, 0);
+	return true;
+}
+
 BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
 	double x = VarToInt(paParams);
@@ -620,6 +627,18 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
     XTestFakeButtonEvent(display, button, false, CurrentTime);
     XFlush(display);
     XCloseDisplay(display);
+	return true;
+}
+
+BOOL ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
+{
+	Display* display = XOpenDisplay(NULL);
+	if (!display) return false;
+	unsigned int button = VarToInt(paParams) < 0 ? 5 : 4;
+	XTestFakeButtonEvent(display, button, true, CurrentTime);
+	XTestFakeButtonEvent(display, button, false, CurrentTime);
+	XFlush(display);
+	XCloseDisplay(display);
 	return true;
 }
 

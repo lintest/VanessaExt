@@ -55,6 +55,7 @@ private:
 		eEmulateDblClick,
 		eEmulateHotkey,
 		eEmulateMouse,
+		eEmulateWheel,
 		eEmulateText,
 		eOpenWebSocket,
 		eSendWebSocket,

@@ -23,6 +23,7 @@ public:
 	static BOOL EmulateDblClick(tVariant* paParams, const long lSizeArray);
 	static BOOL EmulateHotkey(tVariant* paParams, const long lSizeArray);
 	static BOOL EmulateMouse(tVariant* paParams, const long lSizeArray);
+	static BOOL EmulateWheel(tVariant* paParams, const long lSizeArray);
 	static BOOL EmulateText(tVariant* paParams, const long lSizeArray);
 private:
 	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);

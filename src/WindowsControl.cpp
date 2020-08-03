@@ -64,6 +64,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eEmulateClick    , 1, false, L"EmulateClick"     , L"ЭмуляцияНажатияМыши"),
 	Alias(eEmulateDblClick , 0, false, L"EmulateDblClick"  , L"ЭмуляцияДвойногоНажатия"),
 	Alias(eEmulateMouse    , 4, false, L"EmulateMouse"     , L"ЭмуляцияДвиженияМыши"),
+	Alias(eEmulateWheel    , 2, false, L"EmulateWheel"     , L"ЭмуляцияКолесаМыши"),
 	Alias(eEmulateHotkey   , 2, false, L"EmulateHotkey"    , L"ЭмуляцияНажатияКлавиши"),
 	Alias(eEmulateText     , 2, false, L"EmulateText"      , L"ЭмуляцияВводаТекста"),
 	Alias(eOpenWebSocket   , 1, true,  L"OpenWebSocket"    , L"ОткрытьВебСокет"),
@@ -152,6 +153,8 @@ bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const
 		return ScreenManager::EmulateDblClick(paParams, lSizeArray);
 	case eEmulateMouse:
 		return ScreenManager::EmulateMouse(paParams, lSizeArray);
+	case eEmulateWheel:
+		return ScreenManager::EmulateWheel(paParams, lSizeArray);
 	case eEmulateHotkey:
 		return ScreenManager::EmulateHotkey(paParams, lSizeArray);
 	case eEmulateText:
@@ -214,7 +217,7 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 static bool DefStr(tVariant* pvar)
 {
 	TV_VT(pvar) = VTYPE_PWSTR;
-	TV_BOOL(pvar) = nullptr;
+	TV_WSTR(pvar) = nullptr;
 	return true;
 }
 
@@ -237,6 +240,8 @@ bool WindowsControl::GetParamDefValue(const long lMethodNum, const long lParamNu
 	switch (lMethodNum) {
 	case eSetWindowPos: if (lParamNum > 0) return DefInt(pvarParamDefValue);
 	case eEmulateClick: if (lParamNum == 0) return DefInt(pvarParamDefValue);
+	case eEmulateMouse: if (lParamNum == 0) return DefInt(pvarParamDefValue);
+	case eEmulateWheel: if (lParamNum == 1) return DefInt(pvarParamDefValue);
 	case eEmulateHotkey: if (lParamNum == 1) return DefInt(pvarParamDefValue);
 	case eFindFiles: if (lParamNum == 3) return DefBool(pvarParamDefValue, true);
 	}
