@@ -221,6 +221,7 @@ public:
 		catch (nlohmann::json::parse_error e) {
 			return false;
 		}
+		return true;
 	}
 	void send() {
 		if (size() == 0) return;
@@ -644,6 +645,64 @@ BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
+class Hotkey
+	: private std::vector<KeyCode>
+{
+private:
+	Display* m_display;
+public:
+	Hotkey() {
+		m_display = XOpenDisplay(NULL);
+	}
+	virtual ~Hotkey() {
+		if (m_display) XCloseDisplay(m_display);
+	}
+	bool add(const std::wstring &text) {
+		try {
+			auto json = JSON::parse(WC2MB(text));
+			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
+				add((KeySym)it.value());
+			}
+		}
+		catch (nlohmann::json::parse_error e) {
+			return false;
+		}
+		return true;
+	}
+	void add(KeySym keysym) {
+		KeyCode keycode = XKeysymToKeycode(m_display, keysym);
+		std::wcout << std::endl << keysym << " : " << keycode << std::endl;
+		push_back(keycode);
+	}
+	void send() {
+		if (!m_display) return;
+		if (size() == 0) return;
+		for (auto it = begin(); it != end(); ++it) {
+			XTestFakeKeyEvent(m_display, *it, true, CurrentTime);
+		}
+		std::reverse(begin(), end());
+		for (auto it = begin(); it != end(); ++it) {
+			XTestFakeKeyEvent(m_display, *it, false, CurrentTime);
+		}
+		XFlush(m_display);
+	}
+	void down() {
+		if (!m_display) return;
+		if (size() == 0) return;
+		for (auto it = begin(); it != end(); ++it) {
+			XTestFakeKeyEvent(m_display, *it, true, CurrentTime);
+		}
+	}
+	void up() {
+		if (!m_display) return;
+		if (size() == 0) return;
+		std::reverse(begin(), end());
+		for (auto it = begin(); it != end(); ++it) {
+			XTestFakeKeyEvent(m_display, *it, false, CurrentTime);
+		}
+	}
+};
+
 BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 {
 	Display* display = XOpenDisplay(NULL);
@@ -654,8 +713,23 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 	case 1: button = 3; break;
 	case 2: button = 2; break;
 	}
+
+	Hotkey hotkey;
+	tVariant* pvarKeys = paParams + 1;
+	if (TV_VT(pvarKeys) == VTYPE_PWSTR) {
+		if (pvarKeys->pwstrVal == nullptr) return false;
+		if (!hotkey.add(VarToStr(pvarKeys))) return false;
+	}
+	else if (TV_VT(pvarKeys) == VTYPE_I4) {
+		WORD flags = VarToInt(pvarKeys);
+		if (flags & 0x04) hotkey.add(XK_Shift_L);
+		if (flags & 0x08) hotkey.add(XK_Control_L);
+		if (flags & 0x10) hotkey.add(XK_Alt_L);
+	}
+	hotkey.down();
 	XTestFakeButtonEvent(display, button, true, CurrentTime);
 	XTestFakeButtonEvent(display, button, false, CurrentTime);
+	hotkey.up();
 	XFlush(display);
 	XCloseDisplay(display);
 	return true;
@@ -666,8 +740,23 @@ BOOL ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 	unsigned int button = VarToInt(paParams) < 0 ? 5 : 4;
+
+	Hotkey hotkey;
+	tVariant* pvarKeys = paParams + 1;
+	if (TV_VT(pvarKeys) == VTYPE_PWSTR) {
+		if (pvarKeys->pwstrVal == nullptr) return false;
+		if (!hotkey.add(VarToStr(pvarKeys))) return false;
+	}
+	else if (TV_VT(pvarKeys) == VTYPE_I4) {
+		WORD flags = VarToInt(pvarKeys);
+		if (flags & 0x04) hotkey.add(XK_Shift_L);
+		if (flags & 0x08) hotkey.add(XK_Control_L);
+		if (flags & 0x10) hotkey.add(XK_Alt_L);
+	}
+	hotkey.down();
 	XTestFakeButtonEvent(display, button, true, CurrentTime);
 	XTestFakeButtonEvent(display, button, false, CurrentTime);
+	hotkey.up();
 	XFlush(display);
 	XCloseDisplay(display);
 	return true;
@@ -738,53 +827,11 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 
 BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 {
-	class Hotkey
-		: private std::vector<KeyCode>
-	{
-	private:
-		Display* m_display;
-	public:
-		Hotkey() {
-			m_display = XOpenDisplay(NULL);
-		}
-		virtual ~Hotkey() {
-			if (m_display) XCloseDisplay(m_display);
-		}
-		void add(KeySym keysym) {
-			KeyCode keycode = XKeysymToKeycode(m_display, keysym);
-			std::wcout << std::endl << keysym << " : " << keycode << std::endl;
-			push_back(keycode);
-		}
-		void send() {
-			if (!m_display) return;
-			if (size() == 0) return;
-			for (auto it = begin(); it != end(); ++it) {
-				XTestFakeKeyEvent(m_display, *it, true, CurrentTime);
-			}
-			std::reverse(begin(), end());
-			for (auto it = begin(); it != end(); ++it) {
-				XTestFakeKeyEvent(m_display, *it, false, CurrentTime);
-			}
-			XFlush(m_display);
-		}
-	};
-
 	usleep(100 * 1000);
 	Hotkey hotkey;
 	if (TV_VT(paParams) == VTYPE_PWSTR) {
-		try {
-			std::wcout << L"EmulateHotkey";
-			if (paParams->pwstrVal == nullptr) return false;
-			std::wstring text = VarToStr(paParams);
-			std::wcout << std::endl << text << std::endl;
-			auto json = JSON::parse(WC2MB(text));
-			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
-				hotkey.add(it.value());
-			}
-		}
-		catch (nlohmann::json::parse_error e) {
-			return false;
-		}
+		if (paParams->pwstrVal == nullptr) return false;
+		if (!hotkey.add(VarToStr(paParams))) return false;
 	}
 	else {
 		auto key = VarToInt(paParams);
