@@ -70,10 +70,16 @@ if [ $build64 -eq 1 ]; then
 fi    
 
 if [ -z "$1" ]; then
-    cmake -E remove_directory build32
-    cmake -E remove_directory build64
-    strip -s bin/libVanessaExt*.so
-    rm -f ./*.debug
-    rm -f ./*.a
+  cmake -E remove_directory build32
+  cmake -E remove_directory build64
+  strip -s bin/libVanessaExt*.so
+  rm -f ./*.debug
+  rm -f ./*.a
+
+  if [ -n "$(command -v oscript)" ]; then
+    oscript ./MakePack.os
+    cp -f ./AddIn.zip ./Example/Templates/VanessaExt/Ext/Template.bin
+    oscript ./tools/Compile.os ./
+  fi
 fi
 
