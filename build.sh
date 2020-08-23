@@ -3,7 +3,7 @@
 PATH=~/bin:$PATH
 set -e
 
-SCL=$(command -v scl)
+SCL=$(command -v scl || true)
 export SCL
 
 if [ -n "$SCL" ]; then
