@@ -77,9 +77,15 @@ if [ -z "$1" ]; then
   rm -f ./*.a
 
   if [ -n "$(command -v oscript)" ]; then
-    oscript ./MakePack.os
-    cp -f ./AddIn.zip ./Example/Templates/VanessaExt/Ext/Template.bin
-    oscript ./tools/Compile.os ./
+    Path1C=$(command -v 1cv8 || true)
+    export Path1C
+    if [ -n "$Path1C" ]; then
+      oscript ./MakePack.os
+      cp -f ./AddIn.zip ./Example/Templates/VanessaExt/Ext/Template.bin
+      oscript ./tools/Compile.os ./
+    else
+      echo "Command 1cv8 not found."
+    fi
   fi
 fi
 
