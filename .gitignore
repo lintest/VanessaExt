@@ -2,16 +2,13 @@
 # Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
 ################################################################################
 
-/build64
-/build32
 /build
-/bind64
-/bind32
-/bin64
-/bin32
+/bind
 /bin
 /.vc
 /.vs
+/.idea
+/cmake-build-debug
 /Example/fileversion
 AddIn.zip
 XxCompile.bat
