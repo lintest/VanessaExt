@@ -3,30 +3,29 @@
 
 #include "stdafx.h"
 
-#include "IMemoryManager.h"
+#include "AddInNative.h"
 
-class ScreenManager {
+class ScreenManager
+	: public AddInNative 
+{
 public:
-	ScreenManager(AddInNative* addin) : m_addin(addin) { }
-	static std::wstring GetScreenInfo();
-	static std::wstring GetScreenList();
-	static std::wstring GetDisplayInfo(tVariant* paParams, const long lSizeArray);
-	static std::wstring GetDisplayList(tVariant* paParams, const long lSizeArray);
-	BOOL CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
-	BOOL CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
-	BOOL CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray);
+	ScreenManager() { }
+	static std::string GetScreenInfo();
+	static std::string GetScreenList();
+	static std::string GetDisplayInfo(int32_t window);
+	static std::string GetDisplayList(int32_t window);
+	BOOL CaptureProcess(VH variant, int32_t pid);
+	BOOL CaptureScreen(VH variant, int32_t mode);
+	BOOL CaptureWindow(VH variant, HWND window);
 public:
 	static std::wstring GetCursorPos();
-	static BOOL SetCursorPos(tVariant* paParams, const long lSizeArray);
-	static BOOL EmulateClick(tVariant* paParams, const long lSizeArray);
-	static BOOL EmulateDblClick(tVariant* paParams, const long lSizeArray);
-	static BOOL EmulateHotkey(tVariant* paParams, const long lSizeArray);
-	static BOOL EmulateMouse(tVariant* paParams, const long lSizeArray);
-	static BOOL EmulateWheel(tVariant* paParams, const long lSizeArray);
-	static BOOL EmulateText(tVariant* paParams, const long lSizeArray);
-private:
-	BOOL CaptureWindow(tVariant* pvarRetValue, HWND hWnd);
-	AddInNative* m_addin;
+	static BOOL SetCursorPos(int32_t x, int32_t y);
+	static BOOL EmulateClick(int32_t button, VH keys);
+	static BOOL EmulateDblClick();
+	static BOOL EmulateHotkey(VH keys, int32_t flags);
+	static BOOL EmulateMouse(int32_t X, int32_t Y, int32_t C, int32_t P);
+	static BOOL EmulateWheel(int32_t sign, VH variant);
+	static BOOL EmulateText(const std::wstring& text, int32_t pause);
 };
 
 #endif //__SCREENMNGR_H__

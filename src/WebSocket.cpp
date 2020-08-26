@@ -135,7 +135,7 @@ bool WebSocket::send(const std::string& msg, std::string& res)
 }
 
 // Sends a WebSocket message 
-bool doWebSocket(std::string& url, std::string& msg, std::string& res)
+bool doWebSocket(const std::string& url, std::string& msg, std::string& res)
 {
 	WebSocket ws;
 	return ws.open(url, res) && ws.send(msg, res);
@@ -143,7 +143,7 @@ bool doWebSocket(std::string& url, std::string& msg, std::string& res)
 
 #else
 
-bool doWebSocket(std::string& url, std::string& msg, std::string& res)
+bool doWebSocket(const std::string& url, std::string& msg, std::string& res)
 {
 	res = "Error: method WebSocket for Linux is not implemented";
 	return false;

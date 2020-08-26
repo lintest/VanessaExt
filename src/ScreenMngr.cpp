@@ -3,13 +3,6 @@
 #include "ScreenMngr.h"
 #include "json_ext.h"
 
-BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{
-	HWND hWnd = 0;
-	if (lSizeArray > 0) hWnd = (HWND)VarToInt(paParams);
-	return CaptureWindow(pvarRetValue, hWnd);
-}
-
 #ifdef _WINDOWS
 
 #include <dwmapi.h>
@@ -29,10 +22,9 @@ nlohmann::json RectToJson(const RECT& rect)
 	return json;
 }
 
-std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
+std::string ScreenManager::GetDisplayList(int32_t window)
 {
-	HWND hWnd = 0;
-	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	HWND hWnd = (HWND)window;
 	if (!IsWindow(hWnd)) hWnd = 0;
 
 	HDC hdc = NULL;
@@ -60,13 +52,12 @@ std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeA
 		}, (LPARAM)&json);
 
 	if (hdc) ReleaseDC(hWnd, hdc);
-	return MB2WC(json.dump());
+	return json.dump();
 }
 
-std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+std::string ScreenManager::GetDisplayInfo(int32_t window)
 {
-	HWND hWnd = 0;
-	if (lSizeArray > 0) hWnd = VarToHwnd(paParams);
+	HWND hWnd = (HWND)window;
 	if (!hWnd) hWnd = ::GetForegroundWindow();
 	if (!IsWindow(hWnd)) return {};
 
@@ -83,10 +74,10 @@ std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeA
 	nlohmann::json json = RectToJson(mi.rcMonitor);
 	json["Name"] = WC2MB((mi.szDevice));
 	json["Work"] = RectToJson(mi.rcWork);
-	return MB2WC(json.dump());
+	return json.dump();
 }
 
-std::wstring ScreenManager::GetScreenInfo()
+std::string ScreenManager::GetScreenInfo()
 {
 	RECT rect, work{ 0,0,0,0 };
 	rect.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -96,18 +87,17 @@ std::wstring ScreenManager::GetScreenInfo()
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &work, 0);
 	nlohmann::json json = RectToJson(rect);
 	json["Work"] = RectToJson(work);
-	return MB2WC(json.dump());
+	return json.dump();
 }
 
-std::wstring ScreenManager::GetScreenList()
+std::string ScreenManager::GetScreenList()
 {
 	return {};
 }
 
-BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::CaptureScreen(VH variant, int32_t mode)
 {
-	const int mode = lSizeArray == 0 ? 0 : VarToInt(paParams);
-	if (mode) return CaptureWindow(pvarRetValue, 0);
+	if (mode) return CaptureWindow(variant, 0);
 
 	HWND hWnd = ::GetForegroundWindow();
 	if (IsWindow(hWnd)) UpdateWindow(hWnd);
@@ -120,7 +110,7 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
 	HGDIOBJ object = SelectObject(hDC, hBitmap);
 	BitBlt(hDC, 0, 0, w, h, hScreen, 0, 0, SRCCOPY);
-	ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
+	ImageHelper(hBitmap).Save(variant);
 	SelectObject(hDC, object);
 	DeleteDC(hDC);
 	ReleaseDC(NULL, hScreen);
@@ -128,8 +118,9 @@ BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, co
 	return true;
 }
 
-BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
+BOOL ScreenManager::CaptureWindow(VH variant, HWND window)
 {
+	HWND hWnd = (HWND)window;
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	if (!IsWindow(hWnd)) return true;
 
@@ -140,14 +131,14 @@ BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
 	SelectObject(hDC, hBitmap);
 	::PrintWindow(hWnd, hDC, PW_CLIENTONLY);
-	ImageHelper(hBitmap).Save(m_addin, pvarRetValue);
+	ImageHelper(hBitmap).Save(variant);
 	ReleaseDC(NULL, hdcScreen);
 	DeleteDC(hDC);
 	DeleteObject(hBitmap);
 	return true;
 }
 
-BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::CaptureProcess(VH variant, int32_t pid)
 {
 	class Param {
 	public:
@@ -155,7 +146,7 @@ BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, c
 		std::map<HWND, bool> map;
 	};
 	Param p;
-	p.pid = VarToInt(paParams);
+	p.pid = pid;
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
@@ -177,7 +168,7 @@ BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, c
 			return TRUE;
 		}, (LPARAM)&p);
 	for (auto it = p.map.begin(); it != p.map.end(); it++) {
-		if (it->second) return CaptureWindow(pvarRetValue, it->first);
+		if (it->second) return CaptureWindow(variant, it->first);
 	}
 	return true;
 }
@@ -192,11 +183,8 @@ std::wstring ScreenManager::GetCursorPos()
 	return json;
 }
 
-BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::SetCursorPos(int32_t x, int32_t y)
 {
-	if (lSizeArray < 2) return false;
-	const int x = VarToInt(paParams);
-	const int y = VarToInt(paParams + 1);
 	return ::SetCursorPos(x, y);
 }
 
@@ -245,7 +233,7 @@ public:
 	}
 };
 
-BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::EmulateDblClick()
 {
 	DWORD dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
 	mouse_event(dwFlags, 0, 0, 0, 0);
@@ -253,23 +241,21 @@ BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::EmulateClick(int32_t button, VH keys)
 {
 	DWORD dwFlags;
-	switch (VarToInt(paParams)) {
+	switch (button) {
 	case 1: dwFlags = MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP; break;
 	case 2: dwFlags = MOUSEEVENTF_MIDDLEDOWN | MOUSEEVENTF_MIDDLEUP; break;
 	case 3: dwFlags = MOUSEEVENTF_XDOWN | MOUSEEVENTF_XUP; break;
 	default: dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
 	}
 	Hotkey hotkey;
-	tVariant* pvarKeys = paParams + 1;
-	if (TV_VT(pvarKeys) == VTYPE_PWSTR) {
-		if (pvarKeys->pwstrVal == nullptr) return false;
-		if (!hotkey.add(VarToStr(pvarKeys))) return false;
+	if (keys.type() == VTYPE_PWSTR) {
+		if (!hotkey.add(keys)) return false;
 	}
-	else if (TV_VT(pvarKeys) == VTYPE_I4) {
-		WORD flags = VarToInt(pvarKeys);
+	else if (keys.type() == VTYPE_I4) {
+		WORD flags = (int32_t)keys;
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);
@@ -280,33 +266,31 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::EmulateWheel(int32_t sign, VH variant)
 {
 	Hotkey hotkey;
-	tVariant* pvarKeys = paParams + 1;
-	if (TV_VT(pvarKeys) == VTYPE_PWSTR) {
-		if (pvarKeys->pwstrVal == nullptr) return false;
-		if (!hotkey.add(VarToStr(pvarKeys))) return false;
+	if (variant.type() == VTYPE_PWSTR) {
+		if (!hotkey.add(variant)) return false;
 	}
-	else if (TV_VT(pvarKeys) == VTYPE_I4) {
-		WORD flags = VarToInt(pvarKeys);
+	else if (variant.type() == VTYPE_I4) {
+		WORD flags = int32_t(variant);
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);
 	}
 	hotkey.down();
-	DWORD delta = VarToInt(paParams) < 0 ? -WHEEL_DELTA : WHEEL_DELTA;
+	DWORD delta = sign < 0 ? -WHEEL_DELTA : WHEEL_DELTA;
 	mouse_event(MOUSEEVENTF_WHEEL, 0, 0, delta, 0);
 	hotkey.up();
 	return true;
 }
 
-BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::EmulateMouse(int32_t X, int32_t Y, int32_t C, int32_t P)
 {
-	double x = VarToInt(paParams);
-	double y = VarToInt(paParams + 1);
-	double count = VarToInt(paParams + 2);
-	DWORD pause = VarToInt(paParams + 3);
+	double x = X;
+	double y = Y;
+	double count = C;
+	DWORD pause = P;
 
 	POINT p;
 	::GetCursorPos(&p);
@@ -342,17 +326,15 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::EmulateHotkey(VH keys, int32_t flags)
 {
 	Sleep(100);
 	Hotkey hotkey;
-	if (TV_VT(paParams) == VTYPE_PWSTR) {
-		if (paParams->pwstrVal == nullptr) return false;
-		if (!hotkey.add(VarToStr(paParams))) return false;
+	if (keys.type() == VTYPE_PWSTR) {
+		if (!hotkey.add(keys)) return false;
 	}
 	else {
-		WORD key = VarToInt(paParams);
-		WORD flags = VarToInt(paParams + 1);
+		WORD key = (int32_t)keys;
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);
@@ -362,11 +344,9 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
+BOOL ScreenManager::EmulateText(const std::wstring &text, int32_t pause)
 {
 	Sleep(100);
-	std::wstring text = VarToStr(paParams);
-	DWORD pause = VarToInt(paParams + 1);
 	for (auto ch : text) {
 		INPUT ip;
 		::ZeroMemory(&ip, sizeof(ip));

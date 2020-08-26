@@ -1,24 +1,25 @@
 #ifndef __CLIPMNGR_H__
 #define __CLIPMNGR_H__
 
-#include "stdafx.h"
+#include "AddInNative.h"
 #include <map>
 
-class ClipboardManager {
+class ClipboardManager
+	: public AddInNative 
+{
 public:
-	ClipboardManager(AddInNative* addin);
+	ClipboardManager();
 	virtual ~ClipboardManager();
 	std::wstring GetFormat();
 	std::wstring GetText();
 	std::wstring GetFiles();
-	bool GetImage(tVariant* pvarValue);
-	bool SetText(tVariant* pvarValue, bool bEmpty = true);
-	bool SetImage(tVariant* paParams, bool bEmpty = true);
-	bool SetFiles(tVariant* paParams, bool bEmpty = true);
+	bool GetImage(VH data);
+	bool SetImage(VH data, bool bEmpty = true);
+	bool SetText(const std::wstring &text, bool bEmpty = true);
+	bool SetFiles(const std::string& text, bool bEmpty = true);
 	bool Empty();
 private:
 	static const std::map<int, std::string> sm_formats;
-	AddInNative* m_addin = nullptr;
 	bool m_isOpened = false;
 };
 

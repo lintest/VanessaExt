@@ -139,23 +139,20 @@ int64_t ProcessManager::ProcessId()
 	return(GetCurrentProcessId());
 }
 
-std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::GetProcessList(bool only1c)
 {
 	std::wstring query;
 	query.append(L"SELECT ProcessId,CreationDate,CommandLine");
 	query.append(L" FROM Win32_Process ");
-	if (lSizeArray > 0 && paParams->vt == VTYPE_BOOL && paParams->intVal) {
-		query.append(L" WHERE Name LIKE '1cv8%'");
-	}
+	if (only1c) query.append(L" WHERE Name LIKE '1cv8%'");
 	return ProcessEnumerator(query.c_str());
 }
 
-std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::GetProcessInfo(long pid)
 {
-	if (lSizeArray < 1) return {};
 	std::wstring query;
 	query.append(L"SELECT * FROM Win32_Process WHERE ProcessId=");
-	query.append(std::to_wstring(VarToInt(paParams)));
+	query.append(std::to_wstring(pid));
 	JSON json = ProcessEnumerator(query.c_str()).json();
 	if (json.is_array() && json.size() == 1) {
 		return MB2WC(json[0].dump());
@@ -163,24 +160,21 @@ std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSize
 	return {};
 }
 
-std::wstring ProcessManager::FindProcess(tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::FindProcess(const std::wstring name)
 {
-	if (lSizeArray < 1) return {};
-	if (paParams->vt != VTYPE_PWSTR) return {};
-	if (paParams->pwstrVal == NULL) return {};
-	return ProcessEnumerator(paParams->pwstrVal);
+	if (name.empty()) return {};
+	return ProcessEnumerator(name.c_str());
 }
 
-std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::FindTestClient(long port)
 {
-	if (lSizeArray < 1) return NULL;
 	std::wstring query;
 	query.append(L"SELECT ProcessId,CreationDate,CommandLine");
 	query.append(L" FROM Win32_Process ");
 	query.append(L" WHERE Name LIKE '1cv8%' ");
 	query.append(L" AND CommandLine LIKE '% /TESTCLIENT %'");
 	query.append(L" AND CommandLine LIKE '% -TPort ");
-	query.append(std::to_wstring(VarToInt(paParams))).append(L" %'");
+	query.append(std::to_wstring(port)).append(L" %'");
 	JSON json = ProcessEnumerator(query.c_str()).json();
 	if (!json.is_array() || json.empty()) return {};
 
@@ -223,10 +217,9 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 	return {};
 }
 
-bool ProcessManager::Sleep(tVariant* paParams, const long lSizeArray)
+void ProcessManager::Sleep(long interval)
 {
-	::Sleep(VarToInt(paParams));
-	return true;
+	::Sleep(interval);
 }
 
 #else //_WINDOWS
@@ -408,20 +401,18 @@ static std::wstring SocketError(std::string message)
 	return MB2WC(json.dump());
 }
 
-std::wstring ProcessManager::WebSocket(tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::WebSocket(const std::string &url, const std::string& msg)
 {
-	if (lSizeArray < 2) return {};
-	std::string url = WC2MB(VarToStr(paParams));
-	std::string msg = WC2MB(VarToStr(paParams + 1));
+	std::string message;
 	try {
-		msg = nlohmann::json::parse(msg).dump();
+		message = nlohmann::json::parse(msg).dump();
 	}
 	catch (nlohmann::json::parse_error e) {
 		return SocketError("JSON parse error");
 	}
 
 	std::string res;
-	if (doWebSocket(url, msg, res)) {
+	if (doWebSocket(url, message, res)) {
 		return MB2WC(res);
 	}
 	else {
@@ -429,9 +420,9 @@ std::wstring ProcessManager::WebSocket(tVariant* paParams, const long lSizeArray
 	}
 }
 
-std::wstring ProcessManager::OpenWebSocket(WebSocketBase** ws, tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::OpenWebSocket(WebSocketBase** ws, const std::string &url)
 {
-	std::string res, url = WC2MB(VarToStr(paParams));
+	std::string res;
 	WebSocketBase* socket = WebSocketBase::create();
 	if (socket && socket->open(url, res)) {
 		if (*ws) delete (*ws);
@@ -445,19 +436,19 @@ std::wstring ProcessManager::OpenWebSocket(WebSocketBase** ws, tVariant* paParam
 	return {};
 }
 
-std::wstring ProcessManager::SendWebSocket(WebSocketBase* ws, tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::SendWebSocket(WebSocketBase** ws, const std::string& msg)
 {
 	if (!ws) return SocketError("Error: WebSocket closed");
 
-	std::string res, msg = WC2MB(VarToStr(paParams));
+	std::string res, message;
 	try {
-		msg = nlohmann::json::parse(msg).dump();
+		message = nlohmann::json::parse(msg).dump();
 	}
 	catch (nlohmann::json::parse_error e) {
 		return SocketError("JSON parse error");
 	}
 
-	return ws->send(msg, res) ? MB2WC(res) : SocketError(res);
+	return (*ws)->send(msg, res) ? MB2WC(res) : SocketError(res);
 }
 
 #endif //_WINDOWS

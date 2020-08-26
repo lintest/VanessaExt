@@ -5,7 +5,7 @@
 
 #include "ImageHelper.h"
 
-ClipboardManager::ClipboardManager(AddInNative* addin) : m_addin(addin)
+ClipboardManager::ClipboardManager()
 {
 	m_isOpened = OpenClipboard(nullptr);
 }
@@ -116,11 +116,10 @@ std::wstring ClipboardManager::GetFiles()
 	return json;
 }
 
-bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
+bool ClipboardManager::SetText(const std::wstring& text, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 	if (bEmpty) EmptyClipboard();
-	std::wstring text = VarToStr(pvarValue);
 	size_t size = (text.size() + 1) * sizeof(wchar_t);
 	if (HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, size)) {
 		memcpy(GlobalLock(hGlobal), text.c_str(), size);
@@ -134,11 +133,11 @@ bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 
 #include <shlobj.h> // DROPFILES
 
-bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
+bool ClipboardManager::SetFiles(const std::string &text, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 	if (bEmpty) EmptyClipboard();
-	nlohmann::json json = nlohmann::json::parse(WC2MB(paParams->pwstrVal));
+	nlohmann::json json = nlohmann::json::parse(text);
 	if (json.is_array()) {
 		SIZE_T clpSize = sizeof(DROPFILES);
 		for (auto element : json) {
@@ -164,41 +163,39 @@ bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
 	return true;
 }
 
-bool ClipboardManager::GetImage(tVariant* pvarValue)
+bool ClipboardManager::GetImage(VH variant)
 {
 	if (!m_isOpened) return false;
 
 	static UINT CF_PNG = RegisterClipboardFormat(L"PNG");
 	if (IsClipboardFormatAvailable(CF_PNG)) {
 		HANDLE hData = ::GetClipboardData(CF_PNG);
-		if (hData && m_addin) {
+		if (hData) {
 			void* data = ::GlobalLock(hData);
 			SIZE_T size = ::GlobalSize(hData);
-			m_addin->AllocMemory((void**)&pvarValue->pstrVal, (unsigned long)size);
-			memcpy(pvarValue->pstrVal, data, size);
-			pvarValue->strLen = (uint32_t)size;
-			TV_VT(pvarValue) = VTYPE_BLOB;
+			variant.AllocMemory(size);
+			memcpy(variant.data(), data, size);
 			::GlobalUnlock(hData);
 			return true;
 		}
 	}
 
 	HANDLE hData = ::GetClipboardData(CF_DIBV5);
-	if (hData && m_addin) {
+	if (hData) {
 		uint8_t* data = reinterpret_cast<uint8_t*>(::GlobalLock(hData));
 		// CF_DIBV5 is composed of a BITMAPV5HEADER + bitmap data
 		ImageHelper image(reinterpret_cast<BITMAPINFO*>(data), data + sizeof(BITMAPV5HEADER));
-		if (image) image.Save(m_addin, pvarValue);
+		if (image) image.Save(variant);
 		::GlobalUnlock(hData);
 	}
 	return true;
 }
 
-bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
+bool ClipboardManager::SetImage(VH variant, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 
-	ImageHelper image(paParams);
+	ImageHelper image(variant);
 	if (!image) return false;
 
 	if (bEmpty) EmptyClipboard();

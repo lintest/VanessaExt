@@ -1,5 +1,4 @@
 EXPORTS
-GetClassObject
-DestroyObject
-GetClassNames
-SetPlatformCapabilities
+	GetClassObject
+	DestroyObject
+	GetClassNames

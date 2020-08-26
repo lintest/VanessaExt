@@ -9,14 +9,14 @@ class WebSocketBase;
 
 class ProcessManager {
 public:
-	static std::wstring FindTestClient(tVariant* paParams, const long lSizeArray);
-	static std::wstring GetProcessList(tVariant* paParams, const long lSizeArray);
-	static std::wstring GetProcessInfo(tVariant* paParams, const long lSizeArray);
-	static std::wstring FindProcess(tVariant* paParams, const long lSizeArray);
-	static std::wstring OpenWebSocket(WebSocketBase** ws, tVariant* paParams, const long lSizeArray);
-	static std::wstring SendWebSocket(WebSocketBase* ws, tVariant* paParams, const long lSizeArray);
-	static std::wstring WebSocket(tVariant* paParams, const long lSizeArray);
-	static bool Sleep(tVariant* paParams, const long lSizeArray);
+	static std::wstring FindTestClient(long port);
+	static std::wstring GetProcessList(bool only1c);
+	static std::wstring GetProcessInfo(long pid);
+	static std::wstring FindProcess(const std::wstring name);
+	static std::wstring OpenWebSocket(WebSocketBase** ws, const std::string& url);
+	static std::wstring SendWebSocket(WebSocketBase** ws, const std::string& msg);
+	static std::wstring ProcessManager::WebSocket(const std::string& url, const std::string& msg);
+	static void Sleep(long interval);
 	static int64_t ProcessId();
 };
 

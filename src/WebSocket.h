@@ -13,6 +13,6 @@ public:
 	virtual bool send(const std::string& msg, std::string& res) = 0;
 };
 
-bool doWebSocket(std::string& url, std::string& msg, std::string& res);
+bool doWebSocket(const std::string& url, std::string& msg, std::string& res);
 
 #endif //__WEBSOCKET_H__

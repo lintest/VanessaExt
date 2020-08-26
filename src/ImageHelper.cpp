@@ -48,10 +48,10 @@ ImageHelper::ImageHelper(HBITMAP hBitmap)
 	m_bitmap = Gdiplus::Bitmap::FromHBITMAP(hBitmap, 0);
 }
 
-ImageHelper::ImageHelper(tVariant* pvarValue)
+ImageHelper::ImageHelper(VH variant)
 {
 	if (!GgiPlusToken::Init()) return;
-	if (IStream* pStream = CreateMemoryStream((BYTE*)pvarValue->pstrVal, pvarValue->strLen)) {
+	if (IStream* pStream = CreateMemoryStream((BYTE*)variant.data(), variant.size())) {
 		m_bitmap = Gdiplus::Bitmap::FromStream(pStream);
 		pStream->Release(); // releasing stream
 	}
@@ -131,7 +131,7 @@ BOOL ImageHelper::Save(std::vector<BYTE>& vec)
 	return Ret;
 }
 
-BOOL ImageHelper::Save(AddInNative* addin, tVariant* pvarRetValue)
+BOOL ImageHelper::Save(VH variant)
 {
 	if (!GgiPlusToken::Init()) return false;
 
@@ -150,15 +150,10 @@ BOOL ImageHelper::Save(AddInNative* addin, tVariant* pvarRetValue)
 			{
 				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
-					pvarRetValue->strLen = (ULONG)((DWORD_PTR)lSize.QuadPart);
-					addin->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
-					TV_VT(pvarRetValue) = VTYPE_BLOB;
-					if (pvarRetValue->pstrVal)
+					variant.AllocMemory(lSize.QuadPart);
+					if (SUCCEEDED(pStream->Read(variant.data(), lSize.QuadPart, 0))) // reading stream to buffer
 					{
-						if (SUCCEEDED(pStream->Read(pvarRetValue->pstrVal, pvarRetValue->strLen, 0))) // reading stream to buffer
-						{
-							Ret = TRUE;
-						}
+						Ret = TRUE;
 					}
 				}
 			}
