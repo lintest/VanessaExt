@@ -22,7 +22,7 @@ nlohmann::json RectToJson(const RECT& rect)
 	return json;
 }
 
-std::string ScreenManager::GetDisplayList(int32_t window)
+std::string ScreenManager::GetDisplayList(int64_t window)
 {
 	HWND hWnd = (HWND)window;
 	if (!IsWindow(hWnd)) hWnd = 0;
@@ -55,7 +55,7 @@ std::string ScreenManager::GetDisplayList(int32_t window)
 	return json.dump();
 }
 
-std::string ScreenManager::GetDisplayInfo(int32_t window)
+std::string ScreenManager::GetDisplayInfo(int64_t window)
 {
 	HWND hWnd = (HWND)window;
 	if (!hWnd) hWnd = ::GetForegroundWindow();
@@ -95,7 +95,7 @@ std::string ScreenManager::GetScreenList()
 	return {};
 }
 
-BOOL ScreenManager::CaptureScreen(VH variant, int32_t mode)
+BOOL ScreenManager::CaptureScreen(VH variant, int64_t mode)
 {
 	if (mode) return CaptureWindow(variant, 0);
 
@@ -138,7 +138,7 @@ BOOL ScreenManager::CaptureWindow(VH variant, HWND window)
 	return true;
 }
 
-BOOL ScreenManager::CaptureProcess(VH variant, int32_t pid)
+BOOL ScreenManager::CaptureProcess(VH variant, int64_t pid)
 {
 	class Param {
 	public:
@@ -146,7 +146,7 @@ BOOL ScreenManager::CaptureProcess(VH variant, int32_t pid)
 		std::map<HWND, bool> map;
 	};
 	Param p;
-	p.pid = pid;
+	p.pid = (DWORD)pid;
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
@@ -183,9 +183,9 @@ std::wstring ScreenManager::GetCursorPos()
 	return json;
 }
 
-BOOL ScreenManager::SetCursorPos(int32_t x, int32_t y)
+BOOL ScreenManager::SetCursorPos(int64_t x, int64_t y)
 {
-	return ::SetCursorPos(x, y);
+	return ::SetCursorPos((int)x, (int)y);
 }
 
 class Hotkey
@@ -241,7 +241,7 @@ BOOL ScreenManager::EmulateDblClick()
 	return true;
 }
 
-BOOL ScreenManager::EmulateClick(int32_t button, VH keys)
+BOOL ScreenManager::EmulateClick(int64_t button, VH keys)
 {
 	DWORD dwFlags;
 	switch (button) {
@@ -255,7 +255,7 @@ BOOL ScreenManager::EmulateClick(int32_t button, VH keys)
 		if (!hotkey.add(keys)) return false;
 	}
 	else if (keys.type() == VTYPE_I4) {
-		WORD flags = (int32_t)keys;
+		auto flags = (int64_t)keys;
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);
@@ -266,14 +266,14 @@ BOOL ScreenManager::EmulateClick(int32_t button, VH keys)
 	return true;
 }
 
-BOOL ScreenManager::EmulateWheel(int32_t sign, VH variant)
+BOOL ScreenManager::EmulateWheel(int64_t sign, VH variant)
 {
 	Hotkey hotkey;
 	if (variant.type() == VTYPE_PWSTR) {
 		if (!hotkey.add(variant)) return false;
 	}
 	else if (variant.type() == VTYPE_I4) {
-		WORD flags = int32_t(variant);
+		auto flags = int64_t(variant);
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);
@@ -285,12 +285,12 @@ BOOL ScreenManager::EmulateWheel(int32_t sign, VH variant)
 	return true;
 }
 
-BOOL ScreenManager::EmulateMouse(int32_t X, int32_t Y, int32_t C, int32_t P)
+BOOL ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P)
 {
-	double x = X;
-	double y = Y;
-	double count = C;
-	DWORD pause = P;
+	double x = (double)X;
+	double y = (double)Y;
+	double count = (double)C;
+	DWORD pause = (DWORD)P;
 
 	POINT p;
 	::GetCursorPos(&p);
@@ -326,7 +326,7 @@ BOOL ScreenManager::EmulateMouse(int32_t X, int32_t Y, int32_t C, int32_t P)
 	return true;
 }
 
-BOOL ScreenManager::EmulateHotkey(VH keys, int32_t flags)
+BOOL ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 {
 	Sleep(100);
 	Hotkey hotkey;
@@ -334,7 +334,7 @@ BOOL ScreenManager::EmulateHotkey(VH keys, int32_t flags)
 		if (!hotkey.add(keys)) return false;
 	}
 	else {
-		WORD key = (int32_t)keys;
+		WORD key = (int64_t)keys;
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);
@@ -344,7 +344,7 @@ BOOL ScreenManager::EmulateHotkey(VH keys, int32_t flags)
 	return true;
 }
 
-BOOL ScreenManager::EmulateText(const std::wstring &text, int32_t pause)
+BOOL ScreenManager::EmulateText(const std::wstring &text, int64_t pause)
 {
 	Sleep(100);
 	for (auto ch : text) {

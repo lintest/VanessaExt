@@ -11,9 +11,9 @@ static std::string WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
 	if (dwProcessId == 0) ::GetWindowThreadProcessId(hWnd, &dwProcessId);
 
 	JSON json;
-	json["Window"] = (INT64)hWnd;
+	json["Window"] = (int64_t)hWnd;
 	json["Enabled"] = (boolean)::IsWindowEnabled(hWnd);
-	json["Owner"] = (INT64)::GetWindow(hWnd, GW_OWNER);
+	json["Owner"] = (int64_t)::GetWindow(hWnd, GW_OWNER);
 	json["ProcessId"] = dwProcessId;
 
 	WCHAR buffer[256];
@@ -30,7 +30,7 @@ static std::string WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
 	return json.dump();
 }
 
-std::string WindowManager::GetWindowList(int32_t pid)
+std::string WindowManager::GetWindowList(int64_t pid)
 {
 	class Param {
 	public:
@@ -38,7 +38,7 @@ std::string WindowManager::GetWindowList(int32_t pid)
 		JSON json;
 	};
 	Param param;
-	param.pid = pid;
+	param.pid = (DWORD)pid;
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
@@ -56,7 +56,7 @@ std::string WindowManager::GetWindowList(int32_t pid)
 	return param.json.dump();
 }
 
-std::string WindowManager::GetWindowInfo(int32_t window)
+std::string WindowManager::GetWindowInfo(int64_t window)
 {
 	HWND hWnd = (HWND)window;
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -66,7 +66,7 @@ std::string WindowManager::GetWindowInfo(int32_t window)
 	return json.dump();
 }
 
-std::string WindowManager::GetWindowSize(int32_t window)
+std::string WindowManager::GetWindowSize(int64_t window)
 {
 	HWND hWnd = (HWND)window;
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -124,29 +124,29 @@ HWND WindowManager::CurrentWindow()
 	return 0;
 }
 
-bool WindowManager::SetWindowSize(int32_t window, int32_t w, int32_t h)
+bool WindowManager::SetWindowSize(int64_t window, int64_t w, int64_t h)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	if (!IsWindow(hWnd)) return true;
-	::SetWindowPos(hWnd, 0, 0, 0, w, h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+	::SetWindowPos(hWnd, 0, 0, 0, (int)w, (int)h, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
 	::UpdateWindow(hWnd);
 	return true;
 }
 
-bool WindowManager::SetWindowPos(int32_t window, int32_t x, int32_t y, int32_t w, int32_t h)
+bool WindowManager::SetWindowPos(int64_t window, int64_t x, int64_t y, int64_t w, int64_t h)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	if (!IsWindow(hWnd)) return true;
 	UINT uFlags = SWP_NOZORDER | SWP_NOOWNERZORDER;
 	if (w == 0 && h == 0) uFlags |= SWP_NOSIZE;
-	::SetWindowPos(hWnd, 0, x, y, w, h, uFlags);
+	::SetWindowPos(hWnd, 0, (int)x, (int)y, (int)w, (int)h, uFlags);
 	::UpdateWindow(hWnd);
 	return true;
 }
 
-bool WindowManager::EnableResizing(int32_t window, bool enable)
+bool WindowManager::EnableResizing(int64_t window, bool enable)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -158,7 +158,7 @@ bool WindowManager::EnableResizing(int32_t window, bool enable)
 	return true;
 }
 
-bool WindowManager::Minimize(int32_t window)
+bool WindowManager::Minimize(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -166,7 +166,7 @@ bool WindowManager::Minimize(int32_t window)
 	return SetWindowState(hWnd, 0, true);
 }
 
-bool WindowManager::Restore(int32_t window)
+bool WindowManager::Restore(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -174,7 +174,7 @@ bool WindowManager::Restore(int32_t window)
 	return SetWindowState(hWnd, 1, true);
 }
 
-bool WindowManager::Maximize(int32_t window)
+bool WindowManager::Maximize(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -182,7 +182,7 @@ bool WindowManager::Maximize(int32_t window)
 	return SetWindowState(hWnd, 2, true);
 }
 
-bool WindowManager::Activate(int32_t window)
+bool WindowManager::Activate(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -208,7 +208,7 @@ bool WindowManager::IsMaximized(HWND hWnd)
 	return place.showCmd == SW_SHOWMAXIMIZED;
 }
 
-int32_t WindowManager::GetWindowState(int32_t window)
+int64_t WindowManager::GetWindowState(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -231,12 +231,12 @@ int32_t WindowManager::GetWindowState(int32_t window)
 	}
 }
 
-bool WindowManager::SetWindowState(int32_t window, int32_t mode, bool activate)
+bool WindowManager::SetWindowState(int64_t window, int64_t mode, bool activate)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	if (!IsWindow(hWnd)) return true;
-	return SetWindowState(hWnd, mode, activate);
+	return SetWindowState(hWnd, (int)mode, activate);
 }
 
 bool WindowManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)

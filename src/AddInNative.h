@@ -24,14 +24,14 @@ public:
 	std::variant<
 		EmptyValue,
 		std::u16string,
-		int32_t,
+		int64_t,
 		double,
 		bool
 	> variant;
 public:
 	DefaultHelper() : variant(EmptyValue()) {}
 	DefaultHelper(const std::u16string& s) : variant(s) {}
-	DefaultHelper(int32_t value) : variant(value) {}
+	DefaultHelper(int64_t value) : variant(value) {}
 	DefaultHelper(double value) : variant(value) {}
 	DefaultHelper(bool value) : variant(value) {}
 	DefaultHelper(const char16_t* value) {
@@ -58,13 +58,13 @@ protected:
 		VarinantHelper& operator=(const std::string& str);
 		VarinantHelper& operator=(const std::wstring& str);
 		VarinantHelper& operator=(const std::u16string& str);
-		VarinantHelper& operator=(int32_t value);
+		VarinantHelper& operator=(int64_t value);
 		VarinantHelper& operator=(double value);
 		VarinantHelper& operator=(bool value);
 		operator std::string() const;
 		operator std::wstring() const;
 		operator std::u16string() const;
-		operator int32_t() const;
+		operator int64_t() const;
 		operator double() const;
 		operator bool() const;
 		uint32_t size();

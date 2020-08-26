@@ -286,7 +286,7 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 			VA(pvarParamDefValue) = *value;
 			return true;
 		}
-		if (auto value = std::get_if<int32_t>(var)) {
+		if (auto value = std::get_if<int64_t>(var)) {
 			VA(pvarParamDefValue) = *value;
 			return true;
 		}
@@ -540,11 +540,17 @@ void AddInNative::VarinantHelper::clear()
 	tVarInit(pvar);
 }
 
-AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(int32_t value)
+AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(int64_t value)
 {
 	clear();
-	TV_VT(pvar) = VTYPE_I4;
-	TV_I4(pvar) = value;
+	if (INT32_MIN <= value && value <= INT32_MAX) {
+		TV_VT(pvar) = VTYPE_I4;
+		TV_I4(pvar) = (int32_t)value;
+	}
+	else {
+		TV_VT(pvar) = VTYPE_R8;
+		TV_R8(pvar) = (double)value;
+	}
 	return *this;
 }
 
@@ -596,16 +602,18 @@ AddInNative::VarinantHelper::operator std::u16string() const
 	return reinterpret_cast<char16_t*>(pvar->pwstrVal);
 }
 
-AddInNative::VarinantHelper::operator int32_t() const
+AddInNative::VarinantHelper::operator int64_t() const
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
-	if (TV_VT(pvar) != VTYPE_I4) throw std::bad_typeid();
 	switch (TV_VT(pvar)) {
 	case VTYPE_I2:
 	case VTYPE_I4:
 	case VTYPE_UI1:
 	case VTYPE_ERROR:
-		return pvar->lVal;
+		return (int64_t)pvar->lVal;
+	case VTYPE_R4:
+	case VTYPE_R8:
+		return (int64_t)pvar->dblVal;
 	default:
 		throw std::bad_typeid();
 	}
@@ -615,9 +623,14 @@ AddInNative::VarinantHelper::operator double() const
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
 	switch (TV_VT(pvar)) {
+	case VTYPE_I2:
+	case VTYPE_I4:
+	case VTYPE_UI1:
+	case VTYPE_ERROR:
+		return (double)pvar->lVal;
 	case VTYPE_R4:
 	case VTYPE_R8:
-		return pvar->dblVal;
+		return (double)pvar->dblVal;
 	default:
 		throw std::bad_typeid();
 	}

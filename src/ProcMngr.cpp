@@ -148,7 +148,7 @@ std::wstring ProcessManager::GetProcessList(bool only1c)
 	return ProcessEnumerator(query.c_str());
 }
 
-std::wstring ProcessManager::GetProcessInfo(long pid)
+std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 {
 	std::wstring query;
 	query.append(L"SELECT * FROM Win32_Process WHERE ProcessId=");
@@ -166,7 +166,7 @@ std::wstring ProcessManager::FindProcess(const std::wstring name)
 	return ProcessEnumerator(name.c_str());
 }
 
-std::wstring ProcessManager::FindTestClient(long port)
+std::wstring ProcessManager::FindTestClient(int64_t port)
 {
 	std::wstring query;
 	query.append(L"SELECT ProcessId,CreationDate,CommandLine");
@@ -217,7 +217,7 @@ std::wstring ProcessManager::FindTestClient(long port)
 	return {};
 }
 
-void ProcessManager::Sleep(long interval)
+void ProcessManager::Sleep(int64_t interval)
 {
 	::Sleep(interval);
 }
