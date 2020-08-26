@@ -179,6 +179,27 @@ sudo usermod -a -G vboxsf "$USER"
 reboot
 ```
 
+Чтобы работала сборка демонстрационной внешней обработки под Linux:
++ Установить [onescript](https://oscript.io/);
++ Добавить в PATH путь к актуальной версии платформы 1с.
+  Например, так:
+  ```bash
+  sudo ln -s /opt/1cv8/x86_64/8.3.18.891/1cv8 /usr/local/bin/1cv8
+  ```
+  
+Для отладки компоненты под Linux:
++ Закомментировать строку _strip -s bin/libVanessaExt*.so_ в файле **build.sh**
++ В файле **CMakeLists.txt** заменить строку:
+
+    _SET(CMAKE_BUILD_TYPE Release CACHE STRING "Build configurations" FORCE)_
+
+  на:
+  
+    _SET(CMAKE_BUILD_TYPE **Debug** CACHE STRING "Build configurations" FORCE)_
++ При необходимости удалить установленную ранее библиотеку в папке **~/.1cv8/1C/1cv8/ExtCompT/**
+
+Если в момент присоединения к процессу 1с возникает ошибка доступа,
+можно выполнить следующую [инструкцию](https://askubuntu.com/questions/41629/after-upgrade-gdb-wont-attach-to-process).
 ***
 
 ## Установка и подключение
