@@ -1,9 +1,9 @@
-#ifndef __WINDOWMNGR_H__
-#define __WINDOWMNGR_H__
+#ifndef __WINDOWSMANAGER_H__
+#define __WINDOWSMANAGER_H__
 
 #include "stdafx.h"
 
-class WindowManager {
+class WindowsManager {
 public:
 	static HWND ActiveWindow();
 	static HWND CurrentWindow();
@@ -24,4 +24,4 @@ private:
 	static bool IsMaximized(HWND hWnd);
 };
 
-#endif //__WINDOWMNGR_H__
+#endif //__WINDOWSMANAGER_H__

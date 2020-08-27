@@ -2,43 +2,13 @@
 #define __CLIPBOARDCONTROL_H__
 
 #include "stdafx.h"
-#include "AddInBase.h"
+#include "BaseHelper.h"
 
-///////////////////////////////////////////////////////////////////////////////
-// class WindowsControl
-class ClipboardControl : public AddInBase
+class ClipboardControl : public BaseHelper
 {
 private:
-	enum Props
-	{
-		eText = 0,
-		eImage,
-		eFiles,
-		eFormat,
-		eVersion,
-	};
-
-	enum Methods
-	{
-		eEmpty = 0,
-		eSetData,
-		eSetText,
-		eSetImage,
-		eSetFiles,
-	};
-
-	static const wchar_t* m_ExtensionName;
-	static const std::vector<Alias> m_PropList;
-	static const std::vector<Alias> m_MethList;
-	const wchar_t* ExtensionName() const override { return m_ExtensionName; };
-	const std::vector<Alias>& PropList() const override { return m_PropList; };
-	const std::vector<Alias>& MethList() const override { return m_MethList; };
-
-public:
-	bool ADDIN_API GetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
-	bool ADDIN_API SetPropVal(const long lPropNum, tVariant* pvarPropVal) override;
-	bool ADDIN_API CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray) override;
-	bool ADDIN_API CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray) override;
+    static std::vector<std::u16string> names;
+    ClipboardControl();
 };
 
 #endif //__CLIPBOARDCONTROL_H__

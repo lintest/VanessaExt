@@ -1,24 +1,27 @@
-#ifndef __SCREENMNGR_H__
-#define __SCREENMNGR_H__
+#ifndef __SCREENMANAGER_H__
+#define __SCREENMANAGER_H__
 
 #include "stdafx.h"
 
 #include "AddInNative.h"
+#include "BaseHelper.h"
 
-class ScreenManager
-	: public AddInNative 
+class BaseHelper::ScreenManager
 {
+#ifdef _WINDOWS
+protected:
+	static BOOL CaptureWindow(VH variant, HWND window);
+#endif//_WINDOWS
 public:
 	ScreenManager() { }
 	static std::string GetScreenInfo();
 	static std::string GetScreenList();
 	static std::string GetDisplayInfo(int64_t window);
 	static std::string GetDisplayList(int64_t window);
-	BOOL CaptureProcess(VH variant, int64_t pid);
-	BOOL CaptureScreen(VH variant, int64_t mode);
-	BOOL CaptureWindow(VH variant, HWND window);
-public:
-	static std::wstring GetCursorPos();
+	static BOOL CaptureProcess(VH variant, int64_t pid);
+	static BOOL CaptureScreen(VH variant, int64_t mode);
+	static BOOL CaptureWindow(VH variant, int64_t window);
+	static std::string GetCursorPos();
 	static BOOL SetCursorPos(int64_t x, int64_t y);
 	static BOOL EmulateClick(int64_t button, VH keys);
 	static BOOL EmulateDblClick();
@@ -28,4 +31,4 @@ public:
 	static BOOL EmulateText(const std::wstring& text, int64_t pause);
 };
 
-#endif //__SCREENMNGR_H__
+#endif //__SCREENMANAGER_H__

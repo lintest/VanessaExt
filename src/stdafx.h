@@ -14,4 +14,7 @@
 std::wstring MB2WC(const std::string& source);
 std::string WC2MB(const std::wstring& source);
 
+#include "json.hpp"
+using JSON = nlohmann::json;
+
 #endif //__STDAFX_H__

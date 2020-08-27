@@ -1,16 +1,16 @@
-#ifndef __CLIPMNGR_H__
-#define __CLIPMNGR_H__
+#ifndef __CLIPBOARDMANAGER_H__
+#define __CLIPBOARDMANAGER_H__
 
 #include "AddInNative.h"
+#include "BaseHelper.h"
 #include <map>
 
-class ClipboardManager
-	: public AddInNative 
+class BaseHelper::ClipboardManager
 {
 public:
 	ClipboardManager();
 	virtual ~ClipboardManager();
-	std::wstring GetFormat();
+	std::string GetFormat();
 	std::wstring GetText();
 	std::wstring GetFiles();
 	bool GetImage(VH data);
@@ -23,4 +23,4 @@ private:
 	bool m_isOpened = false;
 };
 
-#endif //__CLIPMNGR_H__
+#endif //__CLIPBOARDMANAGER_H__

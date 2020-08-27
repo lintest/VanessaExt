@@ -42,13 +42,13 @@ static IStream* CreateMemoryStream(const BYTE* pInit, UINT cbInit)
 	return nullptr;
 }
 
-ImageHelper::ImageHelper(HBITMAP hBitmap)
+BaseHelper::ImageHelper::ImageHelper(HBITMAP hBitmap)
 {
 	if (!GgiPlusToken::Init()) return;
 	m_bitmap = Gdiplus::Bitmap::FromHBITMAP(hBitmap, 0);
 }
 
-ImageHelper::ImageHelper(VH variant)
+BaseHelper::ImageHelper::ImageHelper(VH variant)
 {
 	if (!GgiPlusToken::Init()) return;
 	if (IStream* pStream = CreateMemoryStream((BYTE*)variant.data(), variant.size())) {
@@ -57,13 +57,13 @@ ImageHelper::ImageHelper(VH variant)
 	}
 }
 
-ImageHelper::ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData)
+BaseHelper::ImageHelper::ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData)
 {
 	if (!GgiPlusToken::Init()) return;
 	m_bitmap = Gdiplus::Bitmap::FromBITMAPINFO(gdiBitmapInfo, gdiBitmapData);
 }
 
-ImageHelper::operator HBITMAP() const
+BaseHelper::ImageHelper::operator HBITMAP() const
 {
 	HBITMAP hbitmap = NULL;
 	auto status = m_bitmap->GetHBITMAP(NULL, &hbitmap);
@@ -100,7 +100,7 @@ int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
 	return -1;  // Failure
 }
 
-BOOL ImageHelper::Save(std::vector<BYTE>& vec)
+BOOL BaseHelper::ImageHelper::Save(std::vector<BYTE>& vec)
 {
 	if (!GgiPlusToken::Init()) return false;
 
@@ -131,7 +131,7 @@ BOOL ImageHelper::Save(std::vector<BYTE>& vec)
 	return Ret;
 }
 
-BOOL ImageHelper::Save(VH variant)
+BOOL BaseHelper::ImageHelper::Save(VH variant)
 {
 	if (!GgiPlusToken::Init()) return false;
 

@@ -1,12 +1,9 @@
 #include "stdafx.h"
-#include "WindowMngr.h"
-#include "json.hpp"
-
-using JSON = nlohmann::json;
+#include "WindowsManager.h"
 
 #ifdef _WINDOWS
 
-static std::string WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
+static JSON WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
 {
 	if (dwProcessId == 0) ::GetWindowThreadProcessId(hWnd, &dwProcessId);
 
@@ -27,10 +24,10 @@ static std::string WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
 		::GetWindowText(hWnd, &text[0], length + 1);
 		json["Title"] = WC2MB(text);
 	}
-	return json.dump();
+	return json;
 }
 
-std::string WindowManager::GetWindowList(int64_t pid)
+std::string WindowsManager::GetWindowList(int64_t pid)
 {
 	class Param {
 	public:
@@ -56,7 +53,7 @@ std::string WindowManager::GetWindowList(int64_t pid)
 	return param.json.dump();
 }
 
-std::string WindowManager::GetWindowInfo(int64_t window)
+std::string WindowsManager::GetWindowInfo(int64_t window)
 {
 	HWND hWnd = (HWND)window;
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -66,7 +63,7 @@ std::string WindowManager::GetWindowInfo(int64_t window)
 	return json.dump();
 }
 
-std::string WindowManager::GetWindowSize(int64_t window)
+std::string WindowsManager::GetWindowSize(int64_t window)
 {
 	HWND hWnd = (HWND)window;
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -84,12 +81,12 @@ std::string WindowManager::GetWindowSize(int64_t window)
 	return json.dump();
 }
 
-HWND WindowManager::ActiveWindow()
+HWND WindowsManager::ActiveWindow()
 {
 	return ::GetForegroundWindow();
 }
 
-HWND WindowManager::CurrentWindow()
+HWND WindowsManager::CurrentWindow()
 {
 	DWORD pid = GetCurrentProcessId();
 	std::pair<HWND, DWORD> params = { 0, pid };
@@ -124,7 +121,7 @@ HWND WindowManager::CurrentWindow()
 	return 0;
 }
 
-bool WindowManager::SetWindowSize(int64_t window, int64_t w, int64_t h)
+bool WindowsManager::SetWindowSize(int64_t window, int64_t w, int64_t h)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -134,7 +131,7 @@ bool WindowManager::SetWindowSize(int64_t window, int64_t w, int64_t h)
 	return true;
 }
 
-bool WindowManager::SetWindowPos(int64_t window, int64_t x, int64_t y, int64_t w, int64_t h)
+bool WindowsManager::SetWindowPos(int64_t window, int64_t x, int64_t y, int64_t w, int64_t h)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -146,7 +143,7 @@ bool WindowManager::SetWindowPos(int64_t window, int64_t x, int64_t y, int64_t w
 	return true;
 }
 
-bool WindowManager::EnableResizing(int64_t window, bool enable)
+bool WindowsManager::EnableResizing(int64_t window, bool enable)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -158,7 +155,7 @@ bool WindowManager::EnableResizing(int64_t window, bool enable)
 	return true;
 }
 
-bool WindowManager::Minimize(int64_t window)
+bool WindowsManager::Minimize(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -166,7 +163,7 @@ bool WindowManager::Minimize(int64_t window)
 	return SetWindowState(hWnd, 0, true);
 }
 
-bool WindowManager::Restore(int64_t window)
+bool WindowsManager::Restore(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -174,7 +171,7 @@ bool WindowManager::Restore(int64_t window)
 	return SetWindowState(hWnd, 1, true);
 }
 
-bool WindowManager::Maximize(int64_t window)
+bool WindowsManager::Maximize(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -182,7 +179,7 @@ bool WindowManager::Maximize(int64_t window)
 	return SetWindowState(hWnd, 2, true);
 }
 
-bool WindowManager::Activate(int64_t window)
+bool WindowsManager::Activate(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -199,7 +196,7 @@ bool WindowManager::Activate(int64_t window)
 	return true;
 }
 
-bool WindowManager::IsMaximized(HWND hWnd)
+bool WindowsManager::IsMaximized(HWND hWnd)
 {
 	WINDOWPLACEMENT place;
 	memset(&place, 0, sizeof(WINDOWPLACEMENT));
@@ -208,7 +205,7 @@ bool WindowManager::IsMaximized(HWND hWnd)
 	return place.showCmd == SW_SHOWMAXIMIZED;
 }
 
-int64_t WindowManager::GetWindowState(int64_t window)
+int64_t WindowsManager::GetWindowState(int64_t window)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -231,7 +228,7 @@ int64_t WindowManager::GetWindowState(int64_t window)
 	}
 }
 
-bool WindowManager::SetWindowState(int64_t window, int64_t mode, bool activate)
+bool WindowsManager::SetWindowState(int64_t window, int64_t mode, bool activate)
 {
 	HWND hWnd = HWND(window);
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -239,7 +236,7 @@ bool WindowManager::SetWindowState(int64_t window, int64_t mode, bool activate)
 	return SetWindowState(hWnd, (int)mode, activate);
 }
 
-bool WindowManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)
+bool WindowsManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)
 {
 	if (IsWindow(hWnd)) {
 		if (IsWindowVisible(hWnd)) {
@@ -325,20 +322,20 @@ public:
 	}
 };
 
-bool WindowManager::IsMaximized(HWND hWnd)
+bool WindowsManager::IsMaximized(HWND hWnd)
 {
 	//TODO
 	return false;
 }
 
-std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeArray)
+std::wstring WindowsManager::GetWindowList(tVariant* paParams, const long lSizeArray)
 {
 	unsigned long pid = 0;
 	if (lSizeArray > 0) pid = VarToInt(paParams);
 	return WindowList(pid).Enumerate();
 }
 
-std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)
+std::wstring WindowsManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
@@ -346,7 +343,7 @@ std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeAr
 	return WindowInfo(window);
 }
 
-std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
+std::wstring WindowsManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
@@ -354,12 +351,12 @@ std::wstring WindowManager::GetWindowSize(tVariant* paParams, const long lSizeAr
 	return WindowSize(window);
 }
 
-HWND WindowManager::ActiveWindow()
+HWND WindowsManager::ActiveWindow()
 {
 	return WindowHelper().GetActiveWindow();
 }
 
-bool WindowManager::Activate(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::Activate(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 1) return false;
 	Window window = VarToInt(paParams);
@@ -367,7 +364,7 @@ bool WindowManager::Activate(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-bool  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
+bool  WindowsManager::Restore(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
@@ -376,7 +373,7 @@ bool  WindowManager::Restore(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-bool  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
+bool  WindowsManager::Maximize(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
@@ -385,7 +382,7 @@ bool  WindowManager::Maximize(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-bool WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::Minimize(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
@@ -394,7 +391,7 @@ bool WindowManager::Minimize(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-bool WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 3) return false;
 	Window window = VarToInt(paParams);
@@ -405,7 +402,7 @@ bool WindowManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-bool WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 5) return false;
 	Window window = VarToInt(paParams);
@@ -418,7 +415,7 @@ bool WindowManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-bool WindowManager::EnableResizing(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::EnableResizing(tVariant* paParams, const long lSizeArray)
 {
 	return true;
 }

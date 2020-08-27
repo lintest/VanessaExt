@@ -15,7 +15,6 @@
         "bin32": true,
         "bin": true,
         "AddIn.zip": true,
-        "*.bat": true,
         "*.sln": true,
         "*/*.def": true,
         "*/*.d": true,

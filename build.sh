@@ -79,7 +79,7 @@ if [ -z "$1" ]; then
   if [ -n "$(command -v oscript)" ]; then
     Path1C=$(command -v 1cv8 || true)
     export Path1C
-    oscript ./MakePack.os
+    oscript ./tools/ZipLibrary.os
     cp -f ./AddIn.zip ./Example/Templates/VanessaExt/Ext/Template.bin
     oscript ./tools/Compile.os ./
   fi

@@ -1,21 +1,21 @@
-#include "ClipMngr.h"
-#include "json_ext.h"
+#include "ClipboardManager.h"
+#include "json.hpp"
 
 #ifdef _WINDOWS
 
 #include "ImageHelper.h"
 
-ClipboardManager::ClipboardManager()
+BaseHelper::ClipboardManager::ClipboardManager()
 {
 	m_isOpened = OpenClipboard(nullptr);
 }
 
-ClipboardManager::~ClipboardManager()
+BaseHelper::ClipboardManager::~ClipboardManager()
 {
 	if (m_isOpened) CloseClipboard();
 }
 
-const std::map<int, std::string> ClipboardManager::sm_formats{
+const std::map<int, std::string> BaseHelper::ClipboardManager::sm_formats{
 	{ CF_TEXT            , "TEXT"            },
 	{ CF_BITMAP          , "BITMAP"        	 },
 	{ CF_METAFILEPICT    , "METAFILEPICT"  	 },
@@ -41,7 +41,7 @@ const std::map<int, std::string> ClipboardManager::sm_formats{
 	{ CF_DSPENHMETAFILE  , "DSPENHMETAFILE"  },
 };
 
-std::wstring ClipboardManager::GetFormat()
+std::string BaseHelper::ClipboardManager::GetFormat()
 {
 	JSON json;
 	UINT format = 0;
@@ -60,7 +60,7 @@ std::wstring ClipboardManager::GetFormat()
 		}
 		json.push_back(j);
 	}
-	return json;
+	return json.dump();
 }
 
 static std::vector<std::wstring> FileList()
@@ -82,7 +82,7 @@ static std::vector<std::wstring> FileList()
 	return result;
 }
 
-std::wstring ClipboardManager::GetText()
+std::wstring BaseHelper::ClipboardManager::GetText()
 {
 	if (!m_isOpened) return {};
 	std::wstring result;
@@ -107,7 +107,7 @@ std::wstring ClipboardManager::GetText()
 	return result;
 }
 
-std::wstring ClipboardManager::GetFiles()
+std::wstring BaseHelper::ClipboardManager::GetFiles()
 {
 	JSON json;
 	for (auto& it : FileList()) {
@@ -116,7 +116,7 @@ std::wstring ClipboardManager::GetFiles()
 	return json;
 }
 
-bool ClipboardManager::SetText(const std::wstring& text, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetText(const std::wstring& text, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 	if (bEmpty) EmptyClipboard();
@@ -133,7 +133,7 @@ bool ClipboardManager::SetText(const std::wstring& text, bool bEmpty)
 
 #include <shlobj.h> // DROPFILES
 
-bool ClipboardManager::SetFiles(const std::string &text, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetFiles(const std::string &text, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 	if (bEmpty) EmptyClipboard();
@@ -163,7 +163,7 @@ bool ClipboardManager::SetFiles(const std::string &text, bool bEmpty)
 	return true;
 }
 
-bool ClipboardManager::GetImage(VH variant)
+bool BaseHelper::ClipboardManager::GetImage(VH variant)
 {
 	if (!m_isOpened) return false;
 
@@ -191,7 +191,7 @@ bool ClipboardManager::GetImage(VH variant)
 	return true;
 }
 
-bool ClipboardManager::SetImage(VH variant, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetImage(VH variant, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 
@@ -238,7 +238,7 @@ bool ClipboardManager::SetImage(VH variant, bool bEmpty)
 	return false;
 }
 
-bool ClipboardManager::Empty()
+bool BaseHelper::ClipboardManager::Empty()
 {
 	return ::EmptyClipboard();
 }
@@ -256,21 +256,21 @@ namespace clip {
 	}
 }
 
-ClipboardManager::ClipboardManager(AddInNative* addin) : m_addin(addin)
+BaseHelper::ClipboardManager::ClipboardManager(AddInNative* addin) : m_addin(addin)
 {
 }
 
-ClipboardManager::~ClipboardManager()
+BaseHelper::ClipboardManager::~ClipboardManager()
 {
 }
 
-bool ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
 {
 	std::wstring text = VarToStr(pvarValue);
 	return clip::set_text(WC2MB(text));
 }
 
-std::wstring ClipboardManager::GetFormat()
+std::wstring BaseHelper::ClipboardManager::GetFormat()
 {
   clip::lock l;
   if (l.locked()) {
@@ -280,14 +280,14 @@ std::wstring ClipboardManager::GetFormat()
   return {};
 }
 
-std::wstring ClipboardManager::GetText()
+std::wstring BaseHelper::ClipboardManager::GetText()
 {
 	std::string text;
 	clip::get_text(text);
 	return MB2WC(text);
 }
 
-bool ClipboardManager::GetImage(tVariant* pvarRetValue)
+bool BaseHelper::ClipboardManager::GetImage(tVariant* pvarRetValue)
 {
 	clip::image image;
 	clip::get_image(image);
@@ -301,25 +301,25 @@ bool ClipboardManager::GetImage(tVariant* pvarRetValue)
 	return true;
 }
 
-bool ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
 {
 	clip::image image;
 	clip::x11::read_png((uint8_t*)paParams->pstrVal, paParams->strLen, &image, nullptr);
 	return clip::set_image(image);
 }
 
-bool ClipboardManager::Empty()
+bool BaseHelper::ClipboardManager::Empty()
 {
 	clip::clear();
 	return true;
 }
 
-std::wstring ClipboardManager::GetFiles()
+std::wstring BaseHelper::ClipboardManager::GetFiles()
 {
 	return {};
 }
 
-bool ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
 {
 	return true;
 }

@@ -1,101 +1,35 @@
 ﻿#include "stdafx.h"
-
-#ifdef _WINDOWS
-#pragma setlocale("ru-RU" )
-#else //_WINDOWS
-#include <unistd.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <errno.h>
-#include <iconv.h>
-#include <sys/time.h>
-#endif //_WINDOWS
-
 #include "ClipboardControl.h"
+#include "ClipboardManager.h"
 #include "version.h"
 
-#include "ClipMngr.h"
-
-const wchar_t* ClipboardControl::m_ExtensionName = L"ClipboardControl";
-
-const std::vector<AddInBase::Alias> ClipboardControl::m_PropList{
-	Alias(eText    , true  , L"Text"    , L"Текст"),
-	Alias(eFiles   , true  , L"Files"   , L"Файлы"),
-	Alias(eImage   , true  , L"Image"   , L"Картинка"),
-	Alias(eFormat  , false , L"Format"  , L"Формат"),
-	Alias(eVersion , false , L"Version" , L"Версия"),
+std::vector<std::u16string> ClipboardControl::names = {
+	AddComponent(u"ClipboardControl", []() { return new ClipboardControl; }),
 };
 
-const std::vector<AddInBase::Alias> ClipboardControl::m_MethList{
-	Alias(eEmpty    , 0, false , L"Очистить"         , L"Empty"),
-	Alias(eSetText  , 1, false , L"ЗаписатьТекст"    , L"SetText"),
-	Alias(eSetData  , 1, false , L"ЗаписатьДанные"   , L"SetData"),
-	Alias(eSetImage , 1, false , L"ЗаписатьКартинку" , L"SetImage"),
-	Alias(eSetFiles , 1, false , L"ЗаписатьФайлы"   ,  L"SetFiles"),
-};
+ClipboardControl::ClipboardControl()
+{
+	AddProperty(u"Text", u"Текст",
+		[&](VH var) { var = ClipboardManager().GetText(); },
+		[&](VH var) { ClipboardManager().SetText(var); }
+	);
+	AddProperty(u"Files", u"Файлы", 
+		[&](VH var) { var = ClipboardManager().GetFiles(); },
+		[&](VH var) { ClipboardManager().SetFiles(var); }
+	);
+	AddProperty(u"Image", u"Картинка", 
+		[&](VH var) { ClipboardManager().GetImage(var); },
+		[&](VH var) { ClipboardManager().SetImage(var); }
+	);
+	AddProperty(u"Format", u"Формат",
+		[&](VH var) { var = ClipboardManager().GetFormat(); }
+	);
+	AddProperty(u"Version", u"Версия", 
+		[&](VH var) { var = std::string(VER_FILE_VERSION_STR); }
+	);
 
-/////////////////////////////////////////////////////////////////////////////
-// ILanguageExtenderBase
-//---------------------------------------------------------------------------//
-bool ClipboardControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
-{
-	switch (lPropNum) {
-	case eImage:
-		return ClipboardManager(this).GetImage(pvarPropVal);
-	case eText:
-		return VA(pvarPropVal) << ClipboardManager(this).GetText();
-	case eFiles:
-		return VA(pvarPropVal) << ClipboardManager(this).GetFiles();
-	case eFormat:
-		return VA(pvarPropVal) << ClipboardManager(this).GetFormat();
-	case eVersion:
-		return VA(pvarPropVal) << MB2WC(VER_FILE_VERSION_STR);
-	default:
-		return false;
-	}
-}
-
-#define ASSERT(c, m) if (!(c)) { addError(m); return false; }
-
-//---------------------------------------------------------------------------//
-bool ClipboardControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
-{
-	switch (lPropNum) {
-	case eImage:
-		ASSERT(TV_VT(pvarPropVal) == VTYPE_BLOB, L"Parameter type mismatch.");
-		return ClipboardManager(this).SetImage(pvarPropVal);
-	case eText: {
-		ASSERT(TV_VT(pvarPropVal) == VTYPE_PWSTR, L"Parameter type mismatch.");
-		return ClipboardManager(this).SetText(pvarPropVal);
-	case eFiles:
-		ASSERT(TV_VT(pvarPropVal) == VTYPE_PWSTR, L"Parameter type mismatch.");
-		return ClipboardManager(this).SetFiles(pvarPropVal);
-	}
-	default:
-		return false;
-	}
-}
-//---------------------------------------------------------------------------//
-bool ClipboardControl::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
-{
-	return false;
-}
-//---------------------------------------------------------------------------//
-bool ClipboardControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{
-	switch (lMethodNum) {
-	case eEmpty:
-		return VA(pvarRetValue) << ClipboardManager(this).Empty();
-	case eSetText:
-		ASSERT(TV_VT(paParams) == VTYPE_PWSTR, L"Parameter type mismatch.");
-		return VA(pvarRetValue) << ClipboardManager(this).SetText(paParams, false);
-	case eSetImage:
-		ASSERT(TV_VT(paParams) == VTYPE_BLOB, L"Parameter type mismatch.");
-		return VA(pvarRetValue) << ClipboardManager(this).SetImage(paParams, false);
-	case eSetFiles:
-		ASSERT(TV_VT(paParams) == VTYPE_PWSTR, L"Parameter type mismatch.");
-		return VA(pvarRetValue) << ClipboardManager(this).SetFiles(paParams, false);
-	default:
-		return false;
-	}
+	AddFunction(u"Empty", u"Очистить", [&]() { this->result = ClipboardManager().Empty(); });
+	AddFunction(u"SetText", u"ЗаписатьТекст", [&](VH var) { this->result = ClipboardManager().SetText(var); });
+	AddFunction(u"SetFiles", u"ЗаписатьФайлы", [&](VH var) { this->result = ClipboardManager().SetFiles(var); });
+	AddFunction(u"SetImage", u"ЗаписатьКартинку", [&](VH var) { this->result = ClipboardManager().SetImage(var); });
 }

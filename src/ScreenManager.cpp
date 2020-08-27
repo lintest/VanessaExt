@@ -1,7 +1,6 @@
 #include "stdafx.h"
+#include "ScreenManager.h"
 #include <math.h>
-#include "ScreenMngr.h"
-#include "json_ext.h"
 
 #ifdef _WINDOWS
 
@@ -22,7 +21,7 @@ nlohmann::json RectToJson(const RECT& rect)
 	return json;
 }
 
-std::string ScreenManager::GetDisplayList(int64_t window)
+std::string BaseHelper::ScreenManager::GetDisplayList(int64_t window)
 {
 	HWND hWnd = (HWND)window;
 	if (!IsWindow(hWnd)) hWnd = 0;
@@ -55,7 +54,7 @@ std::string ScreenManager::GetDisplayList(int64_t window)
 	return json.dump();
 }
 
-std::string ScreenManager::GetDisplayInfo(int64_t window)
+std::string BaseHelper::ScreenManager::GetDisplayInfo(int64_t window)
 {
 	HWND hWnd = (HWND)window;
 	if (!hWnd) hWnd = ::GetForegroundWindow();
@@ -77,7 +76,7 @@ std::string ScreenManager::GetDisplayInfo(int64_t window)
 	return json.dump();
 }
 
-std::string ScreenManager::GetScreenInfo()
+std::string BaseHelper::ScreenManager::GetScreenInfo()
 {
 	RECT rect, work{ 0,0,0,0 };
 	rect.left = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -90,14 +89,14 @@ std::string ScreenManager::GetScreenInfo()
 	return json.dump();
 }
 
-std::string ScreenManager::GetScreenList()
+std::string BaseHelper::ScreenManager::GetScreenList()
 {
 	return {};
 }
 
-BOOL ScreenManager::CaptureScreen(VH variant, int64_t mode)
+BOOL BaseHelper::ScreenManager::CaptureScreen(VH variant, int64_t mode)
 {
-	if (mode) return CaptureWindow(variant, 0);
+	if (mode) return CaptureWindow(variant, (HWND)0);
 
 	HWND hWnd = ::GetForegroundWindow();
 	if (IsWindow(hWnd)) UpdateWindow(hWnd);
@@ -118,7 +117,12 @@ BOOL ScreenManager::CaptureScreen(VH variant, int64_t mode)
 	return true;
 }
 
-BOOL ScreenManager::CaptureWindow(VH variant, HWND window)
+BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, int64_t window)
+{
+	return CaptureWindow(variant, (HWND)window);
+}
+
+BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, HWND window)
 {
 	HWND hWnd = (HWND)window;
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -138,7 +142,7 @@ BOOL ScreenManager::CaptureWindow(VH variant, HWND window)
 	return true;
 }
 
-BOOL ScreenManager::CaptureProcess(VH variant, int64_t pid)
+BOOL BaseHelper::ScreenManager::CaptureProcess(VH variant, int64_t pid)
 {
 	class Param {
 	public:
@@ -173,17 +177,17 @@ BOOL ScreenManager::CaptureProcess(VH variant, int64_t pid)
 	return true;
 }
 
-std::wstring ScreenManager::GetCursorPos()
+std::string BaseHelper::ScreenManager::GetCursorPos()
 {
 	POINT pos;
 	::GetCursorPos(&pos);
 	JSON json;
 	json["x"] = pos.x;
 	json["y"] = pos.y;
-	return json;
+	return json.dump();
 }
 
-BOOL ScreenManager::SetCursorPos(int64_t x, int64_t y)
+BOOL BaseHelper::ScreenManager::SetCursorPos(int64_t x, int64_t y)
 {
 	return ::SetCursorPos((int)x, (int)y);
 }
@@ -233,7 +237,7 @@ public:
 	}
 };
 
-BOOL ScreenManager::EmulateDblClick()
+BOOL BaseHelper::ScreenManager::EmulateDblClick()
 {
 	DWORD dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
 	mouse_event(dwFlags, 0, 0, 0, 0);
@@ -241,7 +245,7 @@ BOOL ScreenManager::EmulateDblClick()
 	return true;
 }
 
-BOOL ScreenManager::EmulateClick(int64_t button, VH keys)
+BOOL BaseHelper::ScreenManager::EmulateClick(int64_t button, VH keys)
 {
 	DWORD dwFlags;
 	switch (button) {
@@ -266,7 +270,7 @@ BOOL ScreenManager::EmulateClick(int64_t button, VH keys)
 	return true;
 }
 
-BOOL ScreenManager::EmulateWheel(int64_t sign, VH variant)
+BOOL BaseHelper::ScreenManager::EmulateWheel(int64_t sign, VH variant)
 {
 	Hotkey hotkey;
 	if (variant.type() == VTYPE_PWSTR) {
@@ -285,7 +289,7 @@ BOOL ScreenManager::EmulateWheel(int64_t sign, VH variant)
 	return true;
 }
 
-BOOL ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P)
+BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P)
 {
 	double x = (double)X;
 	double y = (double)Y;
@@ -326,7 +330,7 @@ BOOL ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P)
 	return true;
 }
 
-BOOL ScreenManager::EmulateHotkey(VH keys, int64_t flags)
+BOOL BaseHelper::ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 {
 	Sleep(100);
 	Hotkey hotkey;
@@ -344,7 +348,7 @@ BOOL ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 	return true;
 }
 
-BOOL ScreenManager::EmulateText(const std::wstring &text, int64_t pause)
+BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring &text, int64_t pause)
 {
 	Sleep(100);
 	for (auto ch : text) {
@@ -371,7 +375,7 @@ BOOL ScreenManager::EmulateText(const std::wstring &text, int64_t pause)
 class ScreenEnumerator : public WindowHelper
 {
 public:
-	std::wstring Enumerate() {
+	std::string Enumerate() {
 		int count_screens = ScreenCount(display);
 		for (int i = 0; i < count_screens; ++i) {
 			Screen* screen = ScreenOfDisplay(display, i);
@@ -381,7 +385,7 @@ public:
 			j["Height"] = screen->height;
 			json.push_back(j);
 		}
-		return json;
+		return json.dump();
 	}
 };
 
@@ -405,7 +409,7 @@ static void Assign(JSON& json, Display* display, XRRMonitorInfo* info)
 class DisplayEnumerator : public WindowHelper
 {
 public:
-	std::wstring Enumerate(Window window) {
+	std::string Enumerate(Window window) {
 		int	count;
 		Rect rect = Rect(display, window);
 		Window root = DefaultRootWindow(display);
@@ -421,14 +425,14 @@ public:
 			json.push_back(j);
 		}
 		XFree(monitors);
-		return json;
+		return json.dump();
 	}
 };
 
 class DisplayFinder : public WindowHelper
 {
 public:
-	std::wstring FindDisplay(Window window) {
+	std::string FindDisplay(Window window) {
 		Rect rect = Rect(display, window);
 		if (window == 0) window = GetActiveWindow();
 		int	count = -1, result = -1; int sq = 0;
@@ -443,35 +447,35 @@ public:
 			Assign(json, display, monitors + result);
 		}
 		XFree(monitors);
-		return json;
+		return json.dump();
 	}
 };
 
-std::wstring ScreenManager::GetScreenList()
+std::wstring BaseHelper::ScreenManager::GetScreenList()
 {
 	return ScreenEnumerator().Enumerate();
 }
 
-std::wstring ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
+std::wstring BaseHelper::ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
 	return DisplayEnumerator().Enumerate(window);
 }
 
-std::wstring ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+std::wstring BaseHelper::ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
 {
 	Window window = 0;
 	if (lSizeArray > 0) window = VarToInt(paParams);
 	return DisplayFinder().FindDisplay(window);
 }
 
-BOOL ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	return CaptureWindow(pvarRetValue, 0);
 }
 
-BOOL ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
+BOOL BaseHelper::ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (display == NULL) return false;
@@ -528,7 +532,7 @@ public:
 	}
 };
 
-BOOL ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray <= 0) return false;
 	Window window = ProcWindows::TopWindow(VarToInt(paParams));
@@ -570,7 +574,7 @@ public:
 	}
 };
 
-std::wstring ScreenManager::GetScreenInfo()
+std::string BaseHelper::ScreenManager::GetScreenInfo()
 {
 	ScreenHelper helper;
 	if (helper) return helper;
@@ -583,10 +587,10 @@ std::wstring ScreenManager::GetScreenInfo()
 	json["Right"] = json["Width"] = DisplayWidth(display, number);
 	json["Bottom"] = json["Height"] = DisplayHeight(display, number);
 	XCloseDisplay(display);
-	return json;
+	return json.dump();
 }
 
-std::wstring ScreenManager::GetCursorPos()
+std::string BaseHelper::ScreenManager::GetCursorPos()
 {
 	Display* dsp = XOpenDisplay(NULL);
 	if (!dsp) return {};
@@ -608,10 +612,10 @@ std::wstring ScreenManager::GetCursorPos()
 	JSON json;
 	json["x"] = event.xbutton.x;
 	json["y"] = event.xbutton.y;
-	return json;
+	return json.dump();
 }
 
-BOOL ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
 {
 	if (lSizeArray < 2) return false;
 	const int x = VarToInt(paParams);
@@ -683,7 +687,7 @@ public:
 	}
 };
 
-BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
@@ -715,7 +719,7 @@ BOOL ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
@@ -742,7 +746,7 @@ BOOL ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
@@ -755,7 +759,7 @@ BOOL ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
@@ -805,7 +809,7 @@ BOOL ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 {
 	usleep(100 * 1000);
 	Hotkey hotkey;
@@ -825,7 +829,7 @@ BOOL ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
 	return true;
 }
 
-BOOL ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
 {
 	std::wcout << L"EmulateText";
 	Display* display = XOpenDisplay(NULL);

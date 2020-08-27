@@ -1,5 +1,5 @@
-#ifndef __PROCMNG_H__
-#define __PROCMNG_H__
+#ifndef __PROCESSMANAGER_H__
+#define __PROCESSMANAGER_H__
 
 #include <types.h>
 #include <string>
@@ -20,4 +20,4 @@ public:
 	static int64_t ProcessId();
 };
 
-#endif //__PROCMNG_H__
+#endif //__PROCESSMANAGER_H__

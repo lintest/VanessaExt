@@ -7,24 +7,32 @@ add_library(${TARGET} SHARED
 	src/AddInNative.cpp
 	src/AddInNative.def
 	src/AddInNative.h
+	src/BaseHelper.h
+	src/ClipboardControl.cpp
+	src/ClipboardControl.h
+	src/ClipboardManager.cpp 
+	src/ClipboardManager.h 
 	src/FileFinder.cpp 
 	src/FileFinder.h 
 	src/ImageHelper.cpp
 	src/ImageHelper.h
-	src/ProcMngr.cpp
-	src/ProcMngr.h
-	src/ClipMngr.cpp 
-	src/ClipMngr.h 
-	src/ScreenMngr.cpp 
-	src/ScreenMngr.h 
+	src/ProcessControl.cpp
+	src/ProcessControl.h
+	src/ProcessManager.cpp
+	src/ProcessManager.h
+	src/ScreenManager.cpp 
+	src/ScreenManager.h 
 	src/WebSocket.h
 	src/WebSocket.cpp
-	src/WindowMngr.cpp
-	src/WindowMngr.h
+	src/WindowsControl.cpp
+	src/WindowsControl.h
+	src/WindowsManager.cpp
+	src/WindowsManager.h
 	src/screenshot.cpp
 	src/screenshot.h
 	src/xcb_clip.cpp
 	src/xcb_clip.h
+	src/version.h
 	src/json.hpp
 	src/stdafx.h)
 
@@ -46,12 +54,11 @@ else(UNIX)
 	if (NOT MSVC)
 		message(FATAL_ERROR "Must be compiled with MSVC on Windows")
 	endif(NOT MSVC)
-	set(MyPrefix "lib")
 	set(MySuffix1 "Win")
 endif(UNIX)
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES
-	   OUTPUT_NAME ${MyPrefix}${PROJECT_NAME}${MySuffix1}${MySuffix2} 
+	   OUTPUT_NAME ${PROJECT_NAME}${MySuffix1}${MySuffix2} 
 	   POSITION_INDEPENDENT_CODE ON 
 	   CXX_STANDARD_REQUIRED ON
 	   CXX_STANDARD 17
@@ -78,7 +85,7 @@ set(Boost_USE_STATIC_RUNTIME ON)
 set(Boost_NO_SYSTEM_PATHS TRUE) 
 
 if (Boost_NO_SYSTEM_PATHS)
-  set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../boost_1_72_0")
+  set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../boost_1_74_0")
   set(BOOST_INCLUDE_DIRS "${BOOST_ROOT}/include")
   set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
 endif (Boost_NO_SYSTEM_PATHS)

@@ -1,8 +1,6 @@
 ﻿#include "stdafx.h"
 
-#ifdef _WINDOWS
-#pragma setlocale("ru-RU" )
-#else //_WINDOWS
+#ifndef _WINDOWS
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -14,233 +12,160 @@
 #include "WindowsControl.h"
 #include "version.h"
 
-#include "ClipMngr.h"
+#include "ClipboardManager.h"
 #include "FileFinder.h"
-#include "ProcMngr.h"
-#include "ScreenMngr.h"
-#include "WindowMngr.h"
+#include "ProcessManager.h"
+#include "ScreenManager.h"
+#include "WindowsManager.h"
 
-const wchar_t* WindowsControl::m_ExtensionName = L"WindowsControl";
-
-const std::vector<AddInBase::Alias> WindowsControl::m_PropList{
-	Alias(eClipboardImage  , true  , L"ClipboardImage"  , L"КартинкаБуфераОбмена"),
-	Alias(eClipboardText   , true  , L"ClipboardText"   , L"ТекстБуфераОбмена"),
-	Alias(eClipboardFormat , false , L"ClipboardFormat" , L"ФорматБуфераОбмена"),
-	Alias(eActiveWindow    , true  , L"ActiveWindow"    , L"АктивноеОкно"),
-	Alias(eProcessId       , false , L"ProcessId"       , L"ИдентификаторПроцесса"),
-	Alias(eWindowList      , false , L"WindowList"      , L"СписокОкон"),
-	Alias(eProcessList     , false , L"ProcessList"     , L"СписокПроцессов"),
-	Alias(eDisplayList     , false , L"DisplayList"     , L"СписокДисплеев"),
-	Alias(eScreenInfo      , false , L"ScreenInfo"      , L"СвойстваЭкрана"),
-	Alias(eCursorPos       , false , L"CursorPos"       , L"ПозицияКурсора"),
-	Alias(eVersion         , false , L"Version"         , L"Версия"),
+std::vector<std::u16string> WindowsControl::names = {
+	AddComponent(u"WindowsControl", []() { return new WindowsControl; }),
 };
 
-const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
-	Alias(eFindTestClient  , 1, true , L"FindTestClient"   , L"НайтиКлиентТестирования"),
-	Alias(eGetProcessList  , 1, true , L"GetProcessList"   , L"ПолучитьСписокПроцессов"),
-	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
-	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
-	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
-	Alias(eGetScreenInfo   , 0, true , L"GetScreenInfo"    , L"ПолучитьСвойстваЭкрана"),
-	Alias(eGetWindowList   , 1, true , L"GetWindowList"    , L"ПолучитьСписокОкон"),
-	Alias(eGetWindowInfo   , 1, true , L"GetWindowInfo"    , L"ПолучитьСвойстваОкна"),
-	Alias(eGetWindowSize   , 1, true , L"GetWindowSize"    , L"ПолучитьРазмерОкна"),
-	Alias(eTakeScreenshot  , 1, true , L"TakeScreenshot"   , L"ПолучитьСнимокЭкрана"),
-	Alias(eCaptureWindow   , 1, true , L"CaptureWindow"    , L"ПолучитьСнимокОкна"),
-	Alias(eCaptureProcess  , 1, true , L"CaptureProcess"   , L"ПолучитьСнимокПроцесса"),
-	Alias(eEnableResizing  , 2, false, L"EnableResizing"   , L"РазрешитьИзменятьРазмер"),
-	Alias(eSetWindowPos    , 5, false, L"SetWindowPos"     , L"УстановитьПозициюОкна"),
-	Alias(eSetWindowSize   , 3, false, L"SetWindowSize"    , L"УстановитьРазмерОкна"),
-	Alias(eSetWindowState  , 3, false, L"SetWindowState"   , L"УстановитьСтатусОкна"),
-	Alias(eActivateWindow  , 1, false, L"ActivateWindow"   , L"АктивироватьОкно"),
-	Alias(eMaximizeWindow  , 1, false, L"MaximizeWindow"   , L"РаспахнутьОкно"),
-	Alias(eMinimizeWindow  , 1, false, L"MinimizeWindow"   , L"СвернутьОкно"),
-	Alias(eRestoreWindow   , 1, false, L"RestoreWindow"    , L"РазвернутьОкно"),
-	Alias(eEmptyClipboard  , 0, false, L"EmptyClipboard"   , L"ОчиститьБуферОбмена"),
-	Alias(eGetCursorPos    , 0, true , L"GetCursorPos"     , L"ПолучитьПозициюКурсора"),
-	Alias(eSetCursorPos    , 2, false, L"SetCursorPos"     , L"УстановитьПозициюКурсора"),
-	Alias(eEmulateClick    , 1, false, L"EmulateClick"     , L"ЭмуляцияНажатияМыши"),
-	Alias(eEmulateDblClick , 0, false, L"EmulateDblClick"  , L"ЭмуляцияДвойногоНажатия"),
-	Alias(eEmulateMouse    , 4, false, L"EmulateMouse"     , L"ЭмуляцияДвиженияМыши"),
-	Alias(eEmulateWheel    , 2, false, L"EmulateWheel"     , L"ЭмуляцияКолесаМыши"),
-	Alias(eEmulateHotkey   , 2, false, L"EmulateHotkey"    , L"ЭмуляцияНажатияКлавиши"),
-	Alias(eEmulateText     , 2, false, L"EmulateText"      , L"ЭмуляцияВводаТекста"),
-	Alias(eOpenWebSocket   , 1, true,  L"OpenWebSocket"    , L"ОткрытьВебСокет"),
-	Alias(eSendWebSocket   , 1, true,  L"SendWebSocket"    , L"ПослатьВебСокет"),
-	Alias(eCloseWebSocket  , 0, false, L"CloseWebSocket"   , L"ЗакрытьВебСокет"),
-	Alias(eWebSocket       , 2, true,  L"WebSocket"        , L"ВебСокет"),
-	Alias(eFindFiles       , 4, true,  L"FindFiles"        , L"НайтиФайлы"),
-	Alias(eSleep           , 1, false, L"Sleep"            , L"Пауза"),
-};
+WindowsControl::WindowsControl() {
 
-/////////////////////////////////////////////////////////////////////////////
-// ILanguageExtenderBase
-//---------------------------------------------------------------------------//
-bool WindowsControl::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
-{
-	switch (lPropNum) {
-	case eClipboardImage:
-		return ClipboardManager(this).GetImage(pvarPropVal);
-	case eClipboardText:
-		return VA(pvarPropVal) << ClipboardManager(this).GetText();
-	case eClipboardFormat:
-		return VA(pvarPropVal) << ClipboardManager(this).GetFormat();
-	case eActiveWindow:
-		return VA(pvarPropVal) << (int64_t)WindowManager::ActiveWindow();
-	case eProcessList:
-		return VA(pvarPropVal) << ProcessManager::GetProcessList(NULL, 0);
-	case eWindowList:
-		return VA(pvarPropVal) << WindowManager::GetWindowList(NULL, 0);
-	case eDisplayList:
-		return VA(pvarPropVal) << ScreenManager::GetDisplayList(NULL, 0);
-	case eScreenInfo:
-		return VA(pvarPropVal) << ScreenManager::GetScreenInfo();
-	case eCursorPos:
-		return VA(pvarPropVal) << ScreenManager::GetCursorPos();
-	case eProcessId:
-		return VA(pvarPropVal) << ProcessManager::ProcessId();
-	case eVersion:
-		return VA(pvarPropVal) << MB2WC(VER_FILE_VERSION_STR);
-	default:
-		return false;
-	}
-}
+	AddProperty(u"ClipboardText", u"ТекстБуфераОбмена",
+		[&](VH var) { var = ClipboardManager().GetText(); },
+		[&](VH var) { ClipboardManager().SetText(var); }
+	);
+	AddProperty(u"ClipboardImage", u"КартинкаБуфераОбмена",
+		[&](VH var) { ClipboardManager().GetImage(var); },
+		[&](VH var) { ClipboardManager().SetImage(var); }
+	);
+	AddProperty(u"ClipboardFormat", u"ФорматБуфераОбмена",
+		[&](VH var) { var = ClipboardManager().GetFormat(); }
+	);
+	AddProperty(u"ActiveWindow", u"АктивноеОкно",
+		[&](VH var) { var = WindowsManager::ActiveWindow(); },
+		[&](VH var) { WindowsManager::Activate(var); }
+	);
+	AddProperty(u"ProcessId", u"ИдентификаторПроцесса",
+		[&](VH var) { var = ProcessManager::ProcessId(); }
+	);
+	AddProperty(u"CursorPos", u"ПозицияКурсора",
+		[&](VH var) { var = ScreenManager::GetCursorPos(); }
+	);
+	AddProperty(u"WindowList", u"СписокОкон",
+		[&](VH var) { var = WindowsManager::GetWindowList(0); }
+	);
+	AddProperty(u"ProcessList", u"СписокПроцессов",
+		[&](VH var) { var = ProcessManager::GetProcessList(false); }
+	);
+	AddProperty(u"DisplayList", u"СписокДисплеев",
+		[&](VH var) { var = ScreenManager::GetDisplayList(0); }
+	);
+	AddProperty(u"ScreenInfo", u"СвойстваЭкрана",
+		[&](VH var) { var = ScreenManager::GetScreenInfo(); }
+	);
+	AddProperty(u"Version", u"Версия",
+		[&](VH var) { var = std::string(VER_FILE_VERSION_STR); }
+	);
 
-//---------------------------------------------------------------------------//
-bool WindowsControl::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
-{
-	switch (lPropNum) {
-	case eClipboardImage:
-		return ClipboardManager(this).SetImage(pvarPropVal);
-	case eClipboardText:
-		return ClipboardManager(this).SetText(pvarPropVal);
-	case eActiveWindow:
-		return WindowManager::Activate(pvarPropVal, 1);
-	default:
-		return false;
-	}
-}
-//---------------------------------------------------------------------------//
-bool WindowsControl::CallAsProc(const long lMethodNum, tVariant* paParams, const long lSizeArray)
-{
-	switch (lMethodNum)
-	{
-	case eSetWindowPos:
-		return WindowManager::SetWindowPos(paParams, lSizeArray);
-	case eSetWindowSize:
-		return WindowManager::SetWindowSize(paParams, lSizeArray);
-	case eActivateWindow:
-		return WindowManager::Activate(paParams, lSizeArray);
-	case eMaximizeWindow:
-		return WindowManager::Maximize(paParams, lSizeArray);
-	case eMinimizeWindow:
-		return WindowManager::Minimize(paParams, lSizeArray);
-	case eRestoreWindow:
-		return WindowManager::Restore(paParams, lSizeArray);
-	case eEnableResizing:
-		return WindowManager::EnableResizing(paParams, lSizeArray);
-	case eEmptyClipboard:
-		return ClipboardManager(this).Empty();
-	case eSetCursorPos:
-		return ScreenManager::SetCursorPos(paParams, lSizeArray);
-	case eEmulateClick:
-		return ScreenManager::EmulateClick(paParams, lSizeArray);
-	case eEmulateDblClick:
-		return ScreenManager::EmulateDblClick(paParams, lSizeArray);
-	case eEmulateMouse:
-		return ScreenManager::EmulateMouse(paParams, lSizeArray);
-	case eEmulateWheel:
-		return ScreenManager::EmulateWheel(paParams, lSizeArray);
-	case eEmulateHotkey:
-		return ScreenManager::EmulateHotkey(paParams, lSizeArray);
-	case eEmulateText:
-		return ScreenManager::EmulateText(paParams, lSizeArray);
-	case eSleep:
-		return ProcessManager::Sleep(paParams, lSizeArray);
+	AddFunction(u"FindTestClient", u"НайтиКлиентТестирования",
+		[&](VH port) { this->result = ProcessManager::FindTestClient(port); }
+	);
+	AddFunction(u"GetProcessList", u"ПолучитьСписокПроцессов",
+		[&](VH only1c) { this->result = ProcessManager::GetProcessList(only1c); }
+	);
+	AddFunction(u"GetProcessInfo", u"ПолучитьСвойстваПроцесса",
+		[&](VH pid) { this->result = ProcessManager::GetProcessInfo(pid); }
+	);
+	AddFunction(u"GetDisplayList", u"ПолучитьСписокДисплеев",
+		[&](VH window) { this->result = ScreenManager::GetDisplayList(window); }
+	);
+	AddFunction(u"GetDisplayInfo", u"ПолучитьСвойстваДисплея",
+		[&](VH window) { this->result = ScreenManager::GetDisplayInfo(window); }
+	);
+	AddFunction(u"GetScreenInfo", u"ПолучитьСвойстваЭкрана",
+		[&]() { this->result = ScreenManager::GetScreenInfo(); }
+	);
+	AddFunction(u"GetWindowList", u"ПолучитьСписокОкон",
+		[&](VH pid) { this->result = WindowsManager::GetWindowList(pid); }, { {0, (int64_t)0 } }
+	);
+	AddFunction(u"GetWindowInfo", u"ПолучитьСвойстваОкна",
+		[&](VH window) { this->result = WindowsManager::GetWindowInfo(window); }
+	);
+	AddFunction(u"GetWindowSize", u"ПолучитьРазмерОкна",
+		[&](VH window) { this->result = WindowsManager::GetWindowSize(window); }
+	);
+	AddFunction(u"TakeScreenshot", u"ПолучитьСнимокЭкрана",
+		[&](VH mode) { ScreenManager::CaptureScreen(this->result, mode); }
+	);
+	AddFunction(u"CaptureWindow", u"ПолучитьСнимокОкна",
+		[&](VH window) { ScreenManager::CaptureWindow(this->result, window); }
+	);
+	AddFunction(u"CaptureProcess", u"ПолучитьСнимокПроцесса",
+		[&](VH pid) { ScreenManager::CaptureProcess(this->result, pid); }
+	);
+	AddProcedure(u"EnableResizing", u"РазрешитьИзменятьРазмер",
+		[&](VH window, VH enable) { WindowsManager::EnableResizing(window, enable); }
+	);
+	AddProcedure(u"SetWindowPos", u"УстановитьПозициюОкна",
+		[&](VH window, VH x, VH y, VH w, VH h) { WindowsManager::SetWindowPos(window, x, y, w, h); }, { {3, (int64_t)0}, {4, (int64_t)0} }
+	);
+	AddProcedure(u"SetWindowSize", u"УстановитьРазмерОкна",
+		[&](VH window, VH w, VH h) { WindowsManager::SetWindowSize(window, w, h); }
+	);
+	AddProcedure(u"SetWindowState", u"УстановитьСтатусОкна",
+		[&](VH window, VH state, VH activate) { WindowsManager::SetWindowState(window, state, activate); }
+	);
+	AddProcedure(u"ActivateWindow", u"АктивироватьОкно",
+		[&](VH window) { WindowsManager::Activate(window); }
+	);
+	AddProcedure(u"MaximizeWindow", u"РаспахнутьОкно",
+		[&](VH window) { WindowsManager::Maximize(window); }
+	);
+	AddProcedure(u"MinimizeWindow", u"СвернутьОкно",
+		[&](VH window) { WindowsManager::Minimize(window); }
+	);
+	AddProcedure(u"RestoreWindow", u"РазвернутьОкно",
+		[&](VH window) { WindowsManager::Restore(window); }
+	);
+	AddProcedure(u"EmptyClipboard", u"ОчиститьБуферОбмена",
+		[&]() { ClipboardManager().Empty(); }
+	);
+	AddFunction(u"GetCursorPos", u"ПолучитьПозициюКурсора",
+		[&]() { this->result = ScreenManager::GetCursorPos(); }
+	);
+	AddProcedure(u"SetCursorPos", u"УстановитьПозициюКурсора",
+		[&](VH window, VH x, VH y) { ScreenManager::SetCursorPos(x, y); }
+	);
+	AddProcedure(u"EmulateClick", u"ЭмуляцияНажатияМыши",
+		[&](VH button, VH flags) { ScreenManager::EmulateClick(button, flags); }, { {0, (int64_t)0}, {1, (int64_t)0} }
+	);
+	AddProcedure(u"EmulateDblClick", u"ЭмуляцияДвойногоНажатия",
+		[&]() { ScreenManager::EmulateDblClick(); }
+	);
+	AddProcedure(u"EmulateMouse", u"ЭмуляцияДвиженияМыши",
+		[&](VH x, VH y, VH c, VH p) { ScreenManager::EmulateMouse(x, y, c, p); }
+	);
+	AddProcedure(u"EmulateWheel", u"ЭмуляцияКолесаМыши",
+		[&](VH sign, VH flags) { ScreenManager::EmulateWheel(sign, flags); }
+	);
+	AddProcedure(u"EmulateHotkey", u"ЭмуляцияНажатияКлавиши",
+		[&](VH keys, VH flags) { ScreenManager::EmulateHotkey(keys, flags); }, { {1, (int64_t)0} }
+	);
+	AddProcedure(u"EmulateText", u"ЭмуляцияВводаТекста",
+		[&](VH text, VH pause) { ScreenManager::EmulateText(text, pause); }, { {1, (int64_t)0} }
+	);
+	AddFunction(u"FindFiles", u"НайтиФайлы",
+		[&](VH path, VH mask, VH text, VH ignore) {	this->result = FileFinder(text, ignore).find(path, mask); }, { {3, true} }
+	);
+	AddProcedure(u"Sleep", u"Пауза",
+		[&](VH msec) { ProcessManager::Sleep(msec); }
+	);
 #ifdef _WINDOWS
-	case eSetWindowState:
-		return WindowManager::SetWindowState(paParams, lSizeArray);
-#endif
-	case eCloseWebSocket:
-		return CloseWebSocket();
-	default:
-		return false;
-	}
-}
-//---------------------------------------------------------------------------//
-bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
-{
-	switch (lMethodNum) {
-	case eFindTestClient:
-		return VA(pvarRetValue) << ProcessManager::FindTestClient(paParams, lSizeArray);
-	case eGetScreenInfo:
-		return VA(pvarRetValue) << ScreenManager::GetScreenInfo();
-	case eGetProcessList:
-		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
-	case eGetProcessInfo:
-		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
-	case eGetWindowList:
-		return VA(pvarRetValue) << WindowManager::GetWindowList(paParams, lSizeArray);
-	case eGetWindowInfo:
-		return VA(pvarRetValue) << WindowManager::GetWindowInfo(paParams, lSizeArray);
-	case eGetWindowSize:
-		return VA(pvarRetValue) << WindowManager::GetWindowSize(paParams, lSizeArray);
-	case eGetDisplayList:
-		return VA(pvarRetValue) << ScreenManager::GetDisplayList(paParams, lSizeArray);
-	case eGetDisplayInfo:
-		return VA(pvarRetValue) << ScreenManager::GetDisplayInfo(paParams, lSizeArray);
-	case eTakeScreenshot:
-		return ScreenManager(this).CaptureScreen(pvarRetValue, paParams, lSizeArray);
-	case eCaptureWindow:
-		return ScreenManager(this).CaptureWindow(pvarRetValue, paParams, lSizeArray);
-	case eCaptureProcess:
-		return ScreenManager(this).CaptureProcess(pvarRetValue, paParams, lSizeArray);
-	case eGetCursorPos:
-		return VA(pvarRetValue) << ScreenManager::GetCursorPos();
-	case eOpenWebSocket:
-		return VA(pvarRetValue) << ProcessManager::OpenWebSocket(&webSocket, paParams, lSizeArray);
-	case eSendWebSocket:
-		return VA(pvarRetValue) << ProcessManager::SendWebSocket(webSocket, paParams, lSizeArray);
-	case eWebSocket:
-		return VA(pvarRetValue) << ProcessManager::WebSocket(paParams, lSizeArray);
-	case eFindFiles:
-		return VA(pvarRetValue) << FileFinder(VarToStr(paParams + 2), VarToBool(paParams + 3)).find(VarToStr(paParams), VarToStr(paParams + 1));
-	default:
-		return false;
-	}
-}
-
-static bool DefStr(tVariant* pvar)
-{
-	TV_VT(pvar) = VTYPE_PWSTR;
-	TV_WSTR(pvar) = nullptr;
-	return true;
-}
-
-static bool DefInt(tVariant* pvar, int value = 0)
-{
-	TV_VT(pvar) = VTYPE_I4;
-	TV_I4(pvar) = value;
-	return true;
-}
-
-static bool DefBool(tVariant* pvar, bool value = false)
-{
-	TV_VT(pvar) = VTYPE_BOOL;
-	TV_BOOL(pvar) = value;
-	return true;
-}
-
-bool WindowsControl::GetParamDefValue(const long lMethodNum, const long lParamNum, tVariant* pvarParamDefValue)
-{
-	switch (lMethodNum) {
-	case eSetWindowPos: if (lParamNum > 0) return DefInt(pvarParamDefValue);
-	case eEmulateClick: if (lParamNum >= 0) return DefInt(pvarParamDefValue);
-	case eEmulateMouse: if (lParamNum == 0) return DefInt(pvarParamDefValue);
-	case eEmulateWheel: if (lParamNum == 1) return DefInt(pvarParamDefValue);
-	case eEmulateHotkey: if (lParamNum == 1) return DefInt(pvarParamDefValue);
-	case eFindFiles: if (lParamNum == 3) return DefBool(pvarParamDefValue, true);
-	}
-	return false;
+	AddFunction(u"WebSocket", u"ВебСокет",
+		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
+	);
+	AddFunction(u"OpenWebSocket", u"ОткрытьВебСокет",
+		[&](VH url) { this->result = ProcessManager::OpenWebSocket(&webSocket, url); }
+	);
+	AddFunction(u"SendWebSocket", u"ПослатьВебСокет",
+		[&](VH msg) { this->result = ProcessManager::SendWebSocket(&webSocket, msg); }
+	);
+	AddProcedure(u"CloseWebSocket", u"ЗакрытьВебСокет",
+		[&](VH msec) { this->CloseWebSocket(); }
+	);
+#endif//_WINDOWS
 }

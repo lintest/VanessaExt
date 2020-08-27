@@ -79,8 +79,8 @@ public:
         return !json.empty();
     }
 
-	operator std::wstring() const {
-		return json;
+	operator std::string() const {
+		return json.dump();
 	}
 
 protected:

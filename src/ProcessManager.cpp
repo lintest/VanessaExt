@@ -1,6 +1,5 @@
 #include "stdafx.h"
-#include "ProcMngr.h"
-#include "json_ext.h"
+#include "ProcessManager.h"
 
 #ifdef _WINDOWS
 
@@ -127,7 +126,7 @@ public:
 	}
 
 	operator std::wstring() {
-		return result;
+		return MB2WC(result.dump());
 	}
 	JSON json() {
 		return result;
