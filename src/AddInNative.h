@@ -102,8 +102,8 @@ protected:
 	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
 	VarinantHelper result;
 
-	static std::u16string AddInNative::upper(std::u16string& str);
-	static std::wstring AddInNative::upper(std::wstring& str);
+	static std::u16string upper(std::u16string& str);
+	static std::wstring upper(std::wstring& str);
 	static std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
 	static std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
 	static std::u16string MB2WCHAR(std::string_view src);
@@ -129,7 +129,7 @@ private:
 	void ADDIN_API FreeMemory(void** pMemory) const;
 
 	friend const WCHAR_T* GetClassNames();
-	static std::u16string AddInNative::getComponentNames();
+	static std::u16string getComponentNames();
 	friend long GetClassObject(const WCHAR_T*, IComponentBase**);
 	static AddInNative* CreateObject(const std::u16string& name);
 

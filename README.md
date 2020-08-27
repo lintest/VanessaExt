@@ -166,7 +166,7 @@ b2.exe toolset=msvc link=static threading=multi runtime-link=static release stag
 
 Сборка библотеки [**boost**] для Linux
 ```Batchfile
-./b2 cxxflags=-fPIC
+./b2 cxxflags=-fPIC link=static threading=multi runtime-link=static release stage
 ```
 
 Установка на VirtualBox дополнений гостевой ОС для Linux:
