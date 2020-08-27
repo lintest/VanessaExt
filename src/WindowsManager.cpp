@@ -322,101 +322,78 @@ public:
 	}
 };
 
-bool WindowsManager::IsMaximized(HWND hWnd)
+bool WindowsManager::IsMaximized(int64_t window)
 {
 	//TODO
 	return false;
 }
 
-std::wstring WindowsManager::GetWindowList(tVariant* paParams, const long lSizeArray)
+std::string WindowsManager::GetWindowList(int64_t pid)
 {
-	unsigned long pid = 0;
-	if (lSizeArray > 0) pid = VarToInt(paParams);
 	return WindowList(pid).Enumerate();
 }
 
-std::wstring WindowsManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)
+std::string WindowsManager::GetWindowInfo(int64_t window)
 {
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	return WindowInfo(window);
 }
 
-std::wstring WindowsManager::GetWindowSize(tVariant* paParams, const long lSizeArray)
+std::string WindowsManager::GetWindowSize(int64_t window)
 {
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	return WindowSize(window);
 }
 
-HWND WindowsManager::ActiveWindow()
+int64_t WindowsManager::ActiveWindow()
 {
 	return WindowHelper().GetActiveWindow();
 }
 
-bool WindowsManager::Activate(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::Activate(int64_t window)
 {
-	if (lSizeArray < 1) return false;
-	Window window = VarToInt(paParams);
 	WindowHelper().SetActiveWindow(window);
 	return true;
 }
 
-bool  WindowsManager::Restore(tVariant* paParams, const long lSizeArray)
+bool  WindowsManager::Restore(int64_t window)
 {
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	WindowHelper().Maximize(window, false);
 	return true;
 }
 
-bool  WindowsManager::Maximize(tVariant* paParams, const long lSizeArray)
+bool  WindowsManager::Maximize(int64_t window)
 {
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	WindowHelper().Maximize(window, true);
 	return true;
 }
 
-bool WindowsManager::Minimize(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::Minimize(int64_t window)
 {
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
 	WindowHelper().Minimize(window);
 	return true;
 }
 
-bool WindowsManager::SetWindowSize(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::SetWindowSize(int64_t window, int64_t w, int64_t h)
 {
-	if (lSizeArray < 3) return false;
-	Window window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
-	int x = VarToInt(paParams + 1);
-	int y = VarToInt(paParams + 2);
-	WindowHelper().SetWindowSize(window, x, y);
+	WindowHelper().SetWindowSize(window, w, h);
 	return true;
 }
 
-bool WindowsManager::SetWindowPos(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::SetWindowPos(int64_t window, int64_t x, int64_t y, int64_t w, int64_t h)
 {
-	if (lSizeArray < 5) return false;
-	Window window = VarToInt(paParams);
 	if (window == 0) window = ActiveWindow();
-	int x = VarToInt(paParams + 1);
-	int y = VarToInt(paParams + 2);
-	int w = VarToInt(paParams + 3);
-	int h = VarToInt(paParams + 4);
 	WindowHelper().SetWindowPos(window, x, y, w, h);
 	return true;
 }
 
-bool WindowsManager::EnableResizing(tVariant* paParams, const long lSizeArray)
+bool WindowsManager::EnableResizing(int64_t window, bool enable)
 {
+	//TODO
 	return true;
 }
 

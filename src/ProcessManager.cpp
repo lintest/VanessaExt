@@ -354,32 +354,24 @@ int64_t ProcessManager::ProcessId()
 	return getpid();
 }
 
-std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::FindTestClient(int64_t port)
 {
-	if (lSizeArray < 1) return 0;
-	int port = VarToInt(paParams);
-	return ClientFinder(port).Enumerate();
+	return MB2WC(ClientFinder(port).Enumerate());
 }
 
-std::wstring ProcessManager::GetProcessList(tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::GetProcessList(bool only1c)
 {
-	bool filter = false;
-	if (lSizeArray > 0) filter = VarToInt(paParams);
-	return ProcessList(filter).Enumerate();
+	return MB2WC(ProcessList(only1c).Enumerate());
 }
 
-std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSizeArray)
+std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 {
-	if (lSizeArray < 1) return 0;
-	unsigned long pid = VarToInt(paParams);
-	return ProcessInfo(pid);
+	return ProcessInfo((unsigned long)pid);
 }
 
-bool ProcessManager::Sleep(tVariant* paParams, const long lSizeArray)
+void ProcessManager::Sleep(int64_t ms)
 {
-	unsigned long ms = VarToInt(paParams);
-	::usleep(ms * 1000);
-	return true;
+	::usleep((unsigned long)ms * 1000);
 }
 
 std::wstring OpenWebSocket(WebSocketBase** ws, tVariant* paParams, const long lSizeArray) { return {}; }

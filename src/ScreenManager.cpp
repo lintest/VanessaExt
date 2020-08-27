@@ -451,36 +451,32 @@ public:
 	}
 };
 
-std::wstring BaseHelper::ScreenManager::GetScreenList()
+std::string BaseHelper::ScreenManager::GetScreenList()
 {
 	return ScreenEnumerator().Enumerate();
 }
 
-std::wstring BaseHelper::ScreenManager::GetDisplayList(tVariant* paParams, const long lSizeArray)
+std::string BaseHelper::ScreenManager::GetDisplayList(int64_t window)
 {
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
 	return DisplayEnumerator().Enumerate(window);
 }
 
-std::wstring BaseHelper::ScreenManager::GetDisplayInfo(tVariant* paParams, const long lSizeArray)
+std::string BaseHelper::ScreenManager::GetDisplayInfo(int64_t window)
 {
-	Window window = 0;
-	if (lSizeArray > 0) window = VarToInt(paParams);
 	return DisplayFinder().FindDisplay(window);
 }
 
-BOOL BaseHelper::ScreenManager::CaptureScreen(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::CaptureScreen(VH variant, int64_t mode)
 {
-	return CaptureWindow(pvarRetValue, 0);
+	return CaptureWindow(variant, 0);
 }
 
-BOOL BaseHelper::ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
+BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, int64_t win)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (display == NULL) return false;
 
-	Window window = hWnd;
+	Window window = win;
 	if (window == 0) window = DefaultRootWindow(display);
 
 	BOOL success = false;
@@ -490,13 +486,9 @@ BOOL BaseHelper::ScreenManager::CaptureWindow(tVariant* pvarRetValue, HWND hWnd)
 	X11Screenshot screenshot = X11Screenshot(image);
 	std::vector<char> buffer;
 	if (screenshot.save_to_png(buffer)) {
-		pvarRetValue->strLen = buffer.size();
-		m_addin->AllocMemory((void**)&pvarRetValue->pstrVal, pvarRetValue->strLen);
-		TV_VT(pvarRetValue) = VTYPE_BLOB;
-		if (pvarRetValue->pstrVal) {
-			memcpy((void*)pvarRetValue->pstrVal, &buffer[0], pvarRetValue->strLen);
-			success = true;
-		}
+		variant.AllocMemory(buffer.size());
+		memcpy((void*)variant.data(), &buffer[0], buffer.size());
+		success = true;
 	}
 	XDestroyImage(image);
 	XCloseDisplay(display);
@@ -532,11 +524,10 @@ public:
 	}
 };
 
-BOOL BaseHelper::ScreenManager::CaptureProcess(tVariant* pvarRetValue, tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::CaptureProcess(VH variant, int64_t pid)
 {
-	if (lSizeArray <= 0) return false;
-	Window window = ProcWindows::TopWindow(VarToInt(paParams));
-	if (window) return CaptureWindow(pvarRetValue, window);
+	Window window = ProcWindows::TopWindow(pid);
+	if (window) return CaptureWindow(variant, window);
 	return true;
 }
 
@@ -615,11 +606,8 @@ std::string BaseHelper::ScreenManager::GetCursorPos()
 	return json.dump();
 }
 
-BOOL BaseHelper::ScreenManager::SetCursorPos(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::SetCursorPos(int64_t x, int64_t y)
 {
-	if (lSizeArray < 2) return false;
-	const int x = VarToInt(paParams);
-	const int y = VarToInt(paParams + 1);
 	Display* display = XOpenDisplay(0);
 	Window root_window = XRootWindow(display, 0);
 	XSelectInput(display, root_window, KeyReleaseMask);
@@ -687,25 +675,17 @@ public:
 	}
 };
 
-BOOL BaseHelper::ScreenManager::EmulateClick(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateClick(int64_t button, VH keys)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 
-	unsigned int button = 1;
-	switch (VarToInt(paParams)) {
-	case 1: button = 3; break;
-	case 2: button = 2; break;
-	}
-
 	Hotkey hotkey;
-	tVariant* pvarKeys = paParams + 1;
-	if (TV_VT(pvarKeys) == VTYPE_PWSTR) {
-		if (pvarKeys->pwstrVal == nullptr) return false;
-		if (!hotkey.add(VarToStr(pvarKeys))) return false;
+	if (keys.type() == VTYPE_PWSTR) {
+		if (!hotkey.add(std::wstring(keys))) return false;
 	}
-	else if (TV_VT(pvarKeys) == VTYPE_I4) {
-		WORD flags = VarToInt(pvarKeys);
+	else if (keys.type() == VTYPE_I4) {
+		WORD flags = (int64_t)keys;
 		if (flags & 0x04) hotkey.add(XK_Shift_L);
 		if (flags & 0x08) hotkey.add(XK_Control_L);
 		if (flags & 0x10) hotkey.add(XK_Alt_L);
@@ -719,20 +699,18 @@ BOOL BaseHelper::ScreenManager::EmulateClick(tVariant* paParams, const long lSiz
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateWheel(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateWheel(int64_t sign, VH keys)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
-	unsigned int button = VarToInt(paParams) < 0 ? 5 : 4;
+	unsigned int button = sign < 0 ? 5 : 4;
 
 	Hotkey hotkey;
-	tVariant* pvarKeys = paParams + 1;
-	if (TV_VT(pvarKeys) == VTYPE_PWSTR) {
-		if (pvarKeys->pwstrVal == nullptr) return false;
-		if (!hotkey.add(VarToStr(pvarKeys))) return false;
+	if (keys.type() == VTYPE_PWSTR) {
+		if (!hotkey.add(std::wstring(keys))) return false;
 	}
-	else if (TV_VT(pvarKeys) == VTYPE_I4) {
-		WORD flags = VarToInt(pvarKeys);
+	else if (keys.type() == VTYPE_I4) {
+		WORD flags = (int64_t)keys;
 		if (flags & 0x04) hotkey.add(XK_Shift_L);
 		if (flags & 0x08) hotkey.add(XK_Control_L);
 		if (flags & 0x10) hotkey.add(XK_Alt_L);
@@ -746,7 +724,7 @@ BOOL BaseHelper::ScreenManager::EmulateWheel(tVariant* paParams, const long lSiz
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateDblClick(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateDblClick()
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
@@ -759,15 +737,15 @@ BOOL BaseHelper::ScreenManager::EmulateDblClick(tVariant* paParams, const long l
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateMouse(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 
-	double x2 = VarToInt(paParams);
-	double y2 = VarToInt(paParams + 1);
-	double count = VarToInt(paParams + 2);
-	DWORD pause = VarToInt(paParams + 3);
+	double x2 = X;
+	double y2 = Y;
+	double count = C;
+	DWORD pause = P;
 
 	XEvent event;
 	XQueryPointer(display, RootWindow(display, DefaultScreen(display)),
@@ -809,34 +787,29 @@ BOOL BaseHelper::ScreenManager::EmulateMouse(tVariant* paParams, const long lSiz
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateHotkey(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 {
 	usleep(100 * 1000);
 	Hotkey hotkey;
-	if (TV_VT(paParams) == VTYPE_PWSTR) {
-		if (paParams->pwstrVal == nullptr) return false;
-		if (!hotkey.add(VarToStr(paParams))) return false;
+	if (keys.type() == VTYPE_PWSTR) {
+		if (!hotkey.add(std::wstring(keys))) return false;
 	}
-	else {
-		auto key = VarToInt(paParams);
-		auto flags = VarToInt(paParams + 1);
+	else if (keys.type() == VTYPE_I4) {
+		WORD flags = (int64_t)keys;
 		if (flags & 0x04) hotkey.add(XK_Shift_L);
 		if (flags & 0x08) hotkey.add(XK_Control_L);
 		if (flags & 0x10) hotkey.add(XK_Alt_L);
-		hotkey.add(key);
 	}
 	hotkey.send();
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateText(tVariant* paParams, const long lSizeArray)
+BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pause)
 {
 	std::wcout << L"EmulateText";
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 	usleep(100 * 1000);
-	std::wstring text = VarToStr(paParams);
-	auto pause = VarToInt(paParams + 1);
 	for (auto ch : text) {
 		std::wstring w; w += ch;
 		KeySym keysym = XStringToKeysym(WC2MB(w).data());

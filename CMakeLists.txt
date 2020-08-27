@@ -77,29 +77,30 @@ else(UNIX)
 	target_compile_definitions(${TARGET} PRIVATE _WINDOWS
 			_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 	target_compile_options(${TARGET} PRIVATE /utf-8)
+
+	set(Boost_USE_STATIC_LIBS ON) 
+	set(Boost_USE_MULTITHREADED ON)  
+	set(Boost_USE_STATIC_RUNTIME ON) 
+	set(Boost_NO_SYSTEM_PATHS TRUE) 
+
+	if (Boost_NO_SYSTEM_PATHS)
+	set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../boost_1_74_0")
+	set(BOOST_INCLUDE_DIRS "${BOOST_ROOT}/include")
+	set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
+	endif (Boost_NO_SYSTEM_PATHS)
+
+	find_package(Boost REQUIRED regex date_time system filesystem thread graph program_options)
+
+	include_directories(${Boost_INCLUDE_DIRS})
+	target_link_libraries(${PROJECT_NAME} ${X11_XTest_LIB})
+	target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+
+	message("========================")
+	message("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+	message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
+	message("========================")
+
 endif(UNIX)
-
-set(Boost_USE_STATIC_LIBS ON) 
-set(Boost_USE_MULTITHREADED ON)  
-set(Boost_USE_STATIC_RUNTIME ON) 
-set(Boost_NO_SYSTEM_PATHS TRUE) 
-
-if (Boost_NO_SYSTEM_PATHS)
-  set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../boost_1_74_0")
-  set(BOOST_INCLUDE_DIRS "${BOOST_ROOT}/include")
-  set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
-endif (Boost_NO_SYSTEM_PATHS)
-
-find_package(Boost REQUIRED regex date_time system filesystem thread graph program_options)
-
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} ${X11_XTest_LIB})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
-
-message("========================")
-message("Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
-message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
-message("========================")
 
 #target_include_directories(${TARGET} PRIVATE libgit2-1.0.1/include)
 #set(EMBED_SSH_PATH "../../libssh2-1.9.0" CACHE BOOL "" FORCE)

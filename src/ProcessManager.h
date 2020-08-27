@@ -15,7 +15,7 @@ public:
 	static std::wstring FindProcess(const std::wstring name);
 	static std::wstring OpenWebSocket(WebSocketBase** ws, const std::string& url);
 	static std::wstring SendWebSocket(WebSocketBase** ws, const std::string& msg);
-	static std::wstring ProcessManager::WebSocket(const std::string& url, const std::string& msg);
+	static std::wstring WebSocket(const std::string& url, const std::string& msg);
 	static void Sleep(int64_t interval);
 	static int64_t ProcessId();
 };

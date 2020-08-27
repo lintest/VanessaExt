@@ -2,7 +2,6 @@
 #define __XWINBASE_H__
 
 #include "stdafx.h"
-#include "json_ext.h"
 
 #ifndef _WINDOWS
 
@@ -81,6 +80,10 @@ public:
 
 	operator std::string() const {
 		return json.dump();
+	}
+
+	operator std::wstring() const {
+		return MB2WC(json.dump());
 	}
 
 protected:
@@ -242,11 +245,11 @@ public:
 	    std::wcout << std::endl << "Window count: " << m_count << std::endl << std::endl;
     }
 
-    std::wstring Enumerate() {
+    std::string Enumerate() {
         for (int i = 0; i < m_count; i++) {
             if (!EnumWindow(m_windows[i])) break;
         }
-        return *this;
+        return json.dump();
     }
 
 	virtual ~WindowEnumerator() {

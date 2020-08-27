@@ -18,4 +18,4 @@ private:
 	bool search(const std::wstring& path);
 };
 
-#endif __FILEFINDER_H__
+#endif//__FILEFINDER_H__

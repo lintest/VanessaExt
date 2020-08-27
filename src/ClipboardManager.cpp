@@ -256,7 +256,7 @@ namespace clip {
 	}
 }
 
-BaseHelper::ClipboardManager::ClipboardManager(AddInNative* addin) : m_addin(addin)
+BaseHelper::ClipboardManager::ClipboardManager()
 {
 }
 
@@ -264,18 +264,17 @@ BaseHelper::ClipboardManager::~ClipboardManager()
 {
 }
 
-bool BaseHelper::ClipboardManager::SetText(tVariant* pvarValue, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetText(const std::wstring &text, bool bEmpty)
 {
-	std::wstring text = VarToStr(pvarValue);
 	return clip::set_text(WC2MB(text));
 }
 
-std::wstring BaseHelper::ClipboardManager::GetFormat()
+std::string BaseHelper::ClipboardManager::GetFormat()
 {
   clip::lock l;
   if (l.locked()) {
-	if (l.is_convertible(clip::text_format())) return L"[{\"key\":1,\"name\":\"TEXT\"}]";
-  	if (l.is_convertible(clip::image_format())) return L"[{\"key\":2,\"name\":\"PNG\"}]";
+	if (l.is_convertible(clip::text_format())) return "[{\"key\":1,\"name\":\"TEXT\"}]";
+  	if (l.is_convertible(clip::image_format())) return "[{\"key\":2,\"name\":\"PNG\"}]";
   }
   return {};
 }
@@ -287,24 +286,22 @@ std::wstring BaseHelper::ClipboardManager::GetText()
 	return MB2WC(text);
 }
 
-bool BaseHelper::ClipboardManager::GetImage(tVariant* pvarRetValue)
+bool BaseHelper::ClipboardManager::GetImage(VH data)
 {
 	clip::image image;
 	clip::get_image(image);
 	std::vector<uint8_t> buffer;
 	clip::x11::write_png(image, buffer);
 	if (buffer.empty()) return true;
-	m_addin->AllocMemory((void**)&pvarRetValue->pstrVal, buffer.size());
-	memcpy(pvarRetValue->pstrVal, buffer.data(), buffer.size());
-	pvarRetValue->strLen = buffer.size();
-	TV_VT(pvarRetValue) = VTYPE_BLOB;
+	data.AllocMemory(buffer.size());
+	memcpy(data.data(), buffer.data(), buffer.size());
 	return true;
 }
 
-bool BaseHelper::ClipboardManager::SetImage(tVariant* paParams, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetImage(VH data, bool bEmpty)
 {
 	clip::image image;
-	clip::x11::read_png((uint8_t*)paParams->pstrVal, paParams->strLen, &image, nullptr);
+	clip::x11::read_png((uint8_t*)data.data(), data.size(), &image, nullptr);
 	return clip::set_image(image);
 }
 
@@ -319,7 +316,7 @@ std::wstring BaseHelper::ClipboardManager::GetFiles()
 	return {};
 }
 
-bool BaseHelper::ClipboardManager::SetFiles(tVariant* paParams, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetFiles(const std::string& text, bool bEmpty)
 {
 	return true;
 }

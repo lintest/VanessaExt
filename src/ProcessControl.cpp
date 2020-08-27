@@ -1,5 +1,14 @@
 ﻿#include "ProcessControl.h"
 
+#ifndef _WINDOWS
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#define PIPE_READ 0
+#define PIPE_WRITE 1
+#endif
+
 std::vector<std::u16string> ProcessControl::names = {
 	AddComponent(u"ProcessControl", []() { return new ProcessControl; }),
 };
@@ -45,6 +54,8 @@ ProcessControl::ProcessControl()
 	CreatePipe(&hOutPipeR, &hOutPipeW, &saAttr, 0);
 	SetHandleInformation(hInPipeW, HANDLE_FLAG_INHERIT, 0);
 	SetHandleInformation(hOutPipeR, HANDLE_FLAG_INHERIT, 0);
+#else
+	pipe(m_pipe);
 #endif //_WINDOWS
 }
 
@@ -117,19 +128,6 @@ bool ProcessControl::IsActive()
 
 #else //_WINDOWS
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-
-#define PIPE_READ 0
-#define PIPE_WRITE 1
-
-ProcessControl::ProcessControl()
-{
-	pipe(m_pipe);
-}
-
 ProcessControl::~ProcessControl()
 {
 	close(m_pipe[PIPE_READ]);
@@ -167,11 +165,10 @@ bool ProcessControl::Input(const std::string& text)
 	return res >= 0;
 }
 
-bool ProcessControl::Sleep(int64_t msec)
+void ProcessControl::Sleep(int64_t msec)
 {
 	unsigned long ms = (unsigned long)msec;
 	::usleep(ms * 1000);
-	return true;
 }
 
 int64_t ProcessControl::ProcessId()

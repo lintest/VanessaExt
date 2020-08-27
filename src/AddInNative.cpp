@@ -1,7 +1,6 @@
 ﻿#include "stdafx.h"
 
 #ifdef _WINDOWS
-#include <locale>
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4302)
 #pragma warning (disable : 4311)
@@ -11,6 +10,7 @@
 #include <signal.h>
 #endif
 
+#include <locale>
 #include <wchar.h>
 #include <string>
 #include <algorithm>
@@ -447,38 +447,35 @@ void ADDIN_API AddInNative::FreeMemory(void** pMemory) const
 
 std::string AddInNative::WCHAR2MB(std::basic_string_view<WCHAR_T> src)
 {
-	if (sizeof(wchar_t) == 2) {
-		static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt_utf8_utf16;
-		return cvt_utf8_utf16.to_bytes(src.data(), src.data() + src.size());
-	}
-	else {
-		static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cvt_utf8_utf16;
-		return cvt_utf8_utf16.to_bytes(reinterpret_cast<const char16_t*>(src.data()),
-			reinterpret_cast<const char16_t*>(src.data() + src.size()));
-	}
+#ifdef _WINDOWS
+	static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt_utf8_utf16;
+	return cvt_utf8_utf16.to_bytes(src.data(), src.data() + src.size());
+#else
+	static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cvt_utf8_utf16;
+	return cvt_utf8_utf16.to_bytes(reinterpret_cast<const char16_t*>(src.data()),
+		reinterpret_cast<const char16_t*>(src.data() + src.size()));
+#endif//_WINDOWS
 }
 
 std::wstring AddInNative::WCHAR2WC(std::basic_string_view<WCHAR_T> src) {
-	if (sizeof(wchar_t) == 2) {
-		return std::wstring(src);
-	}
-	else {
-		std::wstring_convert<std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>> conv;
-		return conv.from_bytes(reinterpret_cast<const char*>(src.data()),
-			reinterpret_cast<const char*>(src.data() + src.size()));
-	}
+#ifdef _WINDOWS
+	return std::wstring(src);
+#else
+	std::wstring_convert<std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>> conv; 
+	return conv.from_bytes(reinterpret_cast<const char*>(src.data()),
+		reinterpret_cast<const char*>(src.data() + src.size()));
+#endif//_WINDOWS
 }
 
 std::u16string AddInNative::MB2WCHAR(std::string_view src) {
-	if (sizeof(wchar_t) == 2) {
-		static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt_utf8_utf16;
-		std::wstring tmp = cvt_utf8_utf16.from_bytes(src.data(), src.data() + src.size());
-		return std::u16string(reinterpret_cast<const char16_t*>(tmp.data()), tmp.size());
-	}
-	else {
-		static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cvt_utf8_utf16;
-		return cvt_utf8_utf16.from_bytes(src.data(), src.data() + src.size());
-	}
+#ifdef _WINDOWS
+	static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt_utf8_utf16;
+	std::wstring tmp = cvt_utf8_utf16.from_bytes(src.data(), src.data() + src.size());
+	return std::u16string(reinterpret_cast<const char16_t*>(tmp.data()), tmp.size());
+#else
+	static std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> cvt_utf8_utf16;
+	return cvt_utf8_utf16.from_bytes(src.data(), src.data() + src.size());
+#endif//_WINDOWS
 }
 
 std::u16string AddInNative::upper(std::u16string& str)

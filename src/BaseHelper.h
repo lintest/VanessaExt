@@ -2,6 +2,7 @@
 #define __BASEHELPER_H__
 
 #include "AddInNative.h"
+#include "stdafx.h"
 
 class BaseHelper
 	: public AddInNative
