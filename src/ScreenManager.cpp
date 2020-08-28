@@ -97,7 +97,7 @@ std::string BaseHelper::ScreenManager::GetScreenList()
 
 BOOL BaseHelper::ScreenManager::CaptureScreen(VH variant, int64_t mode)
 {
-	if (mode) return CaptureWindow(variant, (HWND)0);
+	if (mode) return Capture(variant, (HWND)0);
 
 	HWND hWnd = ::GetForegroundWindow();
 	if (IsWindow(hWnd)) UpdateWindow(hWnd);
