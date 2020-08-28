@@ -18,9 +18,10 @@ public:
 	static bool Maximize(int64_t window);
 	static bool Minimize(int64_t window);
 	static bool Activate(int64_t window);
-private:
 	int64_t GetWindowState(int64_t window);
 #ifdef _WINDOWS
+	static int64_t FindWindow(const std::string& name);
+	static bool PostMessage(int64_t hWnd, int64_t Msg, int64_t wParam, int64_t lParam);
 	static bool SetWindowState(HWND hWnd, int iMode, bool bActivate);
 	static bool IsMaximized(HWND hWnd);
 #else	

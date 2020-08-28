@@ -164,6 +164,12 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"SendWebSocket", u"ПослатьВебСокет",
 		[&](VH msg) { this->result = ProcessManager::SendWebSocket(&webSocket, msg); }
 	);
+	AddFunction(u"FindWindow", u"НайтиОкно",
+		[&](VH name) { this->result = WindowsManager::FindWindow(name); }
+	);
+	AddFunction(u"PostMessage", u"ОтправитьСообщение",
+		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
+	);
 	AddProcedure(u"CloseWebSocket", u"ЗакрытьВебСокет",
 		[&](VH msec) { this->CloseWebSocket(); }
 	);

@@ -81,12 +81,12 @@ std::string WindowsManager::GetWindowSize(int64_t window)
 	return json.dump();
 }
 
-HWND WindowsManager::ActiveWindow()
+int64_t WindowsManager::ActiveWindow()
 {
-	return ::GetForegroundWindow();
+	return (int64_t)::GetForegroundWindow();
 }
 
-HWND WindowsManager::CurrentWindow()
+int64_t WindowsManager::CurrentWindow()
 {
 	DWORD pid = GetCurrentProcessId();
 	std::pair<HWND, DWORD> params = { 0, pid };
@@ -113,11 +113,9 @@ HWND WindowsManager::CurrentWindow()
 			return TRUE;
 		}, (LPARAM)&params);
 
-	if (!bResult && GetLastError() == -1 && params.first)
-	{
-		return params.first;
+	if (!bResult && GetLastError() == -1 && params.first) {
+		return (int64_t)params.first;
 	}
-
 	return 0;
 }
 
@@ -259,6 +257,16 @@ bool WindowsManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)
 		}
 	}
 	return true;
+}
+
+int64_t WindowsManager::FindWindow(const std::string &name)
+{
+	return (int64_t)::FindWindow(NULL, (LPCWSTR)name.c_str());
+}
+
+bool WindowsManager::PostMessage(int64_t hWnd, int64_t Msg, int64_t wParam, int64_t lParam)
+{
+	return ::PostMessage(HWND(hWnd), Msg, wParam, lParam);
 }
 
 #else //_WINDOWS
