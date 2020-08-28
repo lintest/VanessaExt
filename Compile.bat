@@ -10,12 +10,14 @@ rem ren libssh2-libssh2-1.9.0 libssh2-1.9.0
 
 mkdir build32W
 cd build32W
+del Release\VanessaExtWin32.dll
 cmake .. -A Win32 -DMySuffix2=32
 cmake --build . --config Release
 cd ..
 
 mkdir build64W
 cd build64W
+del Release\VanessaExtWin64.dll
 cmake .. -A x64 -DMySuffix2=64
 cmake --build . --config Release
 cd ..
