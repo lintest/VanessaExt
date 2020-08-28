@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ScreenManager.h"
+#include "WindowsManager.h"
 #include <math.h>
 
 #ifdef _WINDOWS
@@ -119,10 +120,10 @@ BOOL BaseHelper::ScreenManager::CaptureScreen(VH variant, int64_t mode)
 
 BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, int64_t window)
 {
-	return CaptureWindow(variant, (HWND)window);
+	return Capture(variant, (HWND)window);
 }
 
-BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, HWND window)
+BOOL BaseHelper::ScreenManager::Capture(VH variant, HWND window)
 {
 	HWND hWnd = (HWND)window;
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
@@ -172,7 +173,7 @@ BOOL BaseHelper::ScreenManager::CaptureProcess(VH variant, int64_t pid)
 			return TRUE;
 		}, (LPARAM)&p);
 	for (auto it = p.map.begin(); it != p.map.end(); it++) {
-		if (it->second) return CaptureWindow(variant, it->first);
+		if (it->second) return Capture(variant, it->first);
 	}
 	return true;
 }
@@ -468,10 +469,16 @@ std::string BaseHelper::ScreenManager::GetDisplayInfo(int64_t window)
 
 BOOL BaseHelper::ScreenManager::CaptureScreen(VH variant, int64_t mode)
 {
-	return CaptureWindow(variant, 0);
+	Window window = mode == 0 ? 0 : WindowsManager::ActiveWindow();
+	return Capture(variant, window);
 }
 
 BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, int64_t win)
+{
+	return Capture(variant, (Window)win);
+}
+
+BOOL BaseHelper::ScreenManager::Capture(VH variant, Window win)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (display == NULL) return false;
@@ -527,7 +534,7 @@ public:
 BOOL BaseHelper::ScreenManager::CaptureProcess(VH variant, int64_t pid)
 {
 	Window window = ProcWindows::TopWindow(pid);
-	if (window) return CaptureWindow(variant, window);
+	if (window) return Capture(variant, window);
 	return true;
 }
 

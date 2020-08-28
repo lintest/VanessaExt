@@ -128,7 +128,7 @@ WindowsControl::WindowsControl() {
 		[&]() { this->result = ScreenManager::GetCursorPos(); }
 	);
 	AddProcedure(u"SetCursorPos", u"УстановитьПозициюКурсора",
-		[&](VH window, VH x, VH y) { ScreenManager::SetCursorPos(x, y); }
+		[&](VH x, VH y) { ScreenManager::SetCursorPos(x, y); }
 	);
 	AddProcedure(u"EmulateClick", u"ЭмуляцияНажатияМыши",
 		[&](VH button, VH flags) { ScreenManager::EmulateClick(button, flags); }, { {0, (int64_t)0}, {1, (int64_t)0} }

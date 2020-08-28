@@ -6,11 +6,17 @@
 #include "AddInNative.h"
 #include "BaseHelper.h"
 
+#ifndef _WINDOWS
+#include <X11/Xlib.h>
+#endif
+
 class BaseHelper::ScreenManager
 {
+private:
 #ifdef _WINDOWS
-protected:
-	static BOOL CaptureWindow(VH variant, HWND window);
+	static BOOL Capture(VH variant, HWND window);
+#else
+	static BOOL Capture(VH variant, Window win);
 #endif//_WINDOWS
 public:
 	ScreenManager() { }
