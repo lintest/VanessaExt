@@ -1,5 +1,18 @@
 #!/bin/sh
 
+############################################################################
+
+PNG_DIR=./libpng-1.6.37
+PNG_FILE=./libpng-1.6.37.tar.gz
+if [ ! -d "$PNG_DIR" ]; then
+  if [ ! -f "$PNG_FILE" ]; then
+    wget "https://download.sourceforge.net/libpng/$PNG_FILE"
+  fi
+  tar -xf libpng-1.6.37.tar.gz
+fi
+
+############################################################################
+
 PATH=~/bin:$PATH
 set -e
 
@@ -31,15 +44,15 @@ else
 fi
 
 if [ $clear -eq 1 ]; then
-  cmake -E remove_directory build32
-  cmake -E remove_directory build64
+  cmake -E remove_directory build32L
+  cmake -E remove_directory build64L
 fi
 
 if [ $build32 -eq 1 ]; then
   cmake -E echo "Build 32"
-  if [ ! -d build32 ]; then
-    cmake -E make_directory build32
-    cd build32
+  if [ ! -d build32L ]; then
+    cmake -E make_directory build32L
+    cd build32L
     if [ "${SCL}" != "" ] && [ "${HAS_DTS}" != "" ]; then
       scl enable devtoolset-2 'cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=ON --build .. '
     else
@@ -47,16 +60,16 @@ if [ $build32 -eq 1 ]; then
     fi
     cd ..
   fi
-  cd build32
+  cd build32L
   cmake --build .
   cd ..
 fi    
 
 if [ $build64 -eq 1 ]; then
   cmake -E echo "Build 64"
-  if [ ! -d build64 ]; then
-    cmake -E make_directory build64
-    cd build64
+  if [ ! -d build64L ]; then
+    cmake -E make_directory build64L
+    cd build64L
     if [ "${SCL}" != "" ] && [ "${HAS_DTS}" != "" ]; then
       scl enable devtoolset-2 'cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=OFF --build .. '
     else
@@ -64,7 +77,7 @@ if [ $build64 -eq 1 ]; then
     fi
     cd ..
   fi ;
-  cd build64
+  cd build64L
   cmake --build .
   cd ..
 fi    

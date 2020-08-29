@@ -3,6 +3,8 @@
 
 #ifdef _WINDOWS
 
+#pragma warning (disable : 4244)
+
 static JSON WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
 {
 	if (dwProcessId == 0) ::GetWindowThreadProcessId(hWnd, &dwProcessId);

@@ -8,16 +8,19 @@ rem if NOT EXIST "%CD%\libssh2-%libssh2v% " bitsadmin /transfer mydownloadjob /d
 rem if NOT EXIST "%CD%\libssh2-%libssh2v%" powershell Expand-Archive "%CD%\libssh2-%libssh2v%.zip" -DestinationPath "%CD%"
 rem ren libssh2-libssh2-1.9.0 libssh2-1.9.0
 
+cmake -E remove_directory build32W
+cmake -E remove_directory build64W
+del bin\Release\VanessaExtWin32.dll
+del bin\Release\VanessaExtWin64.dll
+
 mkdir build32W
 cd build32W
-del Release\VanessaExtWin32.dll
 cmake .. -A Win32 -DMySuffix2=32
 cmake --build . --config Release
 cd ..
 
 mkdir build64W
 cd build64W
-del Release\VanessaExtWin64.dll
 cmake .. -A x64 -DMySuffix2=64
 cmake --build . --config Release
 cd ..

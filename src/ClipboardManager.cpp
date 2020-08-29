@@ -172,8 +172,8 @@ bool BaseHelper::ClipboardManager::GetImage(VH variant)
 		HANDLE hData = ::GetClipboardData(CF_PNG);
 		if (hData) {
 			void* data = ::GlobalLock(hData);
-			SIZE_T size = ::GlobalSize(hData);
-			variant.AllocMemory(size);
+			auto size = ::GlobalSize(hData);
+			variant.AllocMemory((unsigned long)size);
 			memcpy(variant.data(), data, size);
 			::GlobalUnlock(hData);
 			return true;

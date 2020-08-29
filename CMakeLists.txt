@@ -37,8 +37,10 @@ add_library(${TARGET} SHARED
 	src/stdafx.h)
 
 target_compile_definitions(${TARGET} PRIVATE UNICODE _UNICODE)
-
 target_include_directories(${TARGET} PRIVATE include)
+set (LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+set (EXECUTABLE_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH})
+set (CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH})
 
 if (UNIX)
 	set(MySuffix1 "Lin")
