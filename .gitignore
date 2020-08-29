@@ -6,6 +6,7 @@
 /bind
 /bin
 /libpng-*
+/zlib-*
 /.vc
 /.vs
 /.idea

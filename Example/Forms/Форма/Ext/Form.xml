@@ -64,6 +64,7 @@
 					<v8:content>Страницы формы</v8:content>
 				</v8:item>
 			</ToolTip>
+			<PagesRepresentation>TabsOnRightHorizontal</PagesRepresentation>
 			<ExtendedTooltip name="СтраницыФормыРасширеннаяПодсказка" id="35"/>
 			<ChildItems>
 				<Page name="СтраницаРазмерОкна" id="106">
@@ -1023,6 +1024,7 @@
 							<RowFilter xsi:nil="true"/>
 							<ContextMenu name="СписокПроцессовКонтекстноеМеню" id="125"/>
 							<AutoCommandBar name="СписокПроцессовКоманднаяПанель" id="126">
+								<Autofill>false</Autofill>
 								<ChildItems>
 									<Button name="СписокПроцессовПолучитьСписокПроцессов" id="143">
 										<Type>CommandBarButton</Type>
@@ -1130,6 +1132,7 @@
 							<RowFilter xsi:nil="true"/>
 							<ContextMenu name="СписокДисплеевКонтекстноеМеню" id="216"/>
 							<AutoCommandBar name="СписокДисплеевКоманднаяПанель" id="217">
+								<Autofill>false</Autofill>
 								<ChildItems>
 									<Button name="ПолучитьСписокДисплеев" id="249">
 										<Type>CommandBarButton</Type>
@@ -1327,6 +1330,7 @@
 							<RowFilter xsi:nil="true"/>
 							<ContextMenu name="СписокОконКонтекстноеМеню" id="4"/>
 							<AutoCommandBar name="СписокОконКоманднаяПанель" id="5">
+								<Autofill>false</Autofill>
 								<ChildItems>
 									<Button name="ПолучитьСписокОкон" id="1">
 										<Type>CommandBarButton</Type>
@@ -1562,7 +1566,9 @@
 							<DataPath>СвойстваОбъекта</DataPath>
 							<RowFilter xsi:nil="true"/>
 							<ContextMenu name="СвойстваОбъектаКонтекстноеМеню" id="151"/>
-							<AutoCommandBar name="СвойстваОбъектаКоманднаяПанель" id="152"/>
+							<AutoCommandBar name="СвойстваОбъектаКоманднаяПанель" id="152">
+								<Autofill>false</Autofill>
+							</AutoCommandBar>
 							<ExtendedTooltip name="СвойстваОбъектаРасширеннаяПодсказка" id="153"/>
 							<SearchStringAddition name="СвойстваОбъектаСтрокаПоиска" id="154">
 								<AdditionSource>
@@ -2632,7 +2638,7 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Получить список окон</v8:content>
+					<v8:content>Список окон</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
@@ -2857,7 +2863,7 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Получить список процессов</v8:content>
+					<v8:content>Список процессов</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
@@ -2872,7 +2878,7 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Получить свойства процесса</v8:content>
+					<v8:content>Свойства процесса</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
@@ -3127,7 +3133,7 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Получить снимок процесса</v8:content>
+					<v8:content>Снимок процесса</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>

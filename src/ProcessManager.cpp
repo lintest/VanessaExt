@@ -218,7 +218,7 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 
 void ProcessManager::Sleep(int64_t interval)
 {
-	::Sleep(interval);
+	::Sleep((DWORD)interval);
 }
 
 #else //_WINDOWS

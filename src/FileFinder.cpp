@@ -31,7 +31,7 @@ bool FileFinder::search(const std::wstring& path)
 	size_t offset = 0;
 	while (true) {
 		wif.read(buf + offset, buf_size - offset);
-		unsigned read = wif.gcount();
+		auto read = wif.gcount();
 		if (read == 0) return false;
 		wchar_t* end = buf + offset + read;
 		if (m_ignoreCase) std::use_facet<std::ctype<wchar_t> >(std::locale()).tolower(buf + offset, end);

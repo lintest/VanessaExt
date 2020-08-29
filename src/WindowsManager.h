@@ -20,7 +20,7 @@ public:
 	static bool Activate(int64_t window);
 	int64_t GetWindowState(int64_t window);
 #ifdef _WINDOWS
-	static int64_t FindWindow(const std::string& name);
+	static int64_t FindWindow(const std::wstring& name, const std::wstring& title);
 	static bool PostMessage(int64_t hWnd, int64_t Msg, int64_t wParam, int64_t lParam);
 	static bool SetWindowState(HWND hWnd, int iMode, bool bActivate);
 	static bool IsMaximized(HWND hWnd);

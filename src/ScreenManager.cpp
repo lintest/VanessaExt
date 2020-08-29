@@ -339,7 +339,7 @@ BOOL BaseHelper::ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 		if (!hotkey.add(keys)) return false;
 	}
 	else {
-		WORD key = (int64_t)keys;
+		WORD key = (WORD)(int64_t)keys;
 		if (flags & 0x04) hotkey.add(VK_SHIFT);
 		if (flags & 0x08) hotkey.add(VK_CONTROL);
 		if (flags & 0x10) hotkey.add(VK_MENU);
@@ -361,7 +361,7 @@ BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring &text, int64_t pa
 		SendInput(1, &ip, sizeof(INPUT));
 		ip.ki.dwFlags |= KEYEVENTF_KEYUP;
 		SendInput(1, &ip, sizeof(INPUT));
-		if (pause) Sleep(pause);
+		if (pause) Sleep((WORD)pause);
 	}
 	return true;
 }

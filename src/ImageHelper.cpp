@@ -116,7 +116,7 @@ BOOL BaseHelper::ImageHelper::Save(std::vector<BYTE>& vec)
 			ULARGE_INTEGER lSize;
 			if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_END, &lSize))) // retrieving size of stream data (seek to end)
 			{
-				vec.resize(lSize.QuadPart);
+				vec.resize((size_t)lSize.QuadPart);
 				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
 					if (SUCCEEDED(pStream->Read(vec.data(), (ULONG)vec.size(), 0))) // reading stream to buffer
@@ -150,8 +150,8 @@ BOOL BaseHelper::ImageHelper::Save(VH variant)
 			{
 				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
 				{
-					variant.AllocMemory(lSize.QuadPart);
-					if (SUCCEEDED(pStream->Read(variant.data(), lSize.QuadPart, 0))) // reading stream to buffer
+					variant.AllocMemory((unsigned long)lSize.QuadPart);
+					if (SUCCEEDED(pStream->Read(variant.data(), (ULONG)lSize.QuadPart, nullptr))) // reading stream to buffer
 					{
 						Ret = TRUE;
 					}

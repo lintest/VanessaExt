@@ -2,13 +2,22 @@
 
 ############################################################################
 
-PNG_DIR=./libpng-1.6.37
-PNG_FILE=./libpng-1.6.37.tar.gz
-if [ ! -d "$PNG_DIR" ]; then
-  if [ ! -f "$PNG_FILE" ]; then
-    wget "https://download.sourceforge.net/libpng/$PNG_FILE"
+PNG_VERSION=libpng-1.6.37
+if [ ! -d "./$PNG_VERSION" ]; then
+  if [ ! -f "./$PNG_VERSION.tar.gz" ]; then
+    wget "https://download.sourceforge.net/libpng/$PNG_VERSION.tar.gz"
   fi
-  tar -xf libpng-1.6.37.tar.gz
+  tar -xf "$PNG_VERSION.tar.gz"
+fi
+
+############################################################################
+
+ZLIB_VERSION=zlib-1.2.11
+if [ ! -d "./$ZLIB_VERSION" ]; then
+  if [ ! -f "./$ZLIB_VERSION.tar.gz" ]; then
+    wget "https://www.zlib.net/$ZLIB_VERSION.tar.gz"
+  fi
+  tar -xf "$ZLIB_VERSION.tar.gz"
 fi
 
 ############################################################################

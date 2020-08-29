@@ -165,7 +165,7 @@ WindowsControl::WindowsControl() {
 		[&](VH msg) { this->result = ProcessManager::SendWebSocket(&webSocket, msg); }
 	);
 	AddFunction(u"FindWindow", u"НайтиОкно",
-		[&](VH name) { this->result = WindowsManager::FindWindow(name); }
+		[&](VH name, VH title) { this->result = WindowsManager::FindWindow(name, title); }, { {0, u""}, { 1, u""} }
 	);
 	AddFunction(u"PostMessage", u"ОтправитьСообщение",
 		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }

@@ -261,9 +261,13 @@ bool WindowsManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)
 	return true;
 }
 
-int64_t WindowsManager::FindWindow(const std::string &name)
+int64_t WindowsManager::FindWindow(const std::wstring &name, const std::wstring& title)
 {
-	return (int64_t)::FindWindow(NULL, (LPCWSTR)name.c_str());
+	LPCWSTR lpClassName = nullptr;
+  	LPCWSTR lpWindowName = nullptr;
+	if (!name.empty()) lpClassName = name.c_str();
+	if (!title.empty()) lpWindowName = title.c_str();
+	return (int64_t)::FindWindow(lpClassName, lpWindowName);
 }
 
 bool WindowsManager::PostMessage(int64_t hWnd, int64_t Msg, int64_t wParam, int64_t lParam)
