@@ -12,6 +12,7 @@
 #include "WindowsControl.h"
 #include "version.h"
 
+#include "ClickEffect.h"
 #include "ClipboardManager.h"
 #include "FileFinder.h"
 #include "ProcessManager.h"
@@ -155,6 +156,9 @@ WindowsControl::WindowsControl() {
 		[&](VH msec) { ProcessManager::Sleep(msec); }
 	);
 #ifdef _WINDOWS
+	AddProcedure(u"Click", u"Клик",
+		[&](VH color, VH delay) { ClickEffect(hModule).Show(0, 0); }
+	);
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
 	);

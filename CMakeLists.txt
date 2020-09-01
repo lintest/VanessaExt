@@ -8,6 +8,8 @@ add_library(${TARGET} SHARED
 	src/AddInNative.def
 	src/AddInNative.h
 	src/BaseHelper.h
+	src/ClickEffect.cpp
+	src/ClickEffect.h 	
 	src/ClipboardControl.cpp
 	src/ClipboardControl.h
 	src/ClipboardManager.cpp 
@@ -73,6 +75,11 @@ if (UNIX)
 	endif ()
 	FIND_PACKAGE(X11 COMPONENTS Xtst)
 	target_link_libraries(${PROJECT_NAME} ${X11_XTest_LIB})
+	target_include_directories(${TARGET} PRIVATE libpng-1.6.37/include)
+	include_directories(libpng-1.6.37)
+	include_directories(zlib-1.2.11)
+	add_subdirectory(libpng-1.6.37)
+	add_subdirectory(zlib-1.2.11)
 else(UNIX)
 	add_definitions(/MT)
 	set(CMAKE_SUPPRESS_REGENERATION 1)

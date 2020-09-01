@@ -67,6 +67,369 @@
 			<PagesRepresentation>TabsOnRightHorizontal</PagesRepresentation>
 			<ExtendedTooltip name="СтраницыФормыРасширеннаяПодсказка" id="35"/>
 			<ChildItems>
+				<Page name="СтраницаЭмуляция" id="499">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Эмуляция ввода</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница эмуляция</v8:content>
+						</v8:item>
+					</ToolTip>
+					<Group>HorizontalIfPossible</Group>
+					<ExtendedTooltip name="СтраницаЭмуляцияРасширеннаяПодсказка" id="500"/>
+					<ChildItems>
+						<UsualGroup name="ГруппаОкноПоиск" id="372">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа окно поиск</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа окно поиск</v8:content>
+								</v8:item>
+							</ToolTip>
+							<HorizontalStretch>false</HorizontalStretch>
+							<Group>Vertical</Group>
+							<Representation>NormalSeparation</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ThroughAlign>DontUse</ThroughAlign>
+							<ExtendedTooltip name="ГруппаОкноПоискРасширеннаяПодсказка" id="373"/>
+							<ChildItems>
+								<UsualGroup name="ГруппаНайтиКлиент" id="376">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа найти клиент</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа найти клиент</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ThroughAlign>DontUse</ThroughAlign>
+									<ExtendedTooltip name="ГруппаНайтиКлиентРасширеннаяПодсказка" id="377"/>
+									<ChildItems>
+										<CommandBar name="ГруппаКлиент" id="436">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа клиент</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа клиент</v8:content>
+												</v8:item>
+											</ToolTip>
+											<HorizontalStretch>false</HorizontalStretch>
+											<ExtendedTooltip name="ГруппаКлиентРасширеннаяПодсказка" id="437"/>
+											<ChildItems>
+												<Button name="НайтиКлиентТестирования" id="194">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.НайтиКлиентТестирования</CommandName>
+													<ExtendedTooltip name="НайтиКлиентТестированияРасширеннаяПодсказка" id="195"/>
+												</Button>
+												<Button name="ВызовКонтекстаСервера" id="444">
+													<Type>CommandBarButton</Type>
+													<OnlyInAllActions>false</OnlyInAllActions>
+													<CommandName>Form.Command.ВызовКонтекстаСервера</CommandName>
+													<ExtendedTooltip name="ВызовКонтекстаСервераРасширеннаяПодсказка" id="445"/>
+												</Button>
+												<Button name="ЭмуляцияДвойногоНажатия" id="442">
+													<Type>CommandBarButton</Type>
+													<OnlyInAllActions>false</OnlyInAllActions>
+													<CommandName>Form.Command.ЭмуляцияДвойногоНажатия</CommandName>
+													<ExtendedTooltip name="ЭмуляцияДвойногоНажатияРасширеннаяПодсказка" id="443"/>
+												</Button>
+												<Button name="ЭмуляцияЛевойКнопкиМыши" id="438">
+													<Type>CommandBarButton</Type>
+													<OnlyInAllActions>false</OnlyInAllActions>
+													<CommandName>Form.Command.ЭмуляцияЛевойКнопкиМыши</CommandName>
+													<ExtendedTooltip name="ЭмуляцияЛевойКнопкиМышиРасширеннаяПодсказка" id="439"/>
+												</Button>
+												<Button name="ЭмуляцияПравойКнопкиМыши" id="440">
+													<Type>CommandBarButton</Type>
+													<OnlyInAllActions>false</OnlyInAllActions>
+													<CommandName>Form.Command.ЭмуляцияПравойКнопкиМыши</CommandName>
+													<ExtendedTooltip name="ЭмуляцияПравойКнопкиМышиРасширеннаяПодсказка" id="441"/>
+												</Button>
+											</ChildItems>
+										</CommandBar>
+										<InputField name="ПортПодключения" id="196">
+											<DataPath>ПортПодключения</DataPath>
+											<ContextMenu name="ПортПодключенияКонтекстноеМеню" id="197"/>
+											<ExtendedTooltip name="ПортПодключенияРасширеннаяПодсказка" id="198"/>
+										</InputField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаПоискОкна" id="505">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Поиск окна</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа поиск окна</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ThroughAlign>Use</ThroughAlign>
+									<ExtendedTooltip name="ГруппаПоискОкнаРасширеннаяПодсказка" id="506"/>
+									<ChildItems>
+										<Button name="НайтиОкноПоЗаголовку" id="513">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.НайтиОкноПоЗаголовку</CommandName>
+											<ExtendedTooltip name="НайтиОкноПоЗаголовкуРасширеннаяПодсказка" id="514"/>
+										</Button>
+										<InputField name="ИмяКласса" id="507">
+											<DataPath>ИмяКласса</DataPath>
+											<ContextMenu name="ИмяКлассаКонтекстноеМеню" id="508"/>
+											<ExtendedTooltip name="ИмяКлассаРасширеннаяПодсказка" id="509"/>
+										</InputField>
+										<InputField name="ИмяЗаголовка" id="510">
+											<DataPath>ИмяЗаголовка</DataPath>
+											<ContextMenu name="ИмяЗаголовкаКонтекстноеМеню" id="511"/>
+											<ExtendedTooltip name="ИмяЗаголовкаРасширеннаяПодсказка" id="512"/>
+										</InputField>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</UsualGroup>
+						<UsualGroup name="ГруппаОкноЭмуляция" id="446">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа окно эмуляция</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа окно эмуляция</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Group>Vertical</Group>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаОкноЭмуляцияРасширеннаяПодсказка" id="447"/>
+							<ChildItems>
+								<CommandBar name="ПанельНажатиеКлавиш" id="501">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Панель нажатие клавиш</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Панель нажатие клавиш</v8:content>
+										</v8:item>
+									</ToolTip>
+									<ExtendedTooltip name="ПанельНажатиеКлавишРасширеннаяПодсказка" id="502"/>
+									<ChildItems>
+										<ButtonGroup name="ГруппаГорячиеКлавиши" id="503">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа горячие клавиши</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа горячие клавиши</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>Compact</Representation>
+											<ExtendedTooltip name="ГруппаГорячиеКлавишиРасширеннаяПодсказка" id="504"/>
+											<ChildItems>
+												<Button name="КлавишаWindowsE" id="448">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.НажатиеКлавишиWinE</CommandName>
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Win+E</v8:content>
+														</v8:item>
+													</Title>
+													<ExtendedTooltip name="КлавишаWindowsEРасширеннаяПодсказка" id="449"/>
+												</Button>
+												<Button name="НажатиеГорячейКлавиши" id="425">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.НажатиеКлавишиCtrlF2</CommandName>
+													<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
+												</Button>
+												<Button name="НажатиеКлавишиNumLock" id="450">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.НажатиеКлавишиNumLock</CommandName>
+													<ExtendedTooltip name="НажатиеКлавишиNumLockРасширеннаяПодсказка" id="451"/>
+												</Button>
+											</ChildItems>
+										</ButtonGroup>
+									</ChildItems>
+								</CommandBar>
+								<UsualGroup name="ГруппаКурсорМыши" id="374">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Управление курсором мыши</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа курсор мыши</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<Representation>NormalSeparation</Representation>
+									<ExtendedTooltip name="ГруппаКурсорМышиРасширеннаяПодсказка" id="375"/>
+									<ChildItems>
+										<CommandBar name="КоманднаяПанельКурсор" id="354">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Командная панель курсор</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Командная панель курсор</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="КоманднаяПанельКурсорРасширеннаяПодсказка" id="355"/>
+											<ChildItems>
+												<ButtonGroup name="ГруппаКнопокПозицияКурсора" id="360">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок позиция курсора</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок позиция курсора</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ГруппаКнопокПозицияКурсораРасширеннаяПодсказка" id="361"/>
+													<ChildItems>
+														<Button name="ПолучитьПозициюКурсора" id="356">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ПолучитьПозициюКурсора</CommandName>
+															<ExtendedTooltip name="ПолучитьПозициюКурсораРасширеннаяПодсказка" id="357"/>
+														</Button>
+														<Button name="УстановитьПозициюКурсора" id="358">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.УстановитьПозициюКурсора</CommandName>
+															<ExtendedTooltip name="УстановитьПозициюКурсораРасширеннаяПодсказка" id="359"/>
+														</Button>
+														<Button name="ЭмуляцияДвиженияМыши" id="427">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ЭмуляцияДвиженияМыши</CommandName>
+															<ExtendedTooltip name="ЭмуляцияДвиженияМышиРасширеннаяПодсказка" id="428"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
+										<UsualGroup name="ГруппаЭмуляцияМыши" id="429">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа эмуляция мыши</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа эмуляция мыши</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>None</Representation>
+											<ShowTitle>false</ShowTitle>
+											<ExtendedTooltip name="ГруппаЭмуляцияМышиРасширеннаяПодсказка" id="430"/>
+											<ChildItems>
+												<UsualGroup name="ГруппаПозицияКурсора" id="352">
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа позиция курсора</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Group>Vertical</Group>
+													<ShowTitle>false</ShowTitle>
+													<ExtendedTooltip name="ГруппаПозицияКурсораРасширеннаяПодсказка" id="353"/>
+													<ChildItems>
+														<InputField name="ПозицияКурсораX" id="346">
+															<DataPath>ПозицияКурсораX</DataPath>
+															<Title>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>X</v8:content>
+																</v8:item>
+															</Title>
+															<ContextMenu name="ПозицияКурсораXКонтекстноеМеню" id="347"/>
+															<ExtendedTooltip name="ПозицияКурсораXРасширеннаяПодсказка" id="348"/>
+														</InputField>
+														<InputField name="ПозицияКурсораY" id="349">
+															<DataPath>ПозицияКурсораY</DataPath>
+															<Title>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>Y</v8:content>
+																</v8:item>
+															</Title>
+															<ContextMenu name="ПозицияКурсораYКонтекстноеМеню" id="350"/>
+															<ExtendedTooltip name="ПозицияКурсораYРасширеннаяПодсказка" id="351"/>
+														</InputField>
+													</ChildItems>
+												</UsualGroup>
+												<LabelDecoration name="ДекорацияМышь" id="431">
+													<Title formatted="false">
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Нажатие мыши F11 и F12</v8:content>
+														</v8:item>
+													</Title>
+													<ContextMenu name="ДекорацияМышьКонтекстноеМеню" id="432"/>
+													<ExtendedTooltip name="ДекорацияМышьРасширеннаяПодсказка" id="433"/>
+												</LabelDecoration>
+											</ChildItems>
+										</UsualGroup>
+										<Button name="ВизуализацияКлика" id="515">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.ВизуализацияКлика</CommandName>
+											<ExtendedTooltip name="ВизуализацияКликаРасширеннаяПодсказка" id="516"/>
+										</Button>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</UsualGroup>
+					</ChildItems>
+				</Page>
 				<Page name="СтраницаРазмерОкна" id="106">
 					<Title>
 						<v8:item>
@@ -369,225 +732,6 @@
 											<CommandName>Form.Command.ПолучитьРазмерОкна</CommandName>
 											<ExtendedTooltip name="ПолучитьРазмерыОкнаРасширеннаяПодсказка" id="268"/>
 										</Button>
-									</ChildItems>
-								</UsualGroup>
-							</ChildItems>
-						</UsualGroup>
-						<UsualGroup name="ГруппаОкноСправа" id="372">
-							<ToolTip>
-								<v8:item>
-									<v8:lang>ru</v8:lang>
-									<v8:content>Группа окно справа</v8:content>
-								</v8:item>
-							</ToolTip>
-							<Group>Vertical</Group>
-							<Representation>NormalSeparation</Representation>
-							<ShowTitle>false</ShowTitle>
-							<ExtendedTooltip name="ГруппаОкноСправаРасширеннаяПодсказка" id="373"/>
-							<ChildItems>
-								<UsualGroup name="ГруппаНайтиКлиент" id="376">
-									<Title>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>Группа найти клиент</v8:content>
-										</v8:item>
-									</Title>
-									<ToolTip>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>Группа найти клиент</v8:content>
-										</v8:item>
-									</ToolTip>
-									<Group>Vertical</Group>
-									<Representation>None</Representation>
-									<ShowTitle>false</ShowTitle>
-									<ExtendedTooltip name="ГруппаНайтиКлиентРасширеннаяПодсказка" id="377"/>
-									<ChildItems>
-										<CommandBar name="ГруппаКлиент" id="436">
-											<Title>
-												<v8:item>
-													<v8:lang>ru</v8:lang>
-													<v8:content>Группа клиент</v8:content>
-												</v8:item>
-											</Title>
-											<ToolTip>
-												<v8:item>
-													<v8:lang>ru</v8:lang>
-													<v8:content>Группа клиент</v8:content>
-												</v8:item>
-											</ToolTip>
-											<HorizontalStretch>false</HorizontalStretch>
-											<ExtendedTooltip name="ГруппаКлиентРасширеннаяПодсказка" id="437"/>
-											<ChildItems>
-												<Button name="НайтиКлиентТестирования" id="194">
-													<Type>CommandBarButton</Type>
-													<CommandName>Form.Command.НайтиКлиентТестирования</CommandName>
-													<ExtendedTooltip name="НайтиКлиентТестированияРасширеннаяПодсказка" id="195"/>
-												</Button>
-												<Button name="ВызовКонтекстаСервера" id="444">
-													<Type>CommandBarButton</Type>
-													<OnlyInAllActions>false</OnlyInAllActions>
-													<CommandName>Form.Command.ВызовКонтекстаСервера</CommandName>
-													<ExtendedTooltip name="ВызовКонтекстаСервераРасширеннаяПодсказка" id="445"/>
-												</Button>
-												<Button name="ЭмуляцияДвойногоНажатия" id="442">
-													<Type>CommandBarButton</Type>
-													<OnlyInAllActions>false</OnlyInAllActions>
-													<CommandName>Form.Command.ЭмуляцияДвойногоНажатия</CommandName>
-													<ExtendedTooltip name="ЭмуляцияДвойногоНажатияРасширеннаяПодсказка" id="443"/>
-												</Button>
-												<Button name="ЭмуляцияЛевойКнопкиМыши" id="438">
-													<Type>CommandBarButton</Type>
-													<OnlyInAllActions>false</OnlyInAllActions>
-													<CommandName>Form.Command.ЭмуляцияЛевойКнопкиМыши</CommandName>
-													<ExtendedTooltip name="ЭмуляцияЛевойКнопкиМышиРасширеннаяПодсказка" id="439"/>
-												</Button>
-												<Button name="ЭмуляцияПравойКнопкиМыши" id="440">
-													<Type>CommandBarButton</Type>
-													<OnlyInAllActions>false</OnlyInAllActions>
-													<CommandName>Form.Command.ЭмуляцияПравойКнопкиМыши</CommandName>
-													<ExtendedTooltip name="ЭмуляцияПравойКнопкиМышиРасширеннаяПодсказка" id="441"/>
-												</Button>
-											</ChildItems>
-										</CommandBar>
-										<InputField name="ПортПодключения" id="196">
-											<DataPath>ПортПодключения</DataPath>
-											<ContextMenu name="ПортПодключенияКонтекстноеМеню" id="197"/>
-											<ExtendedTooltip name="ПортПодключенияРасширеннаяПодсказка" id="198"/>
-										</InputField>
-									</ChildItems>
-								</UsualGroup>
-								<UsualGroup name="ГруппаКурсорМыши" id="374">
-									<Title>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>Управление курсором мыши</v8:content>
-										</v8:item>
-									</Title>
-									<ToolTip>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>Группа курсор мыши</v8:content>
-										</v8:item>
-									</ToolTip>
-									<Group>Vertical</Group>
-									<Representation>NormalSeparation</Representation>
-									<ExtendedTooltip name="ГруппаКурсорМышиРасширеннаяПодсказка" id="375"/>
-									<ChildItems>
-										<CommandBar name="КоманднаяПанельКурсор" id="354">
-											<Title>
-												<v8:item>
-													<v8:lang>ru</v8:lang>
-													<v8:content>Командная панель курсор</v8:content>
-												</v8:item>
-											</Title>
-											<ToolTip>
-												<v8:item>
-													<v8:lang>ru</v8:lang>
-													<v8:content>Командная панель курсор</v8:content>
-												</v8:item>
-											</ToolTip>
-											<ExtendedTooltip name="КоманднаяПанельКурсорРасширеннаяПодсказка" id="355"/>
-											<ChildItems>
-												<ButtonGroup name="ГруппаКнопокПозицияКурсора" id="360">
-													<Title>
-														<v8:item>
-															<v8:lang>ru</v8:lang>
-															<v8:content>Группа кнопок позиция курсора</v8:content>
-														</v8:item>
-													</Title>
-													<ToolTip>
-														<v8:item>
-															<v8:lang>ru</v8:lang>
-															<v8:content>Группа кнопок позиция курсора</v8:content>
-														</v8:item>
-													</ToolTip>
-													<Representation>Compact</Representation>
-													<ExtendedTooltip name="ГруппаКнопокПозицияКурсораРасширеннаяПодсказка" id="361"/>
-													<ChildItems>
-														<Button name="ПолучитьПозициюКурсора" id="356">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.ПолучитьПозициюКурсора</CommandName>
-															<ExtendedTooltip name="ПолучитьПозициюКурсораРасширеннаяПодсказка" id="357"/>
-														</Button>
-														<Button name="УстановитьПозициюКурсора" id="358">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.УстановитьПозициюКурсора</CommandName>
-															<ExtendedTooltip name="УстановитьПозициюКурсораРасширеннаяПодсказка" id="359"/>
-														</Button>
-														<Button name="ЭмуляцияДвиженияМыши" id="427">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.ЭмуляцияДвиженияМыши</CommandName>
-															<ExtendedTooltip name="ЭмуляцияДвиженияМышиРасширеннаяПодсказка" id="428"/>
-														</Button>
-													</ChildItems>
-												</ButtonGroup>
-											</ChildItems>
-										</CommandBar>
-										<UsualGroup name="ГруппаЭмуляцияМыши" id="429">
-											<Title>
-												<v8:item>
-													<v8:lang>ru</v8:lang>
-													<v8:content>Группа эмуляция мыши</v8:content>
-												</v8:item>
-											</Title>
-											<ToolTip>
-												<v8:item>
-													<v8:lang>ru</v8:lang>
-													<v8:content>Группа эмуляция мыши</v8:content>
-												</v8:item>
-											</ToolTip>
-											<Representation>None</Representation>
-											<ShowTitle>false</ShowTitle>
-											<ExtendedTooltip name="ГруппаЭмуляцияМышиРасширеннаяПодсказка" id="430"/>
-											<ChildItems>
-												<UsualGroup name="ГруппаПозицияКурсора" id="352">
-													<ToolTip>
-														<v8:item>
-															<v8:lang>ru</v8:lang>
-															<v8:content>Группа позиция курсора</v8:content>
-														</v8:item>
-													</ToolTip>
-													<Group>Vertical</Group>
-													<ShowTitle>false</ShowTitle>
-													<ExtendedTooltip name="ГруппаПозицияКурсораРасширеннаяПодсказка" id="353"/>
-													<ChildItems>
-														<InputField name="ПозицияКурсораX" id="346">
-															<DataPath>ПозицияКурсораX</DataPath>
-															<Title>
-																<v8:item>
-																	<v8:lang>ru</v8:lang>
-																	<v8:content>X</v8:content>
-																</v8:item>
-															</Title>
-															<ContextMenu name="ПозицияКурсораXКонтекстноеМеню" id="347"/>
-															<ExtendedTooltip name="ПозицияКурсораXРасширеннаяПодсказка" id="348"/>
-														</InputField>
-														<InputField name="ПозицияКурсораY" id="349">
-															<DataPath>ПозицияКурсораY</DataPath>
-															<Title>
-																<v8:item>
-																	<v8:lang>ru</v8:lang>
-																	<v8:content>Y</v8:content>
-																</v8:item>
-															</Title>
-															<ContextMenu name="ПозицияКурсораYКонтекстноеМеню" id="350"/>
-															<ExtendedTooltip name="ПозицияКурсораYРасширеннаяПодсказка" id="351"/>
-														</InputField>
-													</ChildItems>
-												</UsualGroup>
-												<LabelDecoration name="ДекорацияМышь" id="431">
-													<Title formatted="false">
-														<v8:item>
-															<v8:lang>ru</v8:lang>
-															<v8:content>Нажатие мыши F11 и F12</v8:content>
-														</v8:item>
-													</Title>
-													<ContextMenu name="ДекорацияМышьКонтекстноеМеню" id="432"/>
-													<ExtendedTooltip name="ДекорацияМышьРасширеннаяПодсказка" id="433"/>
-												</LabelDecoration>
-											</ChildItems>
-										</UsualGroup>
 									</ChildItems>
 								</UsualGroup>
 							</ChildItems>
@@ -949,47 +1093,6 @@
 											<Type>UsualButton</Type>
 											<CommandName>Form.Command.ПаузаSleep</CommandName>
 											<ExtendedTooltip name="ПаузаРасширеннаяПодсказка" id="343"/>
-										</Button>
-									</ChildItems>
-								</UsualGroup>
-								<UsualGroup name="ГруппаГорячиеКлавиши" id="446">
-									<Title>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>Группа горячие клавиши</v8:content>
-										</v8:item>
-									</Title>
-									<ToolTip>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>Группа горячие клавиши</v8:content>
-										</v8:item>
-									</ToolTip>
-									<Group>Vertical</Group>
-									<Representation>None</Representation>
-									<ShowTitle>false</ShowTitle>
-									<ExtendedTooltip name="ГруппаГорячиеКлавишиРасширеннаяПодсказка" id="447"/>
-									<ChildItems>
-										<Button name="КлавишаWindowsE" id="448">
-											<Type>UsualButton</Type>
-											<CommandName>Form.Command.НажатиеКлавишиWinE</CommandName>
-											<Title>
-												<v8:item>
-													<v8:lang>ru</v8:lang>
-													<v8:content>Win+E</v8:content>
-												</v8:item>
-											</Title>
-											<ExtendedTooltip name="КлавишаWindowsEРасширеннаяПодсказка" id="449"/>
-										</Button>
-										<Button name="НажатиеГорячейКлавиши" id="425">
-											<Type>UsualButton</Type>
-											<CommandName>Form.Command.НажатиеКлавишиCtrlF2</CommandName>
-											<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
-										</Button>
-										<Button name="НажатиеКлавишиNumLock" id="450">
-											<Type>UsualButton</Type>
-											<CommandName>Form.Command.НажатиеКлавишиNumLock</CommandName>
-											<ExtendedTooltip name="НажатиеКлавишиNumLockРасширеннаяПодсказка" id="451"/>
 										</Button>
 									</ChildItems>
 								</UsualGroup>
@@ -2632,6 +2735,36 @@
 				</v8:StringQualifiers>
 			</Type>
 		</Attribute>
+		<Attribute name="ИмяКласса" id="34">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Имя класса</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ИмяЗаголовка" id="35">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Заголовок</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -3442,6 +3575,35 @@
 				</v8:item>
 			</ToolTip>
 			<Action>НайтиФайлыКомпонентой</Action>
+		</Command>
+		<Command name="НайтиОкноПоЗаголовку" id="54">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти окно по заголовку</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти окно по заголовку</v8:content>
+				</v8:item>
+			</ToolTip>
+		</Command>
+		<Command name="ВизуализацияКлика" id="55">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Визуализация клика</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Визуализация клика</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ВизуализацияКлика</Action>
 		</Command>
 	</Commands>
 </Form>

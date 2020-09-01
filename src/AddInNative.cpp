@@ -21,11 +21,15 @@
 #include "AddInNative.h"
 
 #ifdef _WINDOWS
+HMODULE AddInNative::hModule = { 0 };
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+		AddInNative::InitModule(hModule);
+		break;
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
 	case DLL_PROCESS_DETACH:
@@ -65,7 +69,7 @@ std::string WC2MB(const std::wstring& wstr)
 std::wstring MB2WC(const std::string& str)
 {
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	return converter.from_bytes(str);	
+	return converter.from_bytes(str);
 }
 
 std::map<std::u16string, CompFunction> AddInNative::components;
@@ -403,7 +407,7 @@ std::wstring AddInNative::WCHAR2WC(std::basic_string_view<WCHAR_T> src) {
 #ifdef _WINDOWS
 	return std::wstring(src);
 #else
-	std::wstring_convert<std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>> conv; 
+	std::wstring_convert<std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>> conv;
 	return conv.from_bytes(reinterpret_cast<const char*>(src.data()),
 		reinterpret_cast<const char*>(src.data() + src.size()));
 #endif//_WINDOWS
@@ -439,7 +443,7 @@ uint32_t AddInNative::VarinantHelper::size()
 	return pvar->strLen;
 }
 
-TYPEVAR AddInNative::VarinantHelper::type() 
+TYPEVAR AddInNative::VarinantHelper::type()
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
 	return pvar->vt;
