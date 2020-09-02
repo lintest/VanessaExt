@@ -5,12 +5,12 @@
 #include "windows.h"
 
 class ClickEffect {
-private:
-	HMODULE hModule;
 public:
-	ClickEffect(HMODULE hModule) : hModule(hModule) {}
-	friend DWORD WINAPI ThreadProc(LPVOID lpParam);
-	HANDLE Show(int64_t x, int64_t y);
+	class ClickData;
+	static void Hook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
+	static void Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
+	static void Show();
+	static void Unhook();
 };
 
 #endif //_WINDOWS

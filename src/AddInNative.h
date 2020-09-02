@@ -44,12 +44,6 @@ using CompFunction = std::function<AddInNative* ()>;
 
 class AddInNative : public IComponentBase
 {
-#ifdef _WINDOWS
-protected:
-	static HMODULE hModule;
-public:
-	static void InitModule(HMODULE h) { hModule = h; }
-#endif //_WINDOWS
 protected:
 	class VarinantHelper {
 	private:

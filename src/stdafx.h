@@ -7,6 +7,7 @@
 
 #ifdef _WINDOWS
 #include <windows.h>
+extern HMODULE hModule;
 #endif //_WINDOWS
 
 #include <string>

@@ -156,8 +156,16 @@ WindowsControl::WindowsControl() {
 		[&](VH msec) { ProcessManager::Sleep(msec); }
 	);
 #ifdef _WINDOWS
-	AddProcedure(u"Click", u"Клик",
-		[&](VH color, VH delay) { ClickEffect(hModule).Show(0, 0); }
+	AddProcedure(u"ShowClick", u"ПоказатьНажатиеМыши",
+		[&](VH color, VH radius, VH width, VH delay, VH trans) { ClickEffect::Show(color, radius, width, delay, trans); },
+		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127} }
+	);
+	AddProcedure(u"VisualizeClick", u"ВизуализацияНажатияМыши",
+		[&](VH color, VH radius, VH width, VH delay, VH trans) { ClickEffect::Hook(color, radius, width, delay, trans); },
+		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127} }
+	);
+	AddProcedure(u"StopClickVisualization", u"ПрекратитьВизуализациюНажатияМыши",
+		[&]() { ClickEffect::Unhook(); }
 	);
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
