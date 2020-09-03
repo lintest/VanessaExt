@@ -730,6 +730,11 @@
 										</ButtonGroup>
 									</ChildItems>
 								</CommandBar>
+								<Button name="ОшибкаКонвертации" id="548">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.ОшибкаКонвертации</CommandName>
+									<ExtendedTooltip name="ОшибкаКонвертацииExtendedTooltip" id="549"/>
+								</Button>
 							</ChildItems>
 						</UsualGroup>
 						<UsualGroup name="ГруппаЭмуляцияНажатия" id="515">
@@ -3847,6 +3852,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ВизуализацияНажатияПоказать</Action>
+		</Command>
+		<Command name="ОшибкаКонвертации" id="58">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Ошибка конвертации</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Ошибка конвертации</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ОшибкаКонвертации</Action>
 		</Command>
 	</Commands>
 </Form>
