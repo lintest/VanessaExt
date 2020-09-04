@@ -544,12 +544,12 @@ static std::u16string typeinfo(TYPEVAR vt, bool alias)
 	case VTYPE_I4:
 	case VTYPE_ERROR:
 	case VTYPE_UI1:
-		return alias ? u"Целое число" : u"Number";
+		return alias ? u"Целое число" : u"Integer";
 	case VTYPE_BOOL:
 		return alias ? u"Булево" : u"Boolean";
 	case VTYPE_R4:
 	case VTYPE_R8:
-		return alias ? u"Целое число" : u"Number";
+		return alias ? u"Число" : u"Float";
 	case VTYPE_DATE:
 	case VTYPE_TM: 
 		return alias ? u"Дата" : u"Date";
