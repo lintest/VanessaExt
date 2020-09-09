@@ -15,6 +15,8 @@ private:
 private:
 	static std::vector<std::u16string> names;
 	WindowsControl();
+public:
+	virtual ~WindowsControl() override;
 };
 
 #endif //__WINDOWSCONTROL_H__

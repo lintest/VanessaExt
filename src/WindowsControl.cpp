@@ -187,3 +187,11 @@ WindowsControl::WindowsControl() {
 	);
 #endif//_WINDOWS
 }
+
+WindowsControl::~WindowsControl()
+{
+#ifdef _WINDOWS
+	ClickEffect::Unhook();
+#endif//_WINDOWS
+}
+
