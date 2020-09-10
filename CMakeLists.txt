@@ -7,6 +7,7 @@ add_library(${TARGET} SHARED
 	src/AddInNative.cpp
 	src/AddInNative.def
 	src/AddInNative.h
+	src/AddInNative.rc
 	src/BaseHelper.h
 	src/ClickEffect.cpp
 	src/ClickEffect.h 	

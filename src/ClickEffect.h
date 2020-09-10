@@ -8,7 +8,6 @@ class ClickEffect {
 public:
 	class Hooker;
 	class Painter;
-	static HHOOK hMouseHook;
 	static Hooker* hooker(HWND hWnd);
 	static Hooker* hooker(LPVOID lpParam);
 	static Painter* painter(HWND hWnd);

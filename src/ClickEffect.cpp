@@ -65,8 +65,6 @@ public:
 
 #define ID_CLICK_TIMER 1
 
-HHOOK ClickEffect::hMouseHook = NULL;
-
 ClickEffect::Hooker* ClickEffect::hooker(HWND hWnd)
 {
 	return (ClickEffect::Hooker*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -231,6 +229,8 @@ LRESULT ClickEffect::Hooker::Show()
 
 const LPCWSTR wsHookerName = L"VanessaClickHooker";
 
+static HHOOK hMouseHook = NULL;
+
 LRESULT CALLBACK HookProc(int code, WPARAM wParam, LPARAM lParam)
 {
 	if (code >= 0) {
@@ -242,7 +242,7 @@ LRESULT CALLBACK HookProc(int code, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 	}
-	return CallNextHookEx(ClickEffect::hMouseHook, code, wParam, lParam);
+	return CallNextHookEx(hMouseHook, code, wParam, lParam);
 }
 
 void ClickEffect::Hooker::Create()
@@ -272,20 +272,58 @@ void ClickEffect::Show(int64_t color, int64_t radius, int64_t width, int64_t del
 	CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
 }
 
+typedef LRESULT(__cdecl* StartHookProc)(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
+typedef LRESULT(__cdecl* StopHookProc)();
+
+static bool GetLibraryFile(std::wstring &path)
+{
+	path.resize(MAX_PATH);
+	while (true) {
+		DWORD res = GetModuleFileName(hModule, path.data(), (DWORD)path.size());
+		if (res && res < path.size()) return true;
+		if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) return false;
+		path.resize(path.size() * 2);
+	}
+}
+
+static HMODULE LoadHookLibrary()
+{
+	std::wstring path;
+	return GetLibraryFile(path) ? LoadLibrary(path.c_str()) : nullptr;
+}
+
 void ClickEffect::Hook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
 {
-	Unhook();
-	Hooker *settings = new Hooker(color, radius, width, delay, trans);
-	CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
-	hMouseHook = SetWindowsHookEx(WH_MOUSE, &HookProc, hModule, NULL);
+	if (auto h = LoadHookLibrary()) {
+		auto proc = (StartHookProc)GetProcAddress(h, "StartClickHook");
+		if (proc) proc(color, radius, width, delay, trans);
+	}
 }
 
 void ClickEffect::Unhook()
 {
-	HWND hWnd = FindWindow(wsHookerName, wsHookerName);
-	if (hWnd) PostMessage(hWnd, WM_DESTROY, 0, 0);
-	if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
-	hMouseHook = NULL;
+	if (auto h = LoadHookLibrary()) {
+		auto proc = (StopHookProc)GetProcAddress(h, "StopClickHook");
+		if (proc) proc();
+	}
+}
+
+extern "C" {
+	__declspec(dllexport) LRESULT __cdecl StopClickHook()
+	{
+		HWND hWnd = FindWindow(wsHookerName, wsHookerName);
+		if (hWnd) PostMessage(hWnd, WM_DESTROY, 0, 0);
+		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
+		return 0;
+	}
+	__declspec(dllexport) LRESULT __cdecl StartClickHook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
+	{
+		StopClickHook();
+		ClickEffect::Hooker* settings = new ClickEffect::Hooker(color, radius, width, delay, trans);
+		CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
+		hMouseHook = SetWindowsHookEx(WH_MOUSE, &HookProc, hModule, NULL);
+		return 0;
+	}
 }
 
 #endif //_WINDOWS
