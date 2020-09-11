@@ -29,6 +29,7 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD  ul_reason_for_call, LPVOID lpReserv
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+		::DisableThreadLibraryCalls(module);
 		::hModule = module;
 		break;
 	case DLL_THREAD_ATTACH:

@@ -60,6 +60,7 @@ public:
 		trans(s.trans),
 		limit(s.radius) {}
 	LRESULT Paint(HWND hWnd);
+	void OnTimer(HWND hWnd);
 	void Create();
 };
 
@@ -100,11 +101,19 @@ LRESULT ClickEffect::Painter::Paint(HWND hWnd)
 	SelectObject(hdc, hOldPen);
 	EndPaint(hWnd, &ps);
 	DeleteObject(pen);
+	return 0L;
+}
+
+void ClickEffect::Painter::OnTimer(HWND hWnd)
+{
 	step++;
+	BOOL bErase = false;
 	if (step > limit) {
+		bErase = true;
 		KillTimer(hWnd, ID_CLICK_TIMER);
 		if (last) {
 			SendMessage(hWnd, WM_DESTROY, 0, 0);
+			return;
 		}
 		else {
 			SetTimer(hWnd, ID_CLICK_TIMER, delay * 2, NULL);
@@ -113,7 +122,7 @@ LRESULT ClickEffect::Painter::Paint(HWND hWnd)
 			step = 0;
 		}
 	}
-	return 0L;
+	InvalidateRect(hWnd, NULL, bErase);
 }
 
 LRESULT CALLBACK EffectWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -129,7 +138,7 @@ LRESULT CALLBACK EffectWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	}
 	case WM_TIMER:
 		if (wParam == ID_CLICK_TIMER) {
-			InvalidateRect(hWnd, NULL, TRUE);
+			ClickEffect::painter(hWnd)->OnTimer(hWnd);
 		}
 		return 0;
 	case WM_PAINT:
@@ -170,13 +179,14 @@ void ClickEffect::Painter::Create()
 
 	LPCWSTR name = L"VanessaClickEffect";
 	WNDCLASS wndClass;
+	ZeroMemory(&wndClass, sizeof(wndClass));
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc = EffectWndProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
 	wndClass.hInstance = hModule;
-	wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wndClass.hIcon = NULL;
+	wndClass.hCursor = NULL;
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wndClass.lpszMenuName = NULL;
 	wndClass.lpszClassName = name;
@@ -188,9 +198,9 @@ void ClickEffect::Painter::Create()
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
 	SetTimer(hWnd, ID_CLICK_TIMER, delay, NULL);
+	SetLayeredWindowAttributes(hWnd, 0, trans, LWA_COLORKEY | LWA_ALPHA);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
-	SetLayeredWindowAttributes(hWnd, RGB(0, 0, 0), trans, LWA_COLORKEY | LWA_ALPHA);
 }
 
 DWORD WINAPI EffectThreadProc(LPVOID lpParam)
@@ -248,14 +258,15 @@ LRESULT CALLBACK HookProc(int code, WPARAM wParam, LPARAM lParam)
 void ClickEffect::Hooker::Create()
 {
 	WNDCLASS wndClass;
+	ZeroMemory(&wndClass, sizeof(wndClass));
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc = HookerWndProc;
 	wndClass.cbClsExtra = 0;
 	wndClass.cbWndExtra = 0;
 	wndClass.hInstance = hModule;
-	wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	wndClass.hIcon = NULL;
+	wndClass.hCursor = NULL;
+	wndClass.hbrBackground = NULL;
 	wndClass.lpszMenuName = NULL;
 	wndClass.lpszClassName = wsHookerName;
 	RegisterClass(&wndClass);
@@ -272,8 +283,8 @@ void ClickEffect::Show(int64_t color, int64_t radius, int64_t width, int64_t del
 	CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
 }
 
-typedef LRESULT(__cdecl* StartHookProc)(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
-typedef LRESULT(__cdecl* StopHookProc)();
+typedef void(__cdecl* StartHookProc)(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
+typedef void(__cdecl* StopHookProc)();
 
 static bool GetLibraryFile(std::wstring &path)
 {
@@ -309,20 +320,18 @@ void ClickEffect::Unhook()
 }
 
 extern "C" {
-	__declspec(dllexport) LRESULT __cdecl StopClickHook()
+	__declspec(dllexport) void __cdecl StopClickHook()
 	{
 		HWND hWnd = FindWindow(wsHookerName, wsHookerName);
 		if (hWnd) PostMessage(hWnd, WM_DESTROY, 0, 0);
 		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
-		return 0;
 	}
-	__declspec(dllexport) LRESULT __cdecl StartClickHook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
+	__declspec(dllexport) void __cdecl StartClickHook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
 	{
 		StopClickHook();
 		ClickEffect::Hooker* settings = new ClickEffect::Hooker(color, radius, width, delay, trans);
 		CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
-		hMouseHook = SetWindowsHookEx(WH_MOUSE, &HookProc, hModule, NULL);
-		return 0;
+		hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, &HookProc, hModule, NULL);
 	}
 }
 
