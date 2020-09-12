@@ -57,6 +57,7 @@
 - <a href="#EmulateText">ЭмуляцияВводаТекста (EmulateText)</a>
 - <a href="#ShowClick">ПоказатьНажатиеМыши (ShowClick)</a>
 - <a href="#VisualizeClick">ВизуализацияНажатияМыши (VisualizeClick)</a>
+- <a href="#ShowClickVisualization">ПоказатьВизуализациюНажатияМыши (ShowClickVisualization)</a>
 - <a href="#StopClickVisualization">ПрекратитьВизуализациюНажатияМыши (StopClickVisualization)</a>
 
 Обмен данными по протоколу WebSocket (только для Windows):
@@ -673,6 +674,14 @@ reboot
 
 ```bsl
 ВнешняяКомпонента.ВизуализацияНажатияМыши(255, 30, 12, 12, 127);
+```
+
+### <a name="ShowClickVisualization">ПоказатьВизуализациюНажатияМыши() / ShowClickVisualization</a>
+Однократный показ визуального эффекта в виде расходящихся концентрических кругов ко текущим координатам 
+указателя мыши с текущими настройками, если включен режим визуализации.
+
+```bsl
+ВнешняяКомпонента.ПоказатьВизуализациюНажатияМыши();
 ```
 
 ### <a name="StopClickVisualization">ПрекратитьВизуализациюНажатияМыши() / StopClickVisualization</a>

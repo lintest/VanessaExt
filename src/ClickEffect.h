@@ -15,6 +15,7 @@ public:
 	static void Hook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
 	static void Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
 	static void Unhook();
+	static void Show();
 };
 
 #endif //_WINDOWS

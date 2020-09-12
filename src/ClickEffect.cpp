@@ -9,16 +9,16 @@ public:
 	Hooker() {}
 
 	Hooker(
-		int64_t color, 
-		int64_t radius, 
-		int64_t width, 
-		int64_t delay, 
+		int64_t color,
+		int64_t radius,
+		int64_t width,
+		int64_t delay,
 		int64_t trans
-	): 
-		color((COLORREF)color), 
-		radius((int)radius), 
-		width((int)width), 
-		delay((int)delay), 
+	) :
+		color((COLORREF)color),
+		radius((int)radius),
+		width((int)width),
+		delay((int)delay),
 		trans((int)trans) {}
 
 	Hooker& operator=(const Hooker& d) {
@@ -286,7 +286,7 @@ void ClickEffect::Show(int64_t color, int64_t radius, int64_t width, int64_t del
 typedef void(__cdecl* StartHookProc)(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
 typedef void(__cdecl* StopHookProc)();
 
-static bool GetLibraryFile(std::wstring &path)
+static bool GetLibraryFile(std::wstring& path)
 {
 	path.resize(MAX_PATH);
 	while (true) {
@@ -317,6 +317,12 @@ void ClickEffect::Unhook()
 		auto proc = (StopHookProc)GetProcAddress(h, "StopClickHook");
 		if (proc) proc();
 	}
+}
+
+void ClickEffect::Show()
+{
+	HWND hWnd = FindWindow(wsHookerName, wsHookerName);
+	if (hWnd) SendMessage(hWnd, WM_SHOW_CLICK, 0, 0);
 }
 
 extern "C" {

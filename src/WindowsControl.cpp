@@ -164,6 +164,9 @@ WindowsControl::WindowsControl() {
 		[&](VH color, VH radius, VH width, VH delay, VH trans) { ClickEffect::Hook(color, radius, width, delay, trans); },
 		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127} }
 	);
+	AddProcedure(u"ShowClickVisualization", u"ПоказатьВизуализациюНажатияМыши",
+		[&]() { ClickEffect::Show(); }
+	);
 	AddProcedure(u"StopClickVisualization", u"ПрекратитьВизуализациюНажатияМыши",
 		[&]() { ClickEffect::Unhook(); }
 	);
