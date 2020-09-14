@@ -275,6 +275,8 @@ void ClickEffect::Hooker::Create()
 	HWND hWnd = CreateWindowEx(0, wsHookerName, wsHookerName, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, hModule, 0);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	ShowWindow(hWnd, SW_HIDE);
+	
+	hMouseHook = SetWindowsHookEx(WH_MOUSE, &HookProc, hModule, NULL);
 }
 
 void ClickEffect::Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
@@ -337,7 +339,6 @@ extern "C" {
 		StopClickHook();
 		ClickEffect::Hooker* settings = new ClickEffect::Hooker(color, radius, width, delay, trans);
 		CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
-		hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, &HookProc, hModule, NULL);
 	}
 }
 
