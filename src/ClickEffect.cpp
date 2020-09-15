@@ -192,9 +192,8 @@ void ClickEffect::Painter::Create()
 	wndClass.lpszClassName = name;
 	RegisterClass(&wndClass);
 
-	DWORD dwStyle = WS_OVERLAPPED;
-	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
-	HWND hWnd = CreateWindowEx(dwExStyle, name, name, dwStyle, x, y, w, h, 0, 0, hModule, 0);
+	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT;
+	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, 0);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
 	SetTimer(hWnd, ID_CLICK_TIMER, delay, NULL);
@@ -247,8 +246,8 @@ LRESULT CALLBACK HookProc(int code, WPARAM wParam, LPARAM lParam)
 		switch (wParam) {
 		case WM_RBUTTONUP:
 		case WM_LBUTTONUP:
-			HWND hWnd = FindWindow(wsHookerName, wsHookerName);
-			if (hWnd) SendMessage(hWnd, WM_SHOW_CLICK, 0, 0);
+			HWND hWnd = ::FindWindow(wsHookerName, NULL);
+			if (hWnd) ::SendMessage(hWnd, WM_SHOW_CLICK, 0, 0);
 			break;
 		}
 	}
@@ -271,11 +270,9 @@ void ClickEffect::Hooker::Create()
 	wndClass.lpszClassName = wsHookerName;
 	RegisterClass(&wndClass);
 
-	DWORD dwStyle = WS_OVERLAPPED;
-	HWND hWnd = CreateWindowEx(0, wsHookerName, wsHookerName, dwStyle, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, hModule, 0);
+	HWND hWnd = CreateWindow(wsHookerName, NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hModule, 0);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
-	ShowWindow(hWnd, SW_HIDE);
-	
+
 	hMouseHook = SetWindowsHookEx(WH_MOUSE, &HookProc, hModule, NULL);
 }
 
@@ -323,14 +320,14 @@ void ClickEffect::Unhook()
 
 void ClickEffect::Show()
 {
-	HWND hWnd = FindWindow(wsHookerName, wsHookerName);
-	if (hWnd) SendMessage(hWnd, WM_SHOW_CLICK, 0, 0);
+	HWND hWnd = ::FindWindow(wsHookerName, NULL);
+	if (hWnd) ::SendMessage(hWnd, WM_SHOW_CLICK, 0, 0);
 }
 
 extern "C" {
 	__declspec(dllexport) void __cdecl StopClickHook()
 	{
-		HWND hWnd = FindWindow(wsHookerName, wsHookerName);
+		HWND hWnd = FindWindow(wsHookerName, NULL);
 		if (hWnd) PostMessage(hWnd, WM_DESTROY, 0, 0);
 		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
 	}
