@@ -453,15 +453,23 @@ BOOL ProcessManager::PlaySound(const std::wstring& filename, bool async)
 	return ::PlaySound(filename.c_str(), 0, fdwSound);
 }
 
+std::u16string MediaError(MCIERROR err)
+{
+	size_t size = 1024;
+	std::wstring error;
+	error.resize(size);
+	mciGetErrorString(err, &error[0], size);
+	return std::u16string(error.begin(), error.end());
+}
+
 std::wstring ProcessManager::MediaCommand(const std::wstring& command)
 {
-	MCIERROR err = mciSendString(command.c_str(), NULL, 0, NULL);
-	if (err == 0) return {};
-	size_t length = 255;
-	std::wstring error;
-	error.resize(length);
-	mciGetErrorString(err, &error[0], length);
-	return error;
+	std::wstring result;
+	size_t length = 1024;
+	result.resize(length);
+	MCIERROR err = mciSendString(command.c_str(), &result[0], length, NULL);
+	if (err) throw MediaError(err);
+	return result;
 }
 
 #endif //_WINDOWS
