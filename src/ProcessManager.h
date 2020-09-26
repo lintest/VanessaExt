@@ -20,6 +20,7 @@ public:
 	static int64_t ProcessId();
 #ifdef _WINDOWS
 	static BOOL PlaySound(const std::wstring& filename, bool async);
+	static std::wstring MediaCommand(const std::wstring& command);
 #endif //_WINDOWS
 };
 

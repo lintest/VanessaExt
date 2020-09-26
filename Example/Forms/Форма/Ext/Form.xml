@@ -737,155 +737,173 @@
 								</Button>
 							</ChildItems>
 						</UsualGroup>
-						<UsualGroup name="ГруппаЭмуляция" id="555">
+						<UsualGroup name="ГруппаЭмуляцияНажатия" id="515">
 							<Title>
 								<v8:item>
 									<v8:lang>ru</v8:lang>
-									<v8:content>Группа эмуляция</v8:content>
+									<v8:content>Визуализация нажатия мыши</v8:content>
 								</v8:item>
 							</Title>
 							<ToolTip>
 								<v8:item>
 									<v8:lang>ru</v8:lang>
-									<v8:content>Группа эмуляция</v8:content>
+									<v8:content>Группа эмуляция нажатия</v8:content>
 								</v8:item>
 							</ToolTip>
 							<Group>Vertical</Group>
-							<Representation>None</Representation>
-							<ShowTitle>false</ShowTitle>
-							<ExtendedTooltip name="ГруппаЭмуляцияРасширеннаяПодсказка" id="556"/>
+							<Representation>NormalSeparation</Representation>
+							<ExtendedTooltip name="ГруппаЭмуляцияНажатияРасширеннаяПодсказка" id="516"/>
 							<ChildItems>
-								<UsualGroup name="ГруппаЭмуляцияНажатия" id="515">
+								<CommandBar name="ПанельВизуализацияНажатия" id="538">
 									<Title>
 										<v8:item>
 											<v8:lang>ru</v8:lang>
-											<v8:content>Визуализация нажатия мыши</v8:content>
+											<v8:content>Панель визуализация нажатия</v8:content>
 										</v8:item>
 									</Title>
 									<ToolTip>
 										<v8:item>
 											<v8:lang>ru</v8:lang>
-											<v8:content>Группа эмуляция нажатия</v8:content>
+											<v8:content>Панель визуализация нажатия</v8:content>
 										</v8:item>
 									</ToolTip>
-									<Group>Vertical</Group>
-									<Representation>NormalSeparation</Representation>
-									<ExtendedTooltip name="ГруппаЭмуляцияНажатияРасширеннаяПодсказка" id="516"/>
+									<ExtendedTooltip name="ПанельВизуализацияНажатияРасширеннаяПодсказка" id="539"/>
 									<ChildItems>
-										<CommandBar name="ПанельВизуализацияНажатия" id="538">
+										<ButtonGroup name="ГруппаКнопокВизуализация" id="540">
 											<Title>
 												<v8:item>
 													<v8:lang>ru</v8:lang>
-													<v8:content>Панель визуализация нажатия</v8:content>
+													<v8:content>Группа кнопок визуализация</v8:content>
 												</v8:item>
 											</Title>
 											<ToolTip>
 												<v8:item>
 													<v8:lang>ru</v8:lang>
-													<v8:content>Панель визуализация нажатия</v8:content>
+													<v8:content>Группа кнопок визуализация</v8:content>
 												</v8:item>
 											</ToolTip>
-											<ExtendedTooltip name="ПанельВизуализацияНажатияРасширеннаяПодсказка" id="539"/>
+											<Representation>Compact</Representation>
+											<ExtendedTooltip name="ГруппаКнопокВизуализацияРасширеннаяПодсказка" id="541"/>
 											<ChildItems>
-												<ButtonGroup name="ГруппаКнопокВизуализация" id="540">
-													<Title>
-														<v8:item>
-															<v8:lang>ru</v8:lang>
-															<v8:content>Группа кнопок визуализация</v8:content>
-														</v8:item>
-													</Title>
-													<ToolTip>
-														<v8:item>
-															<v8:lang>ru</v8:lang>
-															<v8:content>Группа кнопок визуализация</v8:content>
-														</v8:item>
-													</ToolTip>
-													<Representation>Compact</Representation>
-													<ExtendedTooltip name="ГруппаКнопокВизуализацияРасширеннаяПодсказка" id="541"/>
-													<ChildItems>
-														<Button name="ВизуализацияНажатияПоказать" id="542">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.ВизуализацияНажатияПоказать</CommandName>
-															<ExtendedTooltip name="ВизуализацияНажатияПоказатьРасширеннаяПодсказка" id="543"/>
-														</Button>
-														<Button name="ВизуализацияНажатияВключить" id="544">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.ВизуализацияНажатияВключить</CommandName>
-															<ExtendedTooltip name="ВизуализацияНажатияВключитьРасширеннаяПодсказка" id="545"/>
-														</Button>
-														<Button name="ВизуализацияНажатияПрекратить" id="546">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.ВизуализацияНажатияПрекратить</CommandName>
-															<ExtendedTooltip name="ВизуализацияНажатияПрекратитьРасширеннаяПодсказка" id="547"/>
-														</Button>
-													</ChildItems>
-												</ButtonGroup>
+												<Button name="ВизуализацияНажатияПоказать" id="542">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ВизуализацияНажатияПоказать</CommandName>
+													<ExtendedTooltip name="ВизуализацияНажатияПоказатьРасширеннаяПодсказка" id="543"/>
+												</Button>
+												<Button name="ВизуализацияНажатияВключить" id="544">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ВизуализацияНажатияВключить</CommandName>
+													<ExtendedTooltip name="ВизуализацияНажатияВключитьРасширеннаяПодсказка" id="545"/>
+												</Button>
+												<Button name="ВизуализацияНажатияПрекратить" id="546">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ВизуализацияНажатияПрекратить</CommandName>
+													<ExtendedTooltip name="ВизуализацияНажатияПрекратитьРасширеннаяПодсказка" id="547"/>
+												</Button>
 											</ChildItems>
-										</CommandBar>
-										<InputField name="ВизуализацияЦвет" id="517">
-											<DataPath>ВизуализацияЦвет</DataPath>
-											<Width>16</Width>
-											<HorizontalStretch>false</HorizontalStretch>
-											<ContextMenu name="ВизуализацияЦветКонтекстноеМеню" id="518"/>
-											<ExtendedTooltip name="ВизуализацияЦветРасширеннаяПодсказка" id="519"/>
-										</InputField>
-										<UsualGroup name="Группа1" id="532">
+										</ButtonGroup>
+									</ChildItems>
+								</CommandBar>
+								<InputField name="ВизуализацияЦвет" id="517">
+									<DataPath>ВизуализацияЦвет</DataPath>
+									<Width>16</Width>
+									<HorizontalStretch>false</HorizontalStretch>
+									<ContextMenu name="ВизуализацияЦветКонтекстноеМеню" id="518"/>
+									<ExtendedTooltip name="ВизуализацияЦветРасширеннаяПодсказка" id="519"/>
+								</InputField>
+								<UsualGroup name="Группа1" id="532">
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="Группа1РасширеннаяПодсказка" id="533"/>
+									<ChildItems>
+										<UsualGroup name="Группа2" id="534">
+											<Group>Vertical</Group>
 											<Representation>None</Representation>
 											<ShowTitle>false</ShowTitle>
-											<ExtendedTooltip name="Группа1РасширеннаяПодсказка" id="533"/>
+											<ExtendedTooltip name="Группа2РасширеннаяПодсказка" id="535"/>
 											<ChildItems>
-												<UsualGroup name="Группа2" id="534">
-													<Group>Vertical</Group>
-													<Representation>None</Representation>
-													<ShowTitle>false</ShowTitle>
-													<ExtendedTooltip name="Группа2РасширеннаяПодсказка" id="535"/>
-													<ChildItems>
-														<InputField name="ВизуализацияРадиус" id="520">
-															<DataPath>ВизуализацияРадиус</DataPath>
-															<SpinButton>true</SpinButton>
-															<MinValue xsi:type="xs:decimal">1</MinValue>
-															<MaxValue xsi:type="xs:decimal">255</MaxValue>
-															<ContextMenu name="ВизуализацияРадиусКонтекстноеМеню" id="521"/>
-															<ExtendedTooltip name="ВизуализацияРадиусРасширеннаяПодсказка" id="522"/>
-														</InputField>
-														<InputField name="ВизуализацияТолщина" id="523">
-															<DataPath>ВизуализацияТолщина</DataPath>
-															<SpinButton>true</SpinButton>
-															<MinValue xsi:type="xs:decimal">1</MinValue>
-															<MaxValue xsi:type="xs:decimal">255</MaxValue>
-															<ContextMenu name="ВизуализацияТолщинаКонтекстноеМеню" id="524"/>
-															<ExtendedTooltip name="ВизуализацияТолщинаРасширеннаяПодсказка" id="525"/>
-														</InputField>
-													</ChildItems>
-												</UsualGroup>
-												<UsualGroup name="Группа3" id="536">
-													<Group>Vertical</Group>
-													<Representation>None</Representation>
-													<ShowTitle>false</ShowTitle>
-													<ExtendedTooltip name="Группа3РасширеннаяПодсказка" id="537"/>
-													<ChildItems>
-														<InputField name="ВизуализацияДлительность" id="526">
-															<DataPath>ВизуализацияДлительность</DataPath>
-															<SpinButton>true</SpinButton>
-															<MinValue xsi:type="xs:decimal">1</MinValue>
-															<MaxValue xsi:type="xs:decimal">255</MaxValue>
-															<ContextMenu name="ВизуализацияДлительностьКонтекстноеМеню" id="527"/>
-															<ExtendedTooltip name="ВизуализацияДлительностьРасширеннаяПодсказка" id="528"/>
-														</InputField>
-														<InputField name="ВизуализацияПрозрачность" id="529">
-															<DataPath>ВизуализацияПрозрачность</DataPath>
-															<SpinButton>true</SpinButton>
-															<MinValue xsi:type="xs:decimal">1</MinValue>
-															<MaxValue xsi:type="xs:decimal">255</MaxValue>
-															<ContextMenu name="ВизуализацияПрозрачностьКонтекстноеМеню" id="530"/>
-															<ExtendedTooltip name="ВизуализацияПрозрачностьРасширеннаяПодсказка" id="531"/>
-														</InputField>
-													</ChildItems>
-												</UsualGroup>
+												<InputField name="ВизуализацияРадиус" id="520">
+													<DataPath>ВизуализацияРадиус</DataPath>
+													<SpinButton>true</SpinButton>
+													<MinValue xsi:type="xs:decimal">1</MinValue>
+													<MaxValue xsi:type="xs:decimal">255</MaxValue>
+													<ContextMenu name="ВизуализацияРадиусКонтекстноеМеню" id="521"/>
+													<ExtendedTooltip name="ВизуализацияРадиусРасширеннаяПодсказка" id="522"/>
+												</InputField>
+												<InputField name="ВизуализацияТолщина" id="523">
+													<DataPath>ВизуализацияТолщина</DataPath>
+													<SpinButton>true</SpinButton>
+													<MinValue xsi:type="xs:decimal">1</MinValue>
+													<MaxValue xsi:type="xs:decimal">255</MaxValue>
+													<ContextMenu name="ВизуализацияТолщинаКонтекстноеМеню" id="524"/>
+													<ExtendedTooltip name="ВизуализацияТолщинаРасширеннаяПодсказка" id="525"/>
+												</InputField>
+											</ChildItems>
+										</UsualGroup>
+										<UsualGroup name="Группа3" id="536">
+											<Group>Vertical</Group>
+											<Representation>None</Representation>
+											<ShowTitle>false</ShowTitle>
+											<ExtendedTooltip name="Группа3РасширеннаяПодсказка" id="537"/>
+											<ChildItems>
+												<InputField name="ВизуализацияДлительность" id="526">
+													<DataPath>ВизуализацияДлительность</DataPath>
+													<SpinButton>true</SpinButton>
+													<MinValue xsi:type="xs:decimal">1</MinValue>
+													<MaxValue xsi:type="xs:decimal">255</MaxValue>
+													<ContextMenu name="ВизуализацияДлительностьКонтекстноеМеню" id="527"/>
+													<ExtendedTooltip name="ВизуализацияДлительностьРасширеннаяПодсказка" id="528"/>
+												</InputField>
+												<InputField name="ВизуализацияПрозрачность" id="529">
+													<DataPath>ВизуализацияПрозрачность</DataPath>
+													<SpinButton>true</SpinButton>
+													<MinValue xsi:type="xs:decimal">1</MinValue>
+													<MaxValue xsi:type="xs:decimal">255</MaxValue>
+													<ContextMenu name="ВизуализацияПрозрачностьКонтекстноеМеню" id="530"/>
+													<ExtendedTooltip name="ВизуализацияПрозрачностьРасширеннаяПодсказка" id="531"/>
+												</InputField>
 											</ChildItems>
 										</UsualGroup>
 									</ChildItems>
 								</UsualGroup>
+							</ChildItems>
+						</UsualGroup>
+					</ChildItems>
+				</Page>
+				<Page name="СтраницаМультимедиа" id="571">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Мультимедиа</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница мультимедиа</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаМультимедиаРасширеннаяПодсказка" id="572"/>
+					<ChildItems>
+						<UsualGroup name="ГруппаМультимедиа" id="590">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа мультимедиа</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа мультимедиа</v8:content>
+								</v8:item>
+							</ToolTip>
+							<HorizontalStretch>false</HorizontalStretch>
+							<Group>Vertical</Group>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаМультимедиаРасширеннаяПодсказка" id="591"/>
+							<ChildItems>
 								<UsualGroup name="ГруппаЗвуковойФайл" id="550">
 									<Title>
 										<v8:item>
@@ -972,6 +990,93 @@
 											<ExtendedTooltip name="ЗвуковойФайлРасширеннаяПодсказка" id="554"/>
 											<Events>
 												<Event name="StartChoice">ЗвуковойФайлНачалоВыбора</Event>
+											</Events>
+										</InputField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаМультимедиаКоманда" id="573">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Мультимедиа команда</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа мультимедиа команда</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<ExtendedTooltip name="ГруппаМультимедиаКомандаРасширеннаяПодсказка" id="574"/>
+									<ChildItems>
+										<CommandBar name="ПанельМультимедиа" id="578">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Панель мультимедиа</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Панель мультимедиа</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ПанельМультимедиаРасширеннаяПодсказка" id="579"/>
+											<ChildItems>
+												<ButtonGroup name="ГруппаКнопокМультимедиа" id="586">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок мультимедиа</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок мультимедиа</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ГруппаКнопокМультимедиаРасширеннаяПодсказка" id="587"/>
+													<ChildItems>
+														<Button name="МультимедиаOpen" id="580">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаOpen</CommandName>
+															<ExtendedTooltip name="МультимедиаOpenРасширеннаяПодсказка" id="581"/>
+														</Button>
+														<Button name="МультимедиаPlay" id="584">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаPlay</CommandName>
+															<ExtendedTooltip name="МультимедиаPlayРасширеннаяПодсказка" id="585"/>
+														</Button>
+														<Button name="МультимедиаPause" id="582">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаPause</CommandName>
+															<ExtendedTooltip name="МультимедиаPauseРасширеннаяПодсказка" id="583"/>
+														</Button>
+														<Button name="МультимедиаResume" id="592">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаResume</CommandName>
+															<ExtendedTooltip name="МультимедиаResumeРасширеннаяПодсказка" id="593"/>
+														</Button>
+														<Button name="МультимедиаStop" id="588">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаStop</CommandName>
+															<ExtendedTooltip name="МультимедиаStopРасширеннаяПодсказка" id="589"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
+										<InputField name="МультимедиаФайл" id="575">
+											<DataPath>МультимедиаФайл</DataPath>
+											<ChoiceButton>true</ChoiceButton>
+											<ContextMenu name="МультимедиаФайлКонтекстноеМеню" id="576"/>
+											<ExtendedTooltip name="МультимедиаФайлРасширеннаяПодсказка" id="577"/>
+											<Events>
+												<Event name="StartChoice">МультимедиаФайлНачалоВыбора</Event>
 											</Events>
 										</InputField>
 									</ChildItems>
@@ -3108,6 +3213,21 @@
 				</v8:StringQualifiers>
 			</Type>
 		</Attribute>
+		<Attribute name="МультимедиаФайл" id="43">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Файл</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -4037,6 +4157,81 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ВоспроизвестиЗвукПрекратить</Action>
+		</Command>
+		<Command name="МультимедиаOpen" id="62">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Open</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаOpen</Action>
+		</Command>
+		<Command name="МультимедиаPlay" id="63">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Play</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаPlay</Action>
+		</Command>
+		<Command name="МультимедиаStop" id="64">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Stop</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаStop</Action>
+		</Command>
+		<Command name="МультимедиаPause" id="65">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Pause</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаPause</Action>
+		</Command>
+		<Command name="МультимедиаResume" id="66">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Resume</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаResume</Action>
 		</Command>
 	</Commands>
 </Form>

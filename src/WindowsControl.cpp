@@ -173,6 +173,9 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"PlaySound", u"ВоспроизвестиЗвук",
 		[&](VH filename, VH async) { ProcessManager::PlaySound(filename, async); }, { {0, u""}, {1, false} }
 	);
+	AddFunction(u"MediaCommand", u"МедиаКоманда",
+		[&](VH command) { this->result = ProcessManager::MediaCommand(command); }
+	);
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
 	);

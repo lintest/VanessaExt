@@ -8,7 +8,9 @@
 #include <sstream>
 #include <comdef.h>
 #include <wbemidl.h>
+
 #pragma comment(lib, "wbemuuid.lib")
+#pragma comment(lib, "winmm.lib")
 
 class ProcessEnumerator {
 private:
@@ -442,8 +444,6 @@ std::wstring ProcessManager::SendWebSocket(WebSocketBase** ws, const std::string
 	return (*ws)->send(msg, res) ? MB2WC(res) : SocketError(res);
 }
 
-#pragma comment(lib, "winmm.lib")
-
 BOOL ProcessManager::PlaySound(const std::wstring& filename, bool async)
 {
 
@@ -451,6 +451,17 @@ BOOL ProcessManager::PlaySound(const std::wstring& filename, bool async)
 	DWORD fdwSound = SND_FILENAME | SND_NODEFAULT;
 	if (async) fdwSound |= SND_ASYNC;
 	return ::PlaySound(filename.c_str(), 0, fdwSound);
+}
+
+std::wstring ProcessManager::MediaCommand(const std::wstring& command)
+{
+	MCIERROR err = mciSendString(command.c_str(), NULL, 0, NULL);
+	if (err == 0) return {};
+	size_t length = 255;
+	std::wstring error;
+	error.resize(length);
+	mciGetErrorString(err, &error[0], length);
+	return error;
 }
 
 #endif //_WINDOWS
