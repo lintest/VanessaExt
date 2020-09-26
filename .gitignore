@@ -7,6 +7,9 @@
 /bin
 /libpng-*
 /zlib-*
+/libgit2-*
+/libpng-*
+/libssh2-*
 /.vc
 /.vs
 /.idea

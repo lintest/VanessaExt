@@ -17,6 +17,8 @@ add_library(${TARGET} SHARED
 	src/ClipboardManager.h 
 	src/FileFinder.cpp 
 	src/FileFinder.h 
+	src/GitManager.cpp
+	src/GitManager.h
 	src/ImageHelper.cpp
 	src/ImageHelper.h
 	src/ProcessControl.cpp
@@ -112,10 +114,10 @@ else(UNIX)
 
 endif(UNIX)
 
-#target_include_directories(${TARGET} PRIVATE libgit2-1.0.1/include)
-#set(EMBED_SSH_PATH "../../libssh2-1.9.0" CACHE BOOL "" FORCE)
-#set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-#set(BUILD_CLAR OFF CACHE BOOL "" FORCE)
-#set(STATIC_CRT ON CACHE BOOL "" FORCE)
-#add_subdirectory(./libgit2-1.0.1)
-#target_link_libraries(${TARGET} git2)
+target_include_directories(${TARGET} PRIVATE libgit2-1.0.1/include)
+set(EMBED_SSH_PATH "../../libssh2-1.9.0" CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BUILD_CLAR OFF CACHE BOOL "" FORCE)
+set(STATIC_CRT ON CACHE BOOL "" FORCE)
+add_subdirectory(./libgit2-1.0.1)
+target_link_libraries(${TARGET} git2)
