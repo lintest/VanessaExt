@@ -917,7 +917,7 @@
 											<v8:content>Группа звуковой файл</v8:content>
 										</v8:item>
 									</ToolTip>
-									<HorizontalStretch>false</HorizontalStretch>
+									<HorizontalStretch>true</HorizontalStretch>
 									<Group>Vertical</Group>
 									<ExtendedTooltip name="ГруппаЗвуковойФайлРасширеннаяПодсказка" id="551"/>
 									<ChildItems>
@@ -1065,6 +1065,11 @@
 															<Type>CommandBarButton</Type>
 															<CommandName>Form.Command.МультимедиаStop</CommandName>
 															<ExtendedTooltip name="МультимедиаStopРасширеннаяПодсказка" id="589"/>
+														</Button>
+														<Button name="МультимедиаSize" id="594">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаSize</CommandName>
+															<ExtendedTooltip name="МультимедиаSizeРасширеннаяПодсказка" id="595"/>
 														</Button>
 													</ChildItems>
 												</ButtonGroup>
@@ -4232,6 +4237,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>МультимедиаResume</Action>
+		</Command>
+		<Command name="МультимедиаSize" id="67">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Size</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаSize</Action>
 		</Command>
 	</Commands>
 </Form>
