@@ -442,4 +442,15 @@ std::wstring ProcessManager::SendWebSocket(WebSocketBase** ws, const std::string
 	return (*ws)->send(msg, res) ? MB2WC(res) : SocketError(res);
 }
 
+#pragma comment(lib, "winmm.lib")
+
+BOOL ProcessManager::PlaySound(const std::wstring& filename, bool async)
+{
+
+	if (filename.empty()) return ::PlaySound(NULL, NULL, 0);
+	DWORD fdwSound = SND_FILENAME | SND_NODEFAULT;
+	if (async) fdwSound |= SND_ASYNC;
+	return ::PlaySound(filename.c_str(), 0, fdwSound);
+}
+
 #endif //_WINDOWS

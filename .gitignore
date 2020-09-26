@@ -5,6 +5,9 @@
 /build
 /bind
 /bin
+/libgit2-*
+/libpng-*
+/libssh2-*
 /libpng-*
 /zlib-*
 /.vc
