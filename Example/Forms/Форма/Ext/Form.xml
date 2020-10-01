@@ -870,6 +870,226 @@
 						</UsualGroup>
 					</ChildItems>
 				</Page>
+				<Page name="СтраницаМультимедиа" id="571">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Мультимедиа</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница мультимедиа</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаМультимедиаРасширеннаяПодсказка" id="572"/>
+					<ChildItems>
+						<UsualGroup name="ГруппаМультимедиа" id="590">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа мультимедиа</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа мультимедиа</v8:content>
+								</v8:item>
+							</ToolTip>
+							<HorizontalStretch>false</HorizontalStretch>
+							<Group>Vertical</Group>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаМультимедиаРасширеннаяПодсказка" id="591"/>
+							<ChildItems>
+								<UsualGroup name="ГруппаЗвуковойФайл" id="550">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Воспроизведение звука</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа звуковой файл</v8:content>
+										</v8:item>
+									</ToolTip>
+									<HorizontalStretch>true</HorizontalStretch>
+									<Group>Vertical</Group>
+									<ExtendedTooltip name="ГруппаЗвуковойФайлРасширеннаяПодсказка" id="551"/>
+									<ChildItems>
+										<CommandBar name="ПанельЗвуковойФайл" id="557">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Панель звуковой файл</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Панель звуковой файл</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ПанельЗвуковойФайлРасширеннаяПодсказка" id="558"/>
+											<ChildItems>
+												<ButtonGroup name="ГруппаВоспроизведениеЗвука" id="563">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа воспроизведение звука</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа воспроизведение звука</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ГруппаВоспроизведениеЗвукаРасширеннаяПодсказка" id="564"/>
+													<ChildItems>
+														<Button name="ВоспроизвестиЗвукСинхронно" id="565">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ВоспроизвестиЗвукСинхронно</CommandName>
+															<ExtendedTooltip name="ВоспроизвестиЗвукСинхронноРасширеннаяПодсказка" id="566"/>
+														</Button>
+														<Button name="ВоспроизвестиЗвукАсинхронно" id="567">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ВоспроизвестиЗвукАсинхронно</CommandName>
+															<ExtendedTooltip name="ВоспроизвестиЗвукАсинхронноРасширеннаяПодсказка" id="568"/>
+														</Button>
+														<Button name="ВоспроизвестиЗвукПрекратить" id="569">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ВоспроизвестиЗвукПрекратить</CommandName>
+															<Title>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>Прератить</v8:content>
+																</v8:item>
+															</Title>
+															<ExtendedTooltip name="ВоспроизвестиЗвукПрекратитьРасширеннаяПодсказка" id="570"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
+										<InputField name="ЗвуковойФайл" id="552">
+											<DataPath>ЗвуковойФайл</DataPath>
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Файл</v8:content>
+												</v8:item>
+											</Title>
+											<ChoiceButton>true</ChoiceButton>
+											<ContextMenu name="ЗвуковойФайлКонтекстноеМеню" id="553"/>
+											<ExtendedTooltip name="ЗвуковойФайлРасширеннаяПодсказка" id="554"/>
+											<Events>
+												<Event name="StartChoice">ЗвуковойФайлНачалоВыбора</Event>
+											</Events>
+										</InputField>
+									</ChildItems>
+								</UsualGroup>
+								<UsualGroup name="ГруппаМультимедиаКоманда" id="573">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Мультимедиа команда</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа мультимедиа команда</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<ExtendedTooltip name="ГруппаМультимедиаКомандаРасширеннаяПодсказка" id="574"/>
+									<ChildItems>
+										<CommandBar name="ПанельМультимедиа" id="578">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Панель мультимедиа</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Панель мультимедиа</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ПанельМультимедиаРасширеннаяПодсказка" id="579"/>
+											<ChildItems>
+												<ButtonGroup name="ГруппаКнопокМультимедиа" id="586">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок мультимедиа</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок мультимедиа</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ГруппаКнопокМультимедиаРасширеннаяПодсказка" id="587"/>
+													<ChildItems>
+														<Button name="МультимедиаOpen" id="580">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаOpen</CommandName>
+															<ExtendedTooltip name="МультимедиаOpenРасширеннаяПодсказка" id="581"/>
+														</Button>
+														<Button name="МультимедиаPlay" id="584">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаPlay</CommandName>
+															<ExtendedTooltip name="МультимедиаPlayРасширеннаяПодсказка" id="585"/>
+														</Button>
+														<Button name="МультимедиаPause" id="582">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаPause</CommandName>
+															<ExtendedTooltip name="МультимедиаPauseРасширеннаяПодсказка" id="583"/>
+														</Button>
+														<Button name="МультимедиаResume" id="592">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаResume</CommandName>
+															<ExtendedTooltip name="МультимедиаResumeРасширеннаяПодсказка" id="593"/>
+														</Button>
+														<Button name="МультимедиаStop" id="588">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаStop</CommandName>
+															<ExtendedTooltip name="МультимедиаStopРасширеннаяПодсказка" id="589"/>
+														</Button>
+														<Button name="МультимедиаSize" id="594">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МультимедиаSize</CommandName>
+															<ExtendedTooltip name="МультимедиаSizeРасширеннаяПодсказка" id="595"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
+										<InputField name="МультимедиаФайл" id="575">
+											<DataPath>МультимедиаФайл</DataPath>
+											<ChoiceButton>true</ChoiceButton>
+											<ContextMenu name="МультимедиаФайлКонтекстноеМеню" id="576"/>
+											<ExtendedTooltip name="МультимедиаФайлРасширеннаяПодсказка" id="577"/>
+											<Events>
+												<Event name="StartChoice">МультимедиаФайлНачалоВыбора</Event>
+											</Events>
+										</InputField>
+									</ChildItems>
+								</UsualGroup>
+							</ChildItems>
+						</UsualGroup>
+					</ChildItems>
+				</Page>
 				<Page name="СтраницаWebSocket" id="364">
 					<Title>
 						<v8:item>
@@ -2983,6 +3203,36 @@
 				<v8:Type>v8ui:Color</v8:Type>
 			</Type>
 		</Attribute>
+		<Attribute name="ЗвуковойФайл" id="42">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Звуковой файл</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="МультимедиаФайл" id="43">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Файл</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -3867,6 +4117,141 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ОшибкаКонвертации</Action>
+		</Command>
+		<Command name="ВоспроизвестиЗвукСинхронно" id="59">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Синхронно</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Воспроизвести звук синхронно</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ВоспроизвестиЗвукСинхронно</Action>
+		</Command>
+		<Command name="ВоспроизвестиЗвукАсинхронно" id="60">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Асинхронно</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Воспроизвести звук синхронно</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ВоспроизвестиЗвукАсинхронно</Action>
+		</Command>
+		<Command name="ВоспроизвестиЗвукПрекратить" id="61">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Воспроизвести звук прекратить</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Воспроизвести звук прекратить</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ВоспроизвестиЗвукПрекратить</Action>
+		</Command>
+		<Command name="МультимедиаOpen" id="62">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Open</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаOpen</Action>
+		</Command>
+		<Command name="МультимедиаPlay" id="63">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Play</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаPlay</Action>
+		</Command>
+		<Command name="МультимедиаStop" id="64">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Stop</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаStop</Action>
+		</Command>
+		<Command name="МультимедиаPause" id="65">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Pause</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаPause</Action>
+		</Command>
+		<Command name="МультимедиаResume" id="66">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Resume</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаResume</Action>
+		</Command>
+		<Command name="МультимедиаSize" id="67">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Size</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мультимедиа open</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МультимедиаSize</Action>
 		</Command>
 	</Commands>
 </Form>

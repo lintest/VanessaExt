@@ -18,6 +18,10 @@ public:
 	static std::wstring WebSocket(const std::string& url, const std::string& msg);
 	static void Sleep(int64_t interval);
 	static int64_t ProcessId();
+#ifdef _WINDOWS
+	static BOOL PlaySound(const std::wstring& filename, bool async);
+	static std::wstring MediaCommand(const std::wstring& command);
+#endif //_WINDOWS
 };
 
 #endif //__PROCESSMANAGER_H__

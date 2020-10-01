@@ -142,6 +142,10 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		it->getter(VA(pvarPropVal, &(*it)));
 		return true;
 	}
+	catch (const std::u16string& msg) {
+		AddError(msg);
+		return false;
+	}
 	catch (...) {
 		return false;
 	}
@@ -155,6 +159,10 @@ bool AddInNative::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	try {
 		it->setter(VA(pvarPropVal, &(*it)));
 		return true;
+	}
+	catch (const std::u16string& msg) {
+		AddError(msg);
+		return false;
 	}
 	catch (...) {
 		return false;
@@ -248,6 +256,10 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 		}
 		return true;
 	}
+	catch (const std::u16string& msg) {
+		AddError(msg);
+		return false;
+	}
 	catch (...) {
 		return false;
 	}
@@ -312,6 +324,10 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 		result << VA(nullptr);
 		return CallMethod(&it->handler, paParams, &(*it), lSizeArray);
 	}
+	catch (const std::u16string& msg) {
+		AddError(msg);
+		return false;
+	}
 	catch (...) {
 		return false;
 	}
@@ -326,6 +342,10 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		bool ok = CallMethod(&it->handler, paParams, &(*it), lSizeArray);
 		result << VA(nullptr);
 		return ok;
+	}
+	catch (const std::u16string& msg) {
+		AddError(msg);
+		return false;
 	}
 	catch (...) {
 		result << VA(nullptr);
