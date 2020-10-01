@@ -1,6 +1,8 @@
 #ifndef __CLIPMNGR_H__
 #define __CLIPMNGR_H__
 
+#ifdef _WINDOWS
+
 #include "stdafx.h"
 #include "AddInNative.h"
 #include <git2.h> 
@@ -67,5 +69,7 @@ private:
 	std::string status();
 	std::string head();
 };
+
+#endif // _WINDOWS
 
 #endif //__CLIPMNGR_H__

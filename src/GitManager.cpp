@@ -1,4 +1,6 @@
-﻿#include "GitManager.h"
+﻿#ifdef _WINDOWS
+
+#include "GitManager.h"
 #include "FileFinder.h"
 #include "json.hpp"
 #include "version.h"
@@ -804,3 +806,5 @@ std::string GitManager::compare(const std::string& name, const std::string& ref)
 	while (!git_revwalk_next(&id, walker)) count++;
 	return success(count);
 }
+
+#endif // _WINDOWS
