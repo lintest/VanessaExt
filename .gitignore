@@ -17,6 +17,7 @@
 /Example/fileversion
 AddIn.zip
 XxCompile.bat
+manifest.xml
 *.epf
 *.o
 *.d
