@@ -4,6 +4,7 @@ project(VanessaExt)
 set(TARGET VanessaExt)
 
 add_library(${TARGET} SHARED
+	version.h
 	src/AddInNative.cpp
 	src/AddInNative.def
 	src/AddInNative.h
@@ -17,6 +18,8 @@ add_library(${TARGET} SHARED
 	src/ClipboardManager.h 
 	src/FileFinder.cpp 
 	src/FileFinder.h 
+	src/GitManager.cpp
+	src/GitManager.h
 	src/ImageHelper.cpp
 	src/ImageHelper.h
 	src/ProcessControl.cpp
@@ -35,7 +38,6 @@ add_library(${TARGET} SHARED
 	src/screenshot.h
 	src/xcb_clip.cpp
 	src/xcb_clip.h
-	src/version.h
 	src/json.hpp
 	src/stdafx.h)
 
@@ -46,6 +48,7 @@ set (EXECUTABLE_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH})
 set (CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH})
 
 if (UNIX)
+	set(MyPrefix "")
 	set(MySuffix1 "Lin")
 	if (APPLE)
 		set(MySuffix1 "Mac")
@@ -59,11 +62,12 @@ else(UNIX)
 	if (NOT MSVC)
 		message(FATAL_ERROR "Must be compiled with MSVC on Windows")
 	endif(NOT MSVC)
+	set(MyPrefix "lib")
 	set(MySuffix1 "Win")
 endif(UNIX)
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES
-	   OUTPUT_NAME ${PROJECT_NAME}${MySuffix1}${MySuffix2} 
+	   OUTPUT_NAME ${MyPrefix}${PROJECT_NAME}${MySuffix1}${MySuffix2} 
 	   POSITION_INDEPENDENT_CODE ON 
 	   CXX_STANDARD_REQUIRED ON
 	   CXX_STANDARD 17
@@ -77,10 +81,6 @@ if (UNIX)
 	FIND_PACKAGE(X11 COMPONENTS Xtst)
 	target_link_libraries(${PROJECT_NAME} ${X11_XTest_LIB})
 	target_include_directories(${TARGET} PRIVATE libpng-1.6.37/include)
-#	include_directories(libpng-1.6.37)
-#	include_directories(zlib-1.2.11)
-#	add_subdirectory(libpng-1.6.37)
-#	add_subdirectory(zlib-1.2.11)
 else(UNIX)
 	add_definitions(/MT)
 	set(CMAKE_SUPPRESS_REGENERATION 1)
@@ -95,7 +95,7 @@ else(UNIX)
 	set(Boost_NO_SYSTEM_PATHS TRUE) 
 
 	if (Boost_NO_SYSTEM_PATHS)
-	set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../boost_1_74_0")
+	set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/boost_1_74_0")
 	set(BOOST_INCLUDE_DIRS "${BOOST_ROOT}/include")
 	set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
 	endif (Boost_NO_SYSTEM_PATHS)
@@ -112,10 +112,11 @@ else(UNIX)
 
 endif(UNIX)
 
-#target_include_directories(${TARGET} PRIVATE libgit2-1.0.1/include)
-#set(EMBED_SSH_PATH "../../libssh2-1.9.0" CACHE BOOL "" FORCE)
-#set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-#set(BUILD_CLAR OFF CACHE BOOL "" FORCE)
-#set(STATIC_CRT ON CACHE BOOL "" FORCE)
-#add_subdirectory(./libgit2-1.0.1)
-#target_link_libraries(${TARGET} git2)
+target_include_directories(${TARGET} PRIVATE libgit2-1.0.1/include)
+set(EMBED_SSH_PATH "../../libssh2-1.9.0" CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BUILD_CLAR OFF CACHE BOOL "" FORCE)
+set(STATIC_CRT ON CACHE BOOL "" FORCE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+add_subdirectory(./libgit2-1.0.1)
+target_link_libraries(${TARGET} git2)

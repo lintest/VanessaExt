@@ -5,6 +5,7 @@
 /build
 /bind
 /bin
+/boost_*
 /libgit2-*
 /libpng-*
 /libssh2-*
@@ -17,6 +18,7 @@
 /Example/fileversion
 AddIn.zip
 XxCompile.bat
+manifest.xml
 *.epf
 *.o
 *.d

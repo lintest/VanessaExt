@@ -1,5 +1,9 @@
 ﻿#include "stdafx.h"
 
+#include "../version.h"
+#define STRINGIZE2(s) #s
+#define STRINGIZE(s) STRINGIZE2(s)
+
 #ifdef _WINDOWS
 #pragma warning (disable : 4267)
 #pragma warning (disable : 4302)
@@ -14,6 +18,7 @@
 #include <wchar.h>
 #include <string>
 #include <algorithm>
+#include <iterator>
 #include <codecvt>
 #include <cwctype>
 #include <sstream>
@@ -76,6 +81,11 @@ std::wstring MB2WC(const std::string& str)
 
 std::map<std::u16string, CompFunction> AddInNative::components;
 
+std::string AddInNative::version()
+{
+	return STRINGIZE(VERSION_FULL);
+}
+
 bool AddInNative::Init(void* pConnection)
 {
 	m_iConnect = static_cast<IAddInDefBase*>(pConnection);
@@ -110,14 +120,14 @@ long AddInNative::GetNProps()
 long AddInNative::FindProp(const WCHAR_T* wsPropName)
 {
 	std::u16string name((char16_t*)wsPropName);
-	for (auto it = properties.begin(); it != properties.end(); it++) {
-		for (auto n = it->names.begin(); n != it->names.end(); n++) {
+	for (auto it = properties.begin(); it != properties.end(); ++it) {
+		for (auto n = it->names.begin(); n != it->names.end(); ++n) {
 			if (n->compare(name) == 0) return long(it - properties.begin());
 		}
 	}
 	name = upper(name);
-	for (auto it = properties.begin(); it != properties.end(); it++) {
-		for (auto n = it->names.begin(); n != it->names.end(); n++) {
+	for (auto it = properties.begin(); it != properties.end(); ++it) {
+		for (auto n = it->names.begin(); n != it->names.end(); ++n) {
 			if (upper(*n).compare(name) == 0) return long(it - properties.begin());
 		}
 	}
@@ -191,14 +201,14 @@ long AddInNative::GetNMethods()
 long AddInNative::FindMethod(const WCHAR_T* wsMethodName)
 {
 	std::u16string name((char16_t*)wsMethodName);
-	for (auto it = methods.begin(); it != methods.end(); it++) {
-		for (auto n = it->names.begin(); n != it->names.end(); n++) {
+	for (auto it = methods.begin(); it != methods.end(); ++it) {
+		for (auto n = it->names.begin(); n != it->names.end(); ++n) {
 			if (n->compare(name) == 0) return long(it - methods.begin());
 		}
 	}
 	name = upper(name);
-	for (auto it = methods.begin(); it != methods.end(); it++) {
-		for (auto n = it->names.begin(); n != it->names.end(); n++) {
+	for (auto it = methods.begin(); it != methods.end(); ++it) {
+		for (auto n = it->names.begin(); n != it->names.end(); ++n) {
 			if (upper(*n).compare(name) == 0) return long(it - methods.begin());
 		}
 	}
@@ -390,17 +400,17 @@ AddInNative* AddInNative::CreateObject(const std::u16string& name) {
 	return object;
 }
 
-void AddInNative::AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter)
+void AddInNative::AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, const PropFunction &getter, const PropFunction &setter)
 {
 	properties.push_back({ { nameEn, nameRu }, getter, setter });
 }
 
-void AddInNative::AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs)
+void AddInNative::AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, const MethFunction& handler, const MethDefaults &defs)
 {
 	methods.push_back({ { nameEn, nameRu }, handler, defs, false });
 }
 
-void AddInNative::AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs)
+void AddInNative::AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, const MethFunction &handler, const MethDefaults &defs)
 {
 	methods.push_back({ { nameEn, nameRu }, handler, defs, true });
 }

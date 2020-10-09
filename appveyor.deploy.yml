@@ -1,0 +1,22 @@
+image:
+  - Visual Studio 2019
+
+configuration:
+  - Release
+
+platform:
+  - x64  
+
+install:
+  - cmd: Powershell.exe -File appveyor.deploy.ps1
+
+build: false
+
+cache: 1cv8.zip
+
+artifacts:
+  - path: AddIn.zip
+    name: AddIn
+
+  - path: VanessaExt.epf
+    name: VanessaExt

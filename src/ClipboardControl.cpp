@@ -1,7 +1,6 @@
 ﻿#include "stdafx.h"
 #include "ClipboardControl.h"
 #include "ClipboardManager.h"
-#include "version.h"
 
 std::vector<std::u16string> ClipboardControl::names = {
 	AddComponent(u"ClipboardControl", []() { return new ClipboardControl; }),
@@ -25,7 +24,7 @@ ClipboardControl::ClipboardControl()
 		[&](VH var) { var = ClipboardManager().GetFormat(); }
 	);
 	AddProperty(u"Version", u"Версия", 
-		[&](VH var) { var = std::string(VER_FILE_VERSION_STR); }
+		[&](VH var) { var = this->version(); }
 	);
 
 	AddFunction(u"Empty", u"Очистить", [&]() { this->result = ClipboardManager().Empty(); });
