@@ -6,6 +6,8 @@
 
 Предназначена для Windows и Linux, разработана по технологии Native API.
 
+[![Build status](https://ci.appveyor.com/api/projects/status/jau22n1d2a6bvwpo?svg=true)](https://ci.appveyor.com/project/lintest/vanessaext)
+
 ### Возможности компоненты:
 - Получение списка окон и списка процессов
 - Управление размерами и положением окна
@@ -124,9 +126,6 @@
 КонецФункции
 ```
 ### Сборка проекта
-
-Готовая сборка внешней компоненты находится в файле 
-[/Example/Templates/VanessaExt/Ext/Template.bin](https://github.com/lintest/VanessaExt/raw/master/Example/Templates/VanessaExt/Ext/Template.bin)
 
 Порядок самостоятельной сборки внешней компоненты из исходников:
 1. Для сборки компоненты необходимо установить Visual Studio Community 2019
