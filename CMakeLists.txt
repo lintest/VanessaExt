@@ -4,6 +4,7 @@ project(VanessaExt)
 set(TARGET VanessaExt)
 
 add_library(${TARGET} SHARED
+	version.h
 	src/AddInNative.cpp
 	src/AddInNative.def
 	src/AddInNative.h
@@ -35,7 +36,6 @@ add_library(${TARGET} SHARED
 	src/screenshot.h
 	src/xcb_clip.cpp
 	src/xcb_clip.h
-	src/version.h
 	src/json.hpp
 	src/stdafx.h)
 
@@ -46,6 +46,7 @@ set (EXECUTABLE_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH})
 set (CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH})
 
 if (UNIX)
+	set(MyPrefix "")
 	set(MySuffix1 "Lin")
 	if (APPLE)
 		set(MySuffix1 "Mac")
@@ -59,11 +60,12 @@ else(UNIX)
 	if (NOT MSVC)
 		message(FATAL_ERROR "Must be compiled with MSVC on Windows")
 	endif(NOT MSVC)
+	set(MyPrefix "lib")
 	set(MySuffix1 "Win")
 endif(UNIX)
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES
-	   OUTPUT_NAME ${PROJECT_NAME}${MySuffix1}${MySuffix2} 
+	   OUTPUT_NAME ${MyPrefix}${PROJECT_NAME}${MySuffix1}${MySuffix2} 
 	   POSITION_INDEPENDENT_CODE ON 
 	   CXX_STANDARD_REQUIRED ON
 	   CXX_STANDARD 17

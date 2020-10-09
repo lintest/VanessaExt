@@ -106,9 +106,9 @@ protected:
 		MethFunction7
 	>;
 
-	void AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, PropFunction getter, PropFunction setter = nullptr);
-	void AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs = {});
-	void AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, MethFunction handler, MethDefaults defs = {});
+	void AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, const PropFunction &getter, const PropFunction &setter = nullptr);
+	void AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, const MethFunction &handler, const MethDefaults &defs = {});
+	void AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, const MethFunction &handler, const MethDefaults &defs = {});
 	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
 	VarinantHelper result;
 
@@ -118,6 +118,7 @@ protected:
 	static std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
 	static std::u16string MB2WCHAR(std::string_view src);
 	WCHAR_T* W(const char16_t* str) const;
+	static std::string version();
 
 private:
 	struct Prop {
@@ -150,7 +151,7 @@ private:
 	std::vector<Prop> properties;
 	std::vector<Meth> methods;
 	std::u16string name;
-	bool alias;
+	bool alias = false;
 
 public:
 	AddInNative(void) : result(nullptr, this) {}

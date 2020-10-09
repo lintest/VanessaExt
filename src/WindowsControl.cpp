@@ -10,8 +10,6 @@
 #endif //_WINDOWS
 
 #include "WindowsControl.h"
-#include "version.h"
-
 #include "ClickEffect.h"
 #include "ClipboardManager.h"
 #include "FileFinder.h"
@@ -59,7 +57,7 @@ WindowsControl::WindowsControl() {
 		[&](VH var) { var = ScreenManager::GetScreenInfo(); }
 	);
 	AddProperty(u"Version", u"Версия",
-		[&](VH var) { var = std::string(VER_FILE_VERSION_STR); }
+		[&](VH var) { var = this->version(); }
 	);
 
 	AddFunction(u"FindTestClient", u"НайтиКлиентТестирования",
