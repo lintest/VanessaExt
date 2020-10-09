@@ -5,6 +5,7 @@
 /build
 /bind
 /bin
+/boost_*
 /libgit2-*
 /libpng-*
 /libssh2-*
