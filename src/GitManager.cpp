@@ -1,6 +1,4 @@
-﻿#ifdef _WINDOWS
-
-#include "GitManager.h"
+﻿#include "GitManager.h"
 #include "FileFinder.h"
 #include "json.hpp"
 #include "version.h"
@@ -45,7 +43,6 @@ GitManager::GitManager()
 	AddFunction(u"Discard", u"Discard", [&](VH path) { this->result = this->discard(path); });
 	AddFunction(u"History", u"History", [&](VH path) { this->result = this->history(path); }, { { 0, u"HEAD" } });
 	AddFunction(u"IsBinary", u"IsBinary", [&](VH blob, VH encoding) { this->result = this->isBinary(blob, encoding); }, { {1, (int64_t)0} });
-	AddFunction(u"GetFullpath", u"GetFullpath", [&](VH path) { this->result = this->getFullpath(path); });
 	AddFunction(u"GetEncoding", u"GetEncoding", [&](VH path) { this->result = this->getEncoding(path); });
 
 	AddFunction(u"FindFiles", u"НайтиФайлы", [&](VH path, VH mask, VH text, VH ignore) {
@@ -740,15 +737,6 @@ int64_t GitManager::getEncoding(VH blob)
 	return bom;
 }
 
-#include <filesystem>
-
-std::wstring GitManager::getFullpath(const std::wstring& path)
-{
-	if (m_repo == nullptr) return {};
-	std::filesystem::path root = MB2WC(git_repository_path(m_repo));
-	return root.parent_path().parent_path().append(path).make_preferred();
-}
-
 std::string GitManager::checkout(const std::string& name, bool create)
 {
 	if (create) {
@@ -807,4 +795,3 @@ std::string GitManager::compare(const std::string& name, const std::string& ref)
 	return success(count);
 }
 
-#endif // _WINDOWS

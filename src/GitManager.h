@@ -1,8 +1,6 @@
 #ifndef __CLIPMNGR_H__
 #define __CLIPMNGR_H__
 
-#ifdef _WINDOWS
-
 #include "stdafx.h"
 #include "AddInNative.h"
 #include <git2.h> 
@@ -44,7 +42,6 @@ private:
 	bool isBinary(VH blob, VH encoding);
 	void blob(VH id, VH encoding);
 	int64_t getEncoding(VH blob);
-	std::wstring getFullpath(const std::wstring& path);
 	std::string init(const std::string& path);
 	std::string clone(const std::string& url, const std::string& path);
 	std::string info(const std::string& msg);
@@ -69,7 +66,5 @@ private:
 	std::string status();
 	std::string head();
 };
-
-#endif // _WINDOWS
 
 #endif //__CLIPMNGR_H__
