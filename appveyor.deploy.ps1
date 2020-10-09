@@ -2,10 +2,8 @@ $account = "lintest"
 $project = "VanessaExt"
 $name = "VanessaExt"
 
-#This should be added as a secure variable. Other variables used in script already exist
 #https://ci.appveyor.com/api-keys
 $token = $env:API_TOKEN 
-
 $url1c = $env:URL_1CV8T
 
 $apiUrl = 'https://ci.appveyor.com/api'

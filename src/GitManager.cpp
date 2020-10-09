@@ -1,7 +1,6 @@
 ﻿#include "GitManager.h"
 #include "FileFinder.h"
 #include "json.hpp"
-#include "version.h"
 
 using JSON = nlohmann::json;
 
@@ -17,7 +16,7 @@ GitManager::GitManager()
 	AddProperty(u"Remotes", u"Remotes", [&](VH var) { var = this->remoteList(); });
 	AddProperty(u"Branches", u"Branches", [&](VH var) { var = this->branchList(); });
 	AddProperty(u"Signature", u"Подпись", [&](VH var) { var = this->signature(); });
-	AddProperty(u"Version", u"Версия", [&](VH var) { var = std::string(VER_FILE_VERSION_STR); });
+	AddProperty(u"Version", u"Версия", [&](VH var) { var = this->version(); });
 
 	AddProcedure(u"SetAuthor", u"SetAuthor", [&](VH name, VH email) { this->setAuthor(name, email); });
 	AddProcedure(u"SetCommitter", u"SetCommitter", [&](VH name, VH email) { this->setCommitter(name, email); });
@@ -63,7 +62,7 @@ GitManager::GitManager()
 #pragma comment(lib, "crypt32")
 #pragma comment(lib, "rpcrt4")
 #pragma comment(lib, "winhttp")
-#endif _WINDOWS
+#endif//_WINDOWS
 
 #define CHECK_REPO() {if (m_repo == nullptr) return ::error(0);}
 

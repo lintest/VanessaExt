@@ -2,27 +2,31 @@ version: 1.2.1.{build}
 
 image:
   - Visual Studio 2019
-  - Ubuntu2004
+  - Ubuntu1804
 
 configuration:
   - Release
 
 platform:
-  - x64  
+  - x64
 
 install:
-  - git clone -q --branch=master https://github.com/libgit2/libgit2.git C:\projects\GitFor1C\libgit2-1.0.1
-  - cd C:\projects\GitFor1C\libgit2-1.0.1
+  - git clone -q --branch=master https://github.com/libgit2/libgit2.git libgit2-1.0.1
+  - cd libgit2-1.0.1
   - git checkout -b version v1.0.1
-  - git clone -q --branch=master https://github.com/libssh2/libssh2.git C:\projects\GitFor1C\libssh2-1.9.0
-  - cd C:\projects\GitFor1C\libssh2-1.9.0
-  - git checkout -b version libssh2-1.9.0
+  - cd ..
 
-  - sh: sudo apt update
-  - sh: sudo apt install -y gcc-multilib g++-multilib
-  - sh: sudo apt install -y uuid-dev libx11-dev libxrandr-dev libpng-dev
-  - sh: sudo apt install -y libxtst-dev libxtst-dev:i386  
-  
+  - git clone -q --branch=master https://github.com/libssh2/libssh2.git libssh2-1.9.0
+  - cd libssh2-1.9.0
+  - git checkout -b version libssh2-1.9.0
+  - cd ..
+
+  - sh: sudo dpkg --add-architecture i386
+  - sh: sudo apt -qq update
+  - sh: sudo apt -qq -y install uuid-dev libx11-dev libxrandr-dev libpng-dev
+  - sh: sudo apt -qq -y install libxtst-dev libxtst-dev:i386
+  - sh: sudo apt -qq -y install gcc-multilib g++-multilib
+
   - cmd: appveyor DownloadFile https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz
   - cmd: tar xzf boost_1_74_0.tar.gz
   - cmd: cd boost_1_74_0
@@ -42,32 +46,25 @@ before_build:
 build_script:
   - cmd: Powershell.exe -File manifest.ps1 -Project VanessaExt -Version %APPVEYOR_BUILD_VERSION%
 
-  - cmd: mkdir build32
-  - cmd: cd build32
-  - cmd: cmake .. -A Win32 -DMySuffix2=32
-  - cmd: cmake --build . --config Release
-  - cmd: cd ..
-  - cmd: mkdir build64
-  - cmd: cd build64
-  - cmd: cmake .. -A x64 -DMySuffix2=64
-  - cmd: cmake --build . --config Release
-  - cmd: cd ..
-  - cmd: copy bin\Release\libVanessaExtWin??.dll .
-
-  - sh: mkdir build32
-  - sh: cd build32
+  - mkdir build32
+  - cd build32
   - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=ON --build ..
-  - sh: cmake --build .
-  - sh: cd ..
-  - sh: mkdir build64
-  - sh: cd build64
+  - cmd: cmake .. -A Win32 -DMySuffix2=32
+  - cmake --build . --config Release
+  - cd ..
+
+  - mkdir build64
+  - cd build64
   - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=OFF --build ..
-  - sh: cmake --build .
-  - sh: cd ..
+  - cmd: cmake .. -A x64 -DMySuffix2=64
+  - cmake --build . --config Release
+  - cd ..
+
+  - cmd: copy bin\Release\libVanessaExtWin??.dll .
   - sh: cp bin/libVanessaExtLin??.so .
 
 after_build:
-  - cmd: 7z a VanessaExt.zip libVanessaExtWin??.dll manifest.xml version.txt version.h
+  - cmd: 7z a VanessaExt.zip libVanessaExtWin??.* manifest.xml version.txt version.h
   - sh: 7z a VanessaExt.zip libVanessaExtLin??.so version.txt version.h
 
 artifacts:
