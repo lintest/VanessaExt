@@ -1,4 +1,4 @@
-version: 1.1.10.{build}
+version: 1.2.1.{build}
 
 image:
   - Visual Studio 2019
@@ -11,6 +11,13 @@ platform:
   - x64  
 
 install:
+  - git clone -q --branch=master https://github.com/libgit2/libgit2.git C:\projects\GitFor1C\libgit2-1.0.1
+  - cd C:\projects\GitFor1C\libgit2-1.0.1
+  - git checkout -b version v1.0.1
+  - git clone -q --branch=master https://github.com/libssh2/libssh2.git C:\projects\GitFor1C\libssh2-1.9.0
+  - cd C:\projects\GitFor1C\libssh2-1.9.0
+  - git checkout -b version libssh2-1.9.0
+
   - sh: sudo apt update
   - sh: sudo apt install -y gcc-multilib g++-multilib
   - sh: sudo apt install -y uuid-dev libx11-dev libxrandr-dev libpng-dev
