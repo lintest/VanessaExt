@@ -97,7 +97,7 @@ else(UNIX)
 	set(Boost_NO_SYSTEM_PATHS TRUE) 
 
 	if (Boost_NO_SYSTEM_PATHS)
-	set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../boost_1_74_0")
+	set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/boost_1_74_0")
 	set(BOOST_INCLUDE_DIRS "${BOOST_ROOT}/include")
 	set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
 	endif (Boost_NO_SYSTEM_PATHS)
