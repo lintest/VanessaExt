@@ -76,11 +76,9 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
 
 if (UNIX)
 	if (TARGET_PLATFORM_32)
-		set(CMAKE_C_FLAGS "-m32 ${CMAKE_C_FLAGS}")
-		set(CMAKE_CXX_FLAGS "-m32 ${CMAKE_CXX_FLAGS}")
+		set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
 	else(TARGET_PLATFORM_32)
-		set(CMAKE_C_FLAGS "-m64 ${CMAKE_C_FLAGS}")
-		set(CMAKE_CXX_FLAGS "-m64 ${CMAKE_CXX_FLAGS}")
+		set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-m64" LINK_FLAGS "-m64")
 	endif ()
 	FIND_PACKAGE(X11 COMPONENTS Xtst)
 	target_link_libraries(${PROJECT_NAME} ${X11_XTest_LIB})
