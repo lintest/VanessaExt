@@ -21,15 +21,15 @@ $jobId = $project.build.jobs[0].jobId
 $artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
 $artifactFileName = $artifacts[0].fileName
 Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts/$artifactFileName" `
-  -OutFile "$path\Windows.zip" -Headers @{ "Authorization" = "Bearer $token" }
-Expand-Archive -Force -Path "$path\Windows.zip" -DestinationPath $path
+  -OutFile "$path\job0.zip" -Headers @{ "Authorization" = "Bearer $token" }
+Expand-Archive -Force -Path "$path\job0.zip" -DestinationPath $path
 
 $jobId = $project.build.jobs[1].jobId
 $artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
 $artifactFileName = $artifacts[0].fileName
 Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts/$artifactFileName" `
-  -OutFile "$path\Linux.zip" -Headers @{ "Authorization" = "Bearer $token" }
-Expand-Archive -Force -Path "$path\Linux.zip" -DestinationPath $path
+  -OutFile "$path\job1.zip" -Headers @{ "Authorization" = "Bearer $token" }
+Expand-Archive -Force -Path "$path\job1.zip" -DestinationPath $path
 
 $version = Get-Content -Path "$path\version.txt"
 $postfix = '_' + $version -replace '\.', '_'

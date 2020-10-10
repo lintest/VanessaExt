@@ -24,7 +24,7 @@ install:
   - sh: sudo dpkg --add-architecture i386
   - sh: sudo apt -qq update
   - sh: sudo apt -qq -y install uuid-dev libx11-dev libxrandr-dev libpng-dev
-  - sh: sudo apt -qq -y install libxtst-dev libxtst-dev:i386
+  - sh: sudo apt -qq -y install libxtst-dev libxtst-dev:i386 libssl-dev libssl-dev:i386
   - sh: sudo apt -qq -y install gcc-multilib g++-multilib
 
   - cmd: appveyor DownloadFile https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz
