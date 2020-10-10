@@ -37,6 +37,7 @@ install:
 init:
   - cmd: cmake --version
   - cmd: msbuild /version
+  - cmd: echo.
 
 before_build:
   - cmd: echo %APPVEYOR_BUILD_VERSION% > "version.txt"
