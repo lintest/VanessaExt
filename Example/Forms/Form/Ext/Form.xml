@@ -49,6 +49,11 @@
 					<ContextMenu name="ЗаголовокОкнаКонтекстноеМеню" id="95"/>
 					<ExtendedTooltip name="ЗаголовокОкнаРасширеннаяПодсказка" id="96"/>
 				</LabelField>
+				<Button name="Автотест" id="596">
+					<Type>UsualButton</Type>
+					<CommandName>Form.Command.Автотест</CommandName>
+					<ExtendedTooltip name="АвтотестРасширеннаяПодсказка" id="597"/>
+				</Button>
 			</ChildItems>
 		</UsualGroup>
 		<Pages name="СтраницыФормы" id="34">
@@ -4252,6 +4257,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>МультимедиаSize</Action>
+		</Command>
+		<Command name="Автотест" id="68">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Автотест</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Автотест</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>Автотест</Action>
 		</Command>
 	</Commands>
 </Form>
