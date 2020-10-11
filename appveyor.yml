@@ -51,7 +51,7 @@ build_script:
   - cd build32
   - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=ON --build ..
   - cmd: cmake .. -A Win32 -DMySuffix2=32
-  - cmake --build . --config Release
+  - cmd: cmake --build . --config Release
   - cd ..
 
   - mkdir build64
