@@ -5,6 +5,9 @@ $name = "VanessaExt"
 #https://ci.appveyor.com/api-keys
 $token = $env:API_TOKEN 
 $url1c = $env:URL_1CV8T
+$path = $env:APPVEYOR_BUILD_FOLDER
+$version = $env:APPVEYOR_BUILD_VERSION
+$postfix = '_' + $version -replace '\.', '_'
 
 $apiUrl = 'https://ci.appveyor.com/api'
 $headers = @{
@@ -12,29 +15,16 @@ $headers = @{
   "Content-type"  = "application/json"
 }
 
-# get project with last build details
-$project = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$account/$project" -Headers $headers
+$project = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$account/$project/build/$version" -Headers $headers
 
-$path = $env:APPVEYOR_BUILD_FOLDER
-	
 $jobId = $project.build.jobs[0].jobId
 $artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
 $artifactFileName = $artifacts[0].fileName
-Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts/$artifactFileName" `
-  -OutFile "$path\job0.zip" -Headers @{ "Authorization" = "Bearer $token" }
-Expand-Archive -Force -Path "$path\job0.zip" -DestinationPath $path
 
-$jobId = $project.build.jobs[1].jobId
-$artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
-$artifactFileName = $artifacts[0].fileName
 Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts/$artifactFileName" `
-  -OutFile "$path\job1.zip" -Headers @{ "Authorization" = "Bearer $token" }
-Expand-Archive -Force -Path "$path\job1.zip" -DestinationPath $path
+  -OutFile "$path\Linux.zip" -Headers @{ "Authorization" = "Bearer $token" }
 
-$version = Get-Content -Path "$path\version.txt"
-$postfix = '_' + $version -replace '\.', '_'
-Update-AppveyorBuild -Version "$version"
-Write-Output "Version: $version"
+Expand-Archive -Force -Path "$path\Linux.zip" -DestinationPath $path
 
 Rename-Item "$path\lib${name}Win32.dll" "${name}Win32$postfix.dll"
 Rename-Item "$path\lib${name}Win64.dll" "${name}Win64$postfix.dll"
@@ -53,8 +43,15 @@ Copy-Item -Path "$path\AddIn.zip" -Destination "$path\Example\Templates\$name\Ex
 
 $dist1c = "$path\1cv8.zip"
 if (!(Test-Path $dist1c)) {
+  Write-Host "Download 1cv8.zip ..."
   Invoke-WebRequest -Uri $url1c -OutFile $dist1c
 }
-Expand-Archive -Force -Path $dist1c -DestinationPath $path
 
-& "bin\1cv8t.exe" DESIGNER /F "$path\Data" /LoadExternalDataProcessorOrReportFromFiles "Example.xml" "$name.epf"  /Out"Log.log"
+Write-Host "Expand archive 1cv8.zip ..."
+Expand-Archive -Force -Path $dist1c -DestinationPath $path
+Set-Content "$path\bin\conf\conf.cfg" "DisableUnsafeActionProtection=.*;"
+
+& "bin\1cv8t.exe" DESIGNER /F "$path\Data" /LoadExternalDataProcessorOrReportFromFiles "Example.xml" "$name.epf"  /Out"Example.log"
+
+Write-Host "Process autotest..."
+#Start-Process "bin\1cv8ct.exe" -ArgumentList "/F $path\Autobase" -Wait

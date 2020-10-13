@@ -1,14 +1,27 @@
 version: 1.2.1.{build}
 
-image:
-  - Visual Studio 2019
-  - Ubuntu1804
+configuration: Release
+platform: x64
 
-configuration:
-  - Release
+branches:
+  only:
+    - develop
 
-platform:
-  - x64
+skip_branch_with_pr: true
+
+environment:
+  global:
+    URL_1CV8T:
+      secure: z47uplaqZaQ0ZkroXy0GP00nv6ACPwovtb+EjfPgpS0IlWM6VQd+8apwLfqT9ndX
+    API_TOKEN:
+      secure: 85XpT8I1bxRTZaiIA+co0b5GS05J2VOn7PzunkYlL40=
+
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+      job_name: Linux
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      job_depends_on: Linux
+      job_name: Windows
 
 install:
   - git clone -q --branch=master https://github.com/libgit2/libgit2.git libgit2-1.0.1
@@ -44,12 +57,8 @@ init:
   - cmd: msbuild /version
   - cmd: echo.
 
-before_build:
-  - cmd: echo %APPVEYOR_BUILD_VERSION% > "version.txt"
-  - sh: echo ${APPVEYOR_BUILD_VERSION} > "version.txt"
-  - sh: echo "#define VERSION_FULL " ${APPVEYOR_BUILD_VERSION} > "version.h"
-
 build_script:
+  - sh: echo "#define VERSION_FULL " ${APPVEYOR_BUILD_VERSION} > "version.h"
   - cmd: Powershell.exe -File manifest.ps1 -Project VanessaExt -Version %APPVEYOR_BUILD_VERSION%
 
   - mkdir build32
@@ -66,13 +75,43 @@ build_script:
   - cmake --build . --config Release
   - cd ..
 
-  - cmd: copy bin\Release\libVanessaExtWin??.dll .
   - sh: cp bin/libVanessaExtLin??.so .
+  - sh: 7z a VanessaExt.zip libVanessaExtLin??.so
+  - cmd: copy bin\Release\libVanessaExtWin??.dll .
+  - cmd: Powershell.exe -File appveyor.ps1
 
-after_build:
-  - cmd: 7z a VanessaExt.zip libVanessaExtWin??.* manifest.xml version.txt version.h
-  - sh: 7z a VanessaExt.zip libVanessaExtLin??.so version.txt version.h
+for:
+  - matrix:
+      only:
+        - job_name: Linux
+    artifacts:
+      - path: VanessaExt.zip
+        name: VanessaExt
 
-artifacts:
-  - path: VanessaExt.zip
-    name: VanessaExt
+  - matrix:
+      only:
+        - job_name: Windows
+
+    cache: 1cv8.zip
+
+    artifacts:
+      - path: AddIn.zip
+        name: AddIn
+
+      - path: VanessaExt.epf
+        name: VanessaExt
+
+      - path: example.log
+        name: example log
+
+    deploy:
+      - provider: GitHub
+        auth_token:
+          secure: v7P89NQ2I5+WGNNdhpFrZEt6OCTPf8A8VSC5rttZMXh3DJ2fTChNEjZ1Wvm3kfBt
+        repository: lintest/VanessaExt
+        artifact: AddIn.zip, VanessaExt.epf
+        draft: true
+        prerelease: true
+        force_update: true
+        on:
+          branch: master
