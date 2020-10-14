@@ -41,17 +41,8 @@ New-Item -ItemType Directory -Force -Path "$path\Example\Templates\$name\" | Out
 New-Item -ItemType Directory -Force -Path "$path\Example\Templates\$name\Ext\" | Out-Null
 Copy-Item -Path "$path\AddIn.zip" -Destination "$path\Example\Templates\$name\Ext\Template.bin"
 
-$dist1c = "$path\1cv8.zip"
+$dist1c = "$path\1cv8t.7z"
 if (!(Test-Path $dist1c)) {
-  Write-Host "Download 1cv8.zip ..."
+  Write-Host "Download 1cv8t.7z ..."
   Invoke-WebRequest -Uri $url1c -OutFile $dist1c
 }
-
-Write-Host "Expand archive 1cv8.zip ..."
-Expand-Archive -Force -Path $dist1c -DestinationPath $path
-Set-Content "$path\bin\conf\conf.cfg" "DisableUnsafeActionProtection=.*;"
-
-& "bin\1cv8t.exe" DESIGNER /F "$path\Data" /LoadExternalDataProcessorOrReportFromFiles "Example.xml" "$name.epf"  /Out"Example.log"
-
-Write-Host "Process autotest..."
-#Start-Process "bin\1cv8ct.exe" -ArgumentList "/F $path\Autobase" -Wait
