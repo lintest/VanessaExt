@@ -100,7 +100,7 @@ for:
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/config /UpdateDBCfg
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml VanessaExt.epf /Out example.log
-      - bin\1cv8ct.exe ENTERPRISE /F %CD%/database /C %CD%/VanessaExt.epf
+      - bin\1cv8ct.exe ENTERPRISE /F %CD%/database /C VanessaExt.epf
 
     artifacts:
       - path: AddIn.zip
