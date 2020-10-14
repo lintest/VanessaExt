@@ -110,7 +110,7 @@ else(UNIX)
 	set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
 	endif (Boost_NO_SYSTEM_PATHS)
 
-	find_package(Boost REQUIRED regex date_time system filesystem thread graph program_options)
+	find_package(Boost REQUIRED regex date_time)
 
 	include_directories(${Boost_INCLUDE_DIRS})
 	target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})

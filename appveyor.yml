@@ -49,7 +49,7 @@ install:
   - cmd: tar xzf boost_1_74_0.tar.gz
   - cmd: cd boost_1_74_0
   - cmd: bootstrap.bat
-  - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage
+  - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time
   - cmd: cd ..
 
 init:
