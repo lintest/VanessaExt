@@ -283,8 +283,9 @@
 	Группа = ДобавитьГруппуТестов(Результаты, "Тетирование GitFor1C");
 	ТестВычислить(Группа, "version", "git.version");
 	ТестВычислить(Группа, "init", "git.init(""" + ВременнаяПапка + """)", "JSON(Значение).success");
-	ТестВычислить(Группа, "status", "git.status()", "JSON(Значение).success");
+	ТестВычислить(Группа, "status", "git.status()", "JSON(Значение).result.work[0].new_name = ""example.txt""");
 	ТестВычислить(Группа, "add", "git.add(""" + ИмяФайла + """)", "JSON(Значение).success");
+	ТестВычислить(Группа, "status", "git.status()", "JSON(Значение).result.index[0].new_name = ""example.txt""");
 	ТестВычислить(Группа, "status", "git.status()");
 	ЗаписатьГруппуТестов(Группа);
 	
