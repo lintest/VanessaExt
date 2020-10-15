@@ -86,7 +86,6 @@ for:
         - job_name: Linux
     artifacts:
       - path: VanessaExt.zip
-        name: VanessaExt
 
   - matrix:
       only:
@@ -102,19 +101,13 @@ for:
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml VanessaExt.epf /Out example.log
       - appveyor PushArtifact VanessaExt.epf
       - bin\1cv8ct.exe ENTERPRISE /F %CD%/database /C VanessaExt.epf
+      - ps: if (!(Test-Path success.txt)) { throw "Имеются ошибки" }
 
     artifacts:
       - path: AddIn.zip
-        name: AddIn
-
       - path: VanessaExt.epf
-        name: VanessaExt
-
       - path: autotest.log
-        name: autotest log
-
       - path: example.log
-        name: example log
 
     deploy:
       - provider: GitHub
