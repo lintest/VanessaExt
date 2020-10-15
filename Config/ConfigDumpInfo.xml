@@ -1,11 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ConfigDumpInfo xmlns="http://v8.1c.ru/8.3/xcf/dumpinfo" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" format="Hierarchical" version="2.10">
+<ConfigDumpInfo xmlns="http://v8.1c.ru/8.3/xcf/dumpinfo" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" format="Hierarchical" version="2.4">
 	<ConfigVersions>
-		<Metadata name="Configuration.Конфигурация" id="4e22445b-7cb3-4b50-a642-df9a4a9dae31" configVersion="9cab7000fbbbd44f83cf0c4a83cf258700000000"/>
-		<Metadata name="Configuration.Конфигурация.ManagedApplicationModule" id="bee48079-d5e3-4cc2-9946-cf8512e2c092.6" configVersion="73903363b7d14d4780595b9ab17ef7f700000000"/>
-		<Metadata name="DataProcessor.ОткрытиеАвтотеста" id="61249708-41e2-45ce-a8b9-2cfa7d213e40" configVersion="8874ef012b119f45b3d0f663d6b008c000000000"/>
-		<Metadata name="DataProcessor.ОткрытиеАвтотеста.Form.Форма" id="955821de-31d8-4516-996d-45a64cf1a4f0" configVersion="c5b9351f9caa6a4781cd2676eb50a6d900000000"/>
-		<Metadata name="DataProcessor.ОткрытиеАвтотеста.Form.Форма.Form" id="955821de-31d8-4516-996d-45a64cf1a4f0.0" configVersion="6df175193e3fa6468508b9f7dfdc81fa00000000"/>
-		<Metadata name="Language.Русский" id="93ed5e88-75c3-41d7-8c6a-d5424bd12181" configVersion="a64d233f3762324693ddf2f8a71d6c2300000000"/>
+		<Metadata name="CommonModule.AppServer" id="f999e135-0010-46c3-a4e1-e5b783310a95" configVersion="b6fd9ecf5bfb4043bc5f49a19a25858100000000"/>
+		<Metadata name="CommonModule.AppServer.Module" id="f999e135-0010-46c3-a4e1-e5b783310a95.0" configVersion="31d688f1f2a22d46a0774717535f506a00000000"/>
+		<Metadata name="Configuration.Конфигурация" id="8f74432c-c760-4000-9f2f-ef3954710608" configVersion="b52872d479d3a545999ed02e4f43cec100000000"/>
+		<Metadata name="Configuration.Конфигурация.ManagedApplicationModule" id="a26934ce-e09b-4142-b45b-2006f23a62b8.6" configVersion="20f5a09903579443b89fa6c0093ff1eb00000000"/>
+		<Metadata name="Language.Russian" id="3a143474-7276-4c6c-889b-d462414b7f71" configVersion="6ffca09cbee885428cb393636ffc21f200000000"/>
 	</ConfigVersions>
 </ConfigDumpInfo>

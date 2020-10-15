@@ -1,4 +1,5 @@
-﻿/build32W*
+﻿/database
+/build32W*
 /build64W*
 /build32L*
 /build64L*
@@ -20,6 +21,7 @@
 AddIn.zip
 XxCompile.bat
 manifest.xml
+*.log
 *.epf
 *.o
 *.d

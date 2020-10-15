@@ -1,6 +1,5 @@
 {
     "files.exclude": {
-        ".gitignore": true,
         "LICENSE": true,
         "Example.xml": true,
         "*/MANIFEST.XML": true,
