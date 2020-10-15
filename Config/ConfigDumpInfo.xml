@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ConfigDumpInfo xmlns="http://v8.1c.ru/8.3/xcf/dumpinfo" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" format="Hierarchical" version="2.4">
 	<ConfigVersions>
-		<Metadata name="CommonModule.AppServer" id="f999e135-0010-46c3-a4e1-e5b783310a95" configVersion="b6fd9ecf5bfb4043bc5f49a19a25858100000000"/>
-		<Metadata name="CommonModule.AppServer.Module" id="f999e135-0010-46c3-a4e1-e5b783310a95.0" configVersion="31d688f1f2a22d46a0774717535f506a00000000"/>
+		<Metadata name="CommonModule.AppServer" id="f999e135-0010-46c3-a4e1-e5b783310a95" configVersion="4cc6ab3497fe914cb9bc8f43a4a18dcf00000000"/>
+		<Metadata name="CommonModule.AppServer.Module" id="f999e135-0010-46c3-a4e1-e5b783310a95.0" configVersion="6d3b1d8b5087aa45a65848d7753e158900000000"/>
 		<Metadata name="Configuration.Конфигурация" id="8f74432c-c760-4000-9f2f-ef3954710608" configVersion="b52872d479d3a545999ed02e4f43cec100000000"/>
 		<Metadata name="Configuration.Конфигурация.ManagedApplicationModule" id="a26934ce-e09b-4142-b45b-2006f23a62b8.6" configVersion="20f5a09903579443b89fa6c0093ff1eb00000000"/>
 		<Metadata name="Language.Russian" id="3a143474-7276-4c6c-889b-d462414b7f71" configVersion="6ffca09cbee885428cb393636ffc21f200000000"/>
