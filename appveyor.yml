@@ -17,6 +17,7 @@ environment:
       secure: 85XpT8I1bxRTZaiIA+co0b5GS05J2VOn7PzunkYlL40=
 
   matrix:
+    fast_finish: true
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       job_name: Linux
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
