@@ -1,4 +1,4 @@
-version: 1.2.1.{build}
+version: 1.2.2.{build}
 
 configuration: Release
 platform: x64
@@ -97,6 +97,8 @@ for:
     cache: 1cv8t.7z
 
     after_build:
+      - ps: Set-Content -Path app_port.txt -Value ([uri] $env:APPVEYOR_API_URL).Port
+      - ps: if (!(Test-Path 1cv8t.7z)) { Invoke-WebRequest -Uri $env:URL_1CV8T -OutFile 1cv8t.7z }
       - 7z x 1cv8t.7z
       - mkdir database
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database

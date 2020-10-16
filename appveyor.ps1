@@ -4,7 +4,6 @@ $name = "VanessaExt"
 
 #https://ci.appveyor.com/api-keys
 $token = $env:API_TOKEN 
-$url1c = $env:URL_1CV8T
 $path = $env:APPVEYOR_BUILD_FOLDER
 $version = $env:APPVEYOR_BUILD_VERSION
 $postfix = '_' + $version -replace '\.', '_'
@@ -40,10 +39,3 @@ Compress-Archive @compress
 New-Item -ItemType Directory -Force -Path "$path\Example\Templates\$name\" | Out-Null
 New-Item -ItemType Directory -Force -Path "$path\Example\Templates\$name\Ext\" | Out-Null
 Copy-Item -Path "$path\AddIn.zip" -Destination "$path\Example\Templates\$name\Ext\Template.bin"
-
-$dist1c = "$path\1cv8t.7z"
-if (!(Test-Path $dist1c)) {
-  Write-Host "Download 1cv8t.7z ..."
-  Invoke-WebRequest -Uri $url1c -OutFile $dist1c
-}
-Set-Content -Path app_port.txt -Value ([uri] $env:APPVEYOR_API_URL).Port

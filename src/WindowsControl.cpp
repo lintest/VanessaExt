@@ -70,7 +70,7 @@ WindowsControl::WindowsControl() {
 		[&](VH pid) { this->result = ProcessManager::GetProcessInfo(pid); }
 	);
 	AddFunction(u"GetDisplayList", u"ПолучитьСписокДисплеев",
-		[&](VH window) { this->result = ScreenManager::GetDisplayList(window); }
+		[&](VH window) { this->result = ScreenManager::GetDisplayList(window); }, { {0, (int64_t)0 } }
 	);
 	AddFunction(u"GetDisplayInfo", u"ПолучитьСвойстваДисплея",
 		[&](VH window) { this->result = ScreenManager::GetDisplayInfo(window); }
