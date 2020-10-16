@@ -17,12 +17,14 @@ environment:
       secure: 85XpT8I1bxRTZaiIA+co0b5GS05J2VOn7PzunkYlL40=
 
   matrix:
-    fast_finish: true
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       job_name: Linux
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       job_depends_on: Linux
       job_name: Windows
+
+matrix:
+  fast_finish: true
 
 install:
   - git clone -q --branch=master https://github.com/libgit2/libgit2.git libgit2-1.0.1
