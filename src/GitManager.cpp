@@ -68,14 +68,14 @@ GitManager::GitManager()
 
 #define ASSERT(t) {if (t < 0) return ::error();}
 
-template<class T, void F(T*)>
+template<class T, void destructor(T*)>
 class AutoGit {
 private:
 	T* h = nullptr;
 public:
 	AutoGit() {}
 	AutoGit(T* h) { this->h = h; }
-	~AutoGit() { if (h) (F(h)); }
+	~AutoGit() { if (h) destructor(h); }
 	operator T* () const { return h; }
 	T** operator &() { return &h; }
 	T* operator->() { return h; }
