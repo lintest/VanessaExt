@@ -36,7 +36,6 @@ public:
 	virtual ~GitManager();
 
 private:
-	bool close();
 	void setAuthor(const std::string& name, const std::string& email);
 	void setCommitter(const std::string& name, const std::string& email);
 	bool isBinary(VH blob, VH encoding);
@@ -65,6 +64,7 @@ private:
 	std::string signature();
 	std::string status();
 	std::string head();
+	std::string close();
 };
 
 #endif //__CLIPMNGR_H__

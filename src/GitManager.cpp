@@ -167,11 +167,11 @@ std::string GitManager::open(const std::string& path)
 	return success(true);
 }
 
-bool GitManager::close()
+std::string GitManager::close()
 {
 	if (m_repo) git_repository_free(m_repo);
 	m_repo = nullptr;
-	return true;
+	return success(true);
 }
 
 std::string GitManager::find(const std::string& path)
