@@ -42,7 +42,6 @@ private:
 	bool isBinary(VH blob, VH encoding);
 	void blob(VH id, VH encoding);
 	int64_t getEncoding(VH blob);
-	std::wstring getFullpath(const std::wstring& path);
 	std::string init(const std::string& path);
 	std::string clone(const std::string& url, const std::string& path);
 	std::string info(const std::string& msg);
