@@ -176,9 +176,10 @@ std::string GitManager::close()
 
 std::string GitManager::find(const std::string& path)
 {
+	std::string res;
 	git_buf buffer = { 0 };
 	ASSERT(git_repository_discover(&buffer, path.c_str(), 0, nullptr));
-	std::string res = buffer.ptr;
+	if (buffer.ptr) res = buffer.ptr;
 	git_buf_free(&buffer);
 	return success(res);
 }
