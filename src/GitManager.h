@@ -42,6 +42,7 @@ private:
 	bool isBinary(VH blob, VH encoding);
 	void blob(VH id, VH encoding);
 	int64_t getEncoding(VH blob);
+	std::wstring getFullpath(const std::wstring& path);
 	std::string init(const std::string& path);
 	std::string clone(const std::string& url, const std::string& path);
 	std::string info(const std::string& msg);
@@ -57,7 +58,7 @@ private:
 	std::string commit(const std::string& msg);
 	std::string history(const std::string& msg);
 	std::string compare(const std::string& ref1, const std::string& ref2);
-	std::string diff(const std::u16string s1, const std::u16string& s2);
+	std::string diff(const std::u16string &s1, const std::u16string& s2);
 	std::string file(const std::string& path, bool full);
 	std::string tree(const std::string& id);
 	std::string branchList();

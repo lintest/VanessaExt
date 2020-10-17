@@ -68,33 +68,32 @@ GitManager::GitManager()
 
 #define ASSERT(t) {if (t < 0) return ::error();}
 
-#define AUTO_GIT(N, T, F)              \
-class N {                              \
-private:                               \
-	T* h = nullptr;                    \
-public:                                \
-	N() {}                             \
-	N(T* h) { this->h = h; }           \
-	~N() { if (h) (F(h)); }            \
-	operator T*() const { return h; }  \
-	T** operator &() { return &h; }    \
-	T* operator->() { return h; }      \
-	operator bool() { return h; }      \
-}                                      \
-;
+template<class T, void F(T*)>
+class AutoGit {
+private:
+	T* h = nullptr;
+public:
+	AutoGit() {}
+	AutoGit(T* h) { this->h = h; }
+	~AutoGit() { if (h) (F(h)); }
+	operator T* () const { return h; }
+	T** operator &() { return &h; }
+	T* operator->() { return h; }
+	operator bool() { return h; }
+};
 
-AUTO_GIT(GIT_branch_iterator, git_branch_iterator, git_branch_iterator_free);
-AUTO_GIT(GIT_status_list, git_status_list, git_status_list_free)
-AUTO_GIT(GIT_signature, git_signature, git_signature_free)
-AUTO_GIT(GIT_reference, git_reference, git_reference_free);
-AUTO_GIT(GIT_revwalk, git_revwalk, git_revwalk_free)
-AUTO_GIT(GIT_commit, git_commit, git_commit_free)
-AUTO_GIT(GIT_object, git_object, git_object_free)
-AUTO_GIT(GIT_remote, git_remote, git_remote_free)
-AUTO_GIT(GIT_index, git_index, git_index_free)
-AUTO_GIT(GIT_blob, git_blob, git_blob_free)
-AUTO_GIT(GIT_diff, git_diff, git_diff_free)
-AUTO_GIT(GIT_tree, git_tree, git_tree_free)
+using GIT_branch_iterator = AutoGit<git_branch_iterator, git_branch_iterator_free>;
+using GIT_status_list = AutoGit<git_status_list, git_status_list_free>;
+using GIT_signature = AutoGit<git_signature, git_signature_free>;
+using GIT_reference = AutoGit<git_reference, git_reference_free>;
+using GIT_revwalk = AutoGit<git_revwalk, git_revwalk_free>;
+using GIT_commit = AutoGit<git_commit, git_commit_free>;
+using GIT_object = AutoGit<git_object, git_object_free>;
+using GIT_remote = AutoGit<git_remote, git_remote_free>;
+using GIT_index = AutoGit<git_index, git_index_free>;
+using GIT_blob = AutoGit<git_blob, git_blob_free>;
+using GIT_diff = AutoGit<git_diff, git_diff_free>;
+using GIT_tree = AutoGit<git_tree, git_tree_free>;
 
 GitManager::~GitManager()
 {
@@ -587,7 +586,7 @@ int diff_file_cb(const git_diff_delta* delta, float progress, void* payload)
 	return 0;
 }
 
-std::string GitManager::diff(const std::u16string s1, const std::u16string& s2)
+std::string GitManager::diff(const std::u16string &s1, const std::u16string& s2)
 {
 	CHECK_REPO();
 	GIT_diff diff = NULL;
