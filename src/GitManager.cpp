@@ -16,7 +16,6 @@ GitManager::GitManager()
 	AddProperty(u"Remotes", u"Remotes", [&](VH var) { var = this->remoteList(); });
 	AddProperty(u"Branches", u"Branches", [&](VH var) { var = this->branchList(); });
 	AddProperty(u"Signature", u"Подпись", [&](VH var) { var = this->signature(); });
-	AddProperty(u"Version", u"Версия", [&](VH var) { var = this->version(); });
 
 	AddProcedure(u"SetAuthor", u"SetAuthor", [&](VH name, VH email) { this->setAuthor(name, email); });
 	AddProcedure(u"SetCommitter", u"SetCommitter", [&](VH name, VH email) { this->setCommitter(name, email); });

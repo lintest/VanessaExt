@@ -81,6 +81,10 @@ std::wstring MB2WC(const std::string& str)
 
 std::map<std::u16string, CompFunction> AddInNative::components;
 
+AddInNative::AddInNative(void) : result(nullptr, this) {
+	AddProperty(u"Version", u"Версия", [&](VH var) { var = this->version(); });
+}
+
 std::string AddInNative::version()
 {
 	return STRINGIZE(VERSION_FULL);

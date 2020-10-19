@@ -56,9 +56,6 @@ WindowsControl::WindowsControl() {
 	AddProperty(u"ScreenInfo", u"СвойстваЭкрана",
 		[&](VH var) { var = ScreenManager::GetScreenInfo(); }
 	);
-	AddProperty(u"Version", u"Версия",
-		[&](VH var) { var = this->version(); }
-	);
 
 	AddFunction(u"FindTestClient", u"НайтиКлиентТестирования",
 		[&](VH port) { this->result = ProcessManager::FindTestClient(port); }

@@ -154,7 +154,7 @@ private:
 	bool alias = false;
 
 public:
-	AddInNative(void) : result(nullptr, this) {}
+	AddInNative(void) ;
 	virtual ~AddInNative() {}
 	// IInitDoneBase
 	virtual bool ADDIN_API Init(void*) override final;

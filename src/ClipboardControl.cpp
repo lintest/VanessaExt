@@ -23,10 +23,7 @@ ClipboardControl::ClipboardControl()
 	AddProperty(u"Format", u"Формат",
 		[&](VH var) { var = ClipboardManager().GetFormat(); }
 	);
-	AddProperty(u"Version", u"Версия", 
-		[&](VH var) { var = this->version(); }
-	);
-
+	
 	AddFunction(u"Empty", u"Очистить", [&]() { this->result = ClipboardManager().Empty(); });
 	AddFunction(u"SetText", u"ЗаписатьТекст", [&](VH var) { this->result = ClipboardManager().SetText(var); });
 	AddFunction(u"SetFiles", u"ЗаписатьФайлы", [&](VH var) { this->result = ClipboardManager().SetFiles(var); });
