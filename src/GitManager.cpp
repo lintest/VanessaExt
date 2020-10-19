@@ -793,4 +793,3 @@ std::string GitManager::compare(const std::string& name, const std::string& ref)
 	while (!git_revwalk_next(&id, walker)) count++;
 	return success(count);
 }
-
