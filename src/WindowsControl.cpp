@@ -172,7 +172,7 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"PlayMedia", u"ВоспроизвестиМедиа",
 		[&](VH uuid, VH filename) { SoundEffect::PlayMedia(uuid, filename); }, { {1, u""} }
 	);
-	AddProcedure(u"PlayingMedia", u"ВоспроизводитсяМедиа",
+	AddFunction(u"PlayingMedia", u"ВоспроизводитсяМедиа",
 		[&](VH uuid) { this->result = SoundEffect::PlayingMedia(uuid); }
 	);
 	AddFunction(u"MediaCommand", u"МедиаКоманда",
