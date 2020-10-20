@@ -6,6 +6,7 @@ platform: x64
 branches:
   only:
     - develop
+    - master
 
 skip_branch_with_pr: true
 
