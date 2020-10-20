@@ -913,7 +913,7 @@
 									<Title>
 										<v8:item>
 											<v8:lang>ru</v8:lang>
-											<v8:content>Воспроизведение звука</v8:content>
+											<v8:content>Воспроизведение звука WAV</v8:content>
 										</v8:item>
 									</Title>
 									<ToolTip>
@@ -999,6 +999,78 @@
 										</InputField>
 									</ChildItems>
 								</UsualGroup>
+								<UsualGroup name="ГруппаМультимедиаФайл" id="598">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Воспроизведение звука MP3</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа мультимедиа файл</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<ExtendedTooltip name="ГруппаМультимедиаФайлРасширеннаяПодсказка" id="599"/>
+									<ChildItems>
+										<CommandBar name="ГруппаМедиаФайл" id="600">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа медиа файл</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа медиа файл</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ГруппаМедиаФайлРасширеннаяПодсказка" id="601"/>
+											<ChildItems>
+												<ButtonGroup name="ГруппаКнопокМедиа" id="606">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок медиа</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок медиа</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ГруппаКнопокМедиаРасширеннаяПодсказка" id="607"/>
+													<ChildItems>
+														<Button name="МедиаВоспроизвести" id="602">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МедиаВоспроизвести</CommandName>
+															<ExtendedTooltip name="МедиаВоспроизвестиРасширеннаяПодсказка" id="603"/>
+														</Button>
+														<Button name="МедиаПрервать" id="604">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МедиаПрервать</CommandName>
+															<ExtendedTooltip name="МедиаПрерватьРасширеннаяПодсказка" id="605"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
+										<InputField name="МультимедиаФайл" id="575">
+											<DataPath>МультимедиаФайл</DataPath>
+											<ChoiceButton>true</ChoiceButton>
+											<ContextMenu name="МультимедиаФайлКонтекстноеМеню" id="576"/>
+											<ExtendedTooltip name="МультимедиаФайлРасширеннаяПодсказка" id="577"/>
+											<Events>
+												<Event name="StartChoice">МультимедиаФайлНачалоВыбора</Event>
+											</Events>
+										</InputField>
+									</ChildItems>
+								</UsualGroup>
 								<UsualGroup name="ГруппаМультимедиаКоманда" id="573">
 									<Title>
 										<v8:item>
@@ -1080,15 +1152,6 @@
 												</ButtonGroup>
 											</ChildItems>
 										</CommandBar>
-										<InputField name="МультимедиаФайл" id="575">
-											<DataPath>МультимедиаФайл</DataPath>
-											<ChoiceButton>true</ChoiceButton>
-											<ContextMenu name="МультимедиаФайлКонтекстноеМеню" id="576"/>
-											<ExtendedTooltip name="МультимедиаФайлРасширеннаяПодсказка" id="577"/>
-											<Events>
-												<Event name="StartChoice">МультимедиаФайлНачалоВыбора</Event>
-											</Events>
-										</InputField>
 									</ChildItems>
 								</UsualGroup>
 							</ChildItems>
@@ -3197,17 +3260,6 @@
 				</v8:NumberQualifiers>
 			</Type>
 		</Attribute>
-		<Attribute name="ВизуализацияЦвет1" id="36">
-			<Title>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Цвет</v8:content>
-				</v8:item>
-			</Title>
-			<Type>
-				<v8:Type>v8ui:Color</v8:Type>
-			</Type>
-		</Attribute>
 		<Attribute name="ЗвуковойФайл" id="42">
 			<Title>
 				<v8:item>
@@ -3247,6 +3299,21 @@
 			</Title>
 			<Type>
 				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ИдентификаторМедиа" id="36">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Идентификатор медиа</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
 			</Type>
 		</Attribute>
 	</Attributes>
@@ -4283,6 +4350,36 @@
 				</v8:item>
 			</ToolTip>
 			<Action>Автотест</Action>
+		</Command>
+		<Command name="МедиаВоспроизвести" id="69">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Воспроизвести</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Медиа воспроизвести</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МедиаВоспроизвести</Action>
+		</Command>
+		<Command name="МедиаПрервать" id="70">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Прервать</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Медиа прервать</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МедиаПрервать</Action>
 		</Command>
 	</Commands>
 </Form>

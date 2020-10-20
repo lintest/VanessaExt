@@ -444,32 +444,4 @@ std::wstring ProcessManager::SendWebSocket(WebSocketBase** ws, const std::string
 	return (*ws)->send(msg, res) ? MB2WC(res) : SocketError(res);
 }
 
-BOOL ProcessManager::PlaySound(const std::wstring& filename, bool async)
-{
-
-	if (filename.empty()) return ::PlaySound(NULL, NULL, 0);
-	DWORD fdwSound = SND_FILENAME | SND_NODEFAULT;
-	if (async) fdwSound |= SND_ASYNC;
-	return ::PlaySound(filename.c_str(), 0, fdwSound);
-}
-
-std::u16string MediaError(MCIERROR err)
-{
-	size_t size = 1024;
-	std::wstring error;
-	error.resize(size);
-	mciGetErrorString(err, &error[0], size);
-	return std::u16string(error.begin(), error.end());
-}
-
-std::wstring ProcessManager::MediaCommand(const std::wstring& command)
-{
-	std::wstring result;
-	size_t length = 1024;
-	result.resize(length);
-	MCIERROR err = mciSendString(command.c_str(), &result[0], length, NULL);
-	if (err) throw MediaError(err);
-	return result;
-}
-
 #endif //_WINDOWS

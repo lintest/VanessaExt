@@ -15,6 +15,7 @@
 #include "FileFinder.h"
 #include "ProcessManager.h"
 #include "ScreenManager.h"
+#include "SoundEffect.h"
 #include "WindowsManager.h"
 
 std::vector<std::u16string> WindowsControl::names = {
@@ -166,10 +167,13 @@ WindowsControl::WindowsControl() {
 		[&]() { ClickEffect::Unhook(); }
 	);
 	AddProcedure(u"PlaySound", u"ВоспроизвестиЗвук",
-		[&](VH filename, VH async) { ProcessManager::PlaySound(filename, async); }, { {0, u""}, {1, false} }
+		[&](VH filename, VH async) { SoundEffect::PlaySound(filename, async); }, { {0, u""}, {1, false} }
+	);
+	AddProcedure(u"PlayMedia", u"ВоспроизвестиМедиа",
+		[&](VH uuid, VH filename) { SoundEffect::PlayMedia(uuid, filename); }, { {1, u""} }
 	);
 	AddFunction(u"MediaCommand", u"МедиаКоманда",
-		[&](VH command) { this->result = ProcessManager::MediaCommand(command); }
+		[&](VH command) { this->result = SoundEffect::MediaCommand(command); }
 	);
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }

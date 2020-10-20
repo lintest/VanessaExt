@@ -26,6 +26,8 @@ add_library(${TARGET} SHARED
 	src/ProcessControl.h
 	src/ProcessManager.cpp
 	src/ProcessManager.h
+	src/SoundEffect.cpp
+	src/SoundEffect.h 	
 	src/ScreenManager.cpp 
 	src/ScreenManager.h 
 	src/WebSocket.h
