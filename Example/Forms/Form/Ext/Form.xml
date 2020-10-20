@@ -1056,6 +1056,11 @@
 															<CommandName>Form.Command.МедиаПрервать</CommandName>
 															<ExtendedTooltip name="МедиаПрерватьРасширеннаяПодсказка" id="605"/>
 														</Button>
+														<Button name="МедиаСтатус" id="608">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.МедиаСтатус</CommandName>
+															<ExtendedTooltip name="МедиаСтатусРасширеннаяПодсказка" id="609"/>
+														</Button>
 													</ChildItems>
 												</ButtonGroup>
 											</ChildItems>
@@ -4380,6 +4385,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>МедиаПрервать</Action>
+		</Command>
+		<Command name="МедиаСтатус" id="71">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Статус</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Медиа воспроизвести</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МедиаСтатус</Action>
 		</Command>
 	</Commands>
 </Form>

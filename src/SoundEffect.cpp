@@ -46,7 +46,7 @@ private:
 	std::wstring filename;
 	MCIDEVICEID device = 0;
 public:
-	static SoundHandler* get(HWND hWnd){
+	static SoundHandler* get(HWND hWnd) {
 		return (SoundHandler*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	}
 	SoundHandler(const std::wstring& uuid, const std::wstring& filename)
@@ -61,10 +61,9 @@ LRESULT CALLBACK SoundWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 {
 	switch (message)
 	{
-	case WM_SOUND_STOP: 
+	case WM_SOUND_STOP:
 		SoundHandler::get(hWnd)->Stop();
-		SendMessage(hWnd, WM_DESTROY, 0, 0);
-		return 0;
+		[[fallthrough]];
 	case MM_MCINOTIFY:
 		SendMessage(hWnd, WM_DESTROY, 0, 0);
 		return 0;
@@ -137,13 +136,18 @@ static DWORD WINAPI EffectThreadProc(LPVOID lpParam)
 	return 0;
 }
 
-void SoundEffect::PlayMedia(const std::wstring& uuid, const std::wstring & filename)
+void SoundEffect::PlayMedia(const std::wstring& uuid, const std::wstring& filename)
 {
 	HWND hWnd = FindWindowEx(NULL, NULL, wsSoundName, uuid.c_str());
 	if (hWnd) SendMessage(hWnd, WM_SOUND_STOP, 0, 0);
 	if (filename.empty()) return;
 	auto params = new SoundHandler(uuid, filename);
 	CreateThread(0, NULL, EffectThreadProc, (LPVOID)params, NULL, NULL);
+}
+
+bool SoundEffect::PlayingMedia(const std::wstring& uuid)
+{
+	return FindWindowEx(NULL, NULL, wsSoundName, uuid.c_str());
 }
 
 #endif //_WINDOWS
