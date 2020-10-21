@@ -152,6 +152,9 @@ WindowsControl::WindowsControl() {
 		[&](VH msec) { ProcessManager::Sleep(msec); }
 	);
 #ifdef _WINDOWS
+	AddFunction(u"FindProcess", u"НайтиПроцесс",
+		[&](VH query) { this->result = ProcessManager::FindProcess(query); }
+	);
 	AddProcedure(u"ShowClick", u"ПоказатьНажатиеМыши",
 		[&](VH color, VH radius, VH width, VH delay, VH trans) { ClickEffect::Show(color, radius, width, delay, trans); },
 		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127} }

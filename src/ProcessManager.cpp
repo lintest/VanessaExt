@@ -371,6 +371,11 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	return ProcessInfo((unsigned long)pid);
 }
 
+std::wstring ProcessManager::FindProcess(const std::wstring name)
+{
+	return {};
+}
+
 void ProcessManager::Sleep(int64_t ms)
 {
 	::usleep((unsigned long)ms * 1000);
