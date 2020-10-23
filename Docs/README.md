@@ -88,7 +88,7 @@
 ```
 ***
 
-<a href="Docs/BuildLibrary.md">Инструкция по самостоятельной сборке библиотеки</a>
+<a href="BuildLibrary.md">Инструкция по самостоятельной сборке библиотеки</a>
 
 При разработке использовались библиотеки:
 - [cpp-c11-make-screenshot by Roman Shuvalov](https://github.com/Butataki/cpp-x11-make-screenshot)
