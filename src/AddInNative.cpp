@@ -140,11 +140,16 @@ long AddInNative::FindProp(const WCHAR_T* wsPropName)
 
 const WCHAR_T* AddInNative::GetPropName(long lPropNum, long lPropAlias)
 {
-	auto it = std::next(properties.begin(), lPropNum);
-	if (it == properties.end()) return nullptr;
-	auto nm = std::next(it->names.begin(), lPropAlias);
-	if (nm == it->names.end()) return nullptr;
-	return W(nm->c_str());
+	try {
+		auto it = std::next(properties.begin(), lPropNum);
+		if (it == properties.end()) return nullptr;
+		auto nm = std::next(it->names.begin(), lPropAlias);
+		if (nm == it->names.end()) return nullptr;
+		return W(nm->c_str());
+	}
+	catch (...) {
+		return nullptr;
+	}
 }
 
 bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
@@ -221,11 +226,16 @@ long AddInNative::FindMethod(const WCHAR_T* wsMethodName)
 
 const WCHAR_T* AddInNative::GetMethodName(const long lMethodNum, const long lMethodAlias)
 {
-	auto it = std::next(methods.begin(), lMethodNum);
-	if (it == methods.end()) return nullptr;
-	auto nm = std::next(it->names.begin(), lMethodAlias);
-	if (nm == it->names.end()) return nullptr;
-	return W(nm->c_str());
+	try {
+		auto it = std::next(methods.begin(), lMethodNum);
+		if (it == methods.end()) return nullptr;
+		auto nm = std::next(it->names.begin(), lMethodAlias);
+		if (nm == it->names.end()) return nullptr;
+		return W(nm->c_str());
+	}
+	catch (...) {
+		return nullptr;
+	}
 }
 
 long AddInNative::GetNParams(const long lMethodNum)
@@ -281,9 +291,14 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 
 bool AddInNative::HasRetVal(const long lMethodNum)
 {
-	auto it = std::next(methods.begin(), lMethodNum);
-	if (it == methods.end()) return false;
-	return it->hasRetVal;
+	try {
+		auto it = std::next(methods.begin(), lMethodNum);
+		if (it == methods.end()) return false;
+		return it->hasRetVal;
+	}
+	catch (...) {
+		return false;
+	}
 }
 
 bool AddInNative::CallMethod(MethFunction* func, tVariant* p, Meth* m, const long lSizeArray)
@@ -404,17 +419,17 @@ AddInNative* AddInNative::CreateObject(const std::u16string& name) {
 	return object;
 }
 
-void AddInNative::AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, const PropFunction &getter, const PropFunction &setter)
+void AddInNative::AddProperty(const std::u16string& nameEn, const std::u16string& nameRu, const PropFunction& getter, const PropFunction& setter)
 {
 	properties.push_back({ { nameEn, nameRu }, getter, setter });
 }
 
-void AddInNative::AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, const MethFunction& handler, const MethDefaults &defs)
+void AddInNative::AddProcedure(const std::u16string& nameEn, const std::u16string& nameRu, const MethFunction& handler, const MethDefaults& defs)
 {
 	methods.push_back({ { nameEn, nameRu }, handler, defs, false });
 }
 
-void AddInNative::AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, const MethFunction &handler, const MethDefaults &defs)
+void AddInNative::AddFunction(const std::u16string& nameEn, const std::u16string& nameRu, const MethFunction& handler, const MethDefaults& defs)
 {
 	methods.push_back({ { nameEn, nameRu }, handler, defs, true });
 }
@@ -483,7 +498,7 @@ TYPEVAR AddInNative::VarinantHelper::type()
 uint32_t AddInNative::VarinantHelper::size()
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
-	if (pvar->vt != VTYPE_BLOB) throw error(VTYPE_BLOB); 
+	if (pvar->vt != VTYPE_BLOB) throw error(VTYPE_BLOB);
 	return pvar->strLen;
 }
 
@@ -564,7 +579,7 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::u
 	return *this;
 }
 
-bool AddInNative::AddError(const std::u16string &descr, long scode)
+bool AddInNative::AddError(const std::u16string& descr, long scode)
 {
 	std::u16string info = u"AddIn." + name;
 	return m_iConnect && m_iConnect->AddError(ADDIN_E_IMPORTANT, (WCHAR_T*)info.c_str(), (WCHAR_T*)descr.c_str(), scode);
@@ -573,7 +588,7 @@ bool AddInNative::AddError(const std::u16string &descr, long scode)
 static std::u16string typeinfo(TYPEVAR vt, bool alias)
 {
 	switch (vt) {
-	case VTYPE_EMPTY: 
+	case VTYPE_EMPTY:
 		return alias ? u"Неопределено" : u"Undefined";
 	case VTYPE_I2:
 	case VTYPE_I4:
@@ -586,7 +601,7 @@ static std::u16string typeinfo(TYPEVAR vt, bool alias)
 	case VTYPE_R8:
 		return alias ? u"Число" : u"Float";
 	case VTYPE_DATE:
-	case VTYPE_TM: 
+	case VTYPE_TM:
 		return alias ? u"Дата" : u"Date";
 	case VTYPE_PSTR:
 	case VTYPE_PWSTR:
