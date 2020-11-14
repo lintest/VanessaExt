@@ -5,6 +5,13 @@
 #include "AddInNative.h"
 #include <git2.h> 
 
+struct GitCredential {
+	std::string username;
+	std::string password;
+	std::string privkey;
+	std::string pubkey;
+};
+
 class GitManager : public AddInNative {
 
 	class Signature {
@@ -23,6 +30,7 @@ class GitManager : public AddInNative {
 	};
 
 private:
+	GitCredential m_credential;
 	git_repository* m_repo = nullptr;
 	Signature* m_author = nullptr;
 	Signature* m_committer = nullptr;

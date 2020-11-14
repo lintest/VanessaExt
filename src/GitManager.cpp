@@ -17,6 +17,11 @@ GitManager::GitManager()
 	AddProperty(u"Branches", u"Branches", [&](VH var) { var = this->branchList(); });
 	AddProperty(u"Signature", u"Подпись", [&](VH var) { var = this->signature(); });
 
+	AddProperty(u"Username", u"Логин", [&](VH var) { var = this->m_credential.username; }, [&](VH var) { this->m_credential.username = var; });
+	AddProperty(u"Password", u"Пароль", [&](VH var) { var = this->m_credential.password; }, [&](VH var) { this->m_credential.password = var; });
+	AddProperty(u"privkey", u"ПриватныйКлюч", [&](VH var) { var = this->m_credential.privkey; }, [&](VH var) { this->m_credential.privkey = var; });
+	AddProperty(u"pubkey", u"ПубличныйКлюч", [&](VH var) { var = this->m_credential.pubkey; }, [&](VH var) { this->m_credential.pubkey = var; });
+
 	AddProcedure(u"SetAuthor", u"SetAuthor", [&](VH name, VH email) { this->setAuthor(name, email); });
 	AddProcedure(u"SetCommitter", u"SetCommitter", [&](VH name, VH email) { this->setCommitter(name, email); });
 
@@ -33,8 +38,8 @@ GitManager::GitManager()
 	AddFunction(u"Status", u"Status", [&]() { this->result = this->status(); });
 	AddFunction(u"Commit", u"Commit", [&](VH msg) { this->result = this->commit(msg); });
 	AddFunction(u"Checkout", u"Checkout", [&](VH name, VH create) { this->result = this->checkout(name, create); }, { {1, false} });
-	AddFunction(u"Fetch", u"Fetch", [&](VH name, VH ref) { this->result = this->fetch(name, ref); }, { { 0, u"" } });
-	AddFunction(u"Push", u"Push", [&](VH name, VH ref) { this->result = this->push(name, ref); }, { { 0, u"" } });
+	AddFunction(u"Fetch", u"Fetch", [&](VH name, VH ref) { this->result = this->fetch(name, ref); }, { { 1, u"" } });
+	AddFunction(u"Push", u"Push", [&](VH name, VH ref) { this->result = this->push(name, ref); }, { { 1, u"" } });
 	AddFunction(u"Add", u"Add", [&](VH append, VH remove) { this->result = this->add(append, remove); }, { {1, u""} });
 	AddFunction(u"Reset", u"Reset", [&](VH path) { this->result = this->reset(path); });
 	AddFunction(u"Remove", u"Remove", [&](VH path) { this->result = this->remove(path); });
@@ -339,7 +344,7 @@ std::string GitManager::branchList()
 	CHECK_REPO();
 	GIT_branch_iterator iterator;
 	ASSERT(git_branch_iterator_new(&iterator, m_repo, GIT_BRANCH_LOCAL));
-	git_reference *ref;
+	git_reference* ref;
 	git_branch_t type;
 	JSON json;
 	while (git_branch_next(&ref, &type, iterator) == 0) {
@@ -586,7 +591,7 @@ int diff_file_cb(const git_diff_delta* delta, float progress, void* payload)
 	return 0;
 }
 
-std::string GitManager::diff(const std::u16string &s1, const std::u16string& s2)
+std::string GitManager::diff(const std::u16string& s1, const std::u16string& s2)
 {
 	CHECK_REPO();
 	GIT_diff diff = NULL;
@@ -738,7 +743,7 @@ int64_t GitManager::getEncoding(VH blob)
 std::string GitManager::checkout(const std::string& name, bool create)
 {
 	if (create) {
-		git_object *head;
+		git_object* head;
 		const char* spec = "HEAD^{commit}";
 		ASSERT(git_revparse_single(&head, m_repo, spec));
 		GIT_commit commit = (git_commit*)head;
@@ -755,11 +760,48 @@ std::string GitManager::checkout(const std::string& name, bool create)
 	return success(true);
 }
 
+int credential_cb(git_cred** out, const char* url, const char* username_from_url, unsigned int allowed_types, void* payload)
+{
+	int error = 1;
+	auto credential = (GitCredential*)payload;
+	std::string username = credential->username;
+	if (username_from_url) username = username_from_url;
+	if (allowed_types & GIT_CREDENTIAL_SSH_KEY) {
+		error = git_credential_ssh_key_new(out,
+			username.c_str(),
+			credential->pubkey.c_str(),
+			credential->privkey.c_str(),
+			credential->password.c_str()
+		);
+	}
+	else if (allowed_types & GIT_CREDENTIAL_USERPASS_PLAINTEXT) {
+		error = git_credential_userpass_plaintext_new(out,
+			username.c_str(),
+			credential->password.c_str()
+		);
+	}
+	else if (allowed_types & GIT_CREDENTIAL_USERNAME) {
+		error = git_credential_username_new(out, username.c_str());
+	}
+	return error;
+}
+
 std::string GitManager::fetch(const std::string& name, const std::string& ref)
 {
 	GIT_remote remote;
+	git_remote_callbacks callbacks = GIT_REMOTE_CALLBACKS_INIT;
+	git_fetch_options options = GIT_FETCH_OPTIONS_INIT;
+	options.callbacks.credentials = credential_cb;
+	options.callbacks.payload = &m_credential;
 	ASSERT(git_remote_lookup(&remote, m_repo, name.c_str()));
-	ASSERT(git_remote_fetch(remote, nullptr, nullptr, nullptr));
+	if (ref.empty()) {
+		ASSERT(git_remote_fetch(remote, nullptr, &options, nullptr));
+	}
+	else {
+		const char* paths[] = { ref.c_str() };
+		const git_strarray strarray = { (char**)paths, 1 };
+		ASSERT(git_remote_fetch(remote, &strarray, &options, nullptr));
+	}
 	return success(true);
 }
 
@@ -768,6 +810,8 @@ std::string GitManager::push(const std::string& name, const std::string& ref)
 	GIT_remote remote;
 	git_push_options options;
 	git_push_options_init(&options, GIT_PUSH_OPTIONS_VERSION);
+	options.callbacks.credentials = credential_cb;
+	options.callbacks.payload = &m_credential;
 	ASSERT(git_remote_lookup(&remote, m_repo, name.c_str()));
 	if (ref.empty()) {
 		ASSERT(git_remote_push(remote, nullptr, &options));
