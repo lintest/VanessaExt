@@ -2,7 +2,7 @@
 
 #ifdef _WINDOWS
 #define _WIN32_WINNT 0x0601
-#endif
+#endif //_WINDOWS
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
@@ -37,6 +37,8 @@ WebSocketBase* WebSocketBase::create()
 	return new WebSocket;
 }
 
+#ifdef _WINDOWS
+
 std::string cp1251_to_utf8(const char* str) {
 	std::string res;
 	int result_u, result_c;
@@ -62,6 +64,15 @@ std::string cp1251_to_utf8(const char* str) {
 	delete[] cres;
 	return res;
 }
+
+#else
+
+std::string cp1251_to_utf8(const char* str)
+{
+	return str;
+}
+
+#endif //_WINDOWS
 
 bool WebSocket::open(const std::string& url, std::string& res)
 {
