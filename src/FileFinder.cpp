@@ -110,21 +110,6 @@ std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask
 
 #else
 
-void FileFinder::dirs(const std::wstring& root, const std::wstring& mask) {}
-
-void FileFinder::files(const std::wstring& root, const std::wstring& mask) {}
-
-bool FileFinder::search(const std::wstring& path) {}
-
-std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask)
-{
-	return {};
-}
-
-#endif //_WINDOWS
-
-#ifdef XXXXX
-
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 

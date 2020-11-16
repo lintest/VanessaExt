@@ -1,8 +1,8 @@
 ﻿#include "WebSocket.h"
 
 #ifdef _WINDOWS
-
 #define _WIN32_WINNT 0x0601
+#endif
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
@@ -140,14 +140,3 @@ bool doWebSocket(const std::string& url, std::string& msg, std::string& res)
 	WebSocket ws;
 	return ws.open(url, res) && ws.send(msg, res);
 }
-
-#else
-
-bool doWebSocket(const std::string& url, std::string& msg, std::string& res)
-{
-	res = "Error: method WebSocket for Linux is not implemented";
-	return false;
-}
-
-#endif
-

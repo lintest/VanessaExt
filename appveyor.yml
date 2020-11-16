@@ -49,12 +49,14 @@ install:
       libssl-dev libssl-dev:i386
       gcc-multilib g++-multilib
 
-  - cmd: appveyor DownloadFile https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz
-  - cmd: tar xzf boost_1_74_0.tar.gz
-  - cmd: cd boost_1_74_0
+  - appveyor DownloadFile https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz
+  - tar xzf boost_1_74_0.tar.gz
+  - cd boost_1_74_0
+  - sh: ./bootstrap.sh
   - cmd: bootstrap.bat
   - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time
-  - cmd: cd ..
+  - sh: ./b2 cxxflags=-fPIC link=static threading=multi runtime-link=static release stage --with-regex --with-date_time
+  - cd ..
 
 init:
   - cmd: cmake --version

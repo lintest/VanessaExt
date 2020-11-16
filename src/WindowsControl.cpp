@@ -181,6 +181,13 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"MediaCommand", u"МедиаКоманда",
 		[&](VH command) { this->result = SoundEffect::MediaCommand(command); }
 	);
+	AddFunction(u"FindWindow", u"НайтиОкно",
+		[&](VH name, VH title) { this->result = WindowsManager::FindWindow(name, title); }, { {0, u""}, { 1, u""} }
+	);
+	AddFunction(u"PostMessage", u"ОтправитьСообщение",
+		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
+	);
+#endif//_WINDOWS
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
 	);
@@ -190,16 +197,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"SendWebSocket", u"ПослатьВебСокет",
 		[&](VH msg) { this->result = ProcessManager::SendWebSocket(&webSocket, msg); }
 	);
-	AddFunction(u"FindWindow", u"НайтиОкно",
-		[&](VH name, VH title) { this->result = WindowsManager::FindWindow(name, title); }, { {0, u""}, { 1, u""} }
-	);
-	AddFunction(u"PostMessage", u"ОтправитьСообщение",
-		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
-	);
 	AddProcedure(u"CloseWebSocket", u"ЗакрытьВебСокет",
 		[&](VH msec) { this->CloseWebSocket(); }
 	);
-#endif//_WINDOWS
 }
 
 WindowsControl::~WindowsControl()
