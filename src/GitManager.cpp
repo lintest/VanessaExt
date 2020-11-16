@@ -17,10 +17,10 @@ GitManager::GitManager()
 	AddProperty(u"Branches", u"Branches", [&](VH var) { var = this->branchList(); });
 	AddProperty(u"Signature", u"Подпись", [&](VH var) { var = this->signature(); });
 
-	AddProperty(u"Username", u"Логин", [&](VH var) { var = this->m_credential.username; }, [&](VH var) { this->m_credential.username = var; });
-	AddProperty(u"Password", u"Пароль", [&](VH var) { var = this->m_credential.password; }, [&](VH var) { this->m_credential.password = var; });
-	AddProperty(u"privkey", u"ПриватныйКлюч", [&](VH var) { var = this->m_credential.privkey; }, [&](VH var) { this->m_credential.privkey = var; });
-	AddProperty(u"pubkey", u"ПубличныйКлюч", [&](VH var) { var = this->m_credential.pubkey; }, [&](VH var) { this->m_credential.pubkey = var; });
+	AddProperty(u"Username", u"Логин", [&](VH var) { var = this->m_credential.username; }, [&](VH var) { this->m_credential.username = (std::string)var; });
+	AddProperty(u"Password", u"Пароль", [&](VH var) { var = this->m_credential.password; }, [&](VH var) { this->m_credential.password = (std::string)var; });
+	AddProperty(u"privkey", u"ПриватныйКлюч", [&](VH var) { var = this->m_credential.privkey; }, [&](VH var) { this->m_credential.privkey = (std::string)var; });
+	AddProperty(u"pubkey", u"ПубличныйКлюч", [&](VH var) { var = this->m_credential.pubkey; }, [&](VH var) { this->m_credential.pubkey = (std::string)var; });
 
 	AddProcedure(u"SetAuthor", u"SetAuthor", [&](VH name, VH email) { this->setAuthor(name, email); });
 	AddProcedure(u"SetCommitter", u"SetCommitter", [&](VH name, VH email) { this->setCommitter(name, email); });
