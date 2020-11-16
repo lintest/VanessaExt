@@ -55,7 +55,7 @@ install:
   - sh: ./bootstrap.sh
   - cmd: bootstrap.bat
   - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time
-  - sh: ./b2 cxxflags=-fPIC link=static threading=multi runtime-link=static release stage --with-regex --with-date_time
+  - sh: ./b2 cxxflags=-fPIC link=static threading=multi address-model=32,64 runtime-link=static release stage --with-regex --with-date_time 
   - cd ..
 
 init:
