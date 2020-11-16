@@ -68,7 +68,7 @@ build_script:
   - cmd: Powershell.exe -File manifest.ps1 -Project VanessaExt -Version %APPVEYOR_BUILD_VERSION%
 
   - sh: cd boost_1_74_0
-  - sh: ./b2 cxxflags=-fPIC link=static threading=multi address-model=32 runtime-link=static release stage --with-regex --with-date_time 
+  - sh: ./b2 cxxflags=-fPIC link=static threading=multi runtime-link=static release stage --with-regex --with-date_time define=_GLIBCXX_USE_CXX11_ABI=0 address-model=32
   - sh: cd ..
   - mkdir build32
   - cd build32
@@ -78,7 +78,7 @@ build_script:
   - cd ..
 
   - sh: cd boost_1_74_0
-  - sh: ./b2 cxxflags=-fPIC link=static threading=multi address-model=64 runtime-link=static release stage --with-regex --with-date_time 
+  - sh: ./b2 cxxflags=-fPIC link=static threading=multi runtime-link=static release stage --with-regex --with-date_time define=_GLIBCXX_USE_CXX11_ABI=0 address-model=64
   - sh: cd ..
   - mkdir build64
   - cd build64
