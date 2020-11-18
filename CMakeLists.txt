@@ -124,7 +124,7 @@ message("Boost_LIBRARIES: ${Boost_LIBRARIES}")
 message("========================")
 
 target_include_directories(${TARGET} PRIVATE libgit2-1.0.1/include)
-set(EMBED_SSH_PATH "../../libssh2-1.9.0" CACHE BOOL "" FORCE)
+set(EMBED_SSH_PATH "${CMAKE_SOURCE_DIR}/libssh2-1.9.0" CACHE PATH "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_CLAR OFF CACHE BOOL "" FORCE)
 set(STATIC_CRT ON CACHE BOOL "" FORCE)
