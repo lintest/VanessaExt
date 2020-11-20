@@ -2,6 +2,9 @@
 # autor: 1C
 cmake_minimum_required (VERSION 2.8)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if (WIN32)
     if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio ([0-9]+)")
         if (${CMAKE_MATCH_1} GREATER_EQUAL 12) 
