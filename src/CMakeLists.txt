@@ -1,7 +1,7 @@
 # Cmake script for project AddInNative
 # autor: 1C
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
 
 foreach(policy CMP0068)
   if(POLICY ${policy})

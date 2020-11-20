@@ -1,6 +1,6 @@
 # Cmake script for project AddIn
 # autor: 1C
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 2.8)
 
 if (WIN32)
     if ("${CMAKE_GENERATOR}" MATCHES "Visual Studio ([0-9]+)")
