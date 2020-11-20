@@ -17,8 +17,6 @@ PROJECT(VanessaExt)
 SET(AddInNative_SRC 
     AddInBase.cpp
     AddInBase.h
-    FileFinder.cpp
-    FileFinder.h
     ClipboardControl.cpp
     ClipboardControl.h
     WindowsControl.cpp
@@ -47,7 +45,7 @@ SET(AddInNative_SRC
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive -std=c++11")
 
 SET (CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_SOURCE_DIR})
 SET(AddInDef_SRC)

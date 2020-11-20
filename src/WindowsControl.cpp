@@ -15,7 +15,6 @@
 #include "version.h"
 
 #include "ClipMngr.h"
-#include "FileFinder.h"
 #include "ProcMngr.h"
 #include "ScreenMngr.h"
 #include "WindowMngr.h"
@@ -204,8 +203,6 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 		return VA(pvarRetValue) << ProcessManager::SendWebSocket(webSocket, paParams, lSizeArray);
 	case eWebSocket:
 		return VA(pvarRetValue) << ProcessManager::WebSocket(paParams, lSizeArray);
-	case eFindFiles:
-		return VA(pvarRetValue) << FileFinder(VarToStr(paParams + 2), VarToBool(paParams + 3)).find(VarToStr(paParams), VarToStr(paParams + 1));
 	default:
 		return false;
 	}
