@@ -16,7 +16,7 @@ yum -y group install "Development Tools"
 yum -y install cmake glibc-devel.i686 glibc-devel libuuid-devel
 yum -y install libstdc++-devel.i686 gtk2-devel.i686 glib2-devel.i686
 yum -y install libstdc++-devel.x86_64 gtk2-devel.x86_64 glib2-devel.x86_64
-yum -y install libxtst-devel.i686 libxtst-devel.x86_64
+yum -y install libXtst-devel.i686 libXtst-devel.x86_64
 git clone https://github.com/lintest/VanessaExt.git
 cd VanessaExt
 ./build.sh
@@ -52,6 +52,24 @@ mount -r /dev/cdrom /media/cdrom
 cd /media/cdrom
 ./VBoxLinuxAdditions.run
 sudo usermod -a -G vboxsf "$USER"
+reboot
+```
+
+Установка современного компилятора С++ на CentOS 7.7
+```bash
+sudo yum install -y centos-release-scl
+sudo yum install -y devtoolset-9-gcc*
+scl enable devtoolset-9 bash
+```
+
+Установка на VirtualBox дополнений гостевой ОС для CentOS:
+```bash
+yum group install -y "Development Tools"
+yum install -y kernel-devel
+mkdir -p /media/cdrom
+mount -r /dev/cdrom /media/cdrom
+cd /media/cdrom
+./VBoxLinuxAdditions.run
 reboot
 ```
 
