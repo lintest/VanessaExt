@@ -5,10 +5,11 @@
 
 #include "stdafx.h"
 #include "json.hpp"
+#include "BaseHelper.h"
 
-class ImageFinder {
-public:	
-	static std::string find(const std::string &picture, const std::string &fragment, int match_method = 0);
+class BaseHelper::ImageFinder {
+public:
+	static std::string find(VH picture, VH fragment, int match_method = 0);
 };
 
 #endif //_WINDOWS

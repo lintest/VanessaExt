@@ -189,7 +189,7 @@ WindowsControl::WindowsControl() {
 		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
 	);
 	AddFunction(u"FindFragment", u"НайтиФрагмент",
-		[&](VH picture, VH fragment, VH method) { this->result = ImageFinder::find(picture, fragment, (int64_t)method); }, { {2, (int64_t)0} }
+		[&](VH picture, VH fragment, VH method) { this->result = BaseHelper::ImageFinder::find(picture, fragment, (int64_t)method); }, { {2, (int64_t)0} }
 	);
 #endif//_WINDOWS
 	AddFunction(u"WebSocket", u"ВебСокет",

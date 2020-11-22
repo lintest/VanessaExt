@@ -8,10 +8,13 @@
 using namespace std;
 using namespace cv;
 
-std::string ImageFinder::find(const string &picture, const string &fragment, int match_method)
+std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int match_method)
 {
-    Mat img = imread(picture, IMREAD_COLOR);
-    Mat templ = imread(fragment, IMREAD_COLOR);
+    std::vector<uchar> v_picture(picture.data(), picture.data() + picture.size());
+    std::vector<uchar> v_fragment(fragment.data(), fragment.data() + fragment.size());
+    Mat img = imdecode(v_picture, IMREAD_COLOR);
+    Mat templ = imdecode(v_fragment, IMREAD_COLOR);
+
     if (img.empty() || templ.empty()) {
         return {};
     }

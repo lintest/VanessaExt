@@ -11,6 +11,7 @@ protected:
 	class ClipboardManager;
 	class ScreenManager;
 	class ImageHelper;
+	class ImageFinder;
 };
 
 #endif // __BASEHELPER_H__
