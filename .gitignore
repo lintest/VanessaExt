@@ -11,6 +11,7 @@
 /libpng-*
 /libssh2-*
 /libpng-*
+/opencv-*
 /zlib-*
 /.vc
 /.vs

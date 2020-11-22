@@ -1,4 +1,4 @@
-version: 1.2.2.{build}
+version: 1.3.0.{build}
 
 configuration: Release
 platform: x64
@@ -37,6 +37,12 @@ install:
   - cd libssh2-1.9.0
   - git checkout -b version libssh2-1.9.0
   - cd ..
+
+  - git clone -q --branch=master https://github.com/opencv/opencv_contrib.git opencv-4.5.0
+  - cd opencv-4.5.0
+  - git checkout -b version 4.5.0
+  - cd ..
+  - cmd: Build.OpenCV.bat
 
   - sh: sudo dpkg --add-architecture i386
   - sh: sudo apt -qq update
