@@ -118,8 +118,6 @@ SET OPENCV_OPTIONS=^
 -DWITH_XIMEA:BOOL=OFF
 
 SET ROOTPATH=%CD%
-mkdir opencv-Win32
-mkdir opencv-Win64
 
 cd opencv-4.5.0
 mkdir build32w
@@ -130,8 +128,8 @@ cmake %OPENCV_OPTIONS% ^
   -DOPENCV_3P_LIB_INSTALL_PATH:PATH=%INSTALL_PATH% ^
   -DOPENCV_INCLUDE_INSTALL_PATH=%INSTALL_PATH% ^
   .. -A Win32
-cmake --build . --config release
-cmake --build . --target install --config release
+cmake --build . --config Release
+cmake --build . --target install --config Release
 cd %ROOTPATH%
 
 cd opencv-4.5.0
@@ -143,6 +141,6 @@ cmake %OPENCV_OPTIONS% ^
   -DOPENCV_3P_LIB_INSTALL_PATH:PATH=%INSTALL_PATH% ^
   -DOPENCV_INCLUDE_INSTALL_PATH=%INSTALL_PATH% ^
   .. -A x64
-cmake --build . --config release
-cmake --build . --target install --config release
+cmake --build . --config Release
+cmake --build . --target install --config Release
 cd %ROOTPATH%

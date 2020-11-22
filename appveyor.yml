@@ -38,7 +38,7 @@ install:
   - git checkout -b version libssh2-1.9.0
   - cd ..
 
-  - git clone -q --branch=master https://github.com/opencv/opencv_contrib.git opencv-4.5.0
+  - git clone -q --branch=master https://github.com/opencv/opencv.git opencv-4.5.0
   - cd opencv-4.5.0
   - git checkout -b version 4.5.0
   - cd ..

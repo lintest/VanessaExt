@@ -16,8 +16,10 @@ add_library(${TARGET} SHARED
 	src/ClipboardControl.h
 	src/ClipboardManager.cpp 
 	src/ClipboardManager.h 
-	src/FileFinder.cpp 
-	src/FileFinder.h 
+	src/FileFinder.cpp
+	src/FileFinder.h
+	src/FindImage.cpp
+	src/FindImage.h
 	src/GitManager.cpp
 	src/GitManager.h
 	src/ImageHelper.cpp
@@ -100,6 +102,14 @@ else(UNIX)
 	target_compile_definitions(${TARGET} PRIVATE _WINDOWS
 			_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 	target_compile_options(${TARGET} PRIVATE /utf-8)
+	target_link_libraries(${TARGET} libpng.lib opencv_core450.lib opencv_imgcodecs450.lib opencv_imgproc450.lib zlib.lib)
+	if (TARGET_PLATFORM_32)
+		target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-W32")
+		target_link_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/opencv-W32)
+	else(TARGET_PLATFORM_32)
+		target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-W64")
+		target_link_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/opencv-W64)
+	endif()
 endif(UNIX)
 
 set(Boost_USE_STATIC_LIBS ON) 
@@ -108,7 +118,7 @@ set(Boost_USE_STATIC_RUNTIME ON)
 set(Boost_NO_SYSTEM_PATHS TRUE) 
 
 if (Boost_NO_SYSTEM_PATHS)
-set(BOOST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/boost_1_74_0")
+set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/boost_1_74_0")
 set(BOOST_INCLUDE_DIRS "${BOOST_ROOT}/include")
 set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
 endif (Boost_NO_SYSTEM_PATHS)
