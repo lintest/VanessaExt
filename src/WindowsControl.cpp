@@ -13,7 +13,7 @@
 #include "ClickEffect.h"
 #include "ClipboardManager.h"
 #include "FileFinder.h"
-#include "FindImage.h"
+#include "ImageFinder.h"
 #include "ProcessManager.h"
 #include "ScreenManager.h"
 #include "SoundEffect.h"

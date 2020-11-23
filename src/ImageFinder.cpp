@@ -1,6 +1,4 @@
-﻿#ifdef _WINDOWS
-
-#include "FindImage.h"
+﻿#include "ImageFinder.h"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
 #include "json.hpp"
@@ -46,5 +44,3 @@ std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int match_met
     j["bottom"] = matchLoc.y + templ.rows;
     return j.dump();
 }
-
-#endif//_WINDOWS

@@ -18,10 +18,10 @@ add_library(${TARGET} SHARED
 	src/ClipboardManager.h 
 	src/FileFinder.cpp
 	src/FileFinder.h
-	src/FindImage.cpp
-	src/FindImage.h
 	src/GitManager.cpp
 	src/GitManager.h
+	src/ImageFinder.cpp
+	src/ImageFinder.h
 	src/ImageHelper.cpp
 	src/ImageHelper.h
 	src/ProcessControl.cpp
@@ -95,6 +95,7 @@ if (UNIX)
 	find_package(X11 COMPONENTS Xtst)
 	target_link_libraries(${PROJECT_NAME} ${X11_XTest_LIB})
 	target_link_libraries(${PROJECT_NAME} -static-libgcc -static-libstdc++)
+	target_link_libraries(${TARGET} opencv_core opencv_imgcodecs opencv_imgproc libpng)
 else(UNIX)
 	add_definitions(/MT)
 	set(CMAKE_SUPPRESS_REGENERATION 1)
@@ -102,10 +103,11 @@ else(UNIX)
 	target_compile_definitions(${TARGET} PRIVATE _WINDOWS
 			_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 	target_compile_options(${TARGET} PRIVATE /utf-8)
-	target_link_libraries(${TARGET} libpng.lib opencv_core450.lib opencv_imgcodecs450.lib opencv_imgproc450.lib zlib.lib)
-	target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-W${MySuffix2}")
-	target_link_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-W${MySuffix2}")
+	target_link_libraries(${TARGET} opencv_core450.lib opencv_imgcodecs450.lib opencv_imgproc450.lib libpng.lib zlib.lib)
 endif(UNIX)
+
+target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
+target_link_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
 
 set(Boost_USE_STATIC_LIBS ON) 
 set(Boost_USE_MULTITHREADED ON)  

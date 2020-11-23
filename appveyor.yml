@@ -42,7 +42,6 @@ install:
   - cd opencv-4.5.0
   - git checkout -b version 4.5.0
   - cd ..
-  - cmd: Build.OpenCV.bat
 
   - sh: sudo dpkg --add-architecture i386
   - sh: sudo apt -qq update
@@ -54,6 +53,9 @@ install:
       libpng-dev libpng-dev:i386
       libssl-dev libssl-dev:i386
       gcc-multilib g++-multilib
+
+  - cmd: Build.OpenCV.bat
+  - sh: ./Build.OpenCV.sh
 
   - appveyor DownloadFile https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz
   - tar xzf boost_1_74_0.tar.gz
