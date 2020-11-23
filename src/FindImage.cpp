@@ -36,10 +36,14 @@ std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int match_met
     Point matchLoc = (match_method == TM_SQDIFF || match_method == TM_SQDIFF_NORMED) ? minLoc : maxLoc;
 
     nlohmann::json j;
-    j["x"] = matchLoc.x;
-    j["y"] = matchLoc.y;
-    j["w"] = templ.cols;
-    j["h"] = templ.rows;
+    j["x"] = matchLoc.x + templ.cols / 2;
+    j["y"] = matchLoc.y + templ.rows / 2;
+    j["width"] = templ.cols;
+    j["height"] = templ.rows;
+    j["left"] = matchLoc.x;
+    j["top"] = matchLoc.y;
+    j["right"] = matchLoc.x + templ.cols;
+    j["bottom"] = matchLoc.y + templ.rows;
     return j.dump();
 }
 
