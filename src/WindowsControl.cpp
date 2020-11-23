@@ -189,8 +189,16 @@ WindowsControl::WindowsControl() {
 		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
 	);
 	AddFunction(u"FindFragment", u"НайтиФрагмент",
-		[&](VH picture, VH fragment, VH method) { this->result = BaseHelper::ImageFinder::find(picture, fragment, (int64_t)method); }, { {2, (int64_t)0} }
-	);
+                [&](VH picture, VH fragment, VH method) {
+                        this->result = BaseHelper::ImageFinder::find(picture, fragment, (int64_t)method);
+                }, { {2, (int64_t)1} }
+        );
+        AddFunction(u"FindOnScreen", u"НайтиНаЭкране",
+                [&](VH fragment, VH method) {
+                        ScreenManager::CaptureScreen(this->result, 0);
+                        this->result = BaseHelper::ImageFinder::find(this->result, fragment, (int64_t)method);
+                }, { {1, (int64_t)1} }
+        };
 #endif//_WINDOWS
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
