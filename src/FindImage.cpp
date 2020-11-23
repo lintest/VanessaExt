@@ -19,11 +19,8 @@ std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int match_met
         return {};
     }
 
-    Mat result;
-    Mat img_display;
-    img.copyTo(img_display);
-
     /// Create the result matrix
+    Mat result;
     int result_cols = img.cols - templ.cols + 1;
     int result_rows = img.rows - templ.rows + 1;
     result.create(result_rows, result_cols, CV_32FC1);
