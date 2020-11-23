@@ -198,7 +198,7 @@ WindowsControl::WindowsControl() {
                         ScreenManager::CaptureScreen(this->result, 0);
                         this->result = BaseHelper::ImageFinder::find(this->result, fragment, (int64_t)method);
                 }, { {1, (int64_t)1} }
-        };
+        );
 #endif//_WINDOWS
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
