@@ -10,8 +10,11 @@
 // class WindowsControl
 class WindowsControl : public BaseHelper
 {
+#ifdef _WINDOWS
 private:
 	VideoPainter painter;
+#endif //_WINDOWS	
+private:
 	WebSocketBase* webSocket = nullptr;
 	bool CloseWebSocket() { if (webSocket) delete webSocket; webSocket = nullptr; return true; }
 private:
