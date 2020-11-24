@@ -118,8 +118,7 @@ OPENCV_OPTIONS='\
 -DWITH_XIMEA:BOOL=OFF \
 -DCMAKE_BUILD_TYPE:STRING=Release'
 
-OPENCV_FLAGS='-fvisibility=hidden -fvisibility-inlines=hidden 
--ffunction-sections -fdata-sections'
+OPENCV_FLAGS='-fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections'
 
 ROOTPATH=$PWD
 
