@@ -77,6 +77,7 @@ protected:
 		operator int64_t() const;
 		operator double() const;
 		operator bool() const;
+		operator int() const;
 		uint32_t size();
 		TYPEVAR type();
 		char* data();

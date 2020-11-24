@@ -118,8 +118,6 @@ OPENCV_OPTIONS='\
 -DWITH_XIMEA:BOOL=OFF \
 -DCMAKE_BUILD_TYPE:STRING=Release'
 
-OPENCV_FLAGS='-fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections'
-
 ROOTPATH=$PWD
 
 INSTALL_PATH=$ROOTPATH/opencv-x32
@@ -128,8 +126,8 @@ OPENCV_INSTALL32="\
   -DOPENCV_LIB_ARCHIVE_INSTALL_PATH:PATH=$INSTALL_PATH \
   -DOPENCV_3P_LIB_INSTALL_PATH:PATH=$INSTALL_PATH \
   -DOPENCV_INCLUDE_INSTALL_PATH=$INSTALL_PATH \
-  -DCMAKE_C_FLAGS='-m32 $OPENCV_FLAGS' \
-  -DCMAKE_CXX_FLAGS='-m32 $OPENCV_FLAGS' "
+  -DCMAKE_C_FLAGS=-m32 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections \
+  -DCMAKE_CXX_FLAGS=-m32 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections "
 
 cd opencv-4.5.0
 mkdir build32
@@ -145,8 +143,8 @@ OPENCV_INSTALL64="\
   -DOPENCV_LIB_ARCHIVE_INSTALL_PATH:PATH=$INSTALL_PATH \
   -DOPENCV_3P_LIB_INSTALL_PATH:PATH=$INSTALL_PATH \
   -DOPENCV_INCLUDE_INSTALL_PATH=$INSTALL_PATH \
-  -DCMAKE_C_FLAGS='-m64 $OPENCV_FLAGS' \
-  -DCMAKE_CXX_FLAGS='-m64 $OPENCV_FLAGS' "
+  -DCMAKE_C_FLAGS=-m64 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections \
+  -DCMAKE_CXX_FLAGS=-m64 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections "
 
 cd opencv-4.5.0
 mkdir build64

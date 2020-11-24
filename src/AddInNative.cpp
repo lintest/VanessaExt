@@ -672,6 +672,23 @@ AddInNative::VarinantHelper::operator int64_t() const
 	}
 }
 
+AddInNative::VarinantHelper::operator int() const
+{
+	if (pvar == nullptr) throw std::bad_variant_access();
+	switch (TV_VT(pvar)) {
+	case VTYPE_I2:
+	case VTYPE_I4:
+	case VTYPE_UI1:
+	case VTYPE_ERROR:
+		return (int)pvar->lVal;
+	case VTYPE_R4:
+	case VTYPE_R8:
+		return (int)pvar->dblVal;
+	default:
+		throw error(VTYPE_I4);
+	}
+}
+
 AddInNative::VarinantHelper::operator double() const
 {
 	if (pvar == nullptr) throw std::bad_variant_access();

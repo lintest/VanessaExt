@@ -188,17 +188,29 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"PostMessage", u"ОтправитьСообщение",
 		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
 	);
+	AddProcedure(u"StartDrawing", u"НачатьРисование",
+		[&](VH x, VH y, VH w, VH h) { VideoPainter().rect(x, y, w, h); }
+	);
+	AddProcedure(u"SetupDrawing", u"НастроитьРисование",
+		[&](VH color, VH delay, VH thick, VH trans) { painter.init(color, delay, thick, trans); }
+	);
+	AddProcedure(u"DrawRectangle", u"НарисоватьПрямоугольник",
+		[&](VH x, VH y, VH w, VH h) { painter.rect(x, y, w, h); }
+	);
+	AddProcedure(u"DrawEllipse", u"НарисоватьЭллипс",
+		[&](VH x, VH y, VH w, VH h) { painter.ellipse(x, y, w, h); }
+	);
 	AddFunction(u"FindFragment", u"НайтиФрагмент",
-                [&](VH picture, VH fragment, VH method) {
-                        this->result = BaseHelper::ImageFinder::find(picture, fragment, (int64_t)method);
-                }, { {2, (int64_t)1} }
-        );
-        AddFunction(u"FindOnScreen", u"НайтиНаЭкране",
-                [&](VH fragment, VH method) {
-                        ScreenManager::CaptureScreen(this->result, 0);
-                        this->result = BaseHelper::ImageFinder::find(this->result, fragment, (int64_t)method);
-                }, { {1, (int64_t)1} }
-        );
+		[&](VH picture, VH fragment, VH method) {
+			this->result = BaseHelper::ImageFinder::find(picture, fragment, method);
+		}, { {2, (int64_t)1} }
+		);
+	AddFunction(u"FindOnScreen", u"НайтиНаЭкране",
+		[&](VH fragment, VH method) {
+			ScreenManager::CaptureScreen(this->result, 0);
+			this->result = BaseHelper::ImageFinder::find(this->result, fragment, method);
+		}, { {1, (int64_t)1} }
+		);
 #endif//_WINDOWS
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }

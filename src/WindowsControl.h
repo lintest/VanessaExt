@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "BaseHelper.h"
+#include "VideoPainter.h"
 #include "WebSocket.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10,6 +11,7 @@
 class WindowsControl : public BaseHelper
 {
 private:
+	VideoPainter painter;
 	WebSocketBase* webSocket = nullptr;
 	bool CloseWebSocket() { if (webSocket) delete webSocket; webSocket = nullptr; return true; }
 private:

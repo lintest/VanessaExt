@@ -32,6 +32,8 @@ add_library(${TARGET} SHARED
 	src/SoundEffect.h 	
 	src/ScreenManager.cpp 
 	src/ScreenManager.h 
+	src/VideoPainter.cpp
+	src/VideoPainter.h
 	src/WebSocket.h
 	src/WebSocket.cpp
 	src/WindowsControl.cpp
