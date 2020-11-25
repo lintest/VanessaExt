@@ -139,6 +139,8 @@ if (WITH_BOOST)
 endif (WITH_BOOST)
 
  if (WITH_LIBGIT2)
+	MESSAGE(STATUS "WITH_LIBGIT2")
+	add_definitions(-DUSE_LIBGIT2)
 	target_include_directories(${TARGET} PRIVATE libgit2-1.0.1/include)
 	set(EMBED_SSH_PATH "${CMAKE_SOURCE_DIR}/libssh2-1.9.0" CACHE PATH "" FORCE)
 	add_subdirectory(./libgit2-1.0.1)
