@@ -200,6 +200,8 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"DrawEllipse", u"НарисоватьЭллипс",
 		[&](VH x, VH y, VH w, VH h) { painter.ellipse(x, y, w, h); }
 	);
+
+#ifdef USE_OPENCV
 	AddFunction(u"FindFragment", u"НайтиФрагмент",
 		[&](VH picture, VH fragment, VH method) {
 			this->result = BaseHelper::ImageFinder::find(picture, fragment, method);
@@ -211,7 +213,11 @@ WindowsControl::WindowsControl() {
 			this->result = BaseHelper::ImageFinder::find(this->result, fragment, method);
 		}, { {1, (int64_t)1} }
 		);
+#endif//USE_OPENCV
+
 #endif//_WINDOWS
+
+#ifdef USE_BOOST
 	AddFunction(u"WebSocket", u"ВебСокет",
 		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
 	);
@@ -224,10 +230,12 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"CloseWebSocket", u"ЗакрытьВебСокет",
 		[&](VH msec) { this->CloseWebSocket(); }
 	);
+#endif//USE_BOOST	
 }
 
 WindowsControl::~WindowsControl()
 {
+	CloseWebSocket();
 #ifdef _WINDOWS
 	ClickEffect::Unhook();
 #endif//_WINDOWS

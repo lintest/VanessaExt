@@ -1,6 +1,8 @@
 #ifndef __CLIPMNGR_H__
 #define __CLIPMNGR_H__
 
+#ifdef USE_LIBGIT2
+
 #include "stdafx.h"
 #include "AddInNative.h"
 #include <git2.h> 
@@ -74,5 +76,7 @@ private:
 	std::string head();
 	std::string close();
 };
+
+#endif //USE_LIBGIT2
 
 #endif //__CLIPMNGR_H__

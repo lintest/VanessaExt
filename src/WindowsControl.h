@@ -15,8 +15,12 @@ private:
 	VideoPainter painter;
 #endif //_WINDOWS	
 private:
+#ifdef USE_BOOST
 	WebSocketBase* webSocket = nullptr;
 	bool CloseWebSocket() { if (webSocket) delete webSocket; webSocket = nullptr; return true; }
+#else//USE_BOOST
+	bool CloseWebSocket() { return true; }
+#endif//USE_BOOST
 private:
 	static std::vector<std::u16string> names;
 	WindowsControl();

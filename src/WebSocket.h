@@ -3,6 +3,8 @@
 #ifndef __WEBSOCKET_H__
 #define __WEBSOCKET_H__
 
+#ifdef USE_BOOST
+
 #include <string>
 
 class WebSocketBase {
@@ -14,5 +16,7 @@ public:
 };
 
 bool doWebSocket(const std::string& url, std::string& msg, std::string& res);
+
+#endif//USE_BOOST
 
 #endif //__WEBSOCKET_H__

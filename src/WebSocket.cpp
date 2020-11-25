@@ -1,5 +1,7 @@
 ﻿#include "WebSocket.h"
 
+#ifdef USE_BOOST
+
 #ifdef _WINDOWS
 #define _WIN32_WINNT 0x0601
 #endif //_WINDOWS
@@ -151,3 +153,5 @@ bool doWebSocket(const std::string& url, std::string& msg, std::string& res)
 	WebSocket ws;
 	return ws.open(url, res) && ws.send(msg, res);
 }
+
+#endif//USE_BOOST
