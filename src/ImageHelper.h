@@ -8,6 +8,18 @@
 
 #include <gdiplus.h>
 
+class GgiPlusToken {
+private:
+	static GgiPlusToken instance;
+	ULONG_PTR h = NULL;
+public:
+	static bool Init();
+	GgiPlusToken() noexcept {}
+	~GgiPlusToken() { if (h) Gdiplus::GdiplusShutdown(h); }
+	ULONG_PTR* operator &() noexcept { return &h; }
+	BOOL operator!() noexcept { return !h; }
+};
+
 class BaseHelper::ImageHelper {
 public:
 	ImageHelper(VH variant);

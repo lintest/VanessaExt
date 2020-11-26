@@ -3,46 +3,78 @@
 
 #ifdef _WINDOWS
 #include "windows.h"
+#include "Gdiplus.h"
+#include "ImageHelper.h"
 
 class PainterBase {
 protected:
 	int x = 0, y = 0, w = 0, h = 0;
-	COLORREF m_color = RGB(200, 50, 50);
-	int m_delay = 2000;
-	int m_trans = 127;
-	int m_thick = 2;
+	COLORREF color = RGB(200, 50, 50);
+	int delay = 5000;
+	int trans = 255;
+	int thick = 4;
 public:
 	PainterBase() {}
+
 	PainterBase(int color, int delay, int thick, int trans)
-		: m_color((COLORREF)color), m_delay(delay), m_thick(thick), m_trans(trans) {}
+		: color((COLORREF)color), delay(delay), trans(trans), thick(thick) {}
+
+	PainterBase(const PainterBase& p, int x, int y, int w, int h)
+		: color(p.color), delay(p.delay), trans(p.trans), thick(p.thick), x(x), y(y), w(w), h(h) {}
+
 	PainterBase(const PainterBase& p)
-		: m_color(p.m_color)
-		, m_delay(p.m_delay)
-		, m_trans(p.m_trans)
-		, m_thick(p.m_thick)
-	{}
-	void init(int color, int delay, int thick, int trans) {
-		m_color = color;
-		m_delay = delay;
-		m_thick = thick;
-		m_trans = trans;
-	}
+		: color(p.color), delay(p.delay), trans(p.trans), thick(p.thick) {}
+
+	virtual ~PainterBase() {}
+
 	virtual LRESULT paint(HWND hWnd) = 0;
 	void create();
+	void start();
 };
 
 class VideoPainter
 	: public PainterBase {
 public:
 	static PainterBase* painter(HWND hWnd);
-	static PainterBase* painter(LPVOID lpParam);
 	virtual LRESULT paint(HWND hWnd) override { return 0; };
 public:
-	VideoPainter() {}
-	VideoPainter(int color, int delay, int thick, int trans)
-		: PainterBase(color,  delay, thick, trans) {}
-	void ellipse(int left, int top, int width, int height);
-	void rect(int left, int top, int width, int height);
+	void init(int color, int delay, int thick, int trans) {
+		color = color;
+		delay = delay;
+		thick = thick;
+		trans = trans;
+	}
+};
+
+class RecanglePainter
+	: public PainterBase {
+public:
+	RecanglePainter(const VideoPainter& p, int x, int y, int w, int h)
+		: PainterBase(p, x, y, w, h) {
+		start();
+	}
+	virtual LRESULT paint(HWND hWnd) override;
+};
+
+class EllipsePainter
+	: public PainterBase {
+public:
+	EllipsePainter(const VideoPainter& p, int x, int y, int w, int h)
+		: PainterBase(p, x, y, w, h) 
+	{
+		GgiPlusToken::Init();
+		start();
+	}
+	virtual LRESULT paint(HWND hWnd) override;
+};
+
+class PolyBezierPainter
+	: public PainterBase {
+private:
+	std::vector<Gdiplus::Point> points;
+public:
+	PolyBezierPainter(const VideoPainter& p, const std::string& points);
+	virtual LRESULT paint(HWND hWnd) override;
 };
 
 #endif //_WINDOWS

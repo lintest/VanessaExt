@@ -3,69 +3,23 @@
 #include "stdafx.h"
 #include "windows.h"
 #include "VideoPainter.h"
-
-class RectPainter
-	: public PainterBase {
-public:
-	RectPainter(const VideoPainter &p, int x, int y, int w, int h)
-		: PainterBase(p) 
-	{
-		this->x = x;
-		this->y = y;
-		this->w = w;
-		this->h = h;
-	}
-	virtual LRESULT paint(HWND hWnd) override;
-};
-
-class EllipsePainter
-	: public PainterBase {
-public:
-	EllipsePainter(const VideoPainter& p, int x, int y, int w, int h)
-		: PainterBase(p)
-	{
-		this->x = x;
-		this->y = y;
-		this->w = w;
-		this->h = h;
-	}
-	virtual LRESULT paint(HWND hWnd) override;
-};
+#include "ImageHelper.h"
 
 #define ID_CLICK_TIMER 1
+
+using namespace Gdiplus;
 
 PainterBase* VideoPainter::painter(HWND hWnd)
 {
 	return (PainterBase*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 }
 
-PainterBase* VideoPainter::painter(LPVOID lpParam)
+LRESULT RecanglePainter::paint(HWND hWnd)
 {
-	return (PainterBase*)lpParam;
-}
-
-LRESULT EllipsePainter::paint(HWND hWnd)
-{
-	int z = m_thick / 2;
+	int z = thick / 2;
 	PAINTSTRUCT ps;
 	HDC hdc = BeginPaint(hWnd, &ps);
-	HPEN pen = CreatePen(PS_SOLID, m_thick, m_color);
-	HPEN hOldPen = (HPEN)SelectObject(hdc, pen);
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(BLACK_BRUSH));
-	Ellipse(hdc, z, z, w - 2 * z, h - 2 * z);
-	SelectObject(hdc, hOldBrush);
-	SelectObject(hdc, hOldPen);
-	EndPaint(hWnd, &ps);
-	DeleteObject(pen);
-	return 0L;
-}
-
-LRESULT RectPainter::paint(HWND hWnd)
-{
-	int z = m_thick / 2;
-	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(hWnd, &ps);
-	HPEN pen = CreatePen(PS_SOLID, m_thick, m_color);
+	HPEN pen = CreatePen(PS_SOLID, thick, color);
 	HPEN hOldPen = (HPEN)SelectObject(hdc, pen);
 	HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(BLACK_BRUSH));
 	POINT points[4] = {
@@ -79,6 +33,74 @@ LRESULT RectPainter::paint(HWND hWnd)
 	SelectObject(hdc, hOldPen);
 	EndPaint(hWnd, &ps);
 	DeleteObject(pen);
+	return 0L;
+}
+
+LRESULT EllipsePainter::paint(HWND hWnd)
+{
+	int z = thick / 2;
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint(hWnd, &ps);
+	Gdiplus::Color color;
+	color.SetFromCOLORREF(this->color);
+	Pen pen(color, thick);
+	Gdiplus::Graphics graphics(hdc);
+	graphics.Clear(Gdiplus::Color::Transparent);
+	graphics.SetCompositingQuality(CompositingQualityHighQuality);
+//	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
+	graphics.DrawEllipse(&pen, z, z, w - 2 * z, h - 2 * z);
+	EndPaint(hWnd, &ps);
+	return 0L;
+}
+
+PolyBezierPainter::PolyBezierPainter(const VideoPainter& p, const std::string& text)
+	: PainterBase(p)
+{
+	try {
+		auto list = JSON::parse(text);
+		for (size_t i = 0; i < list.size(); i++) {
+			auto item = list[i];
+			points.push_back({ item["x"], item["y"] });
+		}
+		if (list.size() == 0) throw 0;
+		auto p = points[0];
+		int left = p.X, top = p.Y, right = p.X, bottom = p.Y;
+		for (auto it = points.begin() + 1; it != points.end(); ++it) {
+			if (left > it->X) left = it->X;
+			if (top > it->Y) top = it->Y;
+			if (right < it->X) right = it->X;
+			if (bottom < it->Y) bottom = it->Y;
+		}
+		x = left - thick;
+		y = top - thick;
+		w = right - left + thick * 2;
+		h = bottom - top + thick * 2;
+		for (auto it = points.begin(); it != points.end(); ++it) {
+			it->X -= x;
+			it->Y -= y;
+		}
+		GgiPlusToken::Init();
+	}
+	catch (...) {
+		throw std::u16string(u"JSON parsing error");
+	}
+	start();
+}
+
+LRESULT PolyBezierPainter::paint(HWND hWnd)
+{
+	int z = thick / 2;
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint(hWnd, &ps);
+	Gdiplus::Color color;
+	color.SetFromCOLORREF(this->color);
+	Pen pen(color, thick);
+	Graphics graphics(hdc);
+	graphics.Clear(Gdiplus::Color::Transparent);
+	graphics.SetCompositingQuality(CompositingQualityHighQuality);
+//	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
+	graphics.DrawBeziers(&pen, points.data(), (INT)points.size());
+	EndPaint(hWnd, &ps);
 	return 0L;
 }
 
@@ -130,15 +152,15 @@ void PainterBase::create()
 	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, 0);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
-	SetTimer(hWnd, ID_CLICK_TIMER, m_delay, NULL);
-	SetLayeredWindowAttributes(hWnd, 0, m_trans, LWA_COLORKEY | LWA_ALPHA);
+	SetTimer(hWnd, ID_CLICK_TIMER, delay, NULL);
+	SetLayeredWindowAttributes(hWnd, 0, trans, LWA_COLORKEY | LWA_ALPHA);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
 }
 
 static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 {
-	auto painter = VideoPainter::painter(lpParam);
+	auto painter = (PainterBase*)lpParam;
 	painter->create();
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0)) {
@@ -149,16 +171,9 @@ static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 	return 0;
 }
 
-void VideoPainter::ellipse(int left, int top, int width, int height)
+void PainterBase::start()
 {
-	auto painter = new EllipsePainter(*this, (int)left, (int)top, (int)width, (int)height);
-	CreateThread(0, NULL, PainterThreadProc, (LPVOID)painter, NULL, NULL);
-}
-
-void VideoPainter::rect(int left, int top, int width, int height)
-{
-	auto painter = new RectPainter(*this, (int)left, (int)top, (int)width, (int)height);
-	CreateThread(0, NULL, PainterThreadProc, (LPVOID)painter, NULL, NULL);
+	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
 }
 
 #endif //_WINDOWS

@@ -4,26 +4,14 @@
 
 #pragma comment(lib, "gdiplus.lib")
 
-class GgiPlusToken {
-private:
-	ULONG_PTR h = NULL;
-public:
-	static bool Init();
-	GgiPlusToken() noexcept {}
-	~GgiPlusToken() { if (h) Gdiplus::GdiplusShutdown(h); }
-	ULONG_PTR* operator &() noexcept { return &h; }
-	BOOL operator!() noexcept { return !h; }
-};
-
-static GgiPlusToken gdiplusToken;
+GgiPlusToken GgiPlusToken::instance;
 
 bool GgiPlusToken::Init()
 {
 	Gdiplus::Status status = Gdiplus::Ok;
-	if (!gdiplusToken) // initialization of gdi+
-	{
+	if (!instance) {
 		const Gdiplus::GdiplusStartupInput input;
-		status = Gdiplus::GdiplusStartup(&gdiplusToken, &input, NULL);
+		status = Gdiplus::GdiplusStartup(&instance, &input, NULL);
 		if (status != Gdiplus::Ok) return false;
 	}
 	return true;
@@ -35,8 +23,9 @@ static IStream* CreateMemoryStream(const BYTE* pInit, UINT cbInit)
 {
 	static SHCreateMemStreamType SHCreateMemStreamFunc = nullptr;
 	if (!SHCreateMemStreamFunc) {
-		HMODULE lib = LoadLibrary(L"shlwapi.dll");
-		SHCreateMemStreamFunc = reinterpret_cast<SHCreateMemStreamType>(GetProcAddress(lib, "SHCreateMemStream"));
+		if (auto lib = LoadLibrary(L"shlwapi.dll")) {
+			SHCreateMemStreamFunc = reinterpret_cast<SHCreateMemStreamType>(GetProcAddress(lib, "SHCreateMemStream"));
+		}
 	}
 	if (SHCreateMemStreamFunc) return SHCreateMemStreamFunc(pInit, cbInit);
 	return nullptr;

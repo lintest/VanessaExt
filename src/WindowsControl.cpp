@@ -188,17 +188,17 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"PostMessage", u"ОтправитьСообщение",
 		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
 	);
-	AddProcedure(u"StartDrawing", u"НачатьРисование",
-		[&](VH x, VH y, VH w, VH h) { VideoPainter().rect(x, y, w, h); }
-	);
 	AddProcedure(u"SetupDrawing", u"НастроитьРисование",
 		[&](VH color, VH delay, VH thick, VH trans) { painter.init(color, delay, thick, trans); }
 	);
 	AddProcedure(u"DrawRectangle", u"НарисоватьПрямоугольник",
-		[&](VH x, VH y, VH w, VH h) { painter.rect(x, y, w, h); }
+		[&](VH x, VH y, VH w, VH h) { new RecanglePainter(painter, x, y, w, h); }
 	);
 	AddProcedure(u"DrawEllipse", u"НарисоватьЭллипс",
-		[&](VH x, VH y, VH w, VH h) { painter.ellipse(x, y, w, h); }
+		[&](VH x, VH y, VH w, VH h) { new EllipsePainter(painter, x, y, w, h); }
+	);
+	AddProcedure(u"DrawEllipse", u"НарисоватьКривую",
+		[&](VH pointers) { new PolyBezierPainter(painter, pointers); }
 	);
 
 #ifdef USE_OPENCV
