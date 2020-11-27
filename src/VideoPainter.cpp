@@ -1,56 +1,35 @@
-#ifdef _WINDOWS
+﻿#ifdef _WINDOWS
 
 #include "stdafx.h"
 #include "windows.h"
 #include "VideoPainter.h"
 #include "ImageHelper.h"
 
-#define ID_CLICK_TIMER 1
+#define ID_PAINTER_TIMER 1
 
 using namespace Gdiplus;
 
-PainterBase* VideoPainter::painter(HWND hWnd)
-{
-	return (PainterBase*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-}
-
-LRESULT RecanglePainter::paint(HWND hWnd)
+void RecanglePainter::paint(Gdiplus::Graphics& graphics)
 {
 	int z = thick / 2;
-	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(hWnd, &ps);
-	HPEN pen = CreatePen(PS_SOLID, thick, color);
-	HPEN hOldPen = (HPEN)SelectObject(hdc, pen);
-	HBRUSH hOldBrush = (HBRUSH)SelectObject(hdc, GetStockObject(BLACK_BRUSH));
-	POINT points[4] = {
+	Gdiplus::Color color;
+	color.SetFromCOLORREF(this->color);
+	Pen pen(color, (REAL)thick);
+	Point points[4] = {
 		{z, z},
 		{w - 2 * z, z},
 		{w - 2 * z, h - 2 * z},
 		{z, h - 2 * z},
 	};
-	Polygon(hdc, points, 4);
-	SelectObject(hdc, hOldBrush);
-	SelectObject(hdc, hOldPen);
-	EndPaint(hWnd, &ps);
-	DeleteObject(pen);
-	return 0L;
+	graphics.DrawPolygon(&pen, points, 4);
 }
 
-LRESULT EllipsePainter::paint(HWND hWnd)
+void EllipsePainter::paint(Gdiplus::Graphics& graphics)
 {
-	int z = thick / 2;
-	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(hWnd, &ps);
 	Gdiplus::Color color;
 	color.SetFromCOLORREF(this->color);
-	Pen pen(color, thick);
-	Gdiplus::Graphics graphics(hdc);
-	graphics.Clear(Gdiplus::Color::Transparent);
-	graphics.SetCompositingQuality(CompositingQualityHighQuality);
-//	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
-	graphics.DrawEllipse(&pen, z, z, w - 2 * z, h - 2 * z);
-	EndPaint(hWnd, &ps);
-	return 0L;
+	Pen pen(color, (REAL)thick);
+	graphics.DrawEllipse(&pen, thick, thick, w - 2 * thick, h - 2 * thick);
 }
 
 PolyBezierPainter::PolyBezierPainter(const VideoPainter& p, const std::string& text)
@@ -79,29 +58,69 @@ PolyBezierPainter::PolyBezierPainter(const VideoPainter& p, const std::string& t
 			it->X -= x;
 			it->Y -= y;
 		}
-		GgiPlusToken::Init();
+		createThread();
 	}
 	catch (...) {
 		throw std::u16string(u"JSON parsing error");
 	}
-	start();
 }
 
-LRESULT PolyBezierPainter::paint(HWND hWnd)
+void PolyBezierPainter::paint(Gdiplus::Graphics& graphics)
 {
 	int z = thick / 2;
-	PAINTSTRUCT ps;
-	HDC hdc = BeginPaint(hWnd, &ps);
 	Gdiplus::Color color;
 	color.SetFromCOLORREF(this->color);
-	Pen pen(color, thick);
-	Graphics graphics(hdc);
+	Pen pen(color, (REAL)thick);
+	graphics.DrawBeziers(&pen, points.data(), (INT)points.size());
+}
+
+LRESULT PainterBase::create(HWND hWnd)
+{
+	GgiPlusToken::Init();
+	Bitmap bitmap(w, h, PixelFormat32bppARGB);
+	Gdiplus::Graphics graphics(&bitmap);
 	graphics.Clear(Gdiplus::Color::Transparent);
 	graphics.SetCompositingQuality(CompositingQualityHighQuality);
-//	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
-	graphics.DrawBeziers(&pen, points.data(), (INT)points.size());
-	EndPaint(hWnd, &ps);
-	return 0L;
+	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
+	paint(graphics);
+
+	//Инициализируем составляющие временного DC, в который будет отрисована маска
+	auto hDC = GetDC(hWnd);
+	auto hCDC = CreateCompatibleDC(hDC);
+
+	BITMAPINFO bi = {};
+	bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bi.bmiHeader.biBitCount = 32;
+	bi.bmiHeader.biCompression = BI_RGB;
+	bi.bmiHeader.biWidth = w;
+	bi.bmiHeader.biHeight = h;
+	bi.bmiHeader.biPlanes = 1;
+	auto hBitmap = CreateDIBSection(hDC, &bi, DIB_RGB_COLORS, NULL, NULL, 0);
+	if (!hBitmap) return -1;
+
+	SelectObject(hCDC, hBitmap);
+	//Создаем объект Graphics на основе контекста окна
+	Graphics window(hCDC);
+	//Рисуем маску на окне
+	window.DrawImage(&bitmap, 0, 0, w, h);
+
+	//В параметрах ULW определяем, что в качестве значения полупрозрачности будет использоваться
+	//альфа-компонент пикселей исходного изображения
+	BLENDFUNCTION bf = {};
+	bf.AlphaFormat = AC_SRC_ALPHA;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.SourceConstantAlpha = 255;
+
+	//Применяем отрисованную маску с альфой к окну
+	SIZE size = { w, h };
+	POINT ptDst = { x, y };
+	POINT ptSrc = { 0, 0 };
+	UpdateLayeredWindow(hWnd, hDC, &ptDst, &size, hCDC, &ptSrc, 0, &bf, ULW_ALPHA);
+
+	DeleteObject(hBitmap);
+	DeleteDC(hCDC);
+	ReleaseDC(hWnd, hDC);
+	return 0;
 }
 
 static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -115,14 +134,14 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		SetWindowLong(hWnd, GWL_STYLE, lpcp->style);
 		return true;
 	}
+	case WM_CREATE:
+		return ((VideoPainter*)((CREATESTRUCT*)lParam)->lpCreateParams)->create(hWnd);
 	case WM_TIMER:
-		if (wParam == ID_CLICK_TIMER) {
-			KillTimer(hWnd, ID_CLICK_TIMER);
+		if (wParam == ID_PAINTER_TIMER) {
+			KillTimer(hWnd, ID_PAINTER_TIMER);
 			SendMessage(hWnd, WM_DESTROY, 0, 0);
 		}
 		return 0;
-	case WM_PAINT:
-		return VideoPainter::painter(hWnd)->paint(hWnd);
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
@@ -131,7 +150,7 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	}
 }
 
-void PainterBase::create()
+void PainterBase::createWindow()
 {
 	LPCWSTR name = L"VanessaVideoPainter";
 	WNDCLASS wndClass;
@@ -148,12 +167,9 @@ void PainterBase::create()
 	wndClass.lpszClassName = name;
 	RegisterClass(&wndClass);
 
-	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT;
-	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, 0);
-	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
-
-	SetTimer(hWnd, ID_CLICK_TIMER, delay, NULL);
-	SetLayeredWindowAttributes(hWnd, 0, trans, LWA_COLORKEY | LWA_ALPHA);
+	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
+	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
+	SetTimer(hWnd, ID_PAINTER_TIMER, delay, NULL);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
 }
@@ -161,7 +177,7 @@ void PainterBase::create()
 static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 {
 	auto painter = (PainterBase*)lpParam;
-	painter->create();
+	painter->createWindow();
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
@@ -171,7 +187,7 @@ static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 	return 0;
 }
 
-void PainterBase::start()
+void PainterBase::createThread()
 {
 	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
 }

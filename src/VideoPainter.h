@@ -26,17 +26,15 @@ public:
 		: color(p.color), delay(p.delay), trans(p.trans), thick(p.thick) {}
 
 	virtual ~PainterBase() {}
+	LRESULT create(HWND hWnd);
+	void createThread();
+	void createWindow();
 
-	virtual LRESULT paint(HWND hWnd) = 0;
-	void create();
-	void start();
+	virtual void paint(Gdiplus::Graphics& graphics) { };
 };
 
 class VideoPainter
 	: public PainterBase {
-public:
-	static PainterBase* painter(HWND hWnd);
-	virtual LRESULT paint(HWND hWnd) override { return 0; };
 public:
 	void init(int color, int delay, int thick, int trans) {
 		color = color;
@@ -50,10 +48,11 @@ class RecanglePainter
 	: public PainterBase {
 public:
 	RecanglePainter(const VideoPainter& p, int x, int y, int w, int h)
-		: PainterBase(p, x, y, w, h) {
-		start();
+		: PainterBase(p, x, y, w, h) 
+	{
+		createThread();
 	}
-	virtual LRESULT paint(HWND hWnd) override;
+	virtual void paint(Gdiplus::Graphics& graphics) override;
 };
 
 class EllipsePainter
@@ -62,10 +61,13 @@ public:
 	EllipsePainter(const VideoPainter& p, int x, int y, int w, int h)
 		: PainterBase(p, x, y, w, h) 
 	{
-		GgiPlusToken::Init();
-		start();
+		x -= thick;
+		y -= thick;
+		w += 2 * thick;
+		h += 2 * thick;
+		createThread();
 	}
-	virtual LRESULT paint(HWND hWnd) override;
+	virtual void paint(Gdiplus::Graphics& graphics) override;
 };
 
 class PolyBezierPainter
@@ -74,7 +76,7 @@ private:
 	std::vector<Gdiplus::Point> points;
 public:
 	PolyBezierPainter(const VideoPainter& p, const std::string& points);
-	virtual LRESULT paint(HWND hWnd) override;
+	virtual void paint(Gdiplus::Graphics& graphics) override;
 };
 
 #endif //_WINDOWS
