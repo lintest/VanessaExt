@@ -1,9 +1,6 @@
 ﻿#ifdef _WINDOWS
 
-#include "stdafx.h"
-#include "windows.h"
 #include "VideoPainter.h"
-#include "ImageHelper.h"
 
 #define ID_PAINTER_TIMER 1
 
@@ -50,10 +47,10 @@ PolyBezierPainter::PolyBezierPainter(const VideoPainter& p, const std::string& t
 			if (right < it->X) right = it->X;
 			if (bottom < it->Y) bottom = it->Y;
 		}
-		x = left - thick;
-		y = top - thick;
-		w = right - left + thick * 2;
-		h = bottom - top + thick * 2;
+		x = left - 2 * thick;
+		y = top - 2 * thick;
+		w = right - left + 4 * thick;
+		h = bottom - top + 4 * thick;
 		for (auto it = points.begin(); it != points.end(); ++it) {
 			it->X -= x;
 			it->Y -= y;
@@ -67,11 +64,26 @@ PolyBezierPainter::PolyBezierPainter(const VideoPainter& p, const std::string& t
 
 void PolyBezierPainter::paint(Gdiplus::Graphics& graphics)
 {
-	int z = thick / 2;
+	REAL z = (REAL)thick;
 	Gdiplus::Color color;
 	color.SetFromCOLORREF(this->color);
-	Pen pen(color, (REAL)thick);
+	Gdiplus::Pen pen(color, z);
+	AdjustableArrowCap arrow(z * 2, z);
+	pen.SetStartCap(LineCapRoundAnchor);
+	pen.SetCustomEndCap(&arrow);
 	graphics.DrawBeziers(&pen, points.data(), (INT)points.size());
+}
+
+void ArrowPainter::paint(Gdiplus::Graphics& graphics)
+{
+	REAL z = (REAL)thick;
+	Gdiplus::Color color;
+	color.SetFromCOLORREF(this->color);
+	Gdiplus::Pen pen(color, z);
+	AdjustableArrowCap arrow(z * 2, z);
+	pen.SetStartCap(LineCapRoundAnchor);
+	pen.SetCustomEndCap(&arrow);
+	graphics.DrawLine(&pen, x1 - x, y1 - y, x2 - x, y2 - y);
 }
 
 LRESULT PainterBase::create(HWND hWnd)
@@ -132,7 +144,7 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		lpcp->style &= (~WS_CAPTION);
 		lpcp->style &= (~WS_BORDER);
 		SetWindowLong(hWnd, GWL_STYLE, lpcp->style);
-		return true;
+		return TRUE;
 	}
 	case WM_CREATE:
 		return ((VideoPainter*)((CREATESTRUCT*)lParam)->lpCreateParams)->create(hWnd);
@@ -153,17 +165,11 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 void PainterBase::createWindow()
 {
 	LPCWSTR name = L"VanessaVideoPainter";
-	WNDCLASS wndClass;
-	ZeroMemory(&wndClass, sizeof(wndClass));
-	wndClass.style = CS_HREDRAW | CS_VREDRAW;
+	WNDCLASS wndClass = {};
 	wndClass.lpfnWndProc = PainterWndProc;
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
 	wndClass.hInstance = hModule;
-	wndClass.hIcon = NULL;
-	wndClass.hCursor = NULL;
+	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wndClass.lpszMenuName = NULL;
 	wndClass.lpszClassName = name;
 	RegisterClass(&wndClass);
 
