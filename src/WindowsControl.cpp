@@ -197,10 +197,15 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"DrawEllipse", u"НарисоватьЭллипс",
 		[&](VH x, VH y, VH w, VH h) { new EllipsePainter(painter, x, y, w, h); }
 	);
-	AddProcedure(u"DrawEllipse", u"НарисоватьКривую",
-		[&](VH pointers) { new PolyBezierPainter(painter, pointers); }
+	AddProcedure(u"DrawBezier", u"НарисоватьКривую",
+		[&](VH pointers) { new BezierPainter(painter, pointers); }
 	);
-
+	AddProcedure(u"DrawArrow", u"НарисоватьСтрелку",
+		[&](VH x1, VH y1, VH x2, VH y2) { new ArrowPainter(painter, x1, y1, x2, y2); }
+	);
+	AddProcedure(u"DrawShadow", u"НарисоватьТень",
+		[&](VH x1, VH y1, VH x2, VH y2, VH t) { new ShadowPainter(painter, x1, y1, x2, y2, t); }, { { 4, (int64_t)127 } }
+	);
 #ifdef USE_OPENCV
 	AddFunction(u"FindFragment", u"НайтиФрагмент",
 		[&](VH picture, VH fragment, VH method) {

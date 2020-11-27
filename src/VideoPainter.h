@@ -56,9 +56,10 @@ class ShadowPainter
 	: public PainterBase {
 private:
 	int X, Y, W, H;
+	int transparency;
 public:
-	ShadowPainter(const VideoPainter& p, int x, int y, int w, int h)
-		: PainterBase(p), X(x), Y(y), W(w), H(h)
+	ShadowPainter(const VideoPainter& p, int x, int y, int w, int h, int t)
+		: PainterBase(p), X(x), Y(y), W(w), H(h), transparency(t)
 	{
 		RECT rect;
 		GetWindowRect(GetDesktopWindow(), &rect);
@@ -88,12 +89,12 @@ public:
 	virtual void draw(Graphics& graphics) override;
 };
 
-class PolyBezierPainter
+class BezierPainter
 	: public PainterBase {
 private:
 	std::vector<Point> points;
 public:
-	PolyBezierPainter(const VideoPainter& p, const std::string& points);
+	BezierPainter(const VideoPainter& p, const std::string& points);
 	virtual void draw(Graphics& graphics) override;
 };
 

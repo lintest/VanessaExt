@@ -21,7 +21,7 @@ void ShadowPainter::draw(Graphics& graphics)
 {
 	Region screen(Rect(0, 0, w, h));
 	screen.Exclude(Rect(X, Y, W, H));
-	SolidBrush brush(Color(100, 0, 0, 0));
+	SolidBrush brush(Color(transparency, 0, 0, 0));
 	graphics.FillRegion(&brush, &screen);
 }
 
@@ -31,7 +31,7 @@ void EllipsePainter::draw(Graphics& graphics)
 	graphics.DrawEllipse(&pen, thick, thick, w - 2 * thick, h - 2 * thick);
 }
 
-PolyBezierPainter::PolyBezierPainter(const VideoPainter& p, const std::string& text)
+BezierPainter::BezierPainter(const VideoPainter& p, const std::string& text)
 	: PainterBase(p)
 {
 	try {
@@ -64,7 +64,7 @@ PolyBezierPainter::PolyBezierPainter(const VideoPainter& p, const std::string& t
 	}
 }
 
-void PolyBezierPainter::draw(Graphics& graphics)
+void BezierPainter::draw(Graphics& graphics)
 {
 	REAL z = (REAL)thick;
 	Pen pen(color, z);
