@@ -5,41 +5,39 @@
 
 #include "ImageHelper.h"
 
+using namespace Gdiplus;
+
 class PainterBase {
 protected:
+	Color color = { 200, 50, 50 };
 	int x = 0, y = 0, w = 0, h = 0;
-	COLORREF color = RGB(200, 50, 50);
 	int delay = 5000;
-	int trans = 255;
 	int thick = 4;
 public:
 	PainterBase() {}
 
-	PainterBase(int color, int delay, int thick, int trans)
-		: color((COLORREF)color), delay(delay), trans(trans), thick(thick) {}
-
 	PainterBase(const PainterBase& p, int x, int y, int w, int h)
-		: color(p.color), delay(p.delay), trans(p.trans), thick(p.thick), x(x), y(y), w(w), h(h) {}
+		: color(p.color), delay(p.delay), thick(p.thick), x(x), y(y), w(w), h(h) {}
 
 	PainterBase(const PainterBase& p)
-		: color(p.color), delay(p.delay), trans(p.trans), thick(p.thick) {}
+		: color(p.color), delay(p.delay), thick(p.thick) {}
 
 	virtual ~PainterBase() {}
-	LRESULT create(HWND hWnd);
-	void createThread();
-	void createWindow();
-
-	virtual void paint(Gdiplus::Graphics& graphics) { };
+	virtual LRESULT create(HWND hWnd);
+	virtual void createThread();
+	virtual void createWindow();
+	virtual void draw(Graphics& graphics) { };
 };
 
 class VideoPainter
 	: public PainterBase {
 public:
 	void init(int color, int delay, int thick, int trans) {
-		this->color = color;
+		Color c;
+		c.SetFromCOLORREF(color);
+		this->color = Color(trans & 0xFF, c.GetRed(), c.GetGreen(), c.GetBlue());
 		this->delay = delay;
 		this->thick = thick;
-		this->trans = trans;
 	}
 };
 
@@ -47,11 +45,32 @@ class RecanglePainter
 	: public PainterBase {
 public:
 	RecanglePainter(const VideoPainter& p, int x, int y, int w, int h)
-		: PainterBase(p, x, y, w, h) 
+		: PainterBase(p, x, y, w, h)
 	{
 		createThread();
 	}
-	virtual void paint(Gdiplus::Graphics& graphics) override;
+	virtual void draw(Graphics& graphics) override;
+};
+
+class ShadowPainter
+	: public PainterBase {
+private:
+	int X, Y, W, H;
+public:
+	ShadowPainter(const VideoPainter& p, int x, int y, int w, int h)
+		: PainterBase(p), X(x), Y(y), W(w), H(h)
+	{
+		RECT rect;
+		GetWindowRect(GetDesktopWindow(), &rect);
+		X -= rect.left; 
+		Y -= rect.top;
+		this->x = rect.left;
+		this->y = rect.top;
+		this->w = rect.left + rect.right;
+		this->h = rect.bottom - rect.top;
+		createThread();
+	}
+	virtual void draw(Graphics& graphics) override;
 };
 
 class EllipsePainter
@@ -66,16 +85,16 @@ public:
 		h += 2 * thick;
 		createThread();
 	}
-	virtual void paint(Gdiplus::Graphics& graphics) override;
+	virtual void draw(Graphics& graphics) override;
 };
 
 class PolyBezierPainter
 	: public PainterBase {
 private:
-	std::vector<Gdiplus::Point> points;
+	std::vector<Point> points;
 public:
 	PolyBezierPainter(const VideoPainter& p, const std::string& points);
-	virtual void paint(Gdiplus::Graphics& graphics) override;
+	virtual void draw(Graphics& graphics) override;
 };
 
 class ArrowPainter
@@ -92,7 +111,7 @@ public:
 		h = abs(y1 - y2) + 4 * thick;
 		createThread();
 	}
-	virtual void paint(Gdiplus::Graphics& graphics) override;
+	virtual void draw(Graphics& graphics) override;
 };
 
 #endif //_WINDOWS

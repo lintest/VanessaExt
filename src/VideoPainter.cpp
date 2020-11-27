@@ -4,13 +4,9 @@
 
 #define ID_PAINTER_TIMER 1
 
-using namespace Gdiplus;
-
-void RecanglePainter::paint(Gdiplus::Graphics& graphics)
+void RecanglePainter::draw(Graphics& graphics)
 {
 	int z = thick / 2;
-	Gdiplus::Color color;
-	color.SetFromCOLORREF(this->color);
 	Pen pen(color, (REAL)thick);
 	Point points[4] = {
 		{z, z},
@@ -21,10 +17,16 @@ void RecanglePainter::paint(Gdiplus::Graphics& graphics)
 	graphics.DrawPolygon(&pen, points, 4);
 }
 
-void EllipsePainter::paint(Gdiplus::Graphics& graphics)
+void ShadowPainter::draw(Graphics& graphics)
 {
-	Gdiplus::Color color;
-	color.SetFromCOLORREF(this->color);
+	Region screen(Rect(0, 0, w, h));
+	screen.Exclude(Rect(X, Y, W, H));
+	SolidBrush brush(Color(100, 0, 0, 0));
+	graphics.FillRegion(&brush, &screen);
+}
+
+void EllipsePainter::draw(Graphics& graphics)
+{
 	Pen pen(color, (REAL)thick);
 	graphics.DrawEllipse(&pen, thick, thick, w - 2 * thick, h - 2 * thick);
 }
@@ -62,25 +64,21 @@ PolyBezierPainter::PolyBezierPainter(const VideoPainter& p, const std::string& t
 	}
 }
 
-void PolyBezierPainter::paint(Gdiplus::Graphics& graphics)
+void PolyBezierPainter::draw(Graphics& graphics)
 {
 	REAL z = (REAL)thick;
-	Gdiplus::Color color;
-	color.SetFromCOLORREF(this->color);
-	Gdiplus::Pen pen(color, z);
-	AdjustableArrowCap arrow(z * 2, z);
+	Pen pen(color, z);
+	AdjustableArrowCap arrow(8, 4);
 	pen.SetStartCap(LineCapRoundAnchor);
 	pen.SetCustomEndCap(&arrow);
 	graphics.DrawBeziers(&pen, points.data(), (INT)points.size());
 }
 
-void ArrowPainter::paint(Gdiplus::Graphics& graphics)
+void ArrowPainter::draw(Graphics& graphics)
 {
 	REAL z = (REAL)thick;
-	Gdiplus::Color color;
-	color.SetFromCOLORREF(this->color);
-	Gdiplus::Pen pen(color, z);
-	AdjustableArrowCap arrow(z * 2, z);
+	Pen pen(color, z);
+	AdjustableArrowCap arrow(8, 4);
 	pen.SetStartCap(LineCapRoundAnchor);
 	pen.SetCustomEndCap(&arrow);
 	graphics.DrawLine(&pen, x1 - x, y1 - y, x2 - x, y2 - y);
@@ -90,11 +88,11 @@ LRESULT PainterBase::create(HWND hWnd)
 {
 	GgiPlusToken::Init();
 	Bitmap bitmap(w, h, PixelFormat32bppARGB);
-	Gdiplus::Graphics graphics(&bitmap);
-	graphics.Clear(Gdiplus::Color::Transparent);
+	Graphics graphics(&bitmap);
+	graphics.Clear(Color::Transparent);
 	graphics.SetCompositingQuality(CompositingQualityHighQuality);
 	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
-	paint(graphics);
+	draw(graphics);
 
 	//Инициализируем составляющие временного DC, в который будет отрисована маска
 	auto hDC = GetDC(hWnd);
@@ -175,6 +173,7 @@ void PainterBase::createWindow()
 
 	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
 	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	SetTimer(hWnd, ID_PAINTER_TIMER, delay, NULL);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
