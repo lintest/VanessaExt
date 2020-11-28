@@ -875,6 +875,457 @@
 						</UsualGroup>
 					</ChildItems>
 				</Page>
+				<Page name="СтраницаПоискКартинки" id="610">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Поиск картинки</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница поиск картинки</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаПоискКартинкиРасширеннаяПодсказка" id="611"/>
+					<ChildItems>
+						<InputField name="ПапкаКартинок" id="633">
+							<DataPath>ПапкаКартинок</DataPath>
+							<AutoMaxWidth>false</AutoMaxWidth>
+							<ChoiceButton>true</ChoiceButton>
+							<ContextMenu name="ПапкаКартинокКонтекстноеМеню" id="634"/>
+							<ExtendedTooltip name="ПапкаКартинокРасширеннаяПодсказка" id="635"/>
+							<Events>
+								<Event name="StartChoice">ПапкаКартинокНачалоВыбора</Event>
+							</Events>
+						</InputField>
+						<UsualGroup name="ГруппаКартинки" id="612">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа картинки</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа картинки</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаКартинкиРасширеннаяПодсказка" id="613"/>
+							<ChildItems>
+								<Table name="ТаблицаКартинок" id="614">
+									<Representation>List</Representation>
+									<CommandBarLocation>None</CommandBarLocation>
+									<ReadOnly>true</ReadOnly>
+									<AutoInsertNewRow>true</AutoInsertNewRow>
+									<EnableStartDrag>true</EnableStartDrag>
+									<EnableDrag>true</EnableDrag>
+									<DataPath>ТаблицаКартинок</DataPath>
+									<RowFilter xsi:nil="true"/>
+									<ContextMenu name="ТаблицаКартинокКонтекстноеМеню" id="615"/>
+									<AutoCommandBar name="ТаблицаКартинокКоманднаяПанель" id="616"/>
+									<ExtendedTooltip name="ТаблицаКартинокРасширеннаяПодсказка" id="617"/>
+									<SearchStringAddition name="ТаблицаКартинокСтрокаПоиска" id="618">
+										<AdditionSource>
+											<Item>ТаблицаКартинок</Item>
+											<Type>SearchStringRepresentation</Type>
+										</AdditionSource>
+										<ContextMenu name="ТаблицаКартинокСтрокаПоискаКонтекстноеМеню" id="619"/>
+										<ExtendedTooltip name="ТаблицаКартинокСтрокаПоискаРасширеннаяПодсказка" id="620"/>
+									</SearchStringAddition>
+									<ViewStatusAddition name="ТаблицаКартинокСостояниеПросмотра" id="621">
+										<AdditionSource>
+											<Item>ТаблицаКартинок</Item>
+											<Type>ViewStatusRepresentation</Type>
+										</AdditionSource>
+										<ContextMenu name="ТаблицаКартинокСостояниеПросмотраКонтекстноеМеню" id="622"/>
+										<ExtendedTooltip name="ТаблицаКартинокСостояниеПросмотраРасширеннаяПодсказка" id="623"/>
+									</ViewStatusAddition>
+									<SearchControlAddition name="ТаблицаКартинокУправлениеПоиском" id="624">
+										<AdditionSource>
+											<Item>ТаблицаКартинок</Item>
+											<Type>SearchControl</Type>
+										</AdditionSource>
+										<ContextMenu name="ТаблицаКартинокУправлениеПоискомКонтекстноеМеню" id="625"/>
+										<ExtendedTooltip name="ТаблицаКартинокУправлениеПоискомРасширеннаяПодсказка" id="626"/>
+									</SearchControlAddition>
+									<Events>
+										<Event name="OnActivateRow">ТаблицаКартинокПриАктивизацииСтроки</Event>
+									</Events>
+									<ChildItems>
+										<InputField name="ТаблицаКартинокИмя" id="636">
+											<DataPath>ТаблицаКартинок.Имя</DataPath>
+											<EditMode>EnterOnInput</EditMode>
+											<ContextMenu name="ТаблицаКартинокИмяКонтекстноеМеню" id="637"/>
+											<ExtendedTooltip name="ТаблицаКартинокИмяРасширеннаяПодсказка" id="638"/>
+										</InputField>
+									</ChildItems>
+								</Table>
+								<PictureField name="ФрагментКартинки" id="630">
+									<DataPath>АдресФрагментаКартинки</DataPath>
+									<TitleLocation>None</TitleLocation>
+									<ContextMenu name="ФрагментКартинкиКонтекстноеМеню" id="631"/>
+									<ExtendedTooltip name="ФрагментКартинкиРасширеннаяПодсказка" id="632"/>
+								</PictureField>
+							</ChildItems>
+						</UsualGroup>
+					</ChildItems>
+				</Page>
+				<Page name="СтраницаВизуализация" id="639">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Визуализация</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница визуализация</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаВизуализацияРасширеннаяПодсказка" id="640"/>
+					<ChildItems>
+						<UsualGroup name="ГруппаВизуализация" id="652">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа визуализация</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа визуализация</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Group>Horizontal</Group>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаВизуализацияРасширеннаяПодсказка" id="653"/>
+							<ChildItems>
+								<UsualGroup name="ГруппаНастройкиФигур" id="650">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа настройки фигур</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Группа настройки фигур</v8:content>
+										</v8:item>
+									</ToolTip>
+									<Group>Vertical</Group>
+									<Representation>None</Representation>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаНастройкиФигурРасширеннаяПодсказка" id="651"/>
+									<ChildItems>
+										<UsualGroup name="ГруппаЦветФигуры" id="708">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа цвет фигуры</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа цвет фигуры</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>None</Representation>
+											<ShowTitle>false</ShowTitle>
+											<ExtendedTooltip name="ГруппаЦветФигурыРасширеннаяПодсказка" id="709"/>
+											<ChildItems>
+												<InputField name="ЦветФигуры" id="641">
+													<DataPath>ЦветФигуры</DataPath>
+													<ContextMenu name="ЦветФигурыКонтекстноеМеню" id="642"/>
+													<ExtendedTooltip name="ЦветФигурыРасширеннаяПодсказка" id="643"/>
+												</InputField>
+												<InputField name="Таймаут" id="705">
+													<DataPath>Таймаут</DataPath>
+													<ContextMenu name="ТаймаутКонтекстноеМеню" id="706"/>
+													<ExtendedTooltip name="ТаймаутРасширеннаяПодсказка" id="707"/>
+												</InputField>
+											</ChildItems>
+										</UsualGroup>
+										<TrackBarField name="Прозрачность" id="644">
+											<DataPath>Прозрачность</DataPath>
+											<TitleLocation>Left</TitleLocation>
+											<MaxValue>255</MaxValue>
+											<Step>64</Step>
+											<LargeStep>64</LargeStep>
+											<ContextMenu name="ПрозрачностьКонтекстноеМеню" id="645"/>
+											<ExtendedTooltip name="ПрозрачностьРасширеннаяПодсказка" id="646"/>
+										</TrackBarField>
+										<TrackBarField name="Толщина" id="647">
+											<DataPath>Толщина</DataPath>
+											<TitleLocation>Left</TitleLocation>
+											<MinValue>2</MinValue>
+											<MaxValue>30</MaxValue>
+											<Step>2</Step>
+											<ContextMenu name="ТолщинаКонтекстноеМеню" id="648"/>
+											<ExtendedTooltip name="ТолщинаРасширеннаяПодсказка" id="649"/>
+										</TrackBarField>
+										<CommandBar name="ГруппаФигуры" id="691">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа фигуры</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа фигуры</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ГруппаФигурыРасширеннаяПодсказка" id="692"/>
+											<ChildItems>
+												<ButtonGroup name="ПодгруппаФигуры" id="697">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Подгруппа фигуры</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Подгруппа фигуры</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ПодгруппаФигурыРасширеннаяПодсказка" id="698"/>
+													<ChildItems>
+														<Button name="ФигураПрямоугольник" id="693">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ФигураПрямоугольник</CommandName>
+															<ExtendedTooltip name="ФигураПрямоугольникРасширеннаяПодсказка" id="694"/>
+														</Button>
+														<Button name="ФигураЭллипс" id="695">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ФигураЭллипс</CommandName>
+															<Title>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>Эллипс</v8:content>
+																</v8:item>
+															</Title>
+															<ExtendedTooltip name="ФигураЭллипсРасширеннаяПодсказка" id="696"/>
+														</Button>
+														<Button name="ФигураЗатенение" id="703">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ФигураЗатенение</CommandName>
+															<ExtendedTooltip name="ФигураЗатенениеРасширеннаяПодсказка" id="704"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
+										<UsualGroup name="ГруппаРазмерыФигур" id="673">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа размеры фигур</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа размеры фигур</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Group>Vertical</Group>
+											<Representation>None</Representation>
+											<ShowTitle>false</ShowTitle>
+											<ThroughAlign>DontUse</ThroughAlign>
+											<ExtendedTooltip name="ГруппаРазмерыФигурРасширеннаяПодсказка" id="674"/>
+											<ChildItems>
+												<UsualGroup name="ГруппаПозицияФигуры" id="675">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа позиция фигуры</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа позиция фигуры</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>None</Representation>
+													<ShowTitle>false</ShowTitle>
+													<ExtendedTooltip name="ГруппаПозицияФигурыРасширеннаяПодсказка" id="676"/>
+													<ChildItems>
+														<InputField name="ФигураX" id="679">
+															<DataPath>ФигураX</DataPath>
+															<ContextMenu name="ФигураXКонтекстноеМеню" id="680"/>
+															<ExtendedTooltip name="ФигураXРасширеннаяПодсказка" id="681"/>
+														</InputField>
+														<InputField name="ФигураY" id="682">
+															<DataPath>ФигураY</DataPath>
+															<ContextMenu name="ФигураYКонтекстноеМеню" id="683"/>
+															<ExtendedTooltip name="ФигураYРасширеннаяПодсказка" id="684"/>
+														</InputField>
+													</ChildItems>
+												</UsualGroup>
+												<UsualGroup name="ГруппаРазмерФигуры" id="677">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа размер фигуры</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа размер фигуры</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>None</Representation>
+													<ShowTitle>false</ShowTitle>
+													<ExtendedTooltip name="ГруппаРазмерФигурыРасширеннаяПодсказка" id="678"/>
+													<ChildItems>
+														<InputField name="ФигураW" id="685">
+															<DataPath>ФигураW</DataPath>
+															<ContextMenu name="ФигураWКонтекстноеМеню" id="686"/>
+															<ExtendedTooltip name="ФигураWРасширеннаяПодсказка" id="687"/>
+														</InputField>
+														<InputField name="ФигураH" id="688">
+															<DataPath>ФигураH</DataPath>
+															<ContextMenu name="ФигураHКонтекстноеМеню" id="689"/>
+															<ExtendedTooltip name="ФигураHРасширеннаяПодсказка" id="690"/>
+														</InputField>
+													</ChildItems>
+												</UsualGroup>
+											</ChildItems>
+										</UsualGroup>
+										<CommandBar name="ГруппаСтрелки" id="710">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа стрелки</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа стрелки</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ГруппаСтрелкиРасширеннаяПодсказка" id="711"/>
+											<ChildItems>
+												<ButtonGroup name="ГруппаКнопокСтрелки" id="716">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок стрелки</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок стрелки</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ГруппаКнопокСтрелкиРасширеннаяПодсказка" id="717"/>
+													<ChildItems>
+														<Button name="ФигураПрямаяСтрелка" id="712">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ФигураПрямаяСтрелка</CommandName>
+															<Title>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>Прямая стрелка</v8:content>
+																</v8:item>
+															</Title>
+															<ExtendedTooltip name="ФигураПрямаяСтрелкаРасширеннаяПодсказка" id="713"/>
+														</Button>
+														<Button name="ФигураКриваяСтрелка" id="714">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ФигураКриваяСтрелка</CommandName>
+															<ExtendedTooltip name="ФигураКриваяСтрелкаРасширеннаяПодсказка" id="715"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
+									</ChildItems>
+								</UsualGroup>
+								<Table name="ТочкиФигуры" id="654">
+									<Representation>List</Representation>
+									<Width>13</Width>
+									<AutoInsertNewRow>true</AutoInsertNewRow>
+									<EnableStartDrag>true</EnableStartDrag>
+									<EnableDrag>true</EnableDrag>
+									<DataPath>ТочкиФигуры</DataPath>
+									<RowFilter xsi:nil="true"/>
+									<ContextMenu name="ТочкиФигурыКонтекстноеМеню" id="655"/>
+									<AutoCommandBar name="ТочкиФигурыКоманднаяПанель" id="656">
+										<Autofill>false</Autofill>
+										<ChildItems>
+											<Button name="ТочкиФигурыФигураКривая" id="699">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.ФигураКриваяСтрелка</CommandName>
+												<ExtendedTooltip name="ТочкиФигурыФигураКриваяРасширеннаяПодсказка" id="700"/>
+											</Button>
+										</ChildItems>
+									</AutoCommandBar>
+									<ExtendedTooltip name="ТочкиФигурыРасширеннаяПодсказка" id="657"/>
+									<SearchStringAddition name="ТочкиФигурыСтрокаПоиска" id="658">
+										<AdditionSource>
+											<Item>ТочкиФигуры</Item>
+											<Type>SearchStringRepresentation</Type>
+										</AdditionSource>
+										<ContextMenu name="ТочкиФигурыСтрокаПоискаКонтекстноеМеню" id="659"/>
+										<ExtendedTooltip name="ТочкиФигурыСтрокаПоискаРасширеннаяПодсказка" id="660"/>
+									</SearchStringAddition>
+									<ViewStatusAddition name="ТочкиФигурыСостояниеПросмотра" id="661">
+										<AdditionSource>
+											<Item>ТочкиФигуры</Item>
+											<Type>ViewStatusRepresentation</Type>
+										</AdditionSource>
+										<ContextMenu name="ТочкиФигурыСостояниеПросмотраКонтекстноеМеню" id="662"/>
+										<ExtendedTooltip name="ТочкиФигурыСостояниеПросмотраРасширеннаяПодсказка" id="663"/>
+									</ViewStatusAddition>
+									<SearchControlAddition name="ТочкиФигурыУправлениеПоиском" id="664">
+										<AdditionSource>
+											<Item>ТочкиФигуры</Item>
+											<Type>SearchControl</Type>
+										</AdditionSource>
+										<ContextMenu name="ТочкиФигурыУправлениеПоискомКонтекстноеМеню" id="665"/>
+										<ExtendedTooltip name="ТочкиФигурыУправлениеПоискомРасширеннаяПодсказка" id="666"/>
+									</SearchControlAddition>
+									<ChildItems>
+										<InputField name="ТочкиФигурыX" id="667">
+											<DataPath>ТочкиФигуры.X</DataPath>
+											<EditMode>EnterOnInput</EditMode>
+											<Width>4</Width>
+											<ContextMenu name="ТочкиФигурыXКонтекстноеМеню" id="668"/>
+											<ExtendedTooltip name="ТочкиФигурыXРасширеннаяПодсказка" id="669"/>
+										</InputField>
+										<InputField name="ТочкиФигурыY" id="670">
+											<DataPath>ТочкиФигуры.Y</DataPath>
+											<EditMode>EnterOnInput</EditMode>
+											<Width>4</Width>
+											<ContextMenu name="ТочкиФигурыYКонтекстноеМеню" id="671"/>
+											<ExtendedTooltip name="ТочкиФигурыYРасширеннаяПодсказка" id="672"/>
+										</InputField>
+									</ChildItems>
+								</Table>
+							</ChildItems>
+						</UsualGroup>
+					</ChildItems>
+				</Page>
 				<Page name="СтраницаМультимедиа" id="571">
 					<Title>
 						<v8:item>
@@ -3321,6 +3772,247 @@
 				</v8:StringQualifiers>
 			</Type>
 		</Attribute>
+		<Attribute name="АдресФрагментаКартинки" id="45">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Адрес фрагмента картинки</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ПапкаКартинок" id="46">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Папка картинок</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ТаблицаКартинок" id="47">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Таблица картинок</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="Имя" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Имя файла картинки</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="ПолноеИмя" id="2">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Имя</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
+		<Attribute name="Толщина" id="48">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Толщина</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Nonnegative</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ЦветФигуры" id="49">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Цвет фигуры</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:Color</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="Прозрачность" id="50">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Прозрачность</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>10</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ТочкиФигуры" id="51">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Точки фигуры</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTable</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="X" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>X</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Y" id="2">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Y</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
+		<Attribute name="ФигураX" id="52">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>X</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>6</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ФигураY" id="53">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Y</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>6</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ФигураW" id="54">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>W</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>6</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ФигураH" id="55">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>H</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>6</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="Таймаут" id="56">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Таймаут</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>6</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -4400,6 +5092,81 @@
 				</v8:item>
 			</ToolTip>
 			<Action>МедиаСтатус</Action>
+		</Command>
+		<Command name="ФигураПрямоугольник" id="72">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Прямоугольник</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Фигура прямоугольник</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ФигураПрямоугольник</Action>
+		</Command>
+		<Command name="ФигураЭллипс" id="73">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Прямоугольник</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Фигура прямоугольник</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ФигураЭллипс</Action>
+		</Command>
+		<Command name="ФигураКриваяСтрелка" id="74">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Кривая стрелка</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Фигура кривая стрелка</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ФигураКриваяСтрелка</Action>
+		</Command>
+		<Command name="ФигураПрямаяСтрелка" id="75">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Стрелка</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Фигура прямая стрелка</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ФигураПрямаяСтрелка</Action>
+		</Command>
+		<Command name="ФигураЗатенение" id="76">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Затенение</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Фигура затенение</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ФигураЗатенение</Action>
 		</Command>
 	</Commands>
 </Form>
