@@ -171,7 +171,7 @@ void PainterBase::createWindow()
 	wndClass.lpszClassName = name;
 	RegisterClass(&wndClass);
 
-	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
+	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT;
 	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	SetTimer(hWnd, ID_PAINTER_TIMER, delay, NULL);

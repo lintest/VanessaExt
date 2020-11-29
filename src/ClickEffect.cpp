@@ -178,26 +178,19 @@ void ClickEffect::Painter::Create()
 	int h = r * 2 + 1;
 
 	LPCWSTR name = L"VanessaClickEffect";
-	WNDCLASS wndClass;
-	ZeroMemory(&wndClass, sizeof(wndClass));
+	WNDCLASS wndClass = {};
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc = EffectWndProc;
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
 	wndClass.hInstance = hModule;
-	wndClass.hIcon = NULL;
-	wndClass.hCursor = NULL;
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wndClass.lpszMenuName = NULL;
 	wndClass.lpszClassName = name;
 	RegisterClass(&wndClass);
 
 	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT;
 	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, 0);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
-
-	SetTimer(hWnd, ID_CLICK_TIMER, delay, NULL);
 	SetLayeredWindowAttributes(hWnd, 0, trans, LWA_COLORKEY | LWA_ALPHA);
+	SetTimer(hWnd, ID_CLICK_TIMER, delay, NULL);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
 }
@@ -231,7 +224,7 @@ DWORD WINAPI HookerThreadProc(LPVOID lpParam)
 
 LRESULT ClickEffect::Hooker::Show()
 {
-	Painter* painter = new Painter(*this);
+	auto painter = new Painter(*this);
 	CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
 	return 0L;
 }
@@ -256,17 +249,10 @@ LRESULT CALLBACK HookProc(int code, WPARAM wParam, LPARAM lParam)
 
 void ClickEffect::Hooker::Create()
 {
-	WNDCLASS wndClass;
-	ZeroMemory(&wndClass, sizeof(wndClass));
+	WNDCLASS wndClass = {};
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc = HookerWndProc;
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
 	wndClass.hInstance = hModule;
-	wndClass.hIcon = NULL;
-	wndClass.hCursor = NULL;
-	wndClass.hbrBackground = NULL;
-	wndClass.lpszMenuName = NULL;
 	wndClass.lpszClassName = wsHookerName;
 	RegisterClass(&wndClass);
 
@@ -278,7 +264,7 @@ void ClickEffect::Hooker::Create()
 
 void ClickEffect::Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
 {
-	Painter* painter = new Painter(Hooker(color, radius, width, delay, trans));
+	auto painter = new Painter(Hooker(color, radius, width, delay, trans));
 	CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
 }
 
@@ -320,14 +306,14 @@ void ClickEffect::Unhook()
 
 void ClickEffect::Show()
 {
-	HWND hWnd = ::FindWindow(wsHookerName, NULL);
+	auto hWnd = ::FindWindow(wsHookerName, NULL);
 	if (hWnd) ::SendMessage(hWnd, WM_SHOW_CLICK, 0, 0);
 }
 
 extern "C" {
 	__declspec(dllexport) void __cdecl StopClickHook()
 	{
-		HWND hWnd = FindWindow(wsHookerName, NULL);
+		auto hWnd = FindWindow(wsHookerName, NULL);
 		if (hWnd) PostMessage(hWnd, WM_DESTROY, 0, 0);
 		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
 	}
