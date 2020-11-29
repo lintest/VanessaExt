@@ -206,6 +206,8 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"DrawShadow", u"НарисоватьТень",
 		[&](VH x1, VH y1, VH x2, VH y2, VH t) { new ShadowPainter(painter, x1, y1, x2, y2, t); }, { { 4, (int64_t)127 } }
 	);
+#endif//_WINDOWS
+
 #ifdef USE_OPENCV
 	AddFunction(u"FindFragment", u"НайтиФрагмент",
 		[&](VH picture, VH fragment, VH method) {
@@ -219,8 +221,6 @@ WindowsControl::WindowsControl() {
 		}, { {1, (int64_t)1} }
 		);
 #endif//USE_OPENCV
-
-#endif//_WINDOWS
 
 #ifdef USE_BOOST
 	AddFunction(u"WebSocket", u"ВебСокет",

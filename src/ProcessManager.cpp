@@ -453,4 +453,4 @@ std::wstring ProcessManager::SendWebSocket(WebSocketBase** ws, const std::string
 
 #endif //_WINDOWS
 
-#endif USE_BOOST
+#endif //USE_BOOST
