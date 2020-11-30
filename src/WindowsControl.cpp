@@ -68,6 +68,12 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"GetProcessInfo", u"ПолучитьСвойстваПроцесса",
 		[&](VH pid) { this->result = ProcessManager::GetProcessInfo(pid); }
 	);
+	AddFunction(u"ActivateProcess", u"АктивироватьПроцесс",
+		[&](VH pid) { this->result = WindowsManager::ActivateProcess(pid); }
+	);
+	AddFunction(u"GetProcessWindow", u"ПолучитьОкноПроцесса",
+		[&](VH pid) { this->result = WindowsManager::GetProcessWindow(pid); }
+	);
 	AddFunction(u"GetDisplayList", u"ПолучитьСписокДисплеев",
 		[&](VH window) { this->result = ScreenManager::GetDisplayList(window); }, { {0, (int64_t)0 } }
 	);
