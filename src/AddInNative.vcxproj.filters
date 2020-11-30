@@ -57,9 +57,6 @@
     <ClInclude Include="ProcessControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FileFinder.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -96,9 +93,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ProcessControl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileFinder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,6 +2,14 @@
 #include "WindowMngr.h"
 #include "json_ext.h"
 
+int64_t WindowsManager::ActivateProcess(tVariant* paParams, const long lSizeArray)
+{
+	tVariant variant;
+	TV_VT(pvar) = VTYPE_I4;
+	TV_I4(pvar) = GetProcessWindow(paParams, lSizeArray);
+	return window && Activate(&variant, 1);
+}
+
 #ifdef _WINDOWS
 
 static JSON WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
@@ -91,38 +99,33 @@ HWND WindowManager::ActiveWindow()
 	return ::GetForegroundWindow();
 }
 
-HWND WindowManager::CurrentWindow()
+int64_t WindowManager::GetProcessWindow(tVariant* paParams, const long lSizeArray)
 {
-	DWORD pid = GetCurrentProcessId();
-	std::pair<HWND, DWORD> params = { 0, pid };
-
+	std::pair<HWND, DWORD> params = { 0, (DWORD)VarToInt(paParams) };
 	// Enumerate the windows using a lambda to process each window
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
-			auto pParams = (std::pair<HWND, DWORD>*)(lParam);
-			WCHAR buffer[256];
-			DWORD processId;
-			if (IsWindowVisible(hWnd)
-				&& ::GetWindowThreadProcessId(hWnd, &processId)
-				&& processId == pParams->second
-				&& ::GetClassName(hWnd, buffer, 256)
-				&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
-				) {
-				// Stop enumerating
-				SetLastError(-1);
-				pParams->first = hWnd;
-				return FALSE;
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
+				WCHAR buffer[256];
+				DWORD processId;
+				auto pParams = (std::pair<HWND, DWORD>*)(lParam);
+				::GetWindowThreadProcessId(hWnd, &processId);
+				if (processId == pParams->second
+					&& ::GetClassName(hWnd, buffer, 256)
+					&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+					) {
+					// Stop enumerating
+					SetLastError(-1);
+					pParams->first = hWnd;
+					return FALSE;
+				}
 			}
-
 			// Continue enumerating
 			return TRUE;
 		}, (LPARAM)&params);
-
-	if (!bResult && GetLastError() == -1 && params.first)
-	{
-		return params.first;
+	if (!bResult && GetLastError() == -1 && params.first) {
+		return (int64_t)params.first;
 	}
-
 	return 0;
 }
 
@@ -348,6 +351,27 @@ public:
 	}
 };
 
+class WindowGetter : public WindowEnumerator
+{
+private:
+	Window m_window = 0;
+	const unsigned long m_pid;
+protected:
+	virtual bool EnumWindow(Window window) {
+		if (GetWindowPid(window) == m_pid
+			&& GetWindowOwner(window) == 0) {
+			m_window = window;
+		}
+		return true;
+	}
+public:
+	WindowGetter(unsigned long pid)
+		: WindowEnumerator(), m_pid(pid) {}
+	int64_t window() {
+		return (int64_t)m_window;
+	}
+};
+
 bool WindowManager::IsMaximized(HWND hWnd)
 {
 	//TODO
@@ -359,6 +383,15 @@ std::wstring WindowManager::GetWindowList(tVariant* paParams, const long lSizeAr
 	unsigned long pid = 0;
 	if (lSizeArray > 0) pid = VarToInt(paParams);
 	return WindowList(pid).Enumerate();
+}
+
+int64_t WindowManager::GetProcessWindow(tVariant* paParams, const long lSizeArray)
+{
+	unsigned long pid = 0;
+	if (lSizeArray > 0) pid = VarToInt(paParams);
+	WindowGetter getter(pid);
+	getter.Enumerate();
+	return getter.window();
 }
 
 std::wstring WindowManager::GetWindowInfo(tVariant* paParams, const long lSizeArray)

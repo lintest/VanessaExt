@@ -6,7 +6,8 @@
 class WindowManager {
 public:
 	static HWND ActiveWindow();
-	static HWND CurrentWindow();
+	static int64_t ActivateProcess(tVariant* paParams, const long lSizeArray);
+	static int64_t GetProcessWindow(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetWindowList(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetWindowInfo(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetWindowSize(tVariant* paParams, const long lSizeArray);

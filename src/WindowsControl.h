@@ -30,6 +30,8 @@ private:
 		eFindTestClient = 0,
 		eGetProcessList,
 		eGetProcessInfo,
+		eGetProcessWindow,
+		eActivateProcess,
 		eGetDisplayList,
 		eGetDisplayInfo,
 		eGetScreenInfo,

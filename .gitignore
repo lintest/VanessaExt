@@ -2,6 +2,13 @@
 # Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
 ################################################################################
 
+/zlib-*
+/opencv-*
+/libgit2-*
+/libssh2-*
+/database
+/build64W
+/build32W
 /build64
 /build32
 /build

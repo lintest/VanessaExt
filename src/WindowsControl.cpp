@@ -39,6 +39,8 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eFindTestClient  , 1, true , L"FindTestClient"   , L"НайтиКлиентТестирования"),
 	Alias(eGetProcessList  , 1, true , L"GetProcessList"   , L"ПолучитьСписокПроцессов"),
 	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
+	Alias(eGetProcessWindow, 1, true , L"GetProcessWindow" , L"ПолучитьОкноПроцесса"),
+	Alias(eActivateProcess , 1, true , L"ActivateProcess"  , L"АктивироватьПроцесс"),
 	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
 	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
 	Alias(eGetScreenInfo   , 0, true , L"GetScreenInfo"    , L"ПолучитьСвойстваЭкрана"),
@@ -179,6 +181,10 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 		return VA(pvarRetValue) << ProcessManager::GetProcessList(paParams, lSizeArray);
 	case eGetProcessInfo:
 		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
+	case eGetProcessWindow:
+		return VA(pvarRetValue) << ProcessManager::GetProcessWindow(paParams, lSizeArray);
+	case eActivateProcess:
+		return VA(pvarRetValue) << ProcessManager::ActivateProcess(paParams, lSizeArray);
 	case eGetWindowList:
 		return VA(pvarRetValue) << WindowManager::GetWindowList(paParams, lSizeArray);
 	case eGetWindowInfo:
