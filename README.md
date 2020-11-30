@@ -8,7 +8,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/jau22n1d2a6bvwpo?svg=true)](https://ci.appveyor.com/project/lintest/vanessaext)
 
-### Возможности бибоиотеки:
+### Возможности библиотеки:
 - Получение списка окон и списка процессов
 - Управление размерами и положением окна
 - Получение снимка окна и снимка экрана
