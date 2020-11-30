@@ -2005,26 +2005,85 @@
 							<AutoCommandBar name="СписокПроцессовКоманднаяПанель" id="126">
 								<Autofill>false</Autofill>
 								<ChildItems>
-									<Button name="СписокПроцессовПолучитьСписокПроцессов" id="143">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.ПолучитьСписокПроцессов</CommandName>
-										<ExtendedTooltip name="СписокПроцессовПолучитьСписокПроцессовРасширеннаяПодсказка" id="144"/>
-									</Button>
-									<Button name="СписокПроцессовПолучитьПроцессы1С" id="263">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.ПолучитьПроцессы1С</CommandName>
-										<ExtendedTooltip name="СписокПроцессовПолучитьПроцессы1СРасширеннаяПодсказка" id="264"/>
-									</Button>
-									<Button name="СписокПроцессовПолучитьСвойстваПроцесса" id="169">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.ПолучитьСвойстваПроцесса</CommandName>
-										<ExtendedTooltip name="СписокПроцессовПолучитьСвойстваПроцессаРасширеннаяПодсказка" id="170"/>
-									</Button>
-									<Button name="СписокПроцессовПолучитьСнимокПроцесса" id="340">
-										<Type>CommandBarButton</Type>
-										<CommandName>Form.Command.ПолучитьСнимокПроцесса</CommandName>
-										<ExtendedTooltip name="СписокПроцессовПолучитьСнимокПроцессаРасширеннаяПодсказка" id="341"/>
-									</Button>
+									<ButtonGroup name="ПроцессыГруппаПолучить" id="720">
+										<Title>
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Процессы группа получить</v8:content>
+											</v8:item>
+										</Title>
+										<ToolTip>
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Процессы группа получить</v8:content>
+											</v8:item>
+										</ToolTip>
+										<Representation>Compact</Representation>
+										<ExtendedTooltip name="ПроцессыГруппаПолучитьРасширеннаяПодсказка" id="721"/>
+										<ChildItems>
+											<Button name="СписокПроцессовПолучитьПроцессы1С" id="263">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.ПолучитьПроцессы1С</CommandName>
+												<ExtendedTooltip name="СписокПроцессовПолучитьПроцессы1СРасширеннаяПодсказка" id="264"/>
+											</Button>
+											<Button name="СписокПроцессовПолучитьСписокПроцессов" id="143">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.ПолучитьСписокПроцессов</CommandName>
+												<ExtendedTooltip name="СписокПроцессовПолучитьСписокПроцессовРасширеннаяПодсказка" id="144"/>
+											</Button>
+										</ChildItems>
+									</ButtonGroup>
+									<ButtonGroup name="ПроцессыГруппаСвойства" id="722">
+										<Title>
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Процессы группа получить</v8:content>
+											</v8:item>
+										</Title>
+										<ToolTip>
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Процессы группа получить</v8:content>
+											</v8:item>
+										</ToolTip>
+										<Representation>Compact</Representation>
+										<ExtendedTooltip name="ПроцессыГруппаСвойстваРасширеннаяПодсказка" id="723"/>
+										<ChildItems>
+											<Button name="СписокПроцессовПолучитьСнимокПроцесса" id="340">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.ПолучитьСнимокПроцесса</CommandName>
+												<Title>
+													<v8:item>
+														<v8:lang>ru</v8:lang>
+														<v8:content>Снимок</v8:content>
+													</v8:item>
+												</Title>
+												<ExtendedTooltip name="СписокПроцессовПолучитьСнимокПроцессаРасширеннаяПодсказка" id="341"/>
+											</Button>
+											<Button name="СписокПроцессовПолучитьСвойстваПроцесса" id="169">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.ПолучитьСвойстваПроцесса</CommandName>
+												<Title>
+													<v8:item>
+														<v8:lang>ru</v8:lang>
+														<v8:content>Свойства</v8:content>
+													</v8:item>
+												</Title>
+												<ExtendedTooltip name="СписокПроцессовПолучитьСвойстваПроцессаРасширеннаяПодсказка" id="170"/>
+											</Button>
+											<Button name="СписокПроцессовАктивироватьПроцесс" id="718">
+												<Type>CommandBarButton</Type>
+												<CommandName>Form.Command.АктивироватьПроцесс</CommandName>
+												<Title>
+													<v8:item>
+														<v8:lang>ru</v8:lang>
+														<v8:content>Активировать</v8:content>
+													</v8:item>
+												</Title>
+												<ExtendedTooltip name="СписокПроцессовАктивироватьПроцессРасширеннаяПодсказка" id="719"/>
+											</Button>
+										</ChildItems>
+									</ButtonGroup>
 								</ChildItems>
 							</AutoCommandBar>
 							<ExtendedTooltip name="СписокПроцессовРасширеннаяПодсказка" id="127"/>
@@ -5167,6 +5226,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ФигураЗатенение</Action>
+		</Command>
+		<Command name="АктивироватьПроцесс" id="77">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Активировать процесс</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Активировать процесс</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>АктивироватьПроцесс</Action>
 		</Command>
 	</Commands>
 </Form>

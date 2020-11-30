@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "WindowsManager.h"
 
+int64_t WindowsManager::ActivateProcess(int64_t pid)
+{
+	int64_t window = GetProcessWindow(pid);
+	return window && Activate(window);
+}
+
 #ifdef _WINDOWS
 
 #pragma warning (disable : 4244)
@@ -88,33 +94,30 @@ int64_t WindowsManager::ActiveWindow()
 	return (int64_t)::GetForegroundWindow();
 }
 
-int64_t WindowsManager::CurrentWindow()
+int64_t WindowsManager::GetProcessWindow(int64_t pid)
 {
-	DWORD pid = GetCurrentProcessId();
-	std::pair<HWND, DWORD> params = { 0, pid };
-
+	std::pair<HWND, DWORD> params = { 0, (DWORD)pid };
 	// Enumerate the windows using a lambda to process each window
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
-			auto pParams = (std::pair<HWND, DWORD>*)(lParam);
-			WCHAR buffer[256];
-			DWORD processId;
-			if (IsWindowVisible(hWnd)
-				&& ::GetWindowThreadProcessId(hWnd, &processId)
-				&& processId == pParams->second
-				&& ::GetClassName(hWnd, buffer, 256)
-				&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
-				) {
-				// Stop enumerating
-				SetLastError(-1);
-				pParams->first = hWnd;
-				return FALSE;
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
+				WCHAR buffer[256];
+				DWORD processId;
+				auto pParams = (std::pair<HWND, DWORD>*)(lParam);
+				::GetWindowThreadProcessId(hWnd, &processId);
+				if (processId == pParams->second
+					&& ::GetClassName(hWnd, buffer, 256)
+					&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+					) {
+					// Stop enumerating
+					SetLastError(-1);
+					pParams->first = hWnd;
+					return FALSE;
+				}
 			}
-
 			// Continue enumerating
 			return TRUE;
 		}, (LPARAM)&params);
-
 	if (!bResult && GetLastError() == -1 && params.first) {
 		return (int64_t)params.first;
 	}
@@ -261,10 +264,10 @@ bool WindowsManager::SetWindowState(HWND hWnd, int iMode, bool bActivate)
 	return true;
 }
 
-int64_t WindowsManager::FindWindow(const std::wstring &name, const std::wstring& title)
+int64_t WindowsManager::FindWindow(const std::wstring& name, const std::wstring& title)
 {
 	LPCWSTR lpClassName = nullptr;
-  	LPCWSTR lpWindowName = nullptr;
+	LPCWSTR lpWindowName = nullptr;
 	if (!name.empty()) lpClassName = name.c_str();
 	if (!title.empty()) lpWindowName = title.c_str();
 	return (int64_t)::FindWindow(lpClassName, lpWindowName);
@@ -300,6 +303,27 @@ protected:
 public:
 	WindowList(unsigned long pid = 0)
 		: WindowEnumerator(), m_pid(pid) {}
+};
+
+class WindowGetter : public WindowEnumerator
+{
+private:
+	Window m_window = 0;
+	const unsigned long m_pid;
+protected:
+	virtual bool EnumWindow(Window window) {
+		if (GetWindowPid(window) == m_pid
+			&& GetWindowOwner(window) == 0) {
+			m_window = window;
+		}
+		return true;
+	}
+public:
+	WindowGetter(unsigned long pid)
+		: WindowEnumerator(), m_pid(pid) {}
+	int64_t window() {
+		return (int64_t)m_window;
+	}
 };
 
 class WindowInfo : public WindowHelper
@@ -345,6 +369,13 @@ bool WindowsManager::IsMaximized(int64_t window)
 std::string WindowsManager::GetWindowList(int64_t pid)
 {
 	return WindowList(pid).Enumerate();
+}
+
+int64_t WindowsManager::GetProcessWindow(int64_t pid)
+{
+	WindowGetter getter(pid);
+	getter.Enumerate();
+	return getter.window();
 }
 
 std::string WindowsManager::GetWindowInfo(int64_t window)
