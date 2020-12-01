@@ -3,6 +3,12 @@
 #include "WindowsManager.h"
 #include <math.h>
 
+BOOL BaseHelper::ScreenManager::CaptureProcess(VH variant, int64_t pid)
+{
+	int64_t window = WindowsManager::GetProcessWindow(pid);
+	return window && CaptureWindow(variant, window);
+}
+
 #ifdef _WINDOWS
 
 #include <dwmapi.h>
@@ -140,41 +146,6 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, HWND window)
 	ReleaseDC(NULL, hdcScreen);
 	DeleteDC(hDC);
 	DeleteObject(hBitmap);
-	return true;
-}
-
-BOOL BaseHelper::ScreenManager::CaptureProcess(VH variant, int64_t pid)
-{
-	class Param {
-	public:
-		DWORD pid = 0;
-		std::map<HWND, bool> map;
-	};
-	Param p;
-	p.pid = (DWORD)pid;
-	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
-		{
-			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
-				Param* p = (Param*)lParam;
-				DWORD dwProcessId;
-				WCHAR buffer[256];
-				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				if (p->pid == dwProcessId
-					&& ::GetClassName(hWnd, buffer, 256)
-					&& (wcscmp(L"V8TopLevelFrameSDIsec", buffer) == 0
-						|| wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
-						|| wcscmp(L"V8TopLevelFrame", buffer) == 0)
-					) {
-					if (p->map.find(hWnd) == p->map.end()) p->map[hWnd] = true;
-					HWND hParent = ::GetWindow(hWnd, GW_OWNER);
-					if (hParent) p->map[hParent] = false;
-				}
-			}
-			return TRUE;
-		}, (LPARAM)&p);
-	for (auto it = p.map.begin(); it != p.map.end(); it++) {
-		if (it->second) return Capture(variant, it->first);
-	}
 	return true;
 }
 
@@ -500,42 +471,6 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, Window win)
 	XDestroyImage(image);
 	XCloseDisplay(display);
 	return success;
-}
-
-class ProcWindows : public WindowEnumerator
-{
-private:
-	const unsigned long m_pid = 0;
-	std::map<Window, bool> m_map;
-protected:
-	virtual bool EnumWindow(Window window) {
-		unsigned long pid = GetWindowPid(window);
-		if (m_pid == pid) {
-			if (m_map.find(window) == m_map.end()) m_map[window] = true;
-			Window parent = GetWindowOwner(window);
-			if (parent) m_map[parent] = false;
-		}
-		return true;
-	}
-public:
-	ProcWindows(unsigned long pid)
-		: WindowEnumerator(), m_pid(pid) {}
-
-	static Window TopWindow(unsigned long pid) {
-		ProcWindows p(pid);
-		p.Enumerate();
-		for (auto it = p.m_map.begin(); it != p.m_map.end(); it++) {
-			if (it->second) return it->first;
-		}
-		return 0;
-	}
-};
-
-BOOL BaseHelper::ScreenManager::CaptureProcess(VH variant, int64_t pid)
-{
-	Window window = ProcWindows::TopWindow(pid);
-	if (window) return Capture(variant, window);
-	return true;
 }
 
 class ScreenHelper : public WindowHelper
