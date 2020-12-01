@@ -2,7 +2,7 @@
 #define CLICKEFFECT_H
 
 #ifdef _WINDOWS
-#include "windows.h"
+#include <windows.h>
 
 class ClickEffect {
 public:

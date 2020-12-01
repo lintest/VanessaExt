@@ -1,7 +1,6 @@
 #ifdef _WINDOWS
 
 #include "stdafx.h"
-#include "windows.h"
 #include "ClickEffect.h"
 
 class ClickEffect::Hooker {
