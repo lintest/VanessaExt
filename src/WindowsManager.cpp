@@ -386,7 +386,7 @@ std::string WindowsManager::GetWindowList(int64_t pid)
 
 int64_t WindowsManager::GetProcessWindow(int64_t pid)
 {
-	return (int64_t)ProcWindow::TopWindow(pid);
+	return (int64_t)ProcWindows::TopWindow(pid);
 }
 
 std::string WindowsManager::GetWindowInfo(int64_t window)
