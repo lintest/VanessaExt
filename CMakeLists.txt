@@ -98,7 +98,7 @@ endif()
 
 if (UNIX)
     foreach(flag
-        CMAKE_EXE_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_C_FLAGS CMAKE_CXX_FLAGS )
+        CMAKE_C_FLAGS CMAKE_CXX_FLAGS )
         if(NOT ${flag} MATCHES ${ARCH_FLAG})
             set(${flag} ${${flag}} ${ARCH_FLAG} CACHE "STRING" "Linker flags" FORCE)
         endif()

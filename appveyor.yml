@@ -1,0 +1,35 @@
+version: 1.CO.10.{build}
+
+configuration: Release
+platform: x64
+image: Ubuntu1604
+
+branches:
+  only:
+    - centos
+
+skip_branch_with_pr: true
+
+install:
+  - sh: sudo dpkg --add-architecture i386
+  - sh: sudo apt -qq update
+  - sh: sudo apt -qq -y install
+      uuid-dev uuid-dev:i386
+      libx11-dev libx11-dev:i386
+      libxtst6 libxtst6:i386
+      libxrandr-dev libxrandr-dev:i386
+      libpng-dev libpng-dev:i386
+      gcc-multilib g++-multilib
+
+init:
+  - cmd: cmake --version
+  - cmd: msbuild /version
+  - cmd: echo.
+
+build_script:
+  - sh: ./build.sh 64
+  - sh: cp bin/libVanessaExtLin??.so .
+  - sh: 7z a VanessaExt.zip libVanessaExtLin??.so
+
+artifacts:
+  - path: VanessaExt.zip

@@ -182,9 +182,9 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 	case eGetProcessInfo:
 		return VA(pvarRetValue) << ProcessManager::GetProcessInfo(paParams, lSizeArray);
 	case eGetProcessWindow:
-		return VA(pvarRetValue) << ProcessManager::GetProcessWindow(paParams, lSizeArray);
+		return VA(pvarRetValue) << WindowManager::GetProcessWindow(paParams, lSizeArray);
 	case eActivateProcess:
-		return VA(pvarRetValue) << ProcessManager::ActivateProcess(paParams, lSizeArray);
+		return VA(pvarRetValue) << WindowManager::ActivateProcess(paParams, lSizeArray);
 	case eGetWindowList:
 		return VA(pvarRetValue) << WindowManager::GetWindowList(paParams, lSizeArray);
 	case eGetWindowInfo:
