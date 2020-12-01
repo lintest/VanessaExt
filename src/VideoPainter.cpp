@@ -89,7 +89,14 @@ void BezierPainter::draw(Graphics& graphics)
 	AdjustableArrowCap arrow(8, 4);
 	pen.SetStartCap(LineCapRoundAnchor);
 	pen.SetCustomEndCap(&arrow);
-	graphics.DrawBeziers(&pen, points.data(), (INT)points.size());
+	auto p = points;
+	int X = p[0].X;
+	int Y = p[0].Y;
+	for (auto it = p.begin() + 1; it != p.end(); ++it) {
+		it->X = X + (it->X - X) * step / limit;;
+		it->Y = Y + (it->Y - Y) * step / limit;;
+	}
+	graphics.DrawBeziers(&pen, p.data(), (INT)p.size());
 }
 
 void ArrowPainter::draw(Graphics& graphics)
