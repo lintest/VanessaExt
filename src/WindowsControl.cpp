@@ -194,23 +194,20 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"PostMessage", u"ОтправитьСообщение",
 		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
 	);
-	AddProcedure(u"SetupDrawing", u"НастроитьРисование",
-		[&](VH color, VH delay, VH thick, VH trans) { painter.init(color, delay, thick, trans); }
-	);
-	AddProcedure(u"DrawRectangle", u"НарисоватьПрямоугольник",
-		[&](VH x, VH y, VH w, VH h) { new RecanglePainter(painter, x, y, w, h); }
+	AddProcedure(u"DrawEllipse", u"НарисоватьПрямоугольник",
+		[&](VH p, VH x, VH y, VH w, VH h) { (new RecanglePainter(p, x, y, w, h))->run(); }
 	);
 	AddProcedure(u"DrawEllipse", u"НарисоватьЭллипс",
-		[&](VH x, VH y, VH w, VH h) { new EllipsePainter(painter, x, y, w, h); }
+		[&](VH p, VH x, VH y, VH w, VH h) { (new EllipsePainter(p, x, y, w, h))->run(); }
 	);
 	AddProcedure(u"DrawBezier", u"НарисоватьКривую",
-		[&](VH pointers) { new BezierPainter(painter, pointers); }
+		[&](VH params, VH points) { (new BezierPainter(params, points))->run(); }
 	);
 	AddProcedure(u"DrawArrow", u"НарисоватьСтрелку",
-		[&](VH x1, VH y1, VH x2, VH y2) { new ArrowPainter(painter, x1, y1, x2, y2); }
+		[&](VH p, VH x1, VH y1, VH x2, VH y2) { (new ArrowPainter(p, x1, y1, x2, y2))->run(); }
 	);
 	AddProcedure(u"DrawShadow", u"НарисоватьТень",
-		[&](VH x1, VH y1, VH x2, VH y2, VH t) { new ShadowPainter(painter, x1, y1, x2, y2, t); }, { { 4, (int64_t)127 } }
+		[&](VH p, VH x, VH y, VH w, VH h, VH t) { (new ShadowPainter(p, x, y, w, h, t))->run(); }, { { 5, (int64_t)127 } }
 	);
 #endif//_WINDOWS
 

@@ -2,7 +2,26 @@
 
 #include "VideoPainter.h"
 
-#define ID_PAINTER_TIMER 1
+#define ID_TIMER_REPAINT 1
+#define ID_TIMER_TIMEOUT 2
+
+PainterBase::PainterBase(const std::string& params, int x, int y, int w, int h)
+	: x(x), y(y), w(w), h(h)
+{
+	try {
+		int trans = 0;
+		JSON j = JSON::parse(params);
+		{ auto it = j.find("color"); if (it != j.end()) color.SetFromCOLORREF(*it); }
+		{ auto it = j.find("duration"); if (it != j.end()) duration = *it; }
+		{ auto it = j.find("delay"); if (it != j.end()) delay = *it; }
+		{ auto it = j.find("thick"); if (it != j.end()) thick = *it; }
+		{ auto it = j.find("trans"); if (it != j.end()) trans = *it; }
+		if (trans) color = Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
+	}
+	catch (...) {
+		throw std::u16string(u"JSON parsing error");
+	}
+}
 
 void RecanglePainter::draw(Graphics& graphics)
 {
@@ -31,8 +50,8 @@ void EllipsePainter::draw(Graphics& graphics)
 	graphics.DrawEllipse(&pen, thick, thick, w - 2 * thick, h - 2 * thick);
 }
 
-BezierPainter::BezierPainter(const VideoPainter& p, const std::string& text)
-	: PainterBase(p)
+BezierPainter::BezierPainter(const std::string& params, const std::string& text)
+	: PainterBase(params)
 {
 	try {
 		auto list = JSON::parse(text);
@@ -57,7 +76,6 @@ BezierPainter::BezierPainter(const VideoPainter& p, const std::string& text)
 			it->X -= x;
 			it->Y -= y;
 		}
-		createThread();
 	}
 	catch (...) {
 		throw std::u16string(u"JSON parsing error");
@@ -81,10 +99,14 @@ void ArrowPainter::draw(Graphics& graphics)
 	AdjustableArrowCap arrow(8, 4);
 	pen.SetStartCap(LineCapRoundAnchor);
 	pen.SetCustomEndCap(&arrow);
-	graphics.DrawLine(&pen, x1 - x, y1 - y, x2 - x, y2 - y);
+	int X1 = x1 - x;
+	int Y1 = y1 - y;
+	int X2 = X1 + (x2 - x1) * step / limit;
+	int Y2 = Y1 + (y2 - y1) * step / limit;
+	graphics.DrawLine(&pen, X1, Y1, X2, Y2);
 }
 
-LRESULT PainterBase::create(HWND hWnd)
+LRESULT PainterBase::repaint(HWND hWnd)
 {
 	GgiPlusToken::Init();
 	Bitmap bitmap(w, h, PixelFormat32bppARGB);
@@ -94,10 +116,17 @@ LRESULT PainterBase::create(HWND hWnd)
 	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
 	draw(graphics);
 
+	if (delay) {
+		if (step >= limit) 
+			KillTimer(hWnd, ID_TIMER_REPAINT);
+		else ++step;
+	}
+
 	//Инициализируем составляющие временного DC, в который будет отрисована маска
 	auto hDC = GetDC(hWnd);
 	auto hCDC = CreateCompatibleDC(hDC);
 
+	LPVOID bits;
 	BITMAPINFO bi = {};
 	bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	bi.bmiHeader.biBitCount = 32;
@@ -105,7 +134,7 @@ LRESULT PainterBase::create(HWND hWnd)
 	bi.bmiHeader.biWidth = w;
 	bi.bmiHeader.biHeight = h;
 	bi.bmiHeader.biPlanes = 1;
-	auto hBitmap = CreateDIBSection(hDC, &bi, DIB_RGB_COLORS, NULL, NULL, 0);
+	auto hBitmap = CreateDIBSection(hDC, &bi, DIB_RGB_COLORS, &bits, NULL, 0);
 	if (!hBitmap) return -1;
 
 	SelectObject(hCDC, hBitmap);
@@ -145,11 +174,17 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		return TRUE;
 	}
 	case WM_CREATE:
-		return ((VideoPainter*)((CREATESTRUCT*)lParam)->lpCreateParams)->create(hWnd);
+		return ((PainterBase*)((CREATESTRUCT*)lParam)->lpCreateParams)->repaint(hWnd);
 	case WM_TIMER:
-		if (wParam == ID_PAINTER_TIMER) {
-			KillTimer(hWnd, ID_PAINTER_TIMER);
+		switch (wParam) {
+		case ID_TIMER_REPAINT:
+			((PainterBase*)GetWindowLongPtr(hWnd, GWLP_USERDATA))->repaint(hWnd);
+			break;
+		case ID_TIMER_TIMEOUT:
+			KillTimer(hWnd, ID_TIMER_REPAINT);
+			KillTimer(hWnd, ID_TIMER_TIMEOUT);
 			SendMessage(hWnd, WM_DESTROY, 0, 0);
+			break;
 		}
 		return 0;
 	case WM_DESTROY:
@@ -160,7 +195,7 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	}
 }
 
-void PainterBase::createWindow()
+void PainterBase::create()
 {
 	LPCWSTR name = L"VanessaVideoPainter";
 	WNDCLASS wndClass = {};
@@ -174,25 +209,25 @@ void PainterBase::createWindow()
 	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT;
 	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
-	SetTimer(hWnd, ID_PAINTER_TIMER, delay, NULL);
+	if (delay) SetTimer(hWnd, ID_TIMER_REPAINT, delay, NULL);
+	SetTimer(hWnd, ID_TIMER_TIMEOUT, duration, NULL);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
 }
 
 static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 {
-	auto painter = (PainterBase*)lpParam;
-	painter->createWindow();
+	std::unique_ptr<PainterBase> painter((PainterBase*)lpParam);
+	painter->create();
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	delete painter;
 	return 0;
 }
 
-void PainterBase::createThread()
+void PainterBase::run()
 {
 	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
 }

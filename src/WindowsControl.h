@@ -10,10 +10,6 @@
 // class WindowsControl
 class WindowsControl : public BaseHelper
 {
-#ifdef _WINDOWS
-private:
-	VideoPainter painter;
-#endif //_WINDOWS	
 private:
 #ifdef USE_BOOST
 	WebSocketBase* webSocket = nullptr;
