@@ -63,7 +63,7 @@ ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h)
 
 void ShadowPainter::draw(Graphics& graphics)
 {
-	int xx, yy;
+	int xx, yy, x1, y1;
 	Region screen(Rect(0, 0, w, h));
 	screen.Exclude(Rect(X, Y, W, H));
 	SolidBrush brush(Color(color.GetAlpha(), 0, 0, 0));
@@ -71,17 +71,23 @@ void ShadowPainter::draw(Graphics& graphics)
 
 	int ww = max(X, w - (X + W));
 	int hh = max(Y, h - (Y + H));
+	int d = 30;
 
 	if (ww  * h < hh * w) {
 		xx = (2 * X + W > w) ? 0 : w / 2;
 		yy = (2 * Y + H > h) ? 0 : Y + H;
-		hh = max(Y, h - (Y + H));
 		ww = w / 2;
+		x1 = X + W / 2;
+		y1 = yy ? yy + d : hh - d;
+		pos = xx ? AP::L : AP::R;
 	}
 	else {
 		xx = (2 * X + W > w) ? 0 : X + W;
 		yy = (2 * Y + H > h) ? 0 : h / 2;
 		hh = h / 2;
+		y1 = Y + H / 2;
+		x1 = xx ? xx + d : ww - d;
+		pos = yy ? AP::T : AP::B;
 	}
 
 #pragma warning (push)
@@ -100,14 +106,22 @@ void ShadowPainter::draw(Graphics& graphics)
 	
 	REAL x2, y2;
 	switch (pos) {
-	case ArrowPos::L: x2 = r.X; y2 = r.Y + r.Height / 2; break;
-	case ArrowPos::R: x2 = r.X + r.Width; y2 = r.Y + r.Height / 2; break;
-	case ArrowPos::T: x2 = r.X + r.Width / 2; y2 = r.Y; break;
-	case ArrowPos::B: x2 = r.X + r.Width / 2; y2 = r.Y + r.Height; break;
+	case AP::L: x2 = r.X; y2 = r.Y + r.Height / 2; break;
+	case AP::R: x2 = r.X + r.Width; y2 = r.Y + r.Height / 2; break;
+	case AP::T: x2 = r.X + r.Width / 2; y2 = r.Y; break;
+	case AP::B: x2 = r.X + r.Width / 2; y2 = r.Y + r.Height; break;
 	}
 
 	Pen pen(Color::White, (REAL)thick);
-//	graphics.DrawLine(&pen, (REAL)x1, (REAL)y1, x2, y2);
+	PointF points[] = { 
+		{x2, y2},
+		{x2, (REAL)y1},
+		{x2, (REAL)y1},
+		{(REAL)x1, (REAL)y1},
+	};
+	AdjustableArrowCap arrow(12, 12, false);
+	pen.SetCustomEndCap(&arrow);
+	graphics.DrawBeziers(&pen, points, 4);
 }
 
 void EllipsePainter::draw(Graphics& graphics)

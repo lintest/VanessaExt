@@ -80,12 +80,12 @@ public:
 class ShadowPainter
 	: public PainterBase {
 private:
-	enum class ArrowPos { L, R, T, B };
+	enum class AP { L, R, T, B };
 	int X, Y, W, H;
 	REAL fontSize = 24;
 	std::wstring fontName = L"Calibri";
 	std::wstring text;
-	ArrowPos pos;
+	AP pos;
 public:
 	ShadowPainter(const std::string& p, int x, int y, int w, int h);
 	virtual void draw(Graphics& graphics) override;
