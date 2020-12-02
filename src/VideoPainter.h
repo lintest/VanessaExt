@@ -9,6 +9,7 @@ using namespace Gdiplus;
 
 class PainterBase {
 protected:
+	static JSON parse(const std::string& text);
 	Color color = { 200, 50, 50 };
 	int x = 0, y = 0, w = 0, h = 0;
 	int duration = 5000;
@@ -36,38 +37,17 @@ public:
 	virtual void draw(Graphics& graphics) override;
 };
 
-class ShadowPainter
-	: public PainterBase {
-private:
-	int X, Y, W, H;
-	int transparency;
-public:
-	ShadowPainter(const std::string& p, int x, int y, int w, int h, int t)
-		: PainterBase(p), X(x), Y(y), W(w), H(h), transparency(t)
-	{
-		RECT rect;
-		GetWindowRect(GetDesktopWindow(), &rect);
-		X -= rect.left; 
-		Y -= rect.top;
-		this->x = rect.left;
-		this->y = rect.top;
-		this->w = rect.left + rect.right;
-		this->h = rect.bottom - rect.top;
-	}
-	virtual void draw(Graphics& graphics) override;
-};
-
 class EllipsePainter
 	: public PainterBase {
 public:
 	EllipsePainter(const std::string& p, int x, int y, int w, int h)
 		: PainterBase(p, x, y, w, h) 
 	{
-		delay = 0;
-		x -= thick;
-		y -= thick;
-		w += 2 * thick;
-		h += 2 * thick;
+		this->delay = 0;
+		this->x -= thick;
+		this->y -= thick;
+		this->w += 2 * thick;
+		this->h += 2 * thick;
 	}
 	virtual void draw(Graphics& graphics) override;
 };
@@ -94,6 +74,20 @@ public:
 		w = abs(x1 - x2) + 4 * thick;
 		h = abs(y1 - y2) + 4 * thick;
 	}
+	virtual void draw(Graphics& graphics) override;
+};
+
+class ShadowPainter
+	: public PainterBase {
+private:
+	enum class ArrowPos { L, R, T, B };
+	int X, Y, W, H;
+	REAL fontSize = 24;
+	std::wstring fontName = L"Calibri";
+	std::wstring text;
+	ArrowPos pos;
+public:
+	ShadowPainter(const std::string& p, int x, int y, int w, int h);
 	virtual void draw(Graphics& graphics) override;
 };
 

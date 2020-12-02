@@ -207,7 +207,7 @@ WindowsControl::WindowsControl() {
 		[&](VH p, VH x1, VH y1, VH x2, VH y2) { (new ArrowPainter(p, x1, y1, x2, y2))->run(); }
 	);
 	AddProcedure(u"DrawShadow", u"НарисоватьТень",
-		[&](VH p, VH x, VH y, VH w, VH h, VH t) { (new ShadowPainter(p, x, y, w, h, t))->run(); }, { { 5, (int64_t)127 } }
+		[&](VH p, VH x, VH y, VH w, VH h) { (new ShadowPainter(p, x, y, w, h))->run(); }
 	);
 #endif//_WINDOWS
 

@@ -5,22 +5,30 @@
 #define ID_TIMER_REPAINT 1
 #define ID_TIMER_TIMEOUT 2
 
-PainterBase::PainterBase(const std::string& params, int x, int y, int w, int h)
-	: x(x), y(y), w(w), h(h)
+JSON PainterBase::parse(const std::string& text)
 {
 	try {
-		int trans = 0;
-		JSON j = JSON::parse(params);
-		{ auto it = j.find("color"); if (it != j.end()) color.SetFromCOLORREF(*it); }
-		{ auto it = j.find("duration"); if (it != j.end()) duration = *it; }
-		{ auto it = j.find("delay"); if (it != j.end()) delay = *it; }
-		{ auto it = j.find("thick"); if (it != j.end()) thick = *it; }
-		{ auto it = j.find("trans"); if (it != j.end()) trans = *it; }
-		if (trans) color = Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
+		return JSON::parse(text);
 	}
 	catch (...) {
 		throw std::u16string(u"JSON parsing error");
 	}
+}
+
+PainterBase::PainterBase(const std::string& params, int x, int y, int w, int h)
+	: x(x), y(y), w(w), h(h)
+{
+	int trans = 0;
+	JSON j = JSON::parse(params);
+	{ auto it = j.find("color"); if (it != j.end()) color.SetFromCOLORREF(*it); }
+	{ auto it = j.find("duration"); if (it != j.end()) duration = *it; }
+	{ auto it = j.find("frameCount"); if (it != j.end()) limit = *it; }
+	{ auto it = j.find("frameDelay"); if (it != j.end()) delay = *it; }
+	{ auto it = j.find("thickness"); if (it != j.end()) thick = *it; }
+	{ auto it = j.find("transparency"); if (it != j.end()) trans = *it; }
+	if (trans) color = Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
+	if (limit <= 0) limit = 1;
+	if (delay == 0 || step > limit) step = limit;
 }
 
 void RecanglePainter::draw(Graphics& graphics)
@@ -36,12 +44,70 @@ void RecanglePainter::draw(Graphics& graphics)
 	graphics.DrawPolygon(&pen, points, 4);
 }
 
+ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h)
+	: PainterBase(p), X(x), Y(y), W(w), H(h)
+{
+	RECT rect;
+	GetWindowRect(GetDesktopWindow(), &rect);
+	X -= rect.left;
+	Y -= rect.top;
+	this->x = rect.left;
+	this->y = rect.top;
+	this->w = rect.left + rect.right;
+	this->h = rect.bottom - rect.top;
+	JSON j = JSON::parse(p);
+	{ auto it = j.find("fontName"); if (it != j.end()) fontName = MB2WC(*it); }
+	{ auto it = j.find("fontSize"); if (it != j.end()) fontSize = *it; }
+	{ auto it = j.find("text"); if (it != j.end()) text = MB2WC(*it); }
+}
+
 void ShadowPainter::draw(Graphics& graphics)
 {
+	int xx, yy;
 	Region screen(Rect(0, 0, w, h));
 	screen.Exclude(Rect(X, Y, W, H));
-	SolidBrush brush(Color(transparency, 0, 0, 0));
+	SolidBrush brush(Color(color.GetAlpha(), 0, 0, 0));
 	graphics.FillRegion(&brush, &screen);
+
+	int ww = max(X, w - (X + W));
+	int hh = max(Y, h - (Y + H));
+
+	if (ww  * h < hh * w) {
+		xx = (2 * X + W > w) ? 0 : w / 2;
+		yy = (2 * Y + H > h) ? 0 : Y + H;
+		hh = max(Y, h - (Y + H));
+		ww = w / 2;
+	}
+	else {
+		xx = (2 * X + W > w) ? 0 : X + W;
+		yy = (2 * Y + H > h) ? 0 : h / 2;
+		hh = h / 2;
+	}
+
+#pragma warning (push)
+#pragma warning (disable : 4244)
+	RectF rect(xx, yy, ww, hh), r;
+#pragma warning (pop)
+
+	SolidBrush textBrush(Color::White);
+	FontFamily fontFamily(fontName.c_str());
+	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
+	StringFormat format;
+	format.SetAlignment(StringAlignment::StringAlignmentCenter);
+	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
+	
+	REAL x2, y2;
+	switch (pos) {
+	case ArrowPos::L: x2 = r.X; y2 = r.Y + r.Height / 2; break;
+	case ArrowPos::R: x2 = r.X + r.Width; y2 = r.Y + r.Height / 2; break;
+	case ArrowPos::T: x2 = r.X + r.Width / 2; y2 = r.Y; break;
+	case ArrowPos::B: x2 = r.X + r.Width / 2; y2 = r.Y + r.Height; break;
+	}
+
+	Pen pen(Color::White, (REAL)thick);
+//	graphics.DrawLine(&pen, (REAL)x1, (REAL)y1, x2, y2);
 }
 
 void EllipsePainter::draw(Graphics& graphics)
@@ -93,8 +159,8 @@ void BezierPainter::draw(Graphics& graphics)
 	int X = p[0].X;
 	int Y = p[0].Y;
 	for (auto it = p.begin() + 1; it != p.end(); ++it) {
-		it->X = X + (it->X - X) * step / limit;;
-		it->Y = Y + (it->Y - Y) * step / limit;;
+		it->X = X + (it->X - X) * step / limit;
+		it->Y = Y + (it->Y - Y) * step / limit;
 	}
 	graphics.DrawBeziers(&pen, p.data(), (INT)p.size());
 }
@@ -119,12 +185,13 @@ LRESULT PainterBase::repaint(HWND hWnd)
 	Bitmap bitmap(w, h, PixelFormat32bppARGB);
 	Graphics graphics(&bitmap);
 	graphics.Clear(Color::Transparent);
-	graphics.SetCompositingQuality(CompositingQualityHighQuality);
+	graphics.SetCompositingQuality(CompositingQuality::CompositingQualityHighQuality);
 	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
+	graphics.SetTextRenderingHint(TextRenderingHint::TextRenderingHintAntiAlias);
 	draw(graphics);
 
 	if (delay) {
-		if (step >= limit) 
+		if (step >= limit)
 			KillTimer(hWnd, ID_TIMER_REPAINT);
 		else ++step;
 	}
