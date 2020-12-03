@@ -24,16 +24,14 @@ std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int match_met
     int result_cols = img.cols - templ.cols + 1;
     int result_rows = img.rows - templ.rows + 1;
     result.create(result_rows, result_cols, CV_32FC1);
-
-    /// Do the Matching and Normalize
+    
+    match_method = (match_method % 3) * 2 + 1;
     matchTemplate(img, templ, result, match_method);
-    normalize(result, result, 0, 1, NORM_MINMAX, -1, Mat());
-
-    /// Localizing the best match
-    Point minLoc; Point maxLoc;
-    minMaxLoc(result, nullptr, nullptr, &minLoc, &maxLoc, Mat());
+    double minVal, maxVal; Point minLoc; Point maxLoc;
+    minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
     /// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
-    Point matchLoc = (match_method == TM_SQDIFF || match_method == TM_SQDIFF_NORMED) ? minLoc : maxLoc;
+    double matchVal = (match_method == TM_SQDIFF_NORMED) ? 1 - minVal : maxVal;
+    Point matchLoc = (match_method == TM_SQDIFF_NORMED) ? minLoc : maxLoc;
 
     nlohmann::json j;
     j["x"] = matchLoc.x + templ.cols / 2;
@@ -44,6 +42,7 @@ std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int match_met
     j["top"] = matchLoc.y;
     j["right"] = matchLoc.x + templ.cols;
     j["bottom"] = matchLoc.y + templ.rows;
+    j["match"] = matchVal;
     return j.dump();
 }
 
