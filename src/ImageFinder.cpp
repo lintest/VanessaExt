@@ -8,28 +8,23 @@
 using namespace std;
 using namespace cv;
 
-std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int match_method)
+std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int method)
 {
-    std::vector<uchar> v_picture(picture.data(), picture.data() + picture.size());
-    std::vector<uchar> v_fragment(fragment.data(), fragment.data() + fragment.size());
-    Mat img = imdecode(v_picture, IMREAD_COLOR);
-    Mat templ = imdecode(v_fragment, IMREAD_COLOR);
-
-    if (img.empty() || templ.empty()) {
+    Mat image = imdecode(std::vector<uchar>(picture.data(), picture.data() + picture.size()), IMREAD_COLOR);
+    Mat templ = imdecode(std::vector<uchar>(fragment.data(), fragment.data() + fragment.size()), IMREAD_COLOR);
+    if (image.empty() || templ.empty()) {
         return {};
     }
 
-    /// Create the result matrix
-    Mat result;
-    int result_cols = img.cols - templ.cols + 1;
-    int result_rows = img.rows - templ.rows + 1;
-    result.create(result_rows, result_cols, CV_32FC1);
+    int result_cols = image.cols - templ.cols + 1;
+    int result_rows = image.rows - templ.rows + 1;
+    Mat result(result_rows, result_cols, CV_32FC1);
     
-    match_method = (match_method % 3) * 2 + 1;
-    matchTemplate(img, templ, result, match_method);
+    int match_method = (method % 3) * 2 + 1;
+    matchTemplate(image, templ, result, match_method);
     double minVal, maxVal; Point minLoc; Point maxLoc;
     minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
-    /// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
+    /// For SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
     double matchVal = (match_method == TM_SQDIFF_NORMED) ? 1 - minVal : maxVal;
     Point matchLoc = (match_method == TM_SQDIFF_NORMED) ? minLoc : maxLoc;
 
