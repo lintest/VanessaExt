@@ -24,13 +24,14 @@ std::string BaseHelper::ImageFinder::find(VH picture, VH fragment, int match_met
     int result_cols = img.cols - templ.cols + 1;
     int result_rows = img.rows - templ.rows + 1;
     result.create(result_rows, result_cols, CV_32FC1);
-
+    
+    match_method = (match_method % 3) * 2 + 1;
     matchTemplate(img, templ, result, match_method);
     double minVal, maxVal; Point minLoc; Point maxLoc;
     minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc, Mat());
     /// For SQDIFF and SQDIFF_NORMED, the best matches are lower values. For all the other methods, the higher the better
-    double matchVal = (match_method == TM_SQDIFF || match_method == TM_SQDIFF_NORMED) ? minVal : maxVal;
-    Point matchLoc = (match_method == TM_SQDIFF || match_method == TM_SQDIFF_NORMED) ? minLoc : maxLoc;
+    double matchVal = (match_method == TM_SQDIFF_NORMED) ? 1 - minVal : maxVal;
+    Point matchLoc = (match_method == TM_SQDIFF_NORMED) ? minLoc : maxLoc;
 
     nlohmann::json j;
     j["x"] = matchLoc.x + templ.cols / 2;
