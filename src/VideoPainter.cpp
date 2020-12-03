@@ -63,7 +63,8 @@ ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h)
 
 void ShadowPainter::draw(Graphics& graphics)
 {
-	int xx, yy, x1, y1;
+	int xx, yy;
+	REAL x1, x2, x3, y1, y2, y3;
 	Region screen(Rect(0, 0, w, h));
 	screen.Exclude(Rect(X, Y, W, H));
 	SolidBrush brush(Color(color.GetAlpha(), 0, 0, 0));
@@ -73,27 +74,22 @@ void ShadowPainter::draw(Graphics& graphics)
 	int hh = max(Y, h - (Y + H));
 	int d = 30;
 
-	if (ww  * h < hh * w) {
+	if (ww * h < hh * w) {
 		xx = (2 * X + W > w) ? 0 : w / 2;
 		yy = (2 * Y + H > h) ? 0 : Y + H;
 		ww = w / 2;
-		x1 = X + W / 2;
-		y1 = yy ? yy + d : hh - d;
+		x1 = (REAL)X + (REAL)W / 2;
+		y1 = REAL(yy ? yy + d : hh - d);
 		pos = xx ? AP::L : AP::R;
 	}
 	else {
 		xx = (2 * X + W > w) ? 0 : X + W;
 		yy = (2 * Y + H > h) ? 0 : h / 2;
 		hh = h / 2;
-		y1 = Y + H / 2;
-		x1 = xx ? xx + d : ww - d;
+		y1 = (REAL)Y + REAL(H) / 2;
+		x1 = REAL(xx ? xx + d : ww - d);
 		pos = yy ? AP::T : AP::B;
 	}
-
-#pragma warning (push)
-#pragma warning (disable : 4244)
-	RectF rect(xx, yy, ww, hh), r;
-#pragma warning (pop)
 
 	SolidBrush textBrush(Color::White);
 	FontFamily fontFamily(fontName.c_str());
@@ -101,26 +97,21 @@ void ShadowPainter::draw(Graphics& graphics)
 	StringFormat format;
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+	RectF rect((REAL)xx, (REAL)yy, (REAL)ww, (REAL)hh), r;
 	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
 	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
-	
-	REAL x2, y2;
+
 	switch (pos) {
-	case AP::L: x2 = r.X; y2 = r.Y + r.Height / 2; break;
-	case AP::R: x2 = r.X + r.Width; y2 = r.Y + r.Height / 2; break;
-	case AP::T: x2 = r.X + r.Width / 2; y2 = r.Y; break;
-	case AP::B: x2 = r.X + r.Width / 2; y2 = r.Y + r.Height; break;
+	case AP::L: x3 = r.X; y3 = r.Y + r.Height / 2; x2 = x1; y2 = y3; break;
+	case AP::R: x3 = r.X + r.Width; y3 = r.Y + r.Height / 2; x2 = x1; y2 = y3; break;
+	case AP::T: x3 = r.X + r.Width / 2; y3 = r.Y; x2 = x3; y2 = y1; break;
+	case AP::B: x3 = r.X + r.Width / 2; y3 = r.Y + r.Height; x2 = x3; y2 = y1; break;
 	}
 
 	Pen pen(Color::White, (REAL)thick);
-	PointF points[] = { 
-		{x2, y2},
-		{x2, (REAL)y1},
-		{x2, (REAL)y1},
-		{(REAL)x1, (REAL)y1},
-	};
+	PointF points[] = { {(REAL)x1, (REAL)y1}, {x2, y2}, {x2, y2}, {x3, y3} };
 	AdjustableArrowCap arrow(12, 12, false);
-	pen.SetCustomEndCap(&arrow);
+	pen.SetCustomStartCap(&arrow);
 	graphics.DrawBeziers(&pen, points, 4);
 }
 
@@ -133,32 +124,27 @@ void EllipsePainter::draw(Graphics& graphics)
 BezierPainter::BezierPainter(const std::string& params, const std::string& text)
 	: PainterBase(params)
 {
-	try {
-		auto list = JSON::parse(text);
-		for (size_t i = 0; i < list.size(); i++) {
-			auto item = list[i];
-			points.push_back({ item["x"], item["y"] });
-		}
-		if (list.size() == 0) throw 0;
-		auto p = points[0];
-		int left = p.X, top = p.Y, right = p.X, bottom = p.Y;
-		for (auto it = points.begin() + 1; it != points.end(); ++it) {
-			if (left > it->X) left = it->X;
-			if (top > it->Y) top = it->Y;
-			if (right < it->X) right = it->X;
-			if (bottom < it->Y) bottom = it->Y;
-		}
-		x = left - 2 * thick;
-		y = top - 2 * thick;
-		w = right - left + 4 * thick;
-		h = bottom - top + 4 * thick;
-		for (auto it = points.begin(); it != points.end(); ++it) {
-			it->X -= x;
-			it->Y -= y;
-		}
+	auto list = parse(text);
+	for (size_t i = 0; i < list.size(); i++) {
+		auto item = list[i];
+		points.push_back({ item["x"], item["y"] });
 	}
-	catch (...) {
-		throw std::u16string(u"JSON parsing error");
+	if (list.size() == 0) throw 0;
+	auto p = points[0];
+	int left = p.X, top = p.Y, right = p.X, bottom = p.Y;
+	for (auto it = points.begin() + 1; it != points.end(); ++it) {
+		if (left > it->X) left = it->X;
+		if (top > it->Y) top = it->Y;
+		if (right < it->X) right = it->X;
+		if (bottom < it->Y) bottom = it->Y;
+	}
+	x = left - 2 * thick;
+	y = top - 2 * thick;
+	w = right - left + 4 * thick;
+	h = bottom - top + 4 * thick;
+	for (auto it = points.begin(); it != points.end(); ++it) {
+		it->X -= x;
+		it->Y -= y;
 	}
 }
 
