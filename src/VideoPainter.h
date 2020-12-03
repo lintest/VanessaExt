@@ -85,7 +85,7 @@ private:
 	REAL fontSize = 24;
 	std::wstring fontName = L"Calibri";
 	std::wstring text;
-	AP pos;
+	AP pos = AP::T;
 public:
 	ShadowPainter(const std::string& p, int x, int y, int w, int h);
 	virtual void draw(Graphics& graphics) override;
