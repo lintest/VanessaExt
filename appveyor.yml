@@ -123,9 +123,11 @@ for:
       - appveyor PushArtifact VanessaExt.epf
       - bin\1cv8ct.exe ENTERPRISE /F %CD%/database /C VanessaExt.epf
       - ps: if (!(Test-Path success.txt)) { throw "Имеются ошибки" }
+      - ps: Set-Content "AddIn.SHA256.txt" (get-filehash -Algorithm SHA256 "AddIn.zip").Hash
 
     artifacts:
       - path: AddIn.zip
+      - path: AddIn.SHA256.txt
       - path: VanessaExt.epf
       - path: autotest.log
       - path: example.log
