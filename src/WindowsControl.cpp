@@ -194,7 +194,7 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"PostMessage", u"ОтправитьСообщение",
 		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
 	);
-	AddProcedure(u"DrawEllipse", u"НарисоватьПрямоугольник",
+	AddProcedure(u"DrawRectangle", u"НарисоватьПрямоугольник",
 		[&](VH p, VH x, VH y, VH w, VH h) { (new RecanglePainter(p, x, y, w, h))->run(); }
 	);
 	AddProcedure(u"DrawEllipse", u"НарисоватьЭллипс",
