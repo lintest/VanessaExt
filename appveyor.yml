@@ -28,9 +28,9 @@ matrix:
   fast_finish: true
 
 install:
-  - git clone -q --branch=master https://github.com/libgit2/libgit2.git libgit2-1.0.1
-  - cd libgit2-1.0.1
-  - git checkout -b version v1.0.1
+  - git clone -q --branch=master https://github.com/libgit2/libgit2.git libgit2-1.1.0
+  - cd libgit2-1.1.0
+  - git checkout -b version v1.1.0
   - cd ..
 
   - git clone -q --branch=master https://github.com/libssh2/libssh2.git libssh2-1.9.0
