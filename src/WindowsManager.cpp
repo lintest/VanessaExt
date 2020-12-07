@@ -190,16 +190,13 @@ bool WindowsManager::Maximize(int64_t window)
 bool WindowsManager::Activate(int64_t window)
 {
 	HWND hWnd = HWND(window);
-	if (hWnd == 0) hWnd = ::GetForegroundWindow();
-	if (IsWindow(hWnd)) {
-		if (IsWindowVisible(hWnd)) {
-			WINDOWPLACEMENT place;
-			memset(&place, 0, sizeof(WINDOWPLACEMENT));
-			place.length = sizeof(WINDOWPLACEMENT);
-			GetWindowPlacement(hWnd, &place);
-			if (place.showCmd == SW_SHOWMINIMIZED) ShowWindow(hWnd, SW_RESTORE);
-			SetForegroundWindow(hWnd);
-		}
+	if (hWnd == 0) return;
+	if (hWnd == GetForegroundWindow())  return;
+	if (IsWindow(hWnd) && IsWindowVisible(hWnd)) {
+		if (IsIconic(hWnd)) ShowWindow(hWnd, SW_RESTORE);
+		keybd_event(VK_MENU, 0, KEYEVENTF_EXTENDEDKEY, 0);
+		keybd_event(VK_MENU, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
+		SetForegroundWindow(hWnd);
 	}
 	return true;
 }
