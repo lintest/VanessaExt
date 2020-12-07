@@ -138,7 +138,7 @@ WindowsControl::WindowsControl() {
 		[&](VH button, VH flags) { ScreenManager::EmulateClick(button, flags); }, { {0, (int64_t)0}, {1, (int64_t)0} }
 	);
 	AddProcedure(u"EmulateDblClick", u"ЭмуляцияДвойногоНажатия",
-		[&]() { ScreenManager::EmulateDblClick(); }
+		[&](VH delay) { ScreenManager::EmulateDblClick(); }, { {0, (int64_t)100} }
 	);
 	AddProcedure(u"EmulateMouse", u"ЭмуляцияДвиженияМыши",
 		[&](VH x, VH y, VH c, VH p) { ScreenManager::EmulateMouse(x, y, c, p); }

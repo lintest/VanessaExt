@@ -30,7 +30,7 @@ public:
 	static std::string GetCursorPos();
 	static BOOL SetCursorPos(int64_t x, int64_t y);
 	static BOOL EmulateClick(int64_t button, VH keys);
-	static BOOL EmulateDblClick();
+	static BOOL EmulateDblClick(int64_t delay = 100);
 	static BOOL EmulateHotkey(VH keys, int64_t flags);
 	static BOOL EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P);
 	static BOOL EmulateWheel(int64_t sign, VH variant);

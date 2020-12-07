@@ -209,10 +209,11 @@ public:
 	}
 };
 
-BOOL BaseHelper::ScreenManager::EmulateDblClick()
+BOOL BaseHelper::ScreenManager::EmulateDblClick(int64_t delay)
 {
 	DWORD dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
 	mouse_event(dwFlags, 0, 0, 0, 0);
+	Sleep((DWORD)delay);
 	mouse_event(dwFlags, 0, 0, 0, 0);
 	return true;
 }
@@ -666,12 +667,13 @@ BOOL BaseHelper::ScreenManager::EmulateWheel(int64_t sign, VH keys)
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateDblClick()
+BOOL BaseHelper::ScreenManager::EmulateDblClick(int64_t delay)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 	XTestFakeButtonEvent(display, 1, true, CurrentTime);
 	XTestFakeButtonEvent(display, 1, false, CurrentTime);
+	::usleep((unsigned long)delay * 1000);
 	XTestFakeButtonEvent(display, 1, true, CurrentTime);
 	XTestFakeButtonEvent(display, 1, false, CurrentTime);
 	XFlush(display);
