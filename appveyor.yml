@@ -12,8 +12,8 @@ skip_branch_with_pr: true
 
 environment:
   global:
-    URL_1CV8T:
-      secure: z47uplaqZaQ0ZkroXy0GP00nv6ACPwovtb+EjfPgpS1UVp1iZSkRJGz8uOWarUXi
+    KEY_1CV8T:
+      secure: OolAVEKkEg1cGCpG/VK2FaM0LWrPgMR/Kn4nTLYyKR0=
     API_TOKEN:
       secure: 85XpT8I1bxRTZaiIA+co0b5GS05J2VOn7PzunkYlL40=
 
@@ -28,6 +28,11 @@ matrix:
   fast_finish: true
 
 install:
+  - cmd: git clone -q --branch=master https://github.com/lintest/tools1c.git bin
+  - cmd: cd bin
+  - cmd: 7z x tools1c.part01.rar -p%KEY_1CV8T%
+  - cmd: cd ..
+
   - git clone -q --branch=master https://github.com/libgit2/libgit2.git libgit2-1.1.0
   - cd libgit2-1.1.0
   - git checkout -b version v1.1.0
@@ -110,12 +115,8 @@ for:
       only:
         - job_name: Windows
 
-    cache: 1cv8t.7z
-
     after_build:
       - ps: Set-Content -Path app_port.txt -Value ([uri] $env:APPVEYOR_API_URL).Port
-      - ps: if (!(Test-Path 1cv8t.7z)) { Invoke-WebRequest -Uri $env:URL_1CV8T -OutFile 1cv8t.7z }
-      - 7z x 1cv8t.7z
       - mkdir database
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/config /UpdateDBCfg
