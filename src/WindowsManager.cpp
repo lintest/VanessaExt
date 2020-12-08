@@ -190,8 +190,7 @@ bool WindowsManager::Maximize(int64_t window)
 bool WindowsManager::Activate(int64_t window)
 {
 	HWND hWnd = HWND(window);
-	if (hWnd == 0 || hWnd == GetForegroundWindow())  return true;
-	if (IsWindow(hWnd) && IsWindowVisible(hWnd)) {
+	if (hWnd && IsWindow(hWnd) && IsWindowVisible(hWnd)) {
 		if (IsIconic(hWnd)) ShowWindow(hWnd, SW_RESTORE);
 		keybd_event(VK_MENU, 0, KEYEVENTF_EXTENDEDKEY, 0);
 		keybd_event(VK_MENU, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
