@@ -95,6 +95,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"TakeScreenshot", u"ПолучитьСнимокЭкрана",
 		[&](VH mode) { ScreenManager::CaptureScreen(this->result, mode); }
 	);
+	AddFunction(u"CaptureRegion", u"ПолучитьСнимокОбласти",
+		[&](VH x, VH y, VH w, VH h) { ScreenManager::CaptureRegion(this->result, x, y, w, h); }
+	);
 	AddFunction(u"CaptureWindow", u"ПолучитьСнимокОкна",
 		[&](VH window) { ScreenManager::CaptureWindow(this->result, window); }
 	);

@@ -124,6 +124,21 @@ BOOL BaseHelper::ScreenManager::CaptureScreen(VH variant, int64_t mode)
 	return true;
 }
 
+BOOL BaseHelper::ScreenManager::CaptureRegion(VH variant, int64_t x, int64_t y, int64_t w, int64_t h)
+{
+	HDC hScreen = GetDC(NULL);
+	HDC hDC = CreateCompatibleDC(hScreen);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
+	HGDIOBJ object = SelectObject(hDC, hBitmap);
+	BitBlt(hDC, 0, 0, (int)w, (int)h, hScreen, (int)x, (int)y, SRCCOPY);
+	ImageHelper(hBitmap).Save(variant);
+	SelectObject(hDC, object);
+	DeleteDC(hDC);
+	ReleaseDC(NULL, hScreen);
+	DeleteObject(hBitmap);
+	return true;
+}
+
 BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, int64_t window)
 {
 	return Capture(variant, (HWND)window);
@@ -462,6 +477,27 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, Window win)
 	XWindowAttributes gwa;
 	XGetWindowAttributes(display, window, &gwa);
 	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
+	X11Screenshot screenshot = X11Screenshot(image);
+	std::vector<char> buffer;
+	if (screenshot.save_to_png(buffer)) {
+		variant.AllocMemory(buffer.size());
+		memcpy((void*)variant.data(), &buffer[0], buffer.size());
+		success = true;
+	}
+	XDestroyImage(image);
+	XCloseDisplay(display);
+	return success;
+}
+
+BOOL BaseHelper::ScreenManager::CaptureRegion(VH variant, int64_t x, int64_t y, int64_t w, int64_t h)
+{
+	Display* display = XOpenDisplay(NULL);
+	if (display == NULL) return false;
+
+	Window window = DefaultRootWindow(display);
+	BOOL success = false;
+	XWindowAttributes gwa;
+	XImage* image = XGetImage(display, window, (int)x, (int)y, (unsigned int)w, (unsigned int)h, AllPlanes, ZPixmap);
 	X11Screenshot screenshot = X11Screenshot(image);
 	std::vector<char> buffer;
 	if (screenshot.save_to_png(buffer)) {

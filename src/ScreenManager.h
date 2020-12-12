@@ -27,6 +27,7 @@ public:
 	static BOOL CaptureProcess(VH variant, int64_t pid);
 	static BOOL CaptureScreen(VH variant, int64_t mode);
 	static BOOL CaptureWindow(VH variant, int64_t window);
+	static BOOL CaptureRegion(VH variant, int64_t x, int64_t y, int64_t w, int64_t h);
 	static std::string GetCursorPos();
 	static BOOL SetCursorPos(int64_t x, int64_t y);
 	static BOOL EmulateClick(int64_t button, VH keys);
