@@ -335,13 +335,11 @@
 														</InputField>
 													</ChildItems>
 												</UsualGroup>
-												<CheckBoxField name="ЗапретитьИзменятьРазмер" id="86">
-													<DataPath>ЗапретитьИзменятьРазмер</DataPath>
-													<TitleLocation>Right</TitleLocation>
-													<CheckBoxType>Auto</CheckBoxType>
-													<ContextMenu name="ЗапретитьИзменятьРазмерКонтекстноеМеню" id="87"/>
-													<ExtendedTooltip name="ЗапретитьИзменятьРазмерРасширеннаяПодсказка" id="88"/>
-												</CheckBoxField>
+												<Button name="СнимокОбластиЭкрана" id="729">
+													<Type>UsualButton</Type>
+													<CommandName>Form.Command.СнимокОбластиЭкрана</CommandName>
+													<ExtendedTooltip name="СнимокОбластиЭкранаРасширеннаяПодсказка" id="730"/>
+												</Button>
 											</ChildItems>
 										</UsualGroup>
 									</ChildItems>
@@ -5279,6 +5277,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>АктивироватьПроцесс</Action>
+		</Command>
+		<Command name="СнимокОбластиЭкрана" id="78">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Снимок области экрана</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Снимок области экрана</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>СнимокОбластиЭкрана</Action>
 		</Command>
 	</Commands>
 </Form>
