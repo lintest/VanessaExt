@@ -93,13 +93,13 @@ WindowsControl::WindowsControl() {
 		[&](VH window) { this->result = WindowsManager::GetWindowSize(window); }
 	);
 	AddFunction(u"TakeScreenshot", u"ПолучитьСнимокЭкрана",
-		[&](VH mode) { ScreenManager::CaptureScreen(this->result, mode); }
+		[&](VH mode) { ScreenManager::CaptureScreen(this->result, mode); }, { {0, (int64_t)0} }
 	);
 	AddFunction(u"CaptureRegion", u"ПолучитьСнимокОбласти",
 		[&](VH x, VH y, VH w, VH h) { ScreenManager::CaptureRegion(this->result, x, y, w, h); }
 	);
 	AddFunction(u"CaptureWindow", u"ПолучитьСнимокОкна",
-		[&](VH window) { ScreenManager::CaptureWindow(this->result, window); }
+		[&](VH window) { ScreenManager::CaptureWindow(this->result, window); }, { {0, (int64_t)0} }
 	);
 	AddFunction(u"CaptureProcess", u"ПолучитьСнимокПроцесса",
 		[&](VH pid) { ScreenManager::CaptureProcess(this->result, pid); }
