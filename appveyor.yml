@@ -1,5 +1,4 @@
 version: 1.2.3.{build}
-
 configuration: Release
 platform: x64
 
@@ -9,14 +8,9 @@ branches:
     - master
 
 skip_branch_with_pr: true
+skip_tags: true
 
 environment:
-  global:
-    KEY_1CV8T:
-      secure: OolAVEKkEg1cGCpG/VK2FaM0LWrPgMR/Kn4nTLYyKR0=
-    API_TOKEN:
-      secure: 85XpT8I1bxRTZaiIA+co0b5GS05J2VOn7PzunkYlL40=
-
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       job_name: Linux
@@ -77,7 +71,7 @@ init:
 
 build_script:
   - sh: echo "#define VERSION_FULL " ${APPVEYOR_BUILD_VERSION} > "version.h"
-  - cmd: Powershell.exe -File manifest.ps1 -Project VanessaExt -Version %APPVEYOR_BUILD_VERSION%
+  - cmd: powershell -File manifest.ps1
 
   - sh: cd boost_1_74_0
   - sh: ./b2 cxxflags=-fPIC link=static threading=multi runtime-link=static release stage --with-regex --with-date_time define=_GLIBCXX_USE_CXX11_ABI=0 address-model=32
@@ -100,7 +94,7 @@ build_script:
   - cd ..
 
   - sh: cp bin/libVanessaExtLin??.so .
-  - sh: 7z a VanessaExt.zip libVanessaExtLin??.so
+  - sh: 7z a AddIn.zip libVanessaExtLin??.so
   - cmd: copy bin\Release\libVanessaExtWin??.dll .
   - cmd: Powershell.exe -File appveyor.ps1
 
@@ -109,11 +103,15 @@ for:
       only:
         - job_name: Linux
     artifacts:
-      - path: VanessaExt.zip
+      - path: AddIn.zip
 
   - matrix:
       only:
         - job_name: Windows
+
+    environment:
+      KEY_1CV8T:
+        secure: OolAVEKkEg1cGCpG/VK2FaM0LWrPgMR/Kn4nTLYyKR0=
 
     after_build:
       - ps: Set-Content -Path app_port.txt -Value ([uri] $env:APPVEYOR_API_URL).Port

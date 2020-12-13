@@ -1,30 +1,21 @@
-$account = "lintest"
-$project = "VanessaExt"
-$name = "VanessaExt"
+param(
+  [string]$account = $env:APPVEYOR_ACCOUNT_NAME,
+  [string]$project = $env:APPVEYOR_PROJECT_NAME,
+  [string]$name = $env:APPVEYOR_PROJECT_NAME
+)
 
-#https://ci.appveyor.com/api-keys
-$token = $env:API_TOKEN 
 $path = $env:APPVEYOR_BUILD_FOLDER
 $version = $env:APPVEYOR_BUILD_VERSION
-$postfix = '_' + $version -replace '\.', '_'
+$postfix = '_' + $version -replace '\.', '-'
 
 $apiUrl = 'https://ci.appveyor.com/api'
-$headers = @{
-  "Authorization" = "Bearer $token"
-  "Content-type"  = "application/json"
-}
+$data = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$account/$project/build/$version"
+$jobId = $data.build.jobs[0].jobId
 
-$project = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$account/$project/build/$version" -Headers $headers
-
-$jobId = $project.build.jobs[0].jobId
-$artifacts = Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts" -Headers $headers
-$artifactFileName = $artifacts[0].fileName
-
-Invoke-RestMethod -Method Get -Uri "$apiUrl/buildjobs/$jobId/artifacts/$artifactFileName" `
-  -OutFile "$path\Linux.zip" -Headers @{ "Authorization" = "Bearer $token" }
+Invoke-RestMethod -Method Get -OutFile "$path\Linux.zip" `
+  -Uri "$apiUrl/buildjobs/$jobId/artifacts/AddIn.zip" 
 
 Expand-Archive -Force -Path "$path\Linux.zip" -DestinationPath $path
-
 Rename-Item "$path\lib${name}Win32.dll" "${name}Win32$postfix.dll"
 Rename-Item "$path\lib${name}Win64.dll" "${name}Win64$postfix.dll"
 Rename-Item "$path\lib${name}Lin32.so" "${name}Lin32$postfix.so"
@@ -36,6 +27,5 @@ $compress = @{
 }
 Compress-Archive @compress
 
-New-Item -ItemType Directory -Force -Path "$path\Example\Templates\$name\" | Out-Null
 New-Item -ItemType Directory -Force -Path "$path\Example\Templates\$name\Ext\" | Out-Null
 Copy-Item -Path "$path\AddIn.zip" -Destination "$path\Example\Templates\$name\Ext\Template.bin"
