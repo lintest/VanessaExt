@@ -277,8 +277,10 @@ BOOL BaseHelper::ScreenManager::EmulateWheel(int64_t sign, VH variant)
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P)
+BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P, bool button)
 {
+	if (button) mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+
 	double x = (double)X;
 	double y = (double)Y;
 	double count = (double)C;
@@ -315,6 +317,8 @@ BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, in
 		if (pause) Sleep(pause);
 	}
 
+	if (button) mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+
 	return true;
 }
 
@@ -336,7 +340,7 @@ BOOL BaseHelper::ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring &text, int64_t pause)
+BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pause)
 {
 	Sleep(100);
 	for (auto ch : text) {
@@ -608,7 +612,7 @@ public:
 	virtual ~Hotkey() {
 		if (m_display) XCloseDisplay(m_display);
 	}
-	bool add(const std::wstring &text) {
+	bool add(const std::wstring& text) {
 		try {
 			auto json = JSON::parse(WC2MB(text));
 			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
@@ -717,10 +721,12 @@ BOOL BaseHelper::ScreenManager::EmulateDblClick(int64_t delay)
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P)
+BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, int64_t P, bool button)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
+
+	if (button) XTestFakeButtonEvent(display, 1, true, CurrentTime);
 
 	double x2 = X;
 	double y2 = Y;
@@ -761,6 +767,8 @@ BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, in
 		XFlush(display);
 		if (pause) usleep(pause * 1000);
 	}
+
+	if (button) XTestFakeButtonEvent(display, 1, false, CurrentTime);
 
 	XCloseDisplay(display);
 

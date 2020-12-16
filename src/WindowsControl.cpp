@@ -144,7 +144,10 @@ WindowsControl::WindowsControl() {
 		[&](VH delay) { ScreenManager::EmulateDblClick(); }, { {0, (int64_t)100} }
 	);
 	AddProcedure(u"EmulateMouse", u"ЭмуляцияДвиженияМыши",
-		[&](VH x, VH y, VH c, VH p) { ScreenManager::EmulateMouse(x, y, c, p); }
+		[&](VH x, VH y, VH c, VH p) { ScreenManager::EmulateMouse(x, y, c, p, false); }
+	);
+	AddProcedure(u"DragAndDrop", u"ЭмуляцияПеретаскивания",
+		[&](VH x, VH y, VH c, VH p) { ScreenManager::EmulateMouse(x, y, c, p, true); }
 	);
 	AddProcedure(u"EmulateWheel", u"ЭмуляцияКолесаМыши",
 		[&](VH sign, VH flags) { ScreenManager::EmulateWheel(sign, flags); }
