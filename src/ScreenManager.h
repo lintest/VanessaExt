@@ -18,6 +18,8 @@ private:
 #else
 	static BOOL Capture(VH variant, Window win);
 #endif//_WINDOWS
+private:
+	class Hotkey;
 public:
 	ScreenManager() { }
 	static std::string GetScreenInfo();

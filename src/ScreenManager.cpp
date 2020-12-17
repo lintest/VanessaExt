@@ -179,10 +179,34 @@ BOOL BaseHelper::ScreenManager::SetCursorPos(int64_t x, int64_t y)
 	return ::SetCursorPos((int)x, (int)y);
 }
 
-class Hotkey
+class BaseHelper::ScreenManager::Hotkey
 	: private std::vector<INPUT>
 {
 public:
+	Hotkey(VH keys) {
+		if (keys.type() == VTYPE_PWSTR) {
+			add(keys);
+		}
+		else if (keys.type() == VTYPE_I4) {
+			auto flags = (int64_t)keys;
+			if (flags & 0x04) add(VK_SHIFT);
+			if (flags & 0x08) add(VK_CONTROL);
+			if (flags & 0x10) add(VK_MENU);
+		}
+	}
+	Hotkey(VH keys, int64_t flags) {
+		if (keys.type() == VTYPE_PWSTR) {
+			add(keys);
+		}
+		else if (keys.type() == VTYPE_I4) {
+			auto flags = (int64_t)keys;
+			if (flags & 0x04) add(VK_SHIFT);
+			if (flags & 0x08) add(VK_CONTROL);
+			if (flags & 0x10) add(VK_MENU);
+			auto key = (WORD)(int64_t)keys;
+			if (key) add(key);
+		}
+	}
 	void add(WORD key) {
 		INPUT ip;
 		::ZeroMemory(&ip, sizeof(ip));
@@ -190,7 +214,7 @@ public:
 		ip.ki.wVk = key;
 		push_back(ip);
 	}
-	bool add(std::wstring text) {
+	void add(std::wstring text) {
 		try {
 			auto json = JSON::parse(WC2MB(text));
 			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
@@ -198,18 +222,12 @@ public:
 			}
 		}
 		catch (nlohmann::json::parse_error e) {
-			return false;
+			throw u"JSON parse error";
 		}
-		return true;
 	}
 	void send() {
-		if (size() == 0) return;
-		SendInput((UINT)size(), data(), sizeof(INPUT));
-		std::reverse(begin(), end());
-		for (auto it = begin(); it != end(); ++it) {
-			it->ki.dwFlags = KEYEVENTF_KEYUP;
-		}
-		SendInput((UINT)size(), data(), sizeof(INPUT));
+		down();
+		up();
 	}
 	void down() {
 		if (size() == 0) return;
@@ -242,34 +260,16 @@ BOOL BaseHelper::ScreenManager::EmulateClick(int64_t button, VH keys)
 	case 3: dwFlags = MOUSEEVENTF_XDOWN | MOUSEEVENTF_XUP; break;
 	default: dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
 	}
-	Hotkey hotkey;
-	if (keys.type() == VTYPE_PWSTR) {
-		if (!hotkey.add(keys)) return false;
-	}
-	else if (keys.type() == VTYPE_I4) {
-		auto flags = (int64_t)keys;
-		if (flags & 0x04) hotkey.add(VK_SHIFT);
-		if (flags & 0x08) hotkey.add(VK_CONTROL);
-		if (flags & 0x10) hotkey.add(VK_MENU);
-	}
+	Hotkey hotkey(keys);
 	hotkey.down();
 	mouse_event(dwFlags, 0, 0, 0, 0);
 	hotkey.up();
 	return true;
 }
 
-BOOL BaseHelper::ScreenManager::EmulateWheel(int64_t sign, VH variant)
+BOOL BaseHelper::ScreenManager::EmulateWheel(int64_t sign, VH keys)
 {
-	Hotkey hotkey;
-	if (variant.type() == VTYPE_PWSTR) {
-		if (!hotkey.add(variant)) return false;
-	}
-	else if (variant.type() == VTYPE_I4) {
-		auto flags = int64_t(variant);
-		if (flags & 0x04) hotkey.add(VK_SHIFT);
-		if (flags & 0x08) hotkey.add(VK_CONTROL);
-		if (flags & 0x10) hotkey.add(VK_MENU);
-	}
+	Hotkey hotkey(keys);
 	hotkey.down();
 	DWORD delta = sign < 0 ? -WHEEL_DELTA : WHEEL_DELTA;
 	mouse_event(MOUSEEVENTF_WHEEL, 0, 0, delta, 0);
@@ -325,17 +325,7 @@ BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, in
 BOOL BaseHelper::ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 {
 	Sleep(100);
-	Hotkey hotkey;
-	if (keys.type() == VTYPE_PWSTR) {
-		if (!hotkey.add(keys)) return false;
-	}
-	else {
-		WORD key = (WORD)(int64_t)keys;
-		if (flags & 0x04) hotkey.add(VK_SHIFT);
-		if (flags & 0x08) hotkey.add(VK_CONTROL);
-		if (flags & 0x10) hotkey.add(VK_MENU);
-		if (key) hotkey.add(key);
-	}
+	Hotkey hotkey(keys, flags);
 	hotkey.send();
 	return true;
 }
@@ -600,19 +590,42 @@ BOOL BaseHelper::ScreenManager::SetCursorPos(int64_t x, int64_t y)
 	return true;
 }
 
-class Hotkey
+class BaseHelper::ScreenManager::Hotkey
 	: private std::vector<KeyCode>
 {
 private:
 	Display* m_display;
 public:
-	Hotkey() {
+	Hotkey(VH keys) {
 		m_display = XOpenDisplay(NULL);
+		if (keys.type() == VTYPE_PWSTR) {
+			add(std::wstring(keys));
+		}
+		else if (keys.type() == VTYPE_I4) {
+			WORD flags = (int64_t)keys;
+			if (flags & 0x04) add(XK_Shift_L);
+			if (flags & 0x08) add(XK_Control_L);
+			if (flags & 0x10) add(XK_Alt_L);
+		}
+	}
+	Hotkey(VH keys, int64_t flags) {
+		m_display = XOpenDisplay(NULL);
+		if (keys.type() == VTYPE_PWSTR) {
+			add(std::wstring(keys));
+		}
+		else if (keys.type() == VTYPE_I4) {
+			WORD flags = (int64_t)keys;
+			if (flags & 0x04) add(XK_Shift_L);
+			if (flags & 0x08) add(XK_Control_L);
+			if (flags & 0x10) add(XK_Alt_L);
+			auto key = (WORD)(int64_t)keys;
+			if (key) add(key);
+		}
 	}
 	virtual ~Hotkey() {
 		if (m_display) XCloseDisplay(m_display);
 	}
-	bool add(const std::wstring& text) {
+	void add(const std::wstring& text) {
 		try {
 			auto json = JSON::parse(WC2MB(text));
 			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
@@ -620,9 +633,8 @@ public:
 			}
 		}
 		catch (nlohmann::json::parse_error e) {
-			return false;
+			throw u"JSON parse error";
 		}
-		return true;
 	}
 	void add(KeySym keysym) {
 		KeyCode keycode = XKeysymToKeycode(m_display, keysym);
@@ -630,16 +642,8 @@ public:
 		push_back(keycode);
 	}
 	void send() {
-		if (!m_display) return;
-		if (size() == 0) return;
-		for (auto it = begin(); it != end(); ++it) {
-			XTestFakeKeyEvent(m_display, *it, true, CurrentTime);
-		}
-		std::reverse(begin(), end());
-		for (auto it = begin(); it != end(); ++it) {
-			XTestFakeKeyEvent(m_display, *it, false, CurrentTime);
-		}
-		XFlush(m_display);
+		down();
+		up();
 	}
 	void down() {
 		if (!m_display) return;
@@ -647,6 +651,7 @@ public:
 		for (auto it = begin(); it != end(); ++it) {
 			XTestFakeKeyEvent(m_display, *it, true, CurrentTime);
 		}
+		XFlush(m_display);
 	}
 	void up() {
 		if (!m_display) return;
@@ -655,6 +660,7 @@ public:
 		for (auto it = begin(); it != end(); ++it) {
 			XTestFakeKeyEvent(m_display, *it, false, CurrentTime);
 		}
+		XFlush(m_display);
 	}
 };
 
@@ -663,16 +669,7 @@ BOOL BaseHelper::ScreenManager::EmulateClick(int64_t button, VH keys)
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 
-	Hotkey hotkey;
-	if (keys.type() == VTYPE_PWSTR) {
-		if (!hotkey.add(std::wstring(keys))) return false;
-	}
-	else if (keys.type() == VTYPE_I4) {
-		WORD flags = (int64_t)keys;
-		if (flags & 0x04) hotkey.add(XK_Shift_L);
-		if (flags & 0x08) hotkey.add(XK_Control_L);
-		if (flags & 0x10) hotkey.add(XK_Alt_L);
-	}
+	Hotkey hotkey(keys);
 	hotkey.down();
 	XTestFakeButtonEvent(display, button, true, CurrentTime);
 	XTestFakeButtonEvent(display, button, false, CurrentTime);
@@ -688,16 +685,7 @@ BOOL BaseHelper::ScreenManager::EmulateWheel(int64_t sign, VH keys)
 	if (!display) return false;
 	unsigned int button = sign < 0 ? 5 : 4;
 
-	Hotkey hotkey;
-	if (keys.type() == VTYPE_PWSTR) {
-		if (!hotkey.add(std::wstring(keys))) return false;
-	}
-	else if (keys.type() == VTYPE_I4) {
-		WORD flags = (int64_t)keys;
-		if (flags & 0x04) hotkey.add(XK_Shift_L);
-		if (flags & 0x08) hotkey.add(XK_Control_L);
-		if (flags & 0x10) hotkey.add(XK_Alt_L);
-	}
+	Hotkey hotkey(keys);
 	hotkey.down();
 	XTestFakeButtonEvent(display, button, true, CurrentTime);
 	XTestFakeButtonEvent(display, button, false, CurrentTime);
@@ -778,16 +766,7 @@ BOOL BaseHelper::ScreenManager::EmulateMouse(int64_t X, int64_t Y, int64_t C, in
 BOOL BaseHelper::ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 {
 	usleep(100 * 1000);
-	Hotkey hotkey;
-	if (keys.type() == VTYPE_PWSTR) {
-		if (!hotkey.add(std::wstring(keys))) return false;
-	}
-	else if (keys.type() == VTYPE_I4) {
-		WORD flags = (int64_t)keys;
-		if (flags & 0x04) hotkey.add(XK_Shift_L);
-		if (flags & 0x08) hotkey.add(XK_Control_L);
-		if (flags & 0x10) hotkey.add(XK_Alt_L);
-	}
+	Hotkey hotkey(keys, flags);
 	hotkey.send();
 	return true;
 }
