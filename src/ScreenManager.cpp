@@ -199,7 +199,6 @@ public:
 			add(keys);
 		}
 		else if (keys.type() == VTYPE_I4) {
-			auto flags = (int64_t)keys;
 			if (flags & 0x04) add(VK_SHIFT);
 			if (flags & 0x08) add(VK_CONTROL);
 			if (flags & 0x10) add(VK_MENU);
@@ -614,7 +613,6 @@ public:
 			add(std::wstring(keys));
 		}
 		else if (keys.type() == VTYPE_I4) {
-			WORD flags = (int64_t)keys;
 			if (flags & 0x04) add(XK_Shift_L);
 			if (flags & 0x08) add(XK_Control_L);
 			if (flags & 0x10) add(XK_Alt_L);
