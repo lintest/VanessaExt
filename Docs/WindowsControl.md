@@ -39,6 +39,7 @@
 - <a href="#FindTestClient">НайтиКлиентТестирования (FindTestClient)</a>
 - <a href="#GetProcessList">ПолучитьСписокПроцессов (GetProcessList)</a>
 - <a href="#GetProcessInfo">ПолучитьСвойстваПроцесса (GetProcessInfo)</a>
+- <a href="#OutputToConsole">ВывестиНаКонсоль (OutputToConsole)</a>
 - <a href="#Sleep">Пауза (Sleep)</a>
 
 Информация об окружении:
@@ -205,6 +206,9 @@
 ТекстJSON = ВнешняяКомпонента.ПолучитьСвойстваПроцесса(ИдентификаторПроцесса);
 СтруктураСвойстваПроцесса = ПрочитатьСтрокуJSON(ТекстJSON);
 ```
+
+### <a name="OutputToConsole">ВывестиНаКонсоль(Текст) / OutputToConsole</a>
+Выводит в консоль произвольный текст.
 
 ### <a name="WebSocket">ВебСокет(Адрес, Команда) / WebSocket</a>
 Простейшая функция однократного обмена данными по протоколу WebSocket.

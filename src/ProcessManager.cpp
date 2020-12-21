@@ -140,6 +140,21 @@ int64_t ProcessManager::ProcessId()
 	return(GetCurrentProcessId());
 }
 
+DWORD ProcessManager::ParentProcessId()
+{
+	DWORD pid = ::GetCurrentProcessId();
+	std::wstring query;
+	query.append(L"SELECT ParentProcessId");
+	query.append(L" FROM Win32_Process ");
+	query.append(L" WHERE ProcessId=");
+	query.append(std::to_wstring(pid));
+	JSON json = ProcessEnumerator(query.c_str()).json();
+	if (json.is_array() && json.size() == 1) {
+		return json[0]["ParentProcessId"];
+	}
+	return 0;
+}
+
 std::wstring ProcessManager::GetProcessList(bool only1c)
 {
 	std::wstring query;
@@ -221,6 +236,21 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 void ProcessManager::Sleep(int64_t interval)
 {
 	::Sleep((DWORD)interval);
+}
+
+void ProcessManager::Console(const std::wstring& text)
+{
+	auto pid = ParentProcessId();
+	if (!pid) return;
+	if (!AttachConsole(pid)) return;
+	SetConsoleOutputCP(1251);
+	SetConsoleCP(1251);
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
+	auto hConOut = CreateFile(L"CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	SetStdHandle(STD_OUTPUT_HANDLE, hConOut);
+	std::wcout << text;
+	FreeConsole();
 }
 
 #else //_WINDOWS
@@ -341,7 +371,7 @@ public:
 class ProcessInfo : public ProcessEnumerator
 {
 protected:
-	virtual bool EnumWindow(Window window) { return false; } 
+	virtual bool EnumWindow(Window window) { return false; }
 public:
 	ProcessInfo(unsigned long pid) {
 		json["Name"] = GetProcessName(pid);
@@ -381,6 +411,11 @@ void ProcessManager::Sleep(int64_t ms)
 	::usleep((unsigned long)ms * 1000);
 }
 
+void ProcessManager::Console(const std::wstring& text)
+{
+	std::wcout << text;
+}
+
 std::wstring OpenWebSocket(WebSocketBase** ws, tVariant* paParams, const long lSizeArray) { return {}; }
 std::wstring SendWebSocket(WebSocketBase* ws, tVariant* paParams, const long lSizeArray) { return {}; }
 std::wstring WebSocket(tVariant* paParams, const long lSizeArray) { return {}; }
@@ -401,7 +436,7 @@ static std::wstring SocketError(std::string message)
 	return MB2WC(json.dump());
 }
 
-std::wstring ProcessManager::WebSocket(const std::string &url, const std::string& msg)
+std::wstring ProcessManager::WebSocket(const std::string& url, const std::string& msg)
 {
 	std::string message;
 	try {
@@ -420,7 +455,7 @@ std::wstring ProcessManager::WebSocket(const std::string &url, const std::string
 	}
 }
 
-std::wstring ProcessManager::OpenWebSocket(WebSocketBase** ws, const std::string &url)
+std::wstring ProcessManager::OpenWebSocket(WebSocketBase** ws, const std::string& url)
 {
 	std::string res;
 	WebSocketBase* socket = WebSocketBase::create();

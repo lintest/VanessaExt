@@ -161,6 +161,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"FindFiles", u"НайтиФайлы",
 		[&](VH path, VH mask, VH text, VH ignore) {	this->result = FileFinder(text, ignore).find(path, mask); }, { {3, true} }
 	);
+	AddProcedure(u"OutputToConsole", u"ВывестиНаКонсоль",
+		[&](VH text) { ProcessManager::Console(text); }
+	);
 	AddProcedure(u"Sleep", u"Пауза",
 		[&](VH msec) { ProcessManager::Sleep(msec); }
 	);
