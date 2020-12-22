@@ -128,7 +128,7 @@ BOOL BaseHelper::ScreenManager::CaptureRegion(VH variant, int64_t x, int64_t y, 
 {
 	HDC hScreen = GetDC(NULL);
 	HDC hDC = CreateCompatibleDC(hScreen);
-	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, w, h);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hScreen, (int)w, (int)h);
 	HGDIOBJ object = SelectObject(hDC, hBitmap);
 	BitBlt(hDC, 0, 0, (int)w, (int)h, hScreen, (int)x, (int)y, SRCCOPY);
 	ImageHelper(hBitmap).Save(variant);

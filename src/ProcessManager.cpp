@@ -140,21 +140,6 @@ int64_t ProcessManager::ProcessId()
 	return(GetCurrentProcessId());
 }
 
-DWORD ProcessManager::ParentProcessId()
-{
-	DWORD pid = ::GetCurrentProcessId();
-	std::wstring query;
-	query.append(L"SELECT ParentProcessId");
-	query.append(L" FROM Win32_Process ");
-	query.append(L" WHERE ProcessId=");
-	query.append(std::to_wstring(pid));
-	JSON json = ProcessEnumerator(query.c_str()).json();
-	if (json.is_array() && json.size() == 1) {
-		return json[0]["ParentProcessId"];
-	}
-	return 0;
-}
-
 std::wstring ProcessManager::GetProcessList(bool only1c)
 {
 	std::wstring query;
@@ -238,19 +223,37 @@ void ProcessManager::Sleep(int64_t interval)
 	::Sleep((DWORD)interval);
 }
 
-void ProcessManager::Console(const std::wstring& text)
+DWORD ProcessManager::ParentProcessId(DWORD pid)
 {
-	auto pid = ParentProcessId();
-	if (!pid) return;
-	if (!AttachConsole(pid)) return;
+	std::wstring query;
+	query.append(L"SELECT ParentProcessId");
+	query.append(L" FROM Win32_Process ");
+	query.append(L" WHERE ProcessId=");
+	query.append(std::to_wstring(pid));
+	JSON json = ProcessEnumerator(query.c_str()).json();
+	if (json.is_array() && json.size() == 1) {
+		return json[0]["ParentProcessId"];
+	}
+	return 0;
+}
+
+bool ProcessManager::ConsoleOut(const std::wstring& text)
+{
+	auto pid = ::GetCurrentProcessId();
+	while (true) {
+		pid = ParentProcessId(pid);
+		if (pid == 0) return false;
+		if (AttachConsole(pid)) break;
+	}
 	SetConsoleOutputCP(1251);
 	SetConsoleCP(1251);
 	FILE* fDummy;
 	freopen_s(&fDummy, "CONOUT$", "w", stdout);
-	auto hConOut = CreateFile(L"CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	auto hConOut = CreateFile(L"CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	SetStdHandle(STD_OUTPUT_HANDLE, hConOut);
 	std::wcout << text;
 	FreeConsole();
+	return true;
 }
 
 #else //_WINDOWS
@@ -411,9 +414,10 @@ void ProcessManager::Sleep(int64_t ms)
 	::usleep((unsigned long)ms * 1000);
 }
 
-void ProcessManager::Console(const std::wstring& text)
+bool ProcessManager::ConsoleOut(const std::wstring& text)
 {
 	std::wcout << text;
+	return true;
 }
 
 std::wstring OpenWebSocket(WebSocketBase** ws, tVariant* paParams, const long lSizeArray) { return {}; }
