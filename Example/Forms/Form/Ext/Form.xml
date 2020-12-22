@@ -742,47 +742,6 @@
 												</v8:item>
 											</ToolTip>
 											<ExtendedTooltip name="ПанельНажатиеКлавишРасширеннаяПодсказка" id="502"/>
-											<ChildItems>
-												<ButtonGroup name="ГруппаГорячиеКлавиши" id="503">
-													<Title>
-														<v8:item>
-															<v8:lang>ru</v8:lang>
-															<v8:content>Группа горячие клавиши</v8:content>
-														</v8:item>
-													</Title>
-													<ToolTip>
-														<v8:item>
-															<v8:lang>ru</v8:lang>
-															<v8:content>Группа горячие клавиши</v8:content>
-														</v8:item>
-													</ToolTip>
-													<Representation>Compact</Representation>
-													<ExtendedTooltip name="ГруппаГорячиеКлавишиРасширеннаяПодсказка" id="504"/>
-													<ChildItems>
-														<Button name="КлавишаWindowsE" id="448">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.НажатиеКлавишиWinE</CommandName>
-															<Title>
-																<v8:item>
-																	<v8:lang>ru</v8:lang>
-																	<v8:content>Win+E</v8:content>
-																</v8:item>
-															</Title>
-															<ExtendedTooltip name="КлавишаWindowsEРасширеннаяПодсказка" id="449"/>
-														</Button>
-														<Button name="НажатиеГорячейКлавиши" id="425">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.НажатиеКлавишиCtrlF2</CommandName>
-															<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
-														</Button>
-														<Button name="НажатиеКлавишиNumLock" id="450">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.НажатиеКлавишиNumLock</CommandName>
-															<ExtendedTooltip name="НажатиеКлавишиNumLockРасширеннаяПодсказка" id="451"/>
-														</Button>
-													</ChildItems>
-												</ButtonGroup>
-											</ChildItems>
 										</CommandBar>
 									</ChildItems>
 								</UsualGroup>
@@ -936,14 +895,72 @@
 							<ShowTitle>false</ShowTitle>
 							<ExtendedTooltip name="ГруппаКонсольРасширеннаяПодсказка" id="732"/>
 							<ChildItems>
-								<Button name="ВывестиНаКонсоль" id="738">
-									<Type>UsualButton</Type>
-									<CommandName>Form.Command.ВывестиНаКонсоль</CommandName>
-									<ExtendedTooltip name="ВывестиНаКонсольРасширеннаяПодсказка" id="739"/>
-								</Button>
+								<CommandBar name="КомандыКонсоли" id="745">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Команды консоли</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Команды консоли</v8:content>
+										</v8:item>
+									</ToolTip>
+									<ExtendedTooltip name="КомандыКонсолиРасширеннаяПодсказка" id="746"/>
+									<ChildItems>
+										<Button name="ВывестиНаКонсоль" id="738">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.ВывестиНаКонсоль</CommandName>
+											<ExtendedTooltip name="ВывестиНаКонсольРасширеннаяПодсказка" id="739"/>
+										</Button>
+										<ButtonGroup name="ГруппаГорячиеКлавиши" id="503">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа горячие клавиши</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа горячие клавиши</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>Compact</Representation>
+											<ExtendedTooltip name="ГруппаГорячиеКлавишиРасширеннаяПодсказка" id="504"/>
+											<ChildItems>
+												<Button name="КлавишаWindowsE" id="448">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.НажатиеКлавишиWinE</CommandName>
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Win+E</v8:content>
+														</v8:item>
+													</Title>
+													<ExtendedTooltip name="КлавишаWindowsEРасширеннаяПодсказка" id="449"/>
+												</Button>
+												<Button name="НажатиеГорячейКлавиши" id="425">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.НажатиеКлавишиCtrlF2</CommandName>
+													<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
+												</Button>
+												<Button name="НажатиеКлавишиNumLock" id="450">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.НажатиеКлавишиNumLock</CommandName>
+													<ExtendedTooltip name="НажатиеКлавишиNumLockРасширеннаяПодсказка" id="451"/>
+												</Button>
+											</ChildItems>
+										</ButtonGroup>
+									</ChildItems>
+								</CommandBar>
 								<InputField name="ТекстКонсоли" id="733">
 									<DataPath>ТекстКонсоли</DataPath>
 									<TitleLocation>None</TitleLocation>
+									<Height>3</Height>
+									<VerticalStretch>false</VerticalStretch>
 									<MultiLine>true</MultiLine>
 									<ContextMenu name="ТекстКонсолиКонтекстноеМеню" id="734"/>
 									<ExtendedTooltip name="ТекстКонсолиРасширеннаяПодсказка" id="735"/>
