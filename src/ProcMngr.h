@@ -8,6 +8,10 @@
 class WebSocketBase;
 
 class ProcessManager {
+#ifdef _WINDOWS
+private:
+	static DWORD ParentProcessId(DWORD pid);
+#endif //_WINDOWS
 public:
 	static std::wstring FindTestClient(tVariant* paParams, const long lSizeArray);
 	static std::wstring GetProcessList(tVariant* paParams, const long lSizeArray);
@@ -16,6 +20,7 @@ public:
 	static std::wstring OpenWebSocket(WebSocketBase** ws, tVariant* paParams, const long lSizeArray);
 	static std::wstring SendWebSocket(WebSocketBase* ws, tVariant* paParams, const long lSizeArray);
 	static std::wstring WebSocket(tVariant* paParams, const long lSizeArray);
+	static bool ConsoleOut(tVariant* paParams, const long lSizeArray);
 	static bool Sleep(tVariant* paParams, const long lSizeArray);
 	static int64_t ProcessId();
 };

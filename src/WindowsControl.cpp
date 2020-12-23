@@ -41,6 +41,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
 	Alias(eGetProcessWindow, 1, true , L"GetProcessWindow" , L"ПолучитьОкноПроцесса"),
 	Alias(eActivateProcess , 1, true , L"ActivateProcess"  , L"АктивироватьПроцесс"),
+	Alias(eOutputToConsole , 1, true , L"OutputToConsole"  , L"ВывестиНаКонсоль"),
 	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
 	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
 	Alias(eGetScreenInfo   , 0, true , L"GetScreenInfo"    , L"ПолучитьСвойстваЭкрана"),
@@ -185,6 +186,8 @@ bool WindowsControl::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, t
 		return VA(pvarRetValue) << WindowManager::GetProcessWindow(paParams, lSizeArray);
 	case eActivateProcess:
 		return VA(pvarRetValue) << WindowManager::ActivateProcess(paParams, lSizeArray);
+	case eOutputToConsole:
+		return VA(pvarRetValue) << ProcessManager::ConsoleOut(paParams, lSizeArray);
 	case eGetWindowList:
 		return VA(pvarRetValue) << WindowManager::GetWindowList(paParams, lSizeArray);
 	case eGetWindowInfo:

@@ -103,6 +103,8 @@ if (UNIX)
             set(${flag} ${${flag}} ${ARCH_FLAG} CACHE "STRING" "Linker flags" FORCE)
         endif()
     endforeach()
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 endif()
 
 set (LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)

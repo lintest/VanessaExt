@@ -6,6 +6,7 @@
 /opencv-*
 /libgit2-*
 /libssh2-*
+/boost_*
 /database
 /build64W
 /build32W

@@ -223,6 +223,40 @@ std::wstring ProcessManager::FindTestClient(tVariant* paParams, const long lSize
 	return {};
 }
 
+DWORD ProcessManager::ParentProcessId(DWORD pid)
+{
+	std::wstring query;
+	query.append(L"SELECT ParentProcessId");
+	query.append(L" FROM Win32_Process ");
+	query.append(L" WHERE ProcessId=");
+	query.append(std::to_wstring(pid));
+	JSON json = ProcessEnumerator(query.c_str()).json();
+	if (json.is_array() && json.size() == 1) {
+		return json[0]["ParentProcessId"];
+	}
+	return 0;
+}
+
+bool ProcessManager::ConsoleOut(tVariant* paParams, const long lSizeArray)
+{
+	std::wstring text = VarToStr(paParams);
+	auto pid = ::GetCurrentProcessId();
+	while (true) {
+		pid = ParentProcessId(pid);
+		if (pid == 0) return false;
+		if (AttachConsole(pid)) break;
+	}
+	SetConsoleOutputCP(1251);
+	SetConsoleCP(1251);
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
+	auto hConOut = CreateFile(L"CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	SetStdHandle(STD_OUTPUT_HANDLE, hConOut);
+	std::wcout << text;
+	FreeConsole();
+	return true;
+}
+
 bool ProcessManager::Sleep(tVariant* paParams, const long lSizeArray)
 {
 	::Sleep(VarToInt(paParams));
@@ -381,6 +415,13 @@ std::wstring ProcessManager::GetProcessInfo(tVariant* paParams, const long lSize
 	if (lSizeArray < 1) return 0;
 	unsigned long pid = VarToInt(paParams);
 	return ProcessInfo(pid);
+}
+
+bool ProcessManager::ConsoleOut(tVariant* paParams, const long lSizeArray)
+{
+	std::wstring text = VarToStr(paParams);
+	std::wcout << text;
+	return true;
 }
 
 bool ProcessManager::Sleep(tVariant* paParams, const long lSizeArray)

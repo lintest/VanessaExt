@@ -32,6 +32,7 @@ private:
 		eGetProcessInfo,
 		eGetProcessWindow,
 		eActivateProcess,
+		eOutputToConsole,
 		eGetDisplayList,
 		eGetDisplayInfo,
 		eGetScreenInfo,
