@@ -87,10 +87,10 @@ WindowsControl::WindowsControl() {
 		[&](VH pid) { this->result = WindowsManager::GetWindowList(pid); }, { {0, (int64_t)0 } }
 	);
 	AddFunction(u"GetWindowInfo", u"ПолучитьСвойстваОкна",
-		[&](VH window) { this->result = WindowsManager::GetWindowInfo(window); }
+		[&](VH window) { this->result = WindowsManager::GetWindowInfo(window); }, { {0, (int64_t)0 } }
 	);
 	AddFunction(u"GetWindowSize", u"ПолучитьРазмерОкна",
-		[&](VH window) { this->result = WindowsManager::GetWindowSize(window); }
+		[&](VH window) { this->result = WindowsManager::GetWindowSize(window); }, { {0, (int64_t)0 } }
 	);
 	AddFunction(u"TakeScreenshot", u"ПолучитьСнимокЭкрана",
 		[&](VH mode) { ScreenManager::CaptureScreen(this->result, mode); }, { {0, (int64_t)0} }
@@ -120,13 +120,13 @@ WindowsControl::WindowsControl() {
 		[&](VH window) { WindowsManager::Activate(window); }
 	);
 	AddProcedure(u"MaximizeWindow", u"РаспахнутьОкно",
-		[&](VH window) { WindowsManager::Maximize(window); }
+		[&](VH window) { WindowsManager::Maximize(window); }, { {0, (int64_t)0 } }
 	);
 	AddProcedure(u"MinimizeWindow", u"СвернутьОкно",
-		[&](VH window) { WindowsManager::Minimize(window); }
+		[&](VH window) { WindowsManager::Minimize(window); }, { {0, (int64_t)0 } }
 	);
 	AddProcedure(u"RestoreWindow", u"РазвернутьОкно",
-		[&](VH window) { WindowsManager::Restore(window); }
+		[&](VH window) { WindowsManager::Restore(window); }, { {0, (int64_t)0 } }
 	);
 	AddProcedure(u"EmptyClipboard", u"ОчиститьБуферОбмена",
 		[&]() { ClipboardManager().Empty(); }
