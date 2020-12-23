@@ -82,7 +82,7 @@ if [ $build64 -eq 1 ]; then
     if [ "${SCL}" != "" ] && [ "${HAS_DTS}" != "" ]; then
       scl enable devtoolset-2 'cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=OFF --build .. '
     else
-      cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=OFF --build ..
+      cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=OFF --build -dWITH_BOOST:BOOL=ON ..
     fi
     cd ..
   fi ;
