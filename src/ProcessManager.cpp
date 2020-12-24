@@ -426,8 +426,6 @@ std::wstring WebSocket(tVariant* paParams, const long lSizeArray) { return {}; }
 
 #endif //_WINDOWS
 
-#ifdef _WINDOWS
-
 #ifdef USE_BOOST
 
 #include "WebSocket.h"
@@ -489,7 +487,5 @@ std::wstring ProcessManager::SendWebSocket(WebSocketBase** ws, const std::string
 
 	return (*ws)->send(msg, res) ? MB2WC(res) : SocketError(res);
 }
-
-#endif //_WINDOWS
 
 #endif //USE_BOOST

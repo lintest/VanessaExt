@@ -3,6 +3,8 @@
 /build64W*
 /build32L*
 /build64L*
+/build32
+/build64
 /build
 /bind
 /bin
