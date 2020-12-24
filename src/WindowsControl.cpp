@@ -245,7 +245,7 @@ WindowsControl::WindowsControl() {
 		[&](VH msg) { this->result = ProcessManager::SendWebSocket(&webSocket, msg); }
 	);
 	AddProcedure(u"CloseWebSocket", u"ЗакрытьВебСокет",
-		[&](VH msec) { this->CloseWebSocket(); }
+		[&]() { this->CloseWebSocket(); }
 	);
 #endif//USE_BOOST	
 }
