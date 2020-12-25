@@ -471,15 +471,17 @@ std::u16string AddInNative::MB2WCHAR(std::string_view src) {
 #endif//_WINDOWS
 }
 
+std::locale locale_ru = std::locale("ru_RU.UTF-8");
+
 std::u16string AddInNative::upper(std::u16string& str)
 {
-	std::transform(str.begin(), str.end(), str.begin(), std::towupper);
+	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::toupper(ch, locale_ru); });
 	return str;
 }
 
 std::wstring AddInNative::upper(std::wstring& str)
 {
-	std::transform(str.begin(), str.end(), str.begin(), std::towupper);
+	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::toupper(ch, locale_ru); });
 	return str;
 }
 
