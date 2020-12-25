@@ -384,14 +384,8 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 
 void AddInNative::SetLocale(const WCHAR_T* locale)
 {
-	try {
-		std::string loc = WCHAR2MB(locale);
-		this->alias = loc == "rus";
-		std::locale::global(std::locale{ loc.c_str() });
-	}
-	catch (std::runtime_error&) {
-		std::locale::global(std::locale{ "" });
-	}
+	std::string loc = WCHAR2MB(locale);
+	this->alias = loc.substr(0, 3) == "rus";
 }
 
 std::u16string AddInNative::getComponentNames() {
