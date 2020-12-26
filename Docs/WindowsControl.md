@@ -87,7 +87,7 @@
 - <a href="#PlayingMedia">ВоспроизводитсяМедиа (PlayingMedia)</a>
 - <a href="#MediaCommand">МедиаКоманда (MediaCommand)</a>
 
-Обмен данными по протоколу WebSocket (только для Windows):
+Обмен данными по протоколу WebSocket:
 - <a href="#OpenWebSocket">ОткрытьВебСокет (OpenWebSocket)</a>
 - <a href="#SendWebSocket">ПослатьВебСокет (SendWebSocket)</a>
 - <a href="#CloseWebSocket">ЗакрытьВебСокет (CloseWebSocket)</a>
@@ -272,7 +272,7 @@
 ```
 
 ### <a name="CloseWebSocket">ЗакрытьВебСокет() / CloseWebSocket</a>
-Закрытие соединения WebSocket.
+Закрытие открытого ранее соединения WebSocket.
 
 Возвращаемое значение отсутствует.
 
