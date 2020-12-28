@@ -249,9 +249,8 @@ LRESULT CALLBACK HookProc(int code, WPARAM wParam, LPARAM lParam)
 void ClickEffect::Hooker::Create()
 {
 	WNDCLASS wndClass = {};
-	wndClass.style = CS_HREDRAW | CS_VREDRAW;
-	wndClass.lpfnWndProc = HookerWndProc;
 	wndClass.hInstance = hModule;
+	wndClass.lpfnWndProc = HookerWndProc;
 	wndClass.lpszClassName = wsHookerName;
 	RegisterClass(&wndClass);
 

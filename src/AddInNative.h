@@ -141,7 +141,6 @@ private:
 	VarinantHelper VA(tVariant* pvar, Meth* meth, long number) { return VarinantHelper(pvar + number, this, meth, number); }
 	bool ADDIN_API AllocMemory(void** pMemory, unsigned long ulCountByte) const;
 	void ADDIN_API FreeMemory(void** pMemory) const;
-	bool AddError(const std::u16string& descr, long scode = 0);
 
 	friend const WCHAR_T* GetClassNames();
 	static std::u16string getComponentNames();
@@ -153,6 +152,10 @@ private:
 	std::vector<Meth> methods;
 	std::u16string name;
 	bool alias = false;
+
+protected:
+	bool ExternalEvent(const std::u16string& message, const std::u16string& data);
+	bool AddError(const std::u16string& descr, long scode = 0);
 
 public:
 	AddInNative(void) ;
