@@ -575,6 +575,12 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::u
 	return *this;
 }
 
+bool AddInNative::ExternalEvent(const std::u16string& msg, const std::u16string& data)
+{
+	std::u16string info = u"AddIn." + name;
+	return m_iConnect && m_iConnect->ExternalEvent((WCHAR_T*)info.c_str(), (WCHAR_T*)msg.c_str(), (WCHAR_T*)data.c_str());
+}
+
 bool AddInNative::AddError(const std::u16string& descr, long scode)
 {
 	std::u16string info = u"AddIn." + name;

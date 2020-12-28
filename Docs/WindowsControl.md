@@ -39,7 +39,7 @@
 - <a href="#FindTestClient">НайтиКлиентТестирования (FindTestClient)</a>
 - <a href="#GetProcessList">ПолучитьСписокПроцессов (GetProcessList)</a>
 - <a href="#GetProcessInfo">ПолучитьСвойстваПроцесса (GetProcessInfo)</a>
-- <a href="#OutputToConsole">ВывестиНаКонсоль (OutputToConsole)</a>
+- <a href="#OutputToConsole">ВывестиВКонсоль (OutputToConsole)</a>
 - <a href="#Sleep">Пауза (Sleep)</a>
 
 Информация об окружении:
@@ -87,7 +87,7 @@
 - <a href="#PlayingMedia">ВоспроизводитсяМедиа (PlayingMedia)</a>
 - <a href="#MediaCommand">МедиаКоманда (MediaCommand)</a>
 
-Обмен данными по протоколу WebSocket (только для Windows):
+Обмен данными по протоколу WebSocket:
 - <a href="#OpenWebSocket">ОткрытьВебСокет (OpenWebSocket)</a>
 - <a href="#SendWebSocket">ПослатьВебСокет (SendWebSocket)</a>
 - <a href="#CloseWebSocket">ЗакрытьВебСокет (CloseWebSocket)</a>
@@ -207,12 +207,12 @@
 СтруктураСвойстваПроцесса = ПрочитатьСтрокуJSON(ТекстJSON);
 ```
 
-### <a name="OutputToConsole">ВывестиНаКонсоль(Текст) / OutputToConsole</a>
+### <a name="OutputToConsole">ВывестиВКонсоль(Текст) / OutputToConsole</a>
 Выводит произвольный текст в консоль родительского процесса.
 
 ```bsl
 Текст = "Привет! Проверка связи." + Символы.ПС;
-ВнешняяКомпонента.ВывестиНаКонсоль(Текст);
+ВнешняяКомпонента.ВывестиВКонсоль(Текст);
 ```
 
 ### <a name="WebSocket">ВебСокет(Адрес, Команда) / WebSocket</a>
@@ -272,7 +272,7 @@
 ```
 
 ### <a name="CloseWebSocket">ЗакрытьВебСокет() / CloseWebSocket</a>
-Закрытие соединения WebSocket.
+Закрытие открытого ранее соединения WebSocket.
 
 Возвращаемое значение отсутствует.
 

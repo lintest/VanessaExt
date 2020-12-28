@@ -245,15 +245,10 @@ bool ProcessManager::ConsoleOut(const std::wstring& text)
 		if (pid == 0) return false;
 		if (AttachConsole(pid)) break;
 	}
-	SetConsoleOutputCP(1251);
-	SetConsoleCP(1251);
-	FILE* fDummy;
-	freopen_s(&fDummy, "CONOUT$", "w", stdout);
-	auto hConOut = CreateFile(L"CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	SetStdHandle(STD_OUTPUT_HANDLE, hConOut);
-	std::wcout << text;
+	auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	bool ok = WriteConsole(hConsole, text.c_str(), text.size(), NULL, NULL);
 	FreeConsole();
-	return true;
+	return ok;
 }
 
 #else //_WINDOWS

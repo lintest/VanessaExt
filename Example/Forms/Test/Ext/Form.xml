@@ -8,6 +8,19 @@
 	</Title>
 	<AutoCommandBar name="ФормаКоманднаяПанель" id="-1">
 		<Autofill>false</Autofill>
+		<ChildItems>
+			<Button name="ФормаВыполнитьВсе" id="43">
+				<Type>CommandBarButton</Type>
+				<DefaultButton>true</DefaultButton>
+				<CommandName>Form.Command.ВыполнитьВсе</CommandName>
+				<ExtendedTooltip name="ФормаВыполнитьВсеРасширеннаяПодсказка" id="44"/>
+			</Button>
+			<Button name="ФормаВыполнитьВыделенные" id="45">
+				<Type>CommandBarButton</Type>
+				<CommandName>Form.Command.ТолькоВыделенные</CommandName>
+				<ExtendedTooltip name="ФормаВыполнитьВыделенныеРасширеннаяПодсказка" id="46"/>
+			</Button>
+		</ChildItems>
 	</AutoCommandBar>
 	<Events>
 		<Event name="OnOpen">ПриОткрытии</Event>
@@ -219,17 +232,6 @@
 				</Column>
 			</Columns>
 		</Attribute>
-		<Attribute name="СписокУзлов" id="3">
-			<Title>
-				<v8:item>
-					<v8:lang>ru</v8:lang>
-					<v8:content>Список узлов</v8:content>
-				</v8:item>
-			</Title>
-			<Type>
-				<v8:Type>v8:ValueListType</v8:Type>
-			</Type>
-		</Attribute>
 		<Attribute name="Автотестирование" id="4">
 			<Title>
 				<v8:item>
@@ -242,4 +244,35 @@
 			</Type>
 		</Attribute>
 	</Attributes>
+	<Commands>
+		<Command name="ВыполнитьВсе" id="1">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Выполнить все</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Выполнить все</v8:content>
+				</v8:item>
+			</ToolTip>
+		</Command>
+		<Command name="ТолькоВыделенные" id="2">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Только выделенные</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Только выделенные</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ТолькоВыделенные</Action>
+		</Command>
+	</Commands>
 </Form>
