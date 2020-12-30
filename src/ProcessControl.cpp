@@ -1,7 +1,5 @@
 ﻿#include "ProcessControl.h"
 
-#define PROCESS_FINISHED u"PROCESS_FINISHED"
-
 #ifndef _WINDOWS
 
 #include <sys/types.h>
@@ -62,11 +60,21 @@ ProcessControl::ProcessControl()
 
 #ifdef _WINDOWS
 
+static WCHAR_T* T(const std::u16string& text)
+{
+	return (WCHAR_T*)text.c_str();
+}
+
 static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 {
 	auto component = (ProcessControl*)lpParam;
-	WaitForSingleObject(component->hProcess(), INFINITE);
-	component->OnProcessFinished();
+	std::string pid = std::to_string(component->pi.dwProcessId);
+	std::u16string data = component->MB2WCHAR(pid);
+	std::u16string name = component->fullname();
+	std::u16string msg = PROCESS_FINISHED;
+	auto connecttion = component->connecttion();
+	WaitForSingleObject(component->pi.hProcess, INFINITE);
+	if (connecttion) connecttion->ExternalEvent(T(name), T(msg), T(data));
 	return 0;
 }
 
@@ -90,12 +98,6 @@ int64_t ProcessControl::Create(std::wstring command, bool show)
 	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
 	CreateThread(0, NULL, ProcessThreadProc, (LPVOID)this, NULL, NULL);
 	return ok ? (int64_t)pi.dwProcessId : 0;
-}
-
-void ProcessControl::OnProcessFinished()
-{
-	std::string pid = std::to_string(pi.dwProcessId);
-	ExternalEvent(PROCESS_FINISHED, MB2WCHAR(pid));
 }
 
 bool ProcessControl::Terminate()

@@ -575,16 +575,21 @@ AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::u
 	return *this;
 }
 
+static WCHAR_T* T(const std::u16string& text)
+{
+	return (WCHAR_T*)text.c_str();
+}
+
 bool AddInNative::ExternalEvent(const std::u16string& msg, const std::u16string& data)
 {
-	std::u16string info = u"AddIn." + name;
-	return m_iConnect && m_iConnect->ExternalEvent((WCHAR_T*)info.c_str(), (WCHAR_T*)msg.c_str(), (WCHAR_T*)data.c_str());
+	std::u16string name = fullname();
+	return m_iConnect && m_iConnect->ExternalEvent(T(name), T(msg), T(data));
 }
 
 bool AddInNative::AddError(const std::u16string& descr, long scode)
 {
-	std::u16string info = u"AddIn." + name;
-	return m_iConnect && m_iConnect->AddError(ADDIN_E_IMPORTANT, (WCHAR_T*)info.c_str(), (WCHAR_T*)descr.c_str(), scode);
+	std::u16string name = fullname();
+	return m_iConnect && m_iConnect->AddError(ADDIN_E_IMPORTANT, T(name), T(descr), scode);
 }
 
 static std::u16string typeinfo(TYPEVAR vt, bool alias)
@@ -741,4 +746,3 @@ WCHAR_T* AddInNative::W(const char16_t* str) const
 	memcpy(res, str, size);
 	return res;
 }
-

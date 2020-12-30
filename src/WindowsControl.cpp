@@ -71,6 +71,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"ActivateProcess", u"АктивироватьПроцесс",
 		[&](VH pid) { this->result = WindowsManager::ActivateProcess(pid); }
 	);
+	AddFunction(u"CreateProcess", u"СоздатьПроцесс",
+		[&](VH cmd, VH hide) { this->result = this->LaunchProcess(cmd, hide); }, { {1, false } }
+	);
 	AddFunction(u"GetProcessWindow", u"ПолучитьОкноПроцесса",
 		[&](VH pid) { this->result = WindowsManager::GetProcessWindow(pid); }
 	);
@@ -258,3 +261,78 @@ WindowsControl::~WindowsControl()
 #endif//_WINDOWS
 }
 
+#ifdef _WINDOWS
+
+class ProcessInfo {
+public:
+	WindowsControl* addin;
+	PROCESS_INFORMATION pi = { 0 };
+	ProcessInfo(WindowsControl* addin) : addin(addin) {}
+	operator LPPROCESS_INFORMATION () { return &pi; }
+};
+
+static WCHAR_T* T(const std::u16string& text)
+{
+	return (WCHAR_T*)text.c_str();
+}
+
+static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
+{
+	std::unique_ptr<ProcessInfo> info((ProcessInfo*)lpParam);
+	auto component = info->addin;
+	JSON json;
+	DWORD dwExitCode = 0;
+	json["ProcessId"] = info->pi.dwProcessId;
+	auto connecttion = component->connecttion();
+	WaitForSingleObject(info->pi.hProcess, INFINITE);
+	if (GetExitCodeProcess(info->pi.hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
+	std::u16string name = component->fullname();
+	std::u16string msg = PROCESS_FINISHED;
+	std::u16string data = component->MB2WCHAR(json.dump());
+	if (connecttion) connecttion->ExternalEvent(T(name), T(msg), T(data));
+	return 0;
+}
+
+int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
+{
+	STARTUPINFO si = { 0 };
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	if (hide) {
+		si.dwFlags |= STARTF_USESHOWWINDOW;
+		si.wShowWindow = SW_HIDE;
+	}
+	ProcessInfo* info = new ProcessInfo(this);
+	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &info->pi);
+	CreateThread(0, NULL, ProcessThreadProc, (LPVOID)info, NULL, NULL);
+	return ok ? (int64_t)info->pi.dwProcessId : 0;
+}
+
+#else//_WINDOWS
+
+int64_t ProcessControl::LaunchProcess(std::wstring command, bool show)
+{
+	std::string cmd = WC2MB(command);
+	int child = fork();
+	if (0 == child) {
+		int result = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
+		exit(result);
+		return 0;
+	}
+	else if (child > 0) {
+		int waiter = fork();
+		if (0 == waiter) {
+			JSON json;
+			int status;
+			json["ProcessId"] = child;
+			waitpid(child, status, WUNTRACED);
+			if (WIFEXITED(status)) json["ExitCode"] = WEXITSTATUS(status);
+			ExternalEvent(PROCESS_FINISHED, MB2WCHAR(json.dump()));
+			return 0;
+		}
+		return (int64_t)child;
+	}
+	return 0;
+}
+
+#endif//_WINDOWS

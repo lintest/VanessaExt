@@ -247,7 +247,7 @@ bool ProcessManager::ConsoleOut(const std::wstring& text)
 		attached = AttachConsole(pid);
 	}
 	auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	return WriteConsole(hConsole, text.c_str(), text.size(), NULL, NULL);
+	return WriteConsole(hConsole, text.c_str(), (DWORD)text.size(), NULL, NULL);
 }
 
 #else //_WINDOWS

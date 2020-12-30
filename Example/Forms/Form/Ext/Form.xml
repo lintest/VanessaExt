@@ -2145,6 +2145,13 @@
 									<CommandName>Form.Command.СтартоватьПроцесс</CommandName>
 									<ExtendedTooltip name="СтартоватьПроцессРасширеннаяПодсказка" id="756"/>
 								</Button>
+								<CheckBoxField name="СкрытьОкноПроцесса" id="757">
+									<DataPath>СкрытьОкноПроцесса</DataPath>
+									<TitleLocation>Right</TitleLocation>
+									<CheckBoxType>Auto</CheckBoxType>
+									<ContextMenu name="СкрытьОкноПроцессаКонтекстноеМеню" id="758"/>
+									<ExtendedTooltip name="СкрытьОкноПроцессаРасширеннаяПодсказка" id="759"/>
+								</CheckBoxField>
 							</ChildItems>
 						</UsualGroup>
 						<Table name="СписокПроцессов" id="124">
@@ -4283,6 +4290,17 @@
 					<v8:Length>0</v8:Length>
 					<v8:AllowedLength>Variable</v8:AllowedLength>
 				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="СкрытьОкноПроцесса" id="61">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Скрыть окно процесса</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
 			</Type>
 		</Attribute>
 	</Attributes>

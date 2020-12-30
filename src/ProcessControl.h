@@ -15,9 +15,7 @@ private:
 	STARTUPINFO si{ 0 };
 	PROCESS_INFORMATION pi{ 0 };
 	HANDLE hInPipeR, hInPipeW, hOutPipeR, hOutPipeW;
-public:
-	HANDLE hProcess() { return pi.hProcess; }
-	void OnProcessFinished();
+	friend DWORD WINAPI ProcessThreadProc(LPVOID lpParam);
 #else
 private:
 	int m_pipe[2] = { 0 , 0 };
