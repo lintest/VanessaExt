@@ -2118,6 +2118,35 @@
 					</ToolTip>
 					<ExtendedTooltip name="СтраницаПроцессыРасширеннаяПодсказка" id="123"/>
 					<ChildItems>
+						<UsualGroup name="ГруппаСтартПроцесса" id="750">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа старт процесса</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа старт процесса</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаСтартПроцессаРасширеннаяПодсказка" id="751"/>
+							<ChildItems>
+								<InputField name="КоманднаяСтрока" id="752">
+									<DataPath>КоманднаяСтрока</DataPath>
+									<ContextMenu name="КоманднаяСтрокаКонтекстноеМеню" id="753"/>
+									<ExtendedTooltip name="КоманднаяСтрокаРасширеннаяПодсказка" id="754"/>
+								</InputField>
+								<Button name="СтартоватьПроцесс" id="755">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.СтартоватьПроцесс</CommandName>
+									<ExtendedTooltip name="СтартоватьПроцессРасширеннаяПодсказка" id="756"/>
+								</Button>
+							</ChildItems>
+						</UsualGroup>
 						<Table name="СписокПроцессов" id="124">
 							<Representation>List</Representation>
 							<ReadOnly>true</ReadOnly>
@@ -4241,6 +4270,21 @@
 				<v8:Type>xs:boolean</v8:Type>
 			</Type>
 		</Attribute>
+		<Attribute name="КоманднаяСтрока" id="60">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Командная строка</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -5430,16 +5474,31 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Вывести на консоль</v8:content>
+					<v8:content>Вывести в консоль</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Вывести на консоль</v8:content>
+					<v8:content>Вывести в консоль</v8:content>
 				</v8:item>
 			</ToolTip>
 			<Action>ВывестиВКонсоль</Action>
+		</Command>
+		<Command name="СтартоватьПроцесс" id="80">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Стартовать процесс</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Стартовать процесс</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>СтартоватьПроцесс</Action>
 		</Command>
 	</Commands>
 </Form>

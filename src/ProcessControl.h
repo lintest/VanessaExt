@@ -4,26 +4,25 @@
 #include "stdafx.h"
 #include "BaseHelper.h"
 
-#ifdef _WINDOWS
-#include <windows.h>
-#include <stdio.h>
-#endif //_WINDOWS
-
 class ProcessControl : public BaseHelper
 {
 private:
 	static std::vector<std::u16string> names;
 	ProcessControl();
 	virtual ~ProcessControl() override;
-private:
 #ifdef _WINDOWS
+private:
 	STARTUPINFO si{ 0 };
 	PROCESS_INFORMATION pi{ 0 };
 	HANDLE hInPipeR, hInPipeW, hOutPipeR, hOutPipeW;
+public:
+	HANDLE hProcess() { return pi.hProcess; }
+	void OnProcessFinished();
 #else
+private:
 	int m_pipe[2] = { 0 , 0 };
 #endif //_WINDOWS
-	bool Create(std::wstring command, bool show);
+	int64_t Create(std::wstring command, bool show);
 	bool Terminate();
 	bool Input(const std::string& text);
 	void Sleep(int64_t msec);
