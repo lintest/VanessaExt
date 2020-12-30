@@ -30,6 +30,10 @@ ProcessControl::ProcessControl()
 		[&](VH command, VH show) { this->result = this->Create(command, show); },
 		{ {1, false} }
 	);
+	AddFunction(u"Connect", u"Подключить",
+		[&](VH pid) { this->Connect(pid); },
+		{ {1, false} }
+	);
 	AddFunction(u"Wait", u"Ждать",
 		[&](VH msec) { this->result = this->Wait(msec); }
 	);
@@ -100,6 +104,11 @@ int64_t ProcessControl::Create(std::wstring command, bool show)
 	return ok ? (int64_t)pi.dwProcessId : 0;
 }
 
+void ProcessControl::Connect(int64_t pid)
+{
+
+}
+
 bool ProcessControl::Terminate()
 {
 	return ::TerminateProcess(pi.hProcess, 0);
@@ -164,22 +173,27 @@ int64_t ProcessControl::Create(std::wstring command, bool show)
 		if (dup2(m_pipe[PIPE_READ], STDIN_FILENO) == -1) exit(errno);
 		close(m_pipe[PIPE_READ]);
 		close(m_pipe[PIPE_WRITE]);
-		int result = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
+		int result = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);		
 		exit(result);
-		return 0;
 	}
 	else if (child > 0) {
 		close(m_pipe[PIPE_READ]);
-		int waiter = fork();
-		if (0 == waiter) {
-			waitpid(child, nullptr, WUNTRACED);
-			std::string pid = std::to_string(child);
-			ExternalEvent(PROCESS_FINISHED, MB2WCHAR(pid));
-			return 0;
-		}
-		return (int64_t)child;
 	}
-	return 0;
+	else {
+		return false;
+	}
+	return true;	
+}
+
+void ProcessControl::Connect(int64_t child)
+{
+	int waiter = fork();
+	if (0 == waiter) {
+		int status;
+		waitpid(child, &status, WUNTRACED);
+		std::string pid = std::to_string(child);
+		ExternalEvent(PROCESS_FINISHED, MB2WCHAR(pid));
+	}
 }
 
 bool ProcessControl::Terminate()

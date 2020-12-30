@@ -310,7 +310,7 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 
 #else//_WINDOWS
 
-int64_t ProcessControl::LaunchProcess(std::wstring command, bool show)
+int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 {
 	std::string cmd = WC2MB(command);
 	int child = fork();
@@ -320,16 +320,6 @@ int64_t ProcessControl::LaunchProcess(std::wstring command, bool show)
 		return 0;
 	}
 	else if (child > 0) {
-		int waiter = fork();
-		if (0 == waiter) {
-			JSON json;
-			int status;
-			json["ProcessId"] = child;
-			waitpid(child, status, WUNTRACED);
-			if (WIFEXITED(status)) json["ExitCode"] = WEXITSTATUS(status);
-			ExternalEvent(PROCESS_FINISHED, MB2WCHAR(json.dump()));
-			return 0;
-		}
 		return (int64_t)child;
 	}
 	return 0;
