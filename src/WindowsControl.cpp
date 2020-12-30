@@ -263,12 +263,11 @@ WindowsControl::~WindowsControl()
 
 #ifdef _WINDOWS
 
-class ProcessInfo {
+class ProcessInfo 
+	: public PROCESS_INFORMATION {
 public:
-	WindowsControl* addin;
-	PROCESS_INFORMATION pi = { 0 };
 	ProcessInfo(WindowsControl* addin) : addin(addin) {}
-	operator LPPROCESS_INFORMATION () { return &pi; }
+	WindowsControl* addin;
 };
 
 static WCHAR_T* T(const std::u16string& text)
@@ -278,18 +277,16 @@ static WCHAR_T* T(const std::u16string& text)
 
 static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 {
-	std::unique_ptr<ProcessInfo> info((ProcessInfo*)lpParam);
-	auto component = info->addin;
+	std::unique_ptr<ProcessInfo> pi((ProcessInfo*)lpParam);
 	JSON json;
 	DWORD dwExitCode = 0;
-	json["ProcessId"] = info->pi.dwProcessId;
-	auto connecttion = component->connecttion();
-	WaitForSingleObject(info->pi.hProcess, INFINITE);
-	if (GetExitCodeProcess(info->pi.hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
-	std::u16string name = component->fullname();
-	std::u16string msg = PROCESS_FINISHED;
-	std::u16string data = component->MB2WCHAR(json.dump());
-	if (connecttion) connecttion->ExternalEvent(T(name), T(msg), T(data));
+	json["ProcessId"] = pi->dwProcessId;
+	WaitForSingleObject(pi->hProcess, INFINITE);
+	if (GetExitCodeProcess(pi->hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
+	std::u16string data = pi->addin->MB2WCHAR(json.dump());
+	pi->addin->ExternalEvent(PROCESS_FINISHED, data);
+	CloseHandle(pi->hProcess);
+	CloseHandle(pi->hThread);
 	return 0;
 }
 
@@ -302,10 +299,17 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 		si.dwFlags |= STARTF_USESHOWWINDOW;
 		si.wShowWindow = SW_HIDE;
 	}
-	ProcessInfo* info = new ProcessInfo(this);
-	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &info->pi);
-	CreateThread(0, NULL, ProcessThreadProc, (LPVOID)info, NULL, NULL);
-	return ok ? (int64_t)info->pi.dwProcessId : 0;
+	int64_t result = 0;
+	ProcessInfo* pi = new ProcessInfo(this);
+	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, pi);
+	if (ok) {
+		result = (int64_t)pi->dwProcessId;
+		CreateThread(0, NULL, ProcessThreadProc, (LPVOID)pi, NULL, NULL);
+	}
+	else {
+		delete pi;
+	}
+	return result;
 }
 
 #else//_WINDOWS
