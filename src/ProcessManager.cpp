@@ -161,7 +161,7 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	return {};
 }
 
-std::wstring ProcessManager::FindProcess(const std::wstring name)
+std::wstring ProcessManager::FindProcess(const std::wstring &name)
 {
 	if (name.empty()) return {};
 	return ProcessEnumerator(name.c_str());
@@ -240,15 +240,14 @@ DWORD ProcessManager::ParentProcessId(DWORD pid)
 bool ProcessManager::ConsoleOut(const std::wstring& text)
 {
 	auto pid = ::GetCurrentProcessId();
-	while (true) {
+	static bool attached = false;
+	while (!attached) {
 		pid = ParentProcessId(pid);
 		if (pid == 0) return false;
-		if (AttachConsole(pid)) break;
+		attached = AttachConsole(pid);
 	}
 	auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	bool ok = WriteConsole(hConsole, text.c_str(), text.size(), NULL, NULL);
-	FreeConsole();
-	return ok;
+	return WriteConsole(hConsole, text.c_str(), (DWORD)text.size(), NULL, NULL);
 }
 
 #else //_WINDOWS
@@ -399,7 +398,7 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	return ProcessInfo((unsigned long)pid);
 }
 
-std::wstring ProcessManager::FindProcess(const std::wstring name)
+std::wstring ProcessManager::FindProcess(const std::wstring &name)
 {
 	return {};
 }

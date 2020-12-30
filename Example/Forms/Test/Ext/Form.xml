@@ -258,6 +258,7 @@
 					<v8:content>Выполнить все</v8:content>
 				</v8:item>
 			</ToolTip>
+			<Action>ВыполнитьВсе</Action>
 		</Command>
 		<Command name="ТолькоВыделенные" id="2">
 			<Title>

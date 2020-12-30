@@ -71,6 +71,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"ActivateProcess", u"АктивироватьПроцесс",
 		[&](VH pid) { this->result = WindowsManager::ActivateProcess(pid); }
 	);
+	AddFunction(u"CreateProcess", u"СоздатьПроцесс",
+		[&](VH cmd, VH hide) { this->result = this->LaunchProcess(cmd, hide); }, { {1, false } }
+	);
 	AddFunction(u"GetProcessWindow", u"ПолучитьОкноПроцесса",
 		[&](VH pid) { this->result = WindowsManager::GetProcessWindow(pid); }
 	);
@@ -258,3 +261,72 @@ WindowsControl::~WindowsControl()
 #endif//_WINDOWS
 }
 
+#ifdef _WINDOWS
+
+class ProcessInfo 
+	: public PROCESS_INFORMATION {
+public:
+	ProcessInfo(WindowsControl* addin) : addin(addin) {}
+	WindowsControl* addin;
+};
+
+static WCHAR_T* T(const std::u16string& text)
+{
+	return (WCHAR_T*)text.c_str();
+}
+
+static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
+{
+	std::unique_ptr<ProcessInfo> pi((ProcessInfo*)lpParam);
+	JSON json;
+	DWORD dwExitCode = 0;
+	json["ProcessId"] = pi->dwProcessId;
+	WaitForSingleObject(pi->hProcess, INFINITE);
+	if (GetExitCodeProcess(pi->hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
+	std::u16string data = pi->addin->MB2WCHAR(json.dump());
+	pi->addin->ExternalEvent(PROCESS_FINISHED, data);
+	CloseHandle(pi->hProcess);
+	CloseHandle(pi->hThread);
+	return 0;
+}
+
+int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
+{
+	STARTUPINFO si = { 0 };
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	if (hide) {
+		si.dwFlags |= STARTF_USESHOWWINDOW;
+		si.wShowWindow = SW_HIDE;
+	}
+	int64_t result = 0;
+	ProcessInfo* pi = new ProcessInfo(this);
+	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, pi);
+	if (ok) {
+		result = (int64_t)pi->dwProcessId;
+		CreateThread(0, NULL, ProcessThreadProc, (LPVOID)pi, NULL, NULL);
+	}
+	else {
+		delete pi;
+	}
+	return result;
+}
+
+#else//_WINDOWS
+
+int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
+{
+	std::string cmd = WC2MB(command);
+	int child = fork();
+	if (0 == child) {
+		int result = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
+		exit(result);
+		return 0;
+	}
+	else if (child > 0) {
+		return (int64_t)child;
+	}
+	return 0;
+}
+
+#endif//_WINDOWS

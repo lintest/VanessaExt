@@ -156,6 +156,7 @@ private:
 protected:
 	bool ExternalEvent(const std::u16string& message, const std::u16string& data);
 	bool AddError(const std::u16string& descr, long scode = 0);
+	std::u16string fullname() { return u"AddIn." + name; }
 
 public:
 	AddInNative(void) ;
@@ -185,6 +186,8 @@ public:
 	operator IComponentBase* () { return (IComponentBase*)this; };
 	// LocaleBase
 	virtual void ADDIN_API SetLocale(const WCHAR_T* loc) override final;
+protected:
+	IAddInDefBase* connecttion() { return m_iConnect; };
 private:
 	IMemoryManager* m_iMemory = nullptr;
 	IAddInDefBase* m_iConnect = nullptr;

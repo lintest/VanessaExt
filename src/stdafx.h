@@ -18,4 +18,6 @@ std::string WC2MB(const std::wstring& source);
 #include "json.hpp"
 using JSON = nlohmann::json;
 
+constexpr auto PROCESS_FINISHED = u"PROCESS_FINISHED";
+
 #endif //__STDAFX_H__

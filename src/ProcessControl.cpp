@@ -1,13 +1,15 @@
 ﻿#include "ProcessControl.h"
 
 #ifndef _WINDOWS
+
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#define PIPE_READ 0
-#define PIPE_WRITE 1
-#endif
+
+#endif //_WINDOWS
 
 std::vector<std::u16string> ProcessControl::names = {
 	AddComponent(u"ProcessControl", []() { return new ProcessControl; }),
@@ -24,29 +26,30 @@ ProcessControl::ProcessControl()
 	AddProperty(u"IsActive", u"Активный",
 		[&](VH var) { var = this->IsActive(); }
 	);
-
 	AddFunction(u"Create", u"Создать",
 		[&](VH command, VH show) { this->result = this->Create(command, show); },
 		{ {1, false} }
 	);
-
-	AddFunction(u"Wait", u"Ждать", 
+	AddFunction(u"Connect", u"Подключить",
+		[&](VH pid) { this->Connect(pid); },
+		{ {1, false} }
+	);
+	AddFunction(u"Wait", u"Ждать",
 		[&](VH msec) { this->result = this->Wait(msec); }
 	);
-
 	AddFunction(u"InputData", u"ВвестиДанные",
 		[&](VH text) { this->result = this->Input(text); },
 		{ {1, false} }
 	);
-
 	AddFunction(u"Terminate", u"Прервать"
 		, [&]() { this->result = this->Terminate(); }
 	);
-
-	AddProcedure(u"Sleep", u"Пауза", [&](VH msec) { this->Sleep(msec); });
+	AddProcedure(u"Sleep", u"Пауза", 
+		[&](VH msec) { this->Sleep(msec); }
+	);
 
 #ifdef _WINDOWS
-	SECURITY_ATTRIBUTES saAttr;
+	SECURITY_ATTRIBUTES saAttr = { 0 };
 	saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
 	saAttr.bInheritHandle = TRUE;
 	saAttr.lpSecurityDescriptor = NULL;
@@ -61,13 +64,37 @@ ProcessControl::ProcessControl()
 
 #ifdef _WINDOWS
 
+static WCHAR_T* T(const std::u16string& text)
+{
+	return (WCHAR_T*)text.c_str();
+}
+
+static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
+{
+	auto addin = (ProcessControl*)lpParam;
+	auto connecttion = addin->connecttion();
+	PROCESS_INFORMATION &pi = addin->pi;
+	JSON json;
+	DWORD dwExitCode = 0;
+	json["ProcessId"] = pi.dwProcessId;
+	std::u16string name = addin->fullname();
+	std::u16string msg = PROCESS_FINISHED;
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	if (GetExitCodeProcess(pi.hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
+	std::wstring data = MB2WC(json.dump());
+	if (connecttion) connecttion->ExternalEvent(T(name), T(msg), (WCHAR*)data.c_str());
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	return 0;
+}
+
 ProcessControl::~ProcessControl()
 {
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 }
 
-bool ProcessControl::Create(std::wstring command, bool show)
+int64_t ProcessControl::Create(std::wstring command, bool show)
 {
 	ZeroMemory(&pi, sizeof(pi));
 	ZeroMemory(&si, sizeof(si));
@@ -78,7 +105,14 @@ bool ProcessControl::Create(std::wstring command, bool show)
 		si.dwFlags |= STARTF_USESHOWWINDOW;
 		si.wShowWindow = SW_HIDE;
 	}
-	return ::CreateProcessW(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+	CreateThread(0, NULL, ProcessThreadProc, (LPVOID)this, NULL, NULL);
+	return ok ? (int64_t)pi.dwProcessId : 0;
+}
+
+void ProcessControl::Connect(int64_t pid)
+{
+
 }
 
 bool ProcessControl::Terminate()
@@ -96,7 +130,7 @@ int64_t ProcessControl::Wait(int64_t msec)
 	}
 }
 
-bool ProcessControl::Input(const std::string &text)
+bool ProcessControl::Input(const std::string& text)
 {
 	DWORD dwWritten;
 	return ::WriteFile(hInPipeW, text.c_str(), (DWORD)text.size(), &dwWritten, NULL);
@@ -109,14 +143,14 @@ void ProcessControl::Sleep(int64_t msec)
 
 int64_t ProcessControl::ProcessId()
 {
-	return (int32_t)pi.dwProcessId;
+	return (int64_t)pi.dwProcessId;
 }
 
 int64_t ProcessControl::ExitCode()
 {
 	DWORD code;
 	::GetExitCodeProcess(pi.hProcess, &code);
-	return (int32_t)code;
+	return (int64_t)code;
 }
 
 bool ProcessControl::IsActive()
@@ -128,13 +162,16 @@ bool ProcessControl::IsActive()
 
 #else //_WINDOWS
 
+#define PIPE_READ 0
+#define PIPE_WRITE 1
+
 ProcessControl::~ProcessControl()
 {
 	close(m_pipe[PIPE_READ]);
 	close(m_pipe[PIPE_WRITE]);
 }
 
-bool ProcessControl::Create(std::wstring command, bool show)
+int64_t ProcessControl::Create(std::wstring command, bool show)
 {
 	std::string cmd = WC2MB(command);
 	int child = fork();
@@ -151,7 +188,18 @@ bool ProcessControl::Create(std::wstring command, bool show)
 	else {
 		return false;
 	}
-	return true;
+	return true;	
+}
+
+void ProcessControl::Connect(int64_t child)
+{
+	int waiter = fork();
+	if (0 == waiter) {
+		int status;
+		waitpid(child, &status, WUNTRACED);
+		std::string pid = std::to_string(child);
+		ExternalEvent(PROCESS_FINISHED, MB2WCHAR(pid));
+	}
 }
 
 bool ProcessControl::Terminate()
@@ -161,7 +209,7 @@ bool ProcessControl::Terminate()
 
 bool ProcessControl::Input(const std::string& text)
 {
-	auto res = write(m_pipe[PIPE_WRITE], text.data(), text.size());	
+	auto res = write(m_pipe[PIPE_WRITE], text.data(), text.size());
 	return res >= 0;
 }
 
