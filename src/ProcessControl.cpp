@@ -72,7 +72,7 @@ static WCHAR_T* T(const std::u16string& text)
 static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 {
 	auto addin = (ProcessControl*)lpParam;
-	auto connecttion = addin->connecttion();
+	auto connection = addin->connection();
 	PROCESS_INFORMATION &pi = addin->pi;
 	JSON json;
 	DWORD dwExitCode = 0;
@@ -82,7 +82,7 @@ static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 	WaitForSingleObject(pi.hProcess, INFINITE);
 	if (GetExitCodeProcess(pi.hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
 	std::wstring data = MB2WC(json.dump());
-	if (connecttion) connecttion->ExternalEvent(T(name), T(msg), (WCHAR*)data.c_str());
+	if (connection) connection->ExternalEvent(T(name), T(msg), (WCHAR*)data.c_str());
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 	return 0;

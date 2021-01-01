@@ -126,7 +126,7 @@ if (WITH_OPENCV)
 		target_link_libraries(${TARGET} opencv_core450.lib opencv_imgcodecs450.lib opencv_imgproc450.lib libpng.lib zlib.lib)
 	endif(UNIX)
 	target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
-	target_link_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
+	set_target_properties(${TARGET} PROPERTIES LINK_FLAGS -L"${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
 endif (WITH_OPENCV)
 
 if (WITH_BOOST)
