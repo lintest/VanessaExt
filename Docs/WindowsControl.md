@@ -430,7 +430,7 @@
 
 ### <a name="FindFragment">НайтиФрагмент(Картинка, Фрагмент, МетодПоиска) / FindFragment</a>
 Осуществляет поиск фрагмента картинки, возвращает результат в формате JSON.
-Используются алгоритмы библиотеки [OpenCV](https://docs.opencv.org/4.5.0/de/da9/tutorial_template_matching.html)
+Используются алгоритмы библиотеки [OpenCV](https://docs.opencv.org/4.5.1/de/da9/tutorial_template_matching.html)
 
 Параметры процедуры:
 - **Картинка** (обязательный), Тип: Двоичные данные
@@ -461,7 +461,7 @@
 
 ### <a name="FindFragment">НайтиФрагмент(Картинка, Фрагмент, МетодПоиска) / FindFragment</a>
 Осуществляет поиск картинки на экране, возвращает результат в формате JSON.
-Используются алгоритмы библиотеки [OpenCV](https://docs.opencv.org/4.5.0/de/da9/tutorial_template_matching.html)
+Используются алгоритмы библиотеки [OpenCV](https://docs.opencv.org/4.5.1/de/da9/tutorial_template_matching.html)
 
 Параметры процедуры:
 - **Фрагмент** (обязательный), Тип: Двоичные данные

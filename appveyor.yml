@@ -37,9 +37,9 @@ install:
   - git checkout -b version libssh2-1.9.0
   - cd ..
 
-  - git clone -q --branch=master https://github.com/opencv/opencv.git opencv-4.5.0
-  - cd opencv-4.5.0
-  - git checkout -b version 4.5.0
+  - git clone -q --branch=master https://github.com/opencv/opencv.git opencv-4.5.1
+  - cd opencv-4.5.1
+  - git checkout -b version 4.5.1
   - cd ..
 
   - sh: sudo dpkg --add-architecture i386

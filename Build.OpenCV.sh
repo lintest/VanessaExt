@@ -130,7 +130,7 @@ OPENCV_INSTALL32="\
   -DCMAKE_C_FLAGS=-m32 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections \
   -DCMAKE_CXX_FLAGS=-m32 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections "
 
-cd opencv-4.5.0
+cd opencv-4.5.1
 mkdir build32
 cd build32
 cmake $OPENCV_OPTIONS $OPENCV_INSTALL32 ..
@@ -147,7 +147,7 @@ OPENCV_INSTALL64="\
   -DCMAKE_C_FLAGS=-m64 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections \
   -DCMAKE_CXX_FLAGS=-m64 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections "
 
-cd opencv-4.5.0
+cd opencv-4.5.1
 mkdir build64
 cd build64
 cmake $OPENCV_OPTIONS $OPENCV_INSTALL64 ..
