@@ -71,14 +71,20 @@ static WCHAR_T* T(const std::u16string& text)
 
 static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 {
-	auto component = (ProcessControl*)lpParam;
-	std::string pid = std::to_string(component->pi.dwProcessId);
-	std::u16string data = component->MB2WCHAR(pid);
-	std::u16string name = component->fullname();
+	auto addin = (ProcessControl*)lpParam;
+	auto connecttion = addin->connecttion();
+	PROCESS_INFORMATION &pi = addin->pi;
+	JSON json;
+	DWORD dwExitCode = 0;
+	json["ProcessId"] = pi.dwProcessId;
+	std::u16string name = addin->fullname();
 	std::u16string msg = PROCESS_FINISHED;
-	auto connecttion = component->connecttion();
-	WaitForSingleObject(component->pi.hProcess, INFINITE);
-	if (connecttion) connecttion->ExternalEvent(T(name), T(msg), T(data));
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	if (GetExitCodeProcess(pi.hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
+	std::wstring data = MB2WC(json.dump());
+	if (connecttion) connecttion->ExternalEvent(T(name), T(msg), (WCHAR*)data.c_str());
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 	return 0;
 }
 
