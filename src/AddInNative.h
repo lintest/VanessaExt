@@ -113,6 +113,7 @@ protected:
 	static std::u16string AddComponent(const std::u16string& name, CompFunction creator);
 	VarinantHelper result;
 
+public:
 	static std::u16string upper(std::u16string& str);
 	static std::wstring upper(std::wstring& str);
 	static std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
@@ -187,7 +188,7 @@ public:
 	// LocaleBase
 	virtual void ADDIN_API SetLocale(const WCHAR_T* loc) override final;
 protected:
-	IAddInDefBase* connecttion() { return m_iConnect; };
+	IAddInDefBase* connection() { return m_iConnect; };
 private:
 	IMemoryManager* m_iMemory = nullptr;
 	IAddInDefBase* m_iConnect = nullptr;

@@ -261,6 +261,11 @@ WindowsControl::~WindowsControl()
 #endif//_WINDOWS
 }
 
+static WCHAR_T* T(const std::u16string& text)
+{
+	return (WCHAR_T*)text.c_str();
+}
+
 #ifdef _WINDOWS
 
 class ProcessInfo {
@@ -271,11 +276,6 @@ public:
 	operator LPPROCESS_INFORMATION () { return &pi; }
 };
 
-static WCHAR_T* T(const std::u16string& text)
-{
-	return (WCHAR_T*)text.c_str();
-}
-
 static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 {
 	std::unique_ptr<ProcessInfo> info((ProcessInfo*)lpParam);
@@ -283,13 +283,13 @@ static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 	JSON json;
 	DWORD dwExitCode = 0;
 	json["ProcessId"] = info->pi.dwProcessId;
-	auto connecttion = component->connecttion();
+	auto connection = component->connection();
 	WaitForSingleObject(info->pi.hProcess, INFINITE);
 	if (GetExitCodeProcess(info->pi.hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
 	std::u16string name = component->fullname();
 	std::u16string msg = PROCESS_FINISHED;
 	std::u16string data = component->MB2WCHAR(json.dump());
-	if (connecttion) connecttion->ExternalEvent(T(name), T(msg), T(data));
+	if (connection) connection->ExternalEvent(T(name), T(msg), T(data));
 	return 0;
 }
 
@@ -310,16 +310,64 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 
 #else//_WINDOWS
 
+#include <sys/types.h>
+#include <sys/wait.h>
+
+IAddInDefBase* pAddInConnection = nullptr;
+std::u16string wsComponentName;
+std::vector<pid_t> vProcessList;
+
+static void OnProcessTimer(int sig)
+{
+	for (auto it = vProcessList.begin(); it != vProcessList.end(); ) {
+		int status;
+		pid_t pid = *it;
+		if (waitpid(pid, &status, WNOHANG) > 0) {
+			JSON json;
+			json["ProcessId"] = pid;
+			json["ExitCode"] = WEXITSTATUS(status);
+			std::u16string name = wsComponentName;
+			std::u16string msg = PROCESS_FINISHED;
+			std::u16string data = WindowsControl::MB2WCHAR(json.dump());
+			if (pAddInConnection) pAddInConnection->ExternalEvent(T(name), T(msg), T(data));
+			vProcessList.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+}
+
+static void OnStartProcess(pid_t pid)
+{
+	vProcessList.push_back(pid);
+	static bool active = false;
+	if (active) return;
+	struct sigaction sa;
+	struct itimerval tv;
+	memset(&tv, 0, sizeof(tv));
+	sa.sa_handler = OnProcessTimer;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART; 
+	sigaction(SIGALRM, &sa, NULL);
+	tv.it_interval.tv_sec = 1;
+	tv.it_value.tv_sec = 1;
+	setitimer(ITIMER_REAL, &tv, NULL);
+}
+
 int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 {
+	wsComponentName = fullname();
+	pAddInConnection = connection();
 	std::string cmd = WC2MB(command);
-	int child = fork();
+	auto child = vfork();
 	if (0 == child) {
 		int result = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);
 		exit(result);
 		return 0;
 	}
 	else if (child > 0) {
+		OnStartProcess(child);
 		return (int64_t)child;
 	}
 	return 0;
