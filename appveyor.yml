@@ -56,9 +56,9 @@ install:
   - cmd: Build.OpenCV.bat
   - sh: ./Build.OpenCV.sh
 
-  - appveyor DownloadFile https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz
-  - tar xzf boost_1_74_0.tar.gz
-  - cd boost_1_74_0
+  - appveyor DownloadFile https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.gz
+  - tar xzf boost_1_75_0.tar.gz
+  - cd boost_1_75_0
   - sh: ./bootstrap.sh
   - cmd: bootstrap.bat
   - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time
@@ -73,7 +73,7 @@ build_script:
   - sh: echo "#define VERSION_FULL " ${APPVEYOR_BUILD_VERSION} > "version.h"
   - cmd: powershell -File manifest.ps1
 
-  - sh: cd boost_1_74_0
+  - sh: cd boost_1_75_0
   - sh: ./b2 cxxflags="-fPIC -std=c++17"  link=static threading=multi runtime-link=static release stage --with-regex --with-date_time address-model=32
   - sh: cd ..
   - mkdir build32
@@ -83,7 +83,7 @@ build_script:
   - cmake --build . --config Release
   - cd ..
 
-  - sh: cd boost_1_74_0
+  - sh: cd boost_1_75_0
   - sh: ./b2 cxxflags="-fPIC -std=c++17" link=static threading=multi runtime-link=static release stage --with-regex --with-date_time address-model=64
   - sh: cd ..
   - mkdir build64
