@@ -102,6 +102,7 @@ for:
   - matrix:
       only:
         - job_name: Linux
+
     artifacts:
       - path: AddIn.zip
 
