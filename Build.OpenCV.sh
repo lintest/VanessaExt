@@ -13,7 +13,7 @@ OPENCV_OPTIONS='\
 -DBUILD_OPENJPEG:BOOL=OFF \
 -DBUILD_PACKAGE:BOOL=OFF \
 -DBUILD_PERF_TESTS:BOOL=OFF \
--DBUILD_PNG:BOOL=ON \
+-DBUILD_PNG=OPENCV_FORCE_3RDPARTY_BUILD \
 -DBUILD_PROTOBUF:BOOL=OFF \
 -DBUILD_SHARED_LIBS:BOOL=OFF \
 -DBUILD_TBB:BOOL=OFF \
@@ -24,7 +24,7 @@ OPENCV_OPTIONS='\
 -DBUILD_WITH_DEBUG_INFO:BOOL=OFF \
 -DBUILD_WITH_DYNAMIC_IPP:BOOL=OFF \
 -DBUILD_WITH_STATIC_CRT:BOOL=ON \
--DBUILD_ZLIB:BOOL=OFF \
+-DBUILD_ZLIB=OPENCV_FORCE_3RDPARTY_BUILD \
 -DBUILD_opencv_apps:BOOL=OFF \
 -DBUILD_opencv_calib3d:BOOL=OFF \
 -DBUILD_opencv_core:BOOL=ON \
@@ -127,8 +127,8 @@ OPENCV_INSTALL32="\
   -DOPENCV_LIB_ARCHIVE_INSTALL_PATH:PATH=$INSTALL_PATH \
   -DOPENCV_3P_LIB_INSTALL_PATH:PATH=$INSTALL_PATH \
   -DOPENCV_INCLUDE_INSTALL_PATH=$INSTALL_PATH \
-  -DCMAKE_C_FLAGS=-m32 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections \
-  -DCMAKE_CXX_FLAGS=-m32 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections "
+  -DCMAKE_C_FLAGS=-m32 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections -std=c++17 \
+  -DCMAKE_CXX_FLAGS=-m32 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections -std=c++17 "
 
 cd opencv-4.5.1
 mkdir build32
@@ -144,8 +144,8 @@ OPENCV_INSTALL64="\
   -DOPENCV_LIB_ARCHIVE_INSTALL_PATH:PATH=$INSTALL_PATH \
   -DOPENCV_3P_LIB_INSTALL_PATH:PATH=$INSTALL_PATH \
   -DOPENCV_INCLUDE_INSTALL_PATH=$INSTALL_PATH \
-  -DCMAKE_C_FLAGS=-m64 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections \
-  -DCMAKE_CXX_FLAGS=-m64 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections "
+  -DCMAKE_C_FLAGS=-m64 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections -std=c++17 \
+  -DCMAKE_CXX_FLAGS=-m64 -fvisibility=hidden -fvisibility-inlines=hidden -ffunction-sections -fdata-sections -std=c++17 "
 
 cd opencv-4.5.1
 mkdir build64
