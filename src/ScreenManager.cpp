@@ -661,6 +661,11 @@ BOOL BaseHelper::ScreenManager::EmulateClick(int64_t button, VH keys)
 {
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
+	switch (button) {
+	case 1: button = 3; break; // right
+	case 2: button = 2; break; // middle
+	default: button = 1; break; // left
+	}
 
 	Hotkey hotkey(keys);
 	hotkey.down();
