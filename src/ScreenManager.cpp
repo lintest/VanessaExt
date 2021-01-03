@@ -348,7 +348,6 @@ BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pa
 
 #else //_WINDOWS
 
-#include "screenshot.h"
 #include "XWinBase.h"
 #include <X11/extensions/XTest.h>
 #include <unistd.h>
@@ -458,25 +457,29 @@ BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, int64_t win)
 	return Capture(variant, (Window)win);
 }
 
-BOOL BaseHelper::ScreenManager::Capture(VH variant, Window win)
+#include "screenshot.h"
+
+BOOL BaseHelper::ScreenManager::Save(XImage* image, VH &variant, int width, int height)
 {
-	Display* display = XOpenDisplay(NULL);
-	if (display == NULL) return false;
-
-	Window window = win;
-	if (window == 0) window = DefaultRootWindow(display);
-
-	BOOL success = false;
-	XWindowAttributes gwa;
-	XGetWindowAttributes(display, window, &gwa);
-	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
 	X11Screenshot screenshot = X11Screenshot(image);
 	std::vector<char> buffer;
 	if (screenshot.save_to_png(buffer)) {
 		variant.AllocMemory(buffer.size());
 		memcpy((void*)variant.data(), &buffer[0], buffer.size());
-		success = true;
+		return true;
 	}
+	return false;
+}
+
+BOOL BaseHelper::ScreenManager::Capture(VH variant, Window window)
+{
+	Display* display = XOpenDisplay(NULL);
+	if (display == nullptr) return false;
+	if (window == 0) window = DefaultRootWindow(display);
+	XWindowAttributes gwa;
+	XGetWindowAttributes(display, window, &gwa);
+	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
+	auto success = image && Save(image, variant, gwa.width, gwa.height);
 	XDestroyImage(image);
 	XCloseDisplay(display);
 	return success;
@@ -485,19 +488,11 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, Window win)
 BOOL BaseHelper::ScreenManager::CaptureRegion(VH variant, int64_t x, int64_t y, int64_t w, int64_t h)
 {
 	Display* display = XOpenDisplay(NULL);
-	if (display == NULL) return false;
-
+	if (display == nullptr) return false;
 	Window window = DefaultRootWindow(display);
-	BOOL success = false;
 	XWindowAttributes gwa;
 	XImage* image = XGetImage(display, window, (int)x, (int)y, (unsigned int)w, (unsigned int)h, AllPlanes, ZPixmap);
-	X11Screenshot screenshot = X11Screenshot(image);
-	std::vector<char> buffer;
-	if (screenshot.save_to_png(buffer)) {
-		variant.AllocMemory(buffer.size());
-		memcpy((void*)variant.data(), &buffer[0], buffer.size());
-		success = true;
-	}
+	auto success = image && Save(image, variant, (int)w, (int)h);
 	XDestroyImage(image);
 	XCloseDisplay(display);
 	return success;

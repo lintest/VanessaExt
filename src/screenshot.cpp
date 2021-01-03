@@ -1,3 +1,4 @@
+#ifndef USE_OPENCV
 #ifndef _WINDOWS
 
 #include <iostream>
@@ -213,3 +214,4 @@ bool X11Screenshot::save_to_png(std::vector<char> &out) {
 };
 
 #endif //_WINDOWS
+#endif //USE_OPENCV

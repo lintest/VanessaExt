@@ -67,7 +67,7 @@
 - <a href="#DragAndDrop">ЭмуляцияПеретаскивания (DragAndDrop)</a>
 - <a href="#EmulateText">ЭмуляцияВводаТекста (EmulateText)</a>
 
-Меотды компьютерного зрения (только для Windows):
+Меотды компьютерного зрения:
 - <a href="#FindFragment">НайтиФрагмент (FindFragment)</a>
 - <a href="#FindOnScreen">НайтиНаЭкране (FindOnScreen)</a>
 

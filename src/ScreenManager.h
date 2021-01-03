@@ -16,6 +16,7 @@ private:
 #ifdef _WINDOWS
 	static BOOL Capture(VH variant, HWND window);
 #else
+	static BOOL Save(XImage* image, VH &variant, int width, int height);
 	static BOOL Capture(VH variant, Window win);
 #endif//_WINDOWS
 private:
