@@ -584,6 +584,8 @@ BOOL BaseHelper::ScreenManager::SetCursorPos(int64_t x, int64_t y)
 	return true;
 }
 
+#include <X11/keysymdef.h>
+
 class BaseHelper::ScreenManager::Hotkey
 	: private std::vector<KeyCode>
 {
@@ -622,18 +624,37 @@ public:
 		try {
 			auto json = JSON::parse(WC2MB(text));
 			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
-				add((KeySym)it.value());
+				add(it.value());
 			}
 		}
 		catch (nlohmann::json::parse_error e) {
 			throw u"JSON parse error";
 		}
 	}
-	void add(KeySym keysym) {
+	void add(JSON value) {
+		KeySym keysym = NoSymbol; 
+		std::cout << "JSON: " << value.get<std::string>();
+		if (value.is_string()) keysym = StringToKeysym(value.get<std::string>());
+		else if (value.is_number()) keysym = value.get<unsigned long>();
+		if (keysym == NoSymbol) throw u"Failed to parse hotkey string";
 		KeyCode keycode = XKeysymToKeycode(m_display, keysym);
 		std::wcout << std::endl << keysym << " : " << keycode << std::endl;
 		push_back(keycode);
 	}
+	KeySym StringToKeysym(const std::string &value) {
+		const char* text = value.c_str();
+		if (0 == strcasecmp(text, "CTRL")) return XK_Control_L;
+		if (0 == strcasecmp(text, "CONTROL")) return XK_Control_L;
+		if (0 == strcasecmp(text, "SHIFT")) return XK_Shift_L;
+		if (0 == strcasecmp(text, "MENU")) return XK_Alt_L;
+		if (0 == strcasecmp(text, "ALT")) return XK_Alt_L;
+		if (0 == strcasecmp(text, "WIN")) return XK_Super_L;
+		if (0 == strcasecmp(text, "LWIN")) return XK_Super_L;
+		if (0 == strcasecmp(text, "RWIN")) return XK_Super_R;
+		if (0 == strcasecmp(text, "NUMLOCK")) return XK_Num_Lock;
+		return XStringToKeysym(value.c_str());
+	}
+
 	void send() {
 		down();
 		up();
