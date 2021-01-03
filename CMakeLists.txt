@@ -46,8 +46,6 @@ add_library(${TARGET} SHARED
 	src/WindowsManager.h
 	src/screenshot.cpp
 	src/screenshot.h
-	src/xcb_clip.cpp
-	src/xcb_clip.h
 	src/json.hpp
 	src/stdafx.h)
 
@@ -84,6 +82,11 @@ set_target_properties( ${PROJECT_NAME} PROPERTIES
 	   CXX_STANDARD 17
    )
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BUILD_CLAR OFF CACHE BOOL "" FORCE)
+set(STATIC_CRT ON CACHE BOOL "" FORCE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 if (UNIX)
 	if (TARGET_PLATFORM_32)
 		set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu" CACHE PATH "<desc>")
@@ -100,9 +103,11 @@ if (UNIX)
 	include(FindX11)
 	find_package(X11 COMPONENTS Xtst)
 	target_link_libraries(${PROJECT_NAME} ${X11_XTest_LIB})
+	target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/3rdparty/clip-1.3")
+	add_subdirectory("${CMAKE_SOURCE_DIR}/3rdparty/clip-1.3")
+	target_link_libraries(${TARGET} clip)
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -s")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
-#	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
 else(UNIX)
 	add_definitions(/MT)
 	set(CMAKE_SUPPRESS_REGENERATION 1)
@@ -111,11 +116,6 @@ else(UNIX)
 			_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 	target_compile_options(${TARGET} PRIVATE /utf-8)
 endif(UNIX)
-
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-set(BUILD_CLAR OFF CACHE BOOL "" FORCE)
-set(STATIC_CRT ON CACHE BOOL "" FORCE)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if (WITH_OPENCV)
 	MESSAGE(STATUS "WITH_OPENCV")

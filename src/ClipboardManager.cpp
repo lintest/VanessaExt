@@ -245,9 +245,8 @@ bool BaseHelper::ClipboardManager::Empty()
 
 #else //_WINDOWS
 
-#include "xcb_clip.h"
-
 #include <vector>
+#include "clip.h"
 
 namespace clip {
 	namespace x11 {

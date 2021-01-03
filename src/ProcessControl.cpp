@@ -55,7 +55,7 @@ ProcessControl::ProcessControl()
 	SetHandleInformation(hInPipeW, HANDLE_FLAG_INHERIT, 0);
 	SetHandleInformation(hOutPipeR, HANDLE_FLAG_INHERIT, 0);
 #else
-	pipe(m_pipe);
+	(void)!pipe(m_pipe);
 #endif //_WINDOWS
 }
 
