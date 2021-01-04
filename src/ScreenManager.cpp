@@ -792,15 +792,25 @@ BOOL BaseHelper::ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 
 BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pause)
 {
-	std::wcout << L"EmulateText";
+	std::wcout << L"EmulateText:" << text << std::endl;
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 	usleep(100 * 1000);
-	for (auto ch : text) {
-		std::wstring w; w += ch;
-		KeySym keysym = XStringToKeysym(WC2MB(w).data());
-		KeyCode keycode = XKeysymToKeycode(display, keysym);
-		std::wcout << std::endl << w << " : " << keysym << " : " << keycode << std::endl;
+	for (auto it = text.begin(); it != text.end(); ++it) {
+		char buffer[16];
+		sprintf(buffer, "U%08x", *it);
+		KeySym sym = XStringToKeysym(buffer);
+		std::wcout <<  L"text out:  " << *it << L" - " << MB2WC(std::string(buffer)) << " - " << sym << std::endl;
+
+		int min, max, numcodes;
+		XDisplayKeycodes(display, &min, &max);
+		KeySym *keysyms = XGetKeyboardMapping(display, min, max - min + 1, &numcodes);
+		keysyms[(max - min - 1) * numcodes] = sym;
+		XChangeKeyboardMapping(display, min, numcodes, keysyms, max - min);
+		XFree(keysyms);
+		XFlush(display);
+
+		KeyCode keycode = XKeysymToKeycode(display, sym);
 		XTestFakeKeyEvent(display, keycode, true, CurrentTime);
 		XTestFakeKeyEvent(display, keycode, false, CurrentTime);
 		XFlush(display);
