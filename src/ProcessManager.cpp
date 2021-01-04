@@ -161,7 +161,7 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	return {};
 }
 
-std::wstring ProcessManager::FindProcess(const std::wstring &name)
+std::wstring ProcessManager::FindProcess(const std::wstring& name)
 {
 	if (name.empty()) return {};
 	return ProcessEnumerator(name.c_str());
@@ -237,8 +237,9 @@ DWORD ProcessManager::ParentProcessId(DWORD pid)
 	return 0;
 }
 
-bool ProcessManager::ConsoleOut(const std::wstring& text)
+bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 {
+	if (text.empty()) return true;
 	auto pid = ::GetCurrentProcessId();
 	bool attached = false;
 	while (!attached) {
@@ -246,8 +247,18 @@ bool ProcessManager::ConsoleOut(const std::wstring& text)
 		if (pid == 0) return false;
 		attached = AttachConsole(pid);
 	}
+	bool ok = false;
+	DWORD dwMode = 0;
 	auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	auto ok = WriteConsole(hConsole, text.c_str(), (DWORD)text.size(), NULL, NULL);
+	if (encoding == 0 || GetConsoleMode(hConsole, &dwMode)) {
+		ok = WriteConsole(hConsole, text.c_str(), (DWORD)text.size(), NULL, NULL);
+	}
+	else {
+		auto size = WideCharToMultiByte((UINT)encoding, 0, text.data(), (int)text.size(), NULL, 0, NULL, NULL);
+		std::string buffer(size, 0);
+		WideCharToMultiByte((UINT)encoding, 0, text.data(), (int)text.size(), &buffer[0], size, NULL, NULL);
+		ok = WriteFile(hConsole, buffer.c_str(), (DWORD)buffer.size(), NULL, NULL);
+	}
 	FreeConsole();
 	return ok;
 }
@@ -400,7 +411,7 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	return ProcessInfo((unsigned long)pid);
 }
 
-std::wstring ProcessManager::FindProcess(const std::wstring &name)
+std::wstring ProcessManager::FindProcess(const std::wstring& name)
 {
 	return {};
 }
