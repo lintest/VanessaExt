@@ -421,7 +421,7 @@ void ProcessManager::Sleep(int64_t ms)
 	::usleep((unsigned long)ms * 1000);
 }
 
-bool ProcessManager::ConsoleOut(const std::wstring& text)
+bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 {
 	std::wcout << text;
 	return true;
