@@ -240,14 +240,16 @@ DWORD ProcessManager::ParentProcessId(DWORD pid)
 bool ProcessManager::ConsoleOut(const std::wstring& text)
 {
 	auto pid = ::GetCurrentProcessId();
-	static bool attached = false;
+	bool attached = false;
 	while (!attached) {
 		pid = ParentProcessId(pid);
 		if (pid == 0) return false;
 		attached = AttachConsole(pid);
 	}
 	auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	return WriteConsole(hConsole, text.c_str(), (DWORD)text.size(), NULL, NULL);
+	auto ok = WriteConsole(hConsole, text.c_str(), (DWORD)text.size(), NULL, NULL);
+	FreeConsole();
+	return ok;
 }
 
 #else //_WINDOWS
