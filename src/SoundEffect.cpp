@@ -26,7 +26,7 @@ std::u16string MediaError(MCIERROR err)
 	size_t size = 1024;
 	std::wstring error;
 	error.resize(size);
-	mciGetErrorString(err, &error[0], size);
+	mciGetErrorString(err, &error[0], (UINT)size);
 	return std::u16string(error.begin(), error.end());
 }
 
@@ -35,7 +35,7 @@ std::wstring SoundEffect::MediaCommand(const std::wstring& command)
 	std::wstring result;
 	size_t length = 1024;
 	result.resize(length);
-	MCIERROR err = mciSendString(command.c_str(), &result[0], length, NULL);
+	MCIERROR err = mciSendString(command.c_str(), &result[0], (UINT)length, NULL);
 	if (err) throw MediaError(err);
 	return result;
 }
@@ -81,7 +81,7 @@ bool SoundHandler::Open()
 	MCI_OPEN_PARMS mciOpenParms;
 	mciOpenParms.lpstrDeviceType = NULL;
 	mciOpenParms.lpstrElementName = filename.c_str();
-	auto opReturn = mciSendCommand(NULL, MCI_OPEN, MCI_OPEN_ELEMENT, (DWORD)(LPVOID)&mciOpenParms);
+	auto opReturn = mciSendCommand(NULL, MCI_OPEN, MCI_OPEN_ELEMENT, (DWORD_PTR)&mciOpenParms);
 	if (opReturn != 0) return false;
 	device = mciOpenParms.wDeviceID;
 	return true;
@@ -108,7 +108,7 @@ bool SoundHandler::Play()
 
 	MCI_PLAY_PARMS params = {};
 	params.dwCallback = (DWORD_PTR)hWnd;
-	return mciSendCommand(device, MCI_PLAY, MCI_NOTIFY, (DWORD)&params) == 0;
+	return mciSendCommand(device, MCI_PLAY, MCI_NOTIFY, (DWORD_PTR)&params) == 0;
 }
 
 bool SoundHandler::Stop()
