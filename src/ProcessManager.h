@@ -20,7 +20,7 @@ public:
 	static std::wstring OpenWebSocket(WebSocketBase** ws, const std::string& url);
 	static std::wstring SendWebSocket(WebSocketBase** ws, const std::string& msg);
 	static std::wstring WebSocket(const std::string& url, const std::string& msg);
-	static bool ConsoleOut(const std::wstring& text);
+	static bool ConsoleOut(const std::wstring& text, int64_t encoding);
 	static void Sleep(int64_t interval);
 	static int64_t ProcessId();
 };

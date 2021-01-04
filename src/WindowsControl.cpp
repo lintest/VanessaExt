@@ -165,7 +165,7 @@ WindowsControl::WindowsControl() {
 		[&](VH path, VH mask, VH text, VH ignore) {	this->result = FileFinder(text, ignore).find(path, mask); }, { {3, true} }
 	);
 	AddFunction(u"OutputToConsole", u"ВывестиВКонсоль",
-		[&](VH text) { this->result = ProcessManager::ConsoleOut(text); }
+		[&](VH text, VH encoding) { this->result = ProcessManager::ConsoleOut(text, encoding); }, { {1, (int64_t)866} }
 	);
 	AddProcedure(u"Sleep", u"Пауза",
 		[&](VH msec) { ProcessManager::Sleep(msec); }
