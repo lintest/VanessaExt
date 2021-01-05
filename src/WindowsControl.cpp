@@ -239,13 +239,13 @@ WindowsControl::WindowsControl() {
 
 #ifdef USE_BOOST
 	AddFunction(u"WebSocket", u"ВебСокет",
-		[&](VH url, VH msg) { this->result = ProcessManager::WebSocket(url, msg); }
+		[&](VH url, VH msg) { this->result = this->WebSocket(url, msg); }
 	);
 	AddFunction(u"OpenWebSocket", u"ОткрытьВебСокет",
-		[&](VH url) { this->result = ProcessManager::OpenWebSocket(&webSocket, url); }
+		[&](VH url) { this->result = this->OpenWebSocket(url); }
 	);
 	AddFunction(u"SendWebSocket", u"ПослатьВебСокет",
-		[&](VH msg) { this->result = ProcessManager::SendWebSocket(&webSocket, msg); }
+		[&](VH msg) { this->result = this->SendWebSocket(msg); }
 	);
 	AddProcedure(u"CloseWebSocket", u"ЗакрытьВебСокет",
 		[&]() { this->CloseWebSocket(); }
@@ -255,7 +255,9 @@ WindowsControl::WindowsControl() {
 
 WindowsControl::~WindowsControl()
 {
+#ifdef USE_BOOST
 	CloseWebSocket();
+#endif//USE_BOOST
 #ifdef _WINDOWS
 	ClickEffect::Unhook();
 #endif//_WINDOWS
@@ -378,3 +380,58 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 }
 
 #endif//_WINDOWS
+
+#ifdef USE_BOOST
+
+#include "WebSocket.h"
+
+static std::wstring SocketError(const std::string message)
+{
+	nlohmann::json json, j;
+	j["message"] = message;
+	json["error"] = j;
+	return MB2WC(json.dump());
+}
+
+std::wstring WindowsControl::WebSocket(const std::string& url, const std::string& data)
+{
+	try {
+		std::string res;
+		auto msg = nlohmann::json::parse(data).dump();
+		std::unique_ptr<WebSocketBase> ws(WebSocketBase::create());
+		bool ok = ws->open(url, res) && ws->send(msg, res);
+		return ok ? MB2WC(res) : SocketError(res);
+	}
+	catch (nlohmann::json::parse_error e) {
+		return SocketError("JSON parse error");
+	}
+}
+
+std::wstring WindowsControl::OpenWebSocket(const std::string& url)
+{
+	std::string res;
+	std::unique_ptr<WebSocketBase> ws(WebSocketBase::create());
+	if (ws->open(url, res)) {
+		webSocket = std::move(ws);
+		return MB2WC(res);
+	}
+	else {
+		return SocketError(res);
+	}
+}
+
+std::wstring WindowsControl::SendWebSocket(const std::string& data)
+{
+	if (!webSocket) 
+		return SocketError("Error: WebSocket closed");
+	try {
+		std::string res;
+		auto msg = nlohmann::json::parse(data).dump();
+		return webSocket->send(msg, res) ? MB2WC(res) : SocketError(res);
+	}
+	catch (nlohmann::json::parse_error e) {
+		return SocketError("JSON parse error");
+	}
+}
+
+#endif //USE_BOOST

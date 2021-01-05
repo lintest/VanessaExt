@@ -147,11 +147,4 @@ bool WebSocket::send(const std::string& msg, std::string& res)
 	return true;
 }
 
-// Sends a WebSocket message 
-bool doWebSocket(const std::string& url, std::string& msg, std::string& res)
-{
-	WebSocket ws;
-	return ws.open(url, res) && ws.send(msg, res);
-}
-
 #endif//USE_BOOST

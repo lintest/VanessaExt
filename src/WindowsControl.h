@@ -16,11 +16,13 @@ class WindowsControl : public BaseHelper
 
 private:
 	int64_t LaunchProcess(const std::wstring& cmd, bool show);
+
 #ifdef USE_BOOST
-	WebSocketBase* webSocket = nullptr;
-	bool CloseWebSocket() { if (webSocket) delete webSocket; webSocket = nullptr; return true; }
-#else//USE_BOOST
-	bool CloseWebSocket() { return true; }
+	std::unique_ptr<WebSocketBase> webSocket;
+	void CloseWebSocket() { webSocket.reset(); }
+	static std::wstring WebSocket(const std::string& url, const std::string& msg);
+	std::wstring OpenWebSocket(const std::string& url);
+	std::wstring SendWebSocket(const std::string& msg);
 #endif//USE_BOOST
 
 private:

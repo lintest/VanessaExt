@@ -15,8 +15,6 @@ public:
 	virtual bool send(const std::string& msg, std::string& res) = 0;
 };
 
-bool doWebSocket(const std::string& url, std::string& msg, std::string& res);
-
 #endif//USE_BOOST
 
 #endif //__WEBSOCKET_H__
