@@ -18,11 +18,13 @@ FileFinder::FileFinder(const std::wstring& text, bool ignoreCase)
 	if (ignoreCase) lower(m_text);
 }
 
-#ifdef _WINDOWS
-
 bool FileFinder::search(const std::wstring& path)
 {
+#ifdef _WINDOWS
 	std::wifstream wif(path);
+#else
+	std::wifstream wif(WC2MB(path));
+#endif
 	wif.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
 	const size_t text_len = m_text.length();
 	const size_t buf_size = 8192;
@@ -40,6 +42,8 @@ bool FileFinder::search(const std::wstring& path)
 		std::memmove(buf, end - offset, offset * sizeof(wchar_t));
 	}
 }
+
+#ifdef _WINDOWS
 
 #include <windows.h>
 #include <tchar.h>
@@ -148,6 +152,7 @@ static std::string time2str(time_t t)
 	localtime_r(&t, &lt);
 	char buffer[80];
 	strftime(buffer, sizeof(buffer), "%FT%T", &lt);
+	return buffer;
 }
 
 void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
@@ -157,13 +162,15 @@ void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
 	for (boost::filesystem::recursive_directory_iterator i(root); i != end_itr; ++i) {
 		if (boost::filesystem::is_regular_file(i->status())) {
 			boost::wsmatch what;
-			if (!boost::regex_match(i->path().filename().wstring(), what, pattern)) continue;
+			std::wstring filepath = i->path().wstring();
+			std::wstring filename = i->path().filename().wstring();
+			if (!boost::regex_match(filename, what, pattern)) continue;
 			if (m_text.empty() || search(i->path().wstring())) {
 				nlohmann::json j;
-				j["path"] = WC2MB(i->path().wstring());
-				j["name"] = WC2MB(i->path().filename().wstring());
-				j["size"] = boost::filesystem::file_size(i->path().wstring());
-				j["date"] = time2str(boost::filesystem::last_write_time(i->path().wstring()));
+				j["path"] = WC2MB(filepath);
+				j["name"] = WC2MB(filename);
+				j["size"] = (int32_t)boost::filesystem::file_size(filepath);
+				j["date"] = time2str(boost::filesystem::last_write_time(filepath));
 				m_json.push_back(j);
 			}
 		}
@@ -181,10 +188,11 @@ std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask
 #else //USE_BOOST
 
 std::wstring FileFinder::find(const std::wstring& path, const std::wstring& mask) { return {}; }
+
 void FileFinder::dirs(const std::wstring& root, const std::wstring& mask) {}
-void FileFinder::files(const std::wstring& root, const std::wstring& mask) {} 
-bool FileFinder::search(const std::wstring& path) { return false; }
 
 #endif //USE_BOOST
+
+void FileFinder::files(const std::wstring& root, const std::wstring& mask) {}
 
 #endif //_WINDOWS

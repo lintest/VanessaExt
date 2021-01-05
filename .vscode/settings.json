@@ -84,7 +84,8 @@
         "set": "cpp",
         "future": "cpp",
         "typeindex": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "*.ipp": "cpp"
     },
     "cmake.configureOnOpen": false
 }
