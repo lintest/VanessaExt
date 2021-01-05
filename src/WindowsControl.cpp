@@ -162,7 +162,7 @@ WindowsControl::WindowsControl() {
 		[&](VH text, VH pause) { ScreenManager::EmulateText(text, pause); }, { {1, (int64_t)0} }
 	);
 	AddFunction(u"FindFiles", u"НайтиФайлы",
-		[&](VH path, VH mask, VH text, VH ignore) {	this->result = FileFinder(text, ignore).find(path, mask); }, { {3, true} }
+		[&](VH path, VH mask, VH text, VH ignore) {	this->result = FileFinder(text, ignore).find(path, mask); }, { {1, u"*.*"}, {2, u""}, {3, true} }
 	);
 	AddFunction(u"OutputToConsole", u"ВывестиВКонсоль",
 		[&](VH text, VH encoding) { this->result = ProcessManager::ConsoleOut(text, encoding); }, { {1, (int64_t)866} }
@@ -270,7 +270,7 @@ static WCHAR_T* T(const std::u16string& text)
 
 #ifdef _WINDOWS
 
-class ProcessInfo 
+class ProcessInfo
 	: public PROCESS_INFORMATION {
 public:
 	ProcessInfo(WindowsControl* addin) : addin(addin) {}
@@ -354,7 +354,7 @@ static void OnStartProcess(pid_t pid)
 	memset(&tv, 0, sizeof(tv));
 	sa.sa_handler = OnProcessTimer;
 	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART; 
+	sa.sa_flags = SA_RESTART;
 	sigaction(SIGALRM, &sa, NULL);
 	tv.it_interval.tv_sec = 1;
 	tv.it_value.tv_sec = 1;
@@ -385,7 +385,7 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 
 #include "WebSocket.h"
 
-static std::wstring SocketError(const std::string message)
+static std::wstring SocketError(const std::string& message)
 {
 	nlohmann::json json, j;
 	j["message"] = message;
@@ -402,7 +402,7 @@ std::wstring WindowsControl::WebSocket(const std::string& url, const std::string
 		bool ok = ws->open(url, res) && ws->send(msg, res);
 		return ok ? MB2WC(res) : SocketError(res);
 	}
-	catch (nlohmann::json::parse_error e) {
+	catch (nlohmann::json::parse_error&) {
 		return SocketError("JSON parse error");
 	}
 }
@@ -422,14 +422,14 @@ std::wstring WindowsControl::OpenWebSocket(const std::string& url)
 
 std::wstring WindowsControl::SendWebSocket(const std::string& data)
 {
-	if (!webSocket) 
+	if (!webSocket)
 		return SocketError("Error: WebSocket closed");
 	try {
 		std::string res;
 		auto msg = nlohmann::json::parse(data).dump();
 		return webSocket->send(msg, res) ? MB2WC(res) : SocketError(res);
 	}
-	catch (nlohmann::json::parse_error e) {
+	catch (nlohmann::json::parse_error&) {
 		return SocketError("JSON parse error");
 	}
 }
