@@ -89,17 +89,9 @@ bool SoundHandler::Open()
 
 bool SoundHandler::Play()
 {
-	WNDCLASS wndClass;
-	ZeroMemory(&wndClass, sizeof(wndClass));
-	wndClass.style = CS_HREDRAW | CS_VREDRAW;
-	wndClass.lpfnWndProc = SoundWndProc;
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
+	WNDCLASS wndClass = {};
 	wndClass.hInstance = hModule;
-	wndClass.hIcon = NULL;
-	wndClass.hCursor = NULL;
-	wndClass.hbrBackground = NULL;
-	wndClass.lpszMenuName = NULL;
+	wndClass.lpfnWndProc = SoundWndProc;
 	wndClass.lpszClassName = wsSoundName;
 	RegisterClass(&wndClass);
 

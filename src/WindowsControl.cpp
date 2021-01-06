@@ -259,6 +259,8 @@ WindowsControl::~WindowsControl()
 	CloseWebSocket();
 #endif//USE_BOOST
 #ifdef _WINDOWS
+	if (hProcessMonitor)
+		DestroyWindow(hProcessMonitor);
 	ClickEffect::Unhook();
 #endif//_WINDOWS
 }
@@ -270,11 +272,17 @@ static WCHAR_T* T(const std::u16string& text)
 
 #ifdef _WINDOWS
 
+const UINT WM_PROCESS_FINISHED = WM_USER + 3;
+
 class ProcessInfo
 	: public PROCESS_INFORMATION {
+private:
+	HWND hWindow;
 public:
-	ProcessInfo(WindowsControl* addin) : addin(addin) {}
-	WindowsControl* addin;
+	ProcessInfo(HWND hWindow) : hWindow(hWindow) {}
+	void ExtrenalEvent(DWORD dwExitCode) {
+		PostMessage(hWindow, WM_PROCESS_FINISHED, dwProcessId, dwExitCode);
+	}
 };
 
 static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
@@ -284,12 +292,49 @@ static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 	DWORD dwExitCode = 0;
 	json["ProcessId"] = pi->dwProcessId;
 	WaitForSingleObject(pi->hProcess, INFINITE);
-	if (GetExitCodeProcess(pi->hProcess, &dwExitCode)) json["ExitCode"] = dwExitCode;
-	std::u16string data = pi->addin->MB2WCHAR(json.dump());
-	pi->addin->ExternalEvent(PROCESS_FINISHED, data);
+	if (GetExitCodeProcess(pi->hProcess, &dwExitCode)) 
+		pi->ExtrenalEvent(dwExitCode);
 	CloseHandle(pi->hProcess);
 	CloseHandle(pi->hThread);
 	return 0;
+}
+
+LRESULT CALLBACK ProcessWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case (WM_PROCESS_FINISHED): {
+		auto component = (WindowsControl*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+		component->OnProcessFinished((DWORD)wParam, (DWORD)lParam);
+		return 0;
+	} 
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+}
+
+void WindowsControl::StartProcessMonitoring()
+{
+	if (hProcessMonitor) return;
+
+	const LPCWSTR wsClassName = L"VanessaProcessMonitor";
+	WNDCLASS wndClass = {};
+	wndClass.hInstance = hModule;
+	wndClass.lpfnWndProc = ProcessWndProc;
+	wndClass.lpszClassName = wsClassName;
+	RegisterClass(&wndClass);
+
+	hProcessMonitor = CreateWindow(wsClassName, NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hModule, 0);
+	SetWindowLongPtr(hProcessMonitor, GWLP_USERDATA, (LONG_PTR)this);
+}
+
+void WindowsControl::OnProcessFinished(DWORD ProcessId, DWORD ExitCode)
+{
+	JSON json;
+	json["ProcessId"] = ProcessId;
+	json["ExitCode"] = ExitCode;
+	std::u16string data = MB2WCHAR(json.dump());
+	ExternalEvent(PROCESS_FINISHED, data);
 }
 
 int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
@@ -302,7 +347,8 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 		si.wShowWindow = SW_HIDE;
 	}
 	int64_t result = 0;
-	ProcessInfo* pi = new ProcessInfo(this);
+	StartProcessMonitoring();
+	ProcessInfo* pi = new ProcessInfo(hProcessMonitor);
 	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, pi);
 	if (ok) {
 		result = (int64_t)pi->dwProcessId;

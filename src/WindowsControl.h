@@ -11,7 +11,11 @@
 class WindowsControl : public BaseHelper
 {
 #ifdef _WINDOWS
-	friend DWORD WINAPI ProcessThreadProc(LPVOID lpParam);
+private:
+	HWND hProcessMonitor = NULL;
+	void StartProcessMonitoring();
+public:
+	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
 #endif//_WINDOWS
 
 private:
