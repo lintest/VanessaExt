@@ -457,7 +457,7 @@ BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, int64_t win)
 	return Capture(variant, (Window)win);
 }
 
-#include "screenshot.h"
+#include "X11Screenshot.h"
 
 BOOL BaseHelper::ScreenManager::Save(XImage* image, VH &variant, int width, int height)
 {

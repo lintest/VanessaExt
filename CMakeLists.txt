@@ -44,8 +44,8 @@ add_library(${TARGET} SHARED
 	src/WindowsControl.h
 	src/WindowsManager.cpp
 	src/WindowsManager.h
-	src/screenshot.cpp
-	src/screenshot.h
+	src/X11Screenshot.cpp
+	src/X11Screenshot.h
 	src/json.hpp
 	src/stdafx.h)
 
