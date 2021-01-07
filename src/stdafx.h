@@ -5,15 +5,18 @@
 #ifndef __STDAFX_H__
 #define __STDAFX_H__
 
+#include <types.h>
+#include <string>
+
 #ifdef _WINDOWS
-#include <windows.h>
 extern HMODULE hModule;
 #endif //_WINDOWS
 
-#include <string>
-
 std::wstring MB2WC(const std::string& source);
 std::string WC2MB(const std::wstring& source);
+std::u16string MB2WCHAR(std::string_view src);
+std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
+std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
 
 #include "json.hpp"
 using JSON = nlohmann::json;

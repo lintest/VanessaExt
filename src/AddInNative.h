@@ -116,9 +116,6 @@ protected:
 public:
 	static std::u16string upper(std::u16string& str);
 	static std::wstring upper(std::wstring& str);
-	static std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
-	static std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
-	static std::u16string MB2WCHAR(std::string_view src);
 	WCHAR_T* W(const char16_t* str) const;
 	static std::string version();
 

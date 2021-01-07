@@ -125,13 +125,15 @@ long AddInNative::FindProp(const WCHAR_T* wsPropName)
 {
 	std::u16string name((char16_t*)wsPropName);
 	for (auto it = properties.begin(); it != properties.end(); ++it) {
-		for (auto n = it->names.begin(); n != it->names.end(); ++n) {
+		auto& names = it->names;
+		for (auto n = names.begin(); n != names.end(); ++n) {
 			if (n->compare(name) == 0) return long(it - properties.begin());
 		}
 	}
 	name = upper(name);
 	for (auto it = properties.begin(); it != properties.end(); ++it) {
-		for (auto n = it->names.begin(); n != it->names.end(); ++n) {
+		auto& names = it->names;
+		for (auto n = names.begin(); n != names.end(); ++n) {
 			if (upper(*n).compare(name) == 0) return long(it - properties.begin());
 		}
 	}
@@ -211,13 +213,15 @@ long AddInNative::FindMethod(const WCHAR_T* wsMethodName)
 {
 	std::u16string name((char16_t*)wsMethodName);
 	for (auto it = methods.begin(); it != methods.end(); ++it) {
-		for (auto n = it->names.begin(); n != it->names.end(); ++n) {
+		auto& names = it->names;
+		for (auto n = names.begin(); n != names.end(); ++n) {
 			if (n->compare(name) == 0) return long(it - methods.begin());
 		}
 	}
 	name = upper(name);
 	for (auto it = methods.begin(); it != methods.end(); ++it) {
-		for (auto n = it->names.begin(); n != it->names.end(); ++n) {
+		auto& names = it->names;
+		for (auto n = names.begin(); n != names.end(); ++n) {
 			if (upper(*n).compare(name) == 0) return long(it - methods.begin());
 		}
 	}
@@ -438,7 +442,7 @@ void ADDIN_API AddInNative::FreeMemory(void** pMemory) const
 	if (m_iMemory) m_iMemory->FreeMemory(pMemory);
 }
 
-std::string AddInNative::WCHAR2MB(std::basic_string_view<WCHAR_T> src)
+std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src)
 {
 #ifdef _WINDOWS
 	static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt_utf8_utf16;
@@ -450,7 +454,7 @@ std::string AddInNative::WCHAR2MB(std::basic_string_view<WCHAR_T> src)
 #endif//_WINDOWS
 }
 
-std::wstring AddInNative::WCHAR2WC(std::basic_string_view<WCHAR_T> src) {
+std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src) {
 #ifdef _WINDOWS
 	return std::wstring(src);
 #else
@@ -460,7 +464,7 @@ std::wstring AddInNative::WCHAR2WC(std::basic_string_view<WCHAR_T> src) {
 #endif//_WINDOWS
 }
 
-std::u16string AddInNative::MB2WCHAR(std::string_view src) {
+std::u16string MB2WCHAR(std::string_view src) {
 #ifdef _WINDOWS
 	static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> cvt_utf8_utf16;
 	std::wstring tmp = cvt_utf8_utf16.from_bytes(src.data(), src.data() + src.size());
@@ -507,7 +511,7 @@ char* AddInNative::VarinantHelper::data()
 
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::string& str)
 {
-	return operator=(AddInNative::MB2WCHAR(str));
+	return operator=(MB2WCHAR(str));
 }
 
 AddInNative::VarinantHelper& AddInNative::VarinantHelper::operator=(const std::wstring& str)
