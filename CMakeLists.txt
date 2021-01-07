@@ -32,6 +32,8 @@ add_library(${TARGET} SHARED
 	src/ProcessControl.h
 	src/ProcessManager.cpp
 	src/ProcessManager.h
+	src/RegExpControl.cpp
+	src/RegExpControl.h
 	src/SoundEffect.cpp
 	src/SoundEffect.h 	
 	src/ScreenManager.cpp 

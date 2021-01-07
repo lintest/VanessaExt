@@ -1,6 +1,6 @@
-﻿#include "WebSocket.h"
+﻿#ifdef USE_BOOST
 
-#ifdef USE_BOOST
+#include "WebSocket.h"
 
 #ifdef _WINDOWS
 #define _WIN32_WINNT 0x0601
