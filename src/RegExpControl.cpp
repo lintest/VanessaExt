@@ -5,35 +5,22 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
+using namespace boost;
+
 std::vector<std::u16string> RegExpComponent::names = {
-	AddComponent(u"RerExp1C", []() { return new RegExpComponent; }),
+	AddComponent(u"RegExp1C", []() { return new RegExpComponent; }),
 };
 
 RegExpComponent::RegExpComponent()
 {
-	AddProperty(
-		u"Text", u"Текст",
-		[&](VH var) { var = this->getTestString(); },
-		[&](VH var) { this->setTestString(var); });
-
-	AddProperty(
-		u"Number", u"Число",
-		[&](VH var) { var = this->value; },
-		[&](VH var) { this->value = var; });
-
-	AddFunction(u"GetText", u"ПолучитьТекст", [&]() { this->result = this->getTestString(); });
-
-	AddProcedure(u"SetText", u"УстановитьТекст", [&](VH par) { this->setTestString(par); }, {{0, u"default: "}});
+	AddFunction(u"Replace", u"Заменить", 
+		[&](VH text, VH search, VH replace) { this->result = this->Replace(text, search, replace); }
+	);
 }
 
-std::u16string RegExpComponent::getTestString()
+std::wstring RegExpComponent::Replace(const std::wstring& source, const std::wstring& search, const std::wstring& replace)
 {
-	return text;
-}
-
-void RegExpComponent::setTestString(const std::u16string &text)
-{
-	this->text = text;
+	return regex_replace(source, basic_regex(search), replace);
 }
 
 #endif //USE_BOOST

@@ -380,8 +380,9 @@ static void OnProcessTimer(int sig)
 			json["ExitCode"] = WEXITSTATUS(status);
 			std::u16string name = wsComponentName;
 			std::u16string msg = PROCESS_FINISHED;
-			std::u16string data = WindowsControl::MB2WCHAR(json.dump());
-			if (pAddInConnection) pAddInConnection->ExternalEvent(T(name), T(msg), T(data));
+			std::u16string data = MB2WCHAR(json.dump());
+			if (pAddInConnection) 
+				pAddInConnection->ExternalEvent(T(name), T(msg), T(data));
 			vProcessList.erase(it);
 		}
 		else {

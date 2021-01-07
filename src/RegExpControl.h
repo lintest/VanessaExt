@@ -11,11 +11,8 @@ class RegExpComponent:
 private:
     static std::vector<std::u16string> names;
     RegExpComponent();
-    int64_t value;
 private:
-    std::u16string text;
-    std::u16string getTestString();
-    void setTestString(const std::u16string &text);
+    std::wstring Replace(const std::wstring& source, const std::wstring& search, const std::wstring& replace);
 };
 
 #endif //USE_BOOST
