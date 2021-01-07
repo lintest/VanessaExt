@@ -2815,6 +2815,115 @@
 						</Table>
 					</ChildItems>
 				</Page>
+				<Page name="СтраницаРегулярныеВыражения" id="760">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Регулярные выражения</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница регулярные выражения</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаРегулярныеВыраженияРасширеннаяПодсказка" id="761"/>
+					<ChildItems>
+						<UsualGroup name="ГруппаРегулярныеВыражения" id="768">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа регулярные выражения</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа регулярные выражения</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Width>50</Width>
+							<HorizontalStretch>false</HorizontalStretch>
+							<Group>Vertical</Group>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаРегулярныеВыраженияРасширеннаяПодсказка" id="769"/>
+							<ChildItems>
+								<CommandBar name="КоманднаяПанельВыражения" id="773">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Командная панель выражения</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Командная панель выражения</v8:content>
+										</v8:item>
+									</ToolTip>
+									<ExtendedTooltip name="КоманднаяПанельВыраженияРасширеннаяПодсказка" id="774"/>
+									<ChildItems>
+										<ButtonGroup name="ГруппаКРопокВыражения" id="779">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа к ропок выражения</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа к ропок выражения</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>Compact</Representation>
+											<ExtendedTooltip name="ГруппаКРопокВыраженияРасширеннаяПодсказка" id="780"/>
+											<ChildItems>
+												<Button name="ВыражениеЗаменить" id="775">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ВыражениеЗаменить</CommandName>
+													<ExtendedTooltip name="ВыражениеЗаменитьРасширеннаяПодсказка" id="776"/>
+												</Button>
+												<Button name="ВыражениеРазделить" id="777">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ВыражениеРазделить</CommandName>
+													<ExtendedTooltip name="ВыражениеРазделитьРасширеннаяПодсказка" id="778"/>
+												</Button>
+											</ChildItems>
+										</ButtonGroup>
+									</ChildItems>
+								</CommandBar>
+								<InputField name="ПримерТекста" id="762">
+									<DataPath>ПримерТекста</DataPath>
+									<AutoMaxWidth>false</AutoMaxWidth>
+									<Height>3</Height>
+									<HorizontalStretch>true</HorizontalStretch>
+									<VerticalStretch>false</VerticalStretch>
+									<MultiLine>true</MultiLine>
+									<ContextMenu name="ПримерТекстаКонтекстноеМеню" id="763"/>
+									<ExtendedTooltip name="ПримерТекстаРасширеннаяПодсказка" id="764"/>
+								</InputField>
+								<InputField name="ПримерВыражения" id="765">
+									<DataPath>ПримерВыражения</DataPath>
+									<AutoMaxWidth>false</AutoMaxWidth>
+									<ContextMenu name="ПримерВыраженияКонтекстноеМеню" id="766"/>
+									<ExtendedTooltip name="ПримерВыраженияРасширеннаяПодсказка" id="767"/>
+								</InputField>
+								<InputField name="ВыражениеРезультат" id="770">
+									<DataPath>ВыражениеРезультат</DataPath>
+									<AutoMaxWidth>false</AutoMaxWidth>
+									<Height>3</Height>
+									<VerticalStretch>false</VerticalStretch>
+									<MultiLine>true</MultiLine>
+									<ContextMenu name="ВыражениеРезультатКонтекстноеМеню" id="771"/>
+									<ExtendedTooltip name="ВыражениеРезультатРасширеннаяПодсказка" id="772"/>
+								</InputField>
+							</ChildItems>
+						</UsualGroup>
+					</ChildItems>
+				</Page>
 				<Page name="СтраницаПоискФайлов" id="452">
 					<Title>
 						<v8:item>
@@ -4303,6 +4412,51 @@
 				<v8:Type>xs:boolean</v8:Type>
 			</Type>
 		</Attribute>
+		<Attribute name="ПримерТекста" id="62">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Пример текста для регулярных выражений</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ПримерВыражения" id="63">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Выражение</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ВыражениеРезультат" id="64">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Результат обработки регулярного выражения</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -5517,6 +5671,35 @@
 				</v8:item>
 			</ToolTip>
 			<Action>СтартоватьПроцесс</Action>
+		</Command>
+		<Command name="ВыражениеЗаменить" id="81">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Заменить</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Выражение заменить</v8:content>
+				</v8:item>
+			</ToolTip>
+		</Command>
+		<Command name="ВыражениеРазделить" id="82">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Разделить</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Выражение разделить</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ВыражениеРазделить</Action>
 		</Command>
 	</Commands>
 </Form>

@@ -3,6 +3,7 @@
 
 #ifdef USE_BOOST
 
+#include "stdafx.h"
 #include "AddInNative.h"
 
 class RegExpComponent:
@@ -13,6 +14,7 @@ private:
     RegExpComponent();
 private:
     std::wstring Replace(const std::wstring& source, const std::wstring& search, const std::wstring& replace);
+    std::wstring Split(const std::wstring& source, const std::wstring& search);
 };
 
 #endif //USE_BOOST
