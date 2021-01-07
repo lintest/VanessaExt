@@ -27,7 +27,7 @@ install:
   - cmd: 7z x tools1c.part01.rar -p%KEY_1CV8T%
   - cmd: cd ..
 
-  - git clone -q --branch=master https://github.com/libgit2/libgit2.git libgit2-1.1.0
+  - git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
   - cd libgit2-1.1.0
   - git checkout -b version v1.1.0
   - cd ..
