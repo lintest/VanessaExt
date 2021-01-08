@@ -256,7 +256,8 @@ bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 		auto size = WideCharToMultiByte((UINT)encoding, 0, text.data(), (int)text.size(), NULL, 0, NULL, NULL);
 		std::string buffer(size, 0);
 		WideCharToMultiByte((UINT)encoding, 0, text.data(), (int)text.size(), &buffer[0], size, NULL, NULL);
-		ok = WriteFile(hConsole, buffer.c_str(), (DWORD)buffer.size(), NULL, NULL);
+		DWORD written;
+		ok = WriteFile(hConsole, buffer.data(), (DWORD)size, &written, NULL);
 	}
 	FreeConsole();
 	return ok;
