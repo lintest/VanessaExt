@@ -248,9 +248,8 @@ bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 		attached = AttachConsole(pid);
 	}
 	bool ok = false;
-	DWORD dwMode = 0;
 	auto hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (encoding == 0 || GetConsoleMode(hConsole, &dwMode)) {
+	if (encoding == 0 || GetFileType(hConsole) == FILE_TYPE_CHAR) {
 		ok = WriteConsole(hConsole, text.c_str(), (DWORD)text.size(), NULL, NULL);
 	}
 	else {
