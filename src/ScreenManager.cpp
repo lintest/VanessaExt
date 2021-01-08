@@ -213,14 +213,14 @@ public:
 		ip.ki.wVk = key;
 		push_back(ip);
 	}
-	void add(std::wstring text) {
+	void add(const std::wstring &text) {
 		try {
 			auto json = JSON::parse(WC2MB(text));
 			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
 				add((WORD)it.value());
 			}
 		}
-		catch (nlohmann::json::parse_error e) {
+		catch (nlohmann::json::parse_error&) {
 			throw u"JSON parse error";
 		}
 	}
