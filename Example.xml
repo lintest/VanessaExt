@@ -20,13 +20,13 @@
 				</v8:item>
 			</Synonym>
 			<Comment/>
-			<DefaultForm>ExternalDataProcessor.Example.Form.Start</DefaultForm>
+			<DefaultForm>ExternalDataProcessor.Example.Form.Initialize</DefaultForm>
 			<AuxiliaryForm/>
 		</Properties>
 		<ChildObjects>
-			<Form>Start</Form>
-			<Form>Form</Form>
-			<Form>Test</Form>
+			<Form>Initialize</Form>
+			<Form>MainForm</Form>
+			<Form>RunTests</Form>
 			<Template>VanessaExt</Template>
 			<Template>JavaScript</Template>
 		</ChildObjects>
