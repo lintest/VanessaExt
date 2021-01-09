@@ -74,8 +74,8 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"CreateProcess", u"СоздатьПроцесс",
 		[&](VH cmd, VH hide) { this->result = this->LaunchProcess(cmd, hide); }, { {1, false } }
 	);
-	AddProcedure(u"ExitProcess", u"ЗавершитьПроцесс",
-		[&](VH status) { this->ExitCurrentProcess(status); }
+	AddProcedure(u"Exit", u"ЗавершитьРаботуСистемы",
+		[&](VH status) { this->ExitCurrentProcess(status); }, { {0, (int64_t)0 } }
 	);
 	AddFunction(u"GetProcessWindow", u"ПолучитьОкноПроцесса",
 		[&](VH pid) { this->result = WindowsManager::GetProcessWindow(pid); }
@@ -434,6 +434,11 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 	return 0;
 }
 
+void WindowsControl::ExitCurrentProcess(int64_t status)
+{
+	exit((int)status);
+}
+
 #endif//_WINDOWS
 
 #ifdef USE_BOOST
@@ -487,11 +492,6 @@ std::wstring WindowsControl::SendWebSocket(const std::string& data)
 	catch (nlohmann::json::parse_error&) {
 		return SocketError("JSON parse error");
 	}
-}
-
-void WindowsControl::ExitCurrentProcess(int64_t status)
-{
-	exit((int)status);
 }
 
 #endif //USE_BOOST
