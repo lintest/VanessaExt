@@ -25,6 +25,7 @@ bool FileFinder::search(const std::wstring& path)
 #else
 	std::wifstream wif(WC2MB(path));
 #endif
+	static std::locale locale_ru = std::locale("ru_RU.UTF-8");
 	wif.imbue(std::locale(std::locale(), new std::codecvt_utf8<wchar_t>));
 	const size_t text_len = m_text.length();
 	const size_t buf_size = 8192;
@@ -35,7 +36,7 @@ bool FileFinder::search(const std::wstring& path)
 		auto read = wif.gcount();
 		if (read == 0) return false;
 		wchar_t* end = buf + offset + read;
-		if (m_ignoreCase) std::use_facet<std::ctype<wchar_t> >(std::locale()).tolower(buf + offset, end);
+		if (m_ignoreCase) std::use_facet<std::ctype<wchar_t> >(locale_ru).tolower(buf + offset, end);
 		auto it = std::search(buf, end, m_text.begin(), m_text.end());
 		if (it != end) return true;
 		offset = text_len;
