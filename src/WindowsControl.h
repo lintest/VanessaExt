@@ -20,6 +20,7 @@ public:
 
 private:
 	int64_t LaunchProcess(const std::wstring& cmd, bool show);
+	void ExitCurrentProcess(int64_t status);
 
 #ifdef USE_BOOST
 	std::unique_ptr<WebSocketBase> webSocket;
