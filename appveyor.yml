@@ -120,7 +120,8 @@ for:
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml VanessaExt.epf /Out example.log
       - appveyor PushArtifact VanessaExt.epf
-      - bin\1cv8ct.exe ENTERPRISE /F %CD%/database /Execute VanessaExt.epf /C autotest
+      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute VanessaExt.epf /C install
+      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute VanessaExt.epf /C autotest
       - ps: if (!(Test-Path success.txt)) { throw "Имеются ошибки" }
       - ps: Set-Content "AddIn.SHA256.txt" (get-filehash -Algorithm SHA256 "AddIn.zip").Hash
 
