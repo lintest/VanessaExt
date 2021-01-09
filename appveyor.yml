@@ -118,6 +118,7 @@ for:
       - ps: Set-Content -Path app_port.txt -Value ([uri] $env:APPVEYOR_API_URL).Port
       - mkdir database
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
+      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml VanessaExt.epf /Out example.log
       - appveyor PushArtifact VanessaExt.epf
       - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute VanessaExt.epf /C install
