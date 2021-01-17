@@ -16,10 +16,10 @@ Invoke-RestMethod -Method Get -OutFile "$path\Linux.zip" `
   -Uri "$apiUrl/buildjobs/$jobId/artifacts/AddIn.zip" 
 
 Expand-Archive -Force -Path "$path\Linux.zip" -DestinationPath $path
-Rename-Item "$path\lib${name}Win32.dll" "${name}Win32$postfix.dll"
-Rename-Item "$path\lib${name}Win64.dll" "${name}Win64$postfix.dll"
-Rename-Item "$path\lib${name}Lin32.so" "${name}Lin32$postfix.so"
-Rename-Item "$path\lib${name}Lin64.so" "${name}Lin64$postfix.so"
+Rename-Item "$path\${name}Win32.dll" "${name}Win32$postfix.dll"
+Rename-Item "$path\${name}Win64.dll" "${name}Win64$postfix.dll"
+Rename-Item "$path\${name}Lin32.so" "${name}Lin32$postfix.so"
+Rename-Item "$path\${name}Lin64.so" "${name}Lin64$postfix.so"
 
 $compress = @{
   Path            = "$path\$name*.dll", "$path\$name*.so", "$path\manifest.xml"

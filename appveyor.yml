@@ -93,9 +93,9 @@ build_script:
   - cmake --build . --config Release
   - cd ..
 
-  - sh: cp bin/libVanessaExtLin??.so .
-  - sh: 7z a AddIn.zip libVanessaExtLin??.so
-  - cmd: copy bin\Release\libVanessaExtWin??.dll .
+  - sh: cp bin/VanessaExtLin??.so .
+  - sh: 7z a AddIn.zip VanessaExtLin??.so
+  - cmd: copy bin\Release\VanessaExtWin??.dll .
   - cmd: Powershell.exe -File appveyor.ps1
 
 for:

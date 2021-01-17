@@ -61,10 +61,10 @@
 	ЗаписьXML.ЗаписатьНачалоЭлемента("bundle");	
 	ЗаписьXML.ЗаписатьАтрибут("xmlns", "http://v8.1c.ru/8.2/addin/bundle");
 	
-	ДобавитьЭлемент("Windows" , "i386"   , "bin/Release/libVanessaExtWin32.dll");
-	ДобавитьЭлемент("Windows" , "x86_64" , "bin/Release/libVanessaExtWin64.dll");
-	ДобавитьЭлемент("Linux"   , "i386"   , "bin/libVanessaExtLin32.so");
-	ДобавитьЭлемент("Linux"   , "x86_64" , "bin/libVanessaExtLin64.so");
+	ДобавитьЭлемент("Windows" , "i386"   , "bin/Release/VanessaExtWin32.dll");
+	ДобавитьЭлемент("Windows" , "x86_64" , "bin/Release/VanessaExtWin64.dll");
+	ДобавитьЭлемент("Linux"   , "i386"   , "bin/VanessaExtLin32.so");
+	ДобавитьЭлемент("Linux"   , "x86_64" , "bin/VanessaExtLin64.so");
 	
 	ЗаписьXML.ЗаписатьКонецЭлемента();
 	ЗаписьXML.Закрыть();

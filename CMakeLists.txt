@@ -78,7 +78,8 @@ else(UNIX)
 endif(UNIX)
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES
-	   OUTPUT_NAME ${MyPrefix}${PROJECT_NAME}${MySuffix1}${MySuffix2} 
+	   PREFIX ""
+	   OUTPUT_NAME ${PROJECT_NAME}${MySuffix1}${MySuffix2} 
 	   POSITION_INDEPENDENT_CODE ON 
 	   CXX_STANDARD_REQUIRED ON
 	   CXX_STANDARD 17
