@@ -4,11 +4,62 @@ project(VanessaExt)
 set(TARGET VanessaExt)
 
 option(WITH_BOOST "Use boost library" ON)
+option(WITH_GHERKIN "Gherkin language parser" ON)
 option(WITH_LIBGIT2 "Use library libgit2" ON)
 option(WITH_OPENCV "Use OpenCV library" ON)
 
+if (WITH_GHERKIN)
+	add_definitions(-DUSE_GHERKIN)
+
+	ADD_CUSTOM_TARGET(GherkinLexer echo Creating GherkinLexer)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/RE-flex/include)
+
+	if (UNIX)
+		set(REFLEX_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/RE-flex/bin/reflex" CACHE PATH "Reflex executable")
+	else(UNIX)
+		set(REFLEX_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/RE-flex/bin/win64/reflex.exe" CACHE PATH "Reflex executable")
+	endif(WIN32)
+
+	add_custom_command(TARGET GherkinLexer
+		COMMAND ${REFLEX_EXECUTABLE} 
+		ARGS --unicode --lexer=GherkinLexer 
+			--outfile=gherkin.lex.cpp --header-file=gherkin.lex.h
+			${CMAKE_CURRENT_SOURCE_DIR}/src/gherkin.l
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/gherkin.l
+		OUTPUTS gherkin.lex.cpp gherkin.lex.h
+		VERBATIM
+	)
+
+	set(GherkinLexer_SRCS
+		RE-flex/lib/convert.cpp
+		RE-flex/lib/debug.cpp
+		RE-flex/lib/error.cpp
+		RE-flex/lib/input.cpp
+		RE-flex/lib/matcher.cpp
+		RE-flex/lib/pattern.cpp
+		RE-flex/lib/posix.cpp
+		RE-flex/lib/unicode.cpp
+		RE-flex/lib/utf8.cpp
+		RE-flex/unicode/block_scripts.cpp
+		RE-flex/unicode/language_scripts.cpp
+		RE-flex/unicode/letter_scripts.cpp
+		gherkin.lex.cpp
+		gherkin.lex.h
+		src/gherkin.cpp
+		src/gherkin.h
+		src/json.hpp
+	)
+
+	set_source_files_properties( 
+		gherkin.lex.cpp
+		gherkin.lex.h
+		GENERATED
+	)
+endif (WITH_GHERKIN)
+
 add_library(${TARGET} SHARED
 	version.h
+	${GherkinLexer_SRCS}
 	src/AddInNative.cpp
 	src/AddInNative.def
 	src/AddInNative.h
@@ -150,7 +201,7 @@ if (WITH_BOOST)
 	target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 endif (WITH_BOOST)
 
- if (WITH_LIBGIT2)
+if (WITH_LIBGIT2)
 	MESSAGE(STATUS "WITH_LIBGIT2")
 	add_definitions(-DUSE_LIBGIT2)
 	target_include_directories(${TARGET} PRIVATE libgit2-1.1.0/include)
@@ -158,3 +209,9 @@ endif (WITH_BOOST)
 	add_subdirectory(./libgit2-1.1.0)
 	target_link_libraries(${TARGET} git2)
 endif (WITH_LIBGIT2)
+
+if (WITH_GHERKIN)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+	include_directories(${VanessaExt_BINARY_DIR})
+	add_dependencies(${TARGET} GherkinLexer)
+endif (WITH_GHERKIN)
