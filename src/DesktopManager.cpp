@@ -316,15 +316,52 @@ IVirtualDesktop* GetCurrentDesktop() {
 int DllExport GetCurrentDesktopNumber() {
 	IVirtualDesktop* virtualDesktop = GetCurrentDesktop();
 	int number = GetDesktopNumber(virtualDesktop);
-	virtualDesktop->Release();
+	if (virtualDesktop) virtualDesktop->Release();
 	return number;
 }
 
-void DllExport GoToDesktopNumber(int number) {
+IVirtualDesktop* CreateDesktopW() {
 	_RegisterService();
 
 	if (pDesktopManagerInternal == nullptr) {
-		return;
+		return nullptr;
+	}
+	IVirtualDesktop* found = nullptr;
+	pDesktopManagerInternal->CreateDesktopW(&found);
+	return found;
+}
+
+int DllExport CreateDesktopNumber() {
+	IVirtualDesktop* virtualDesktop = CreateDesktopW();
+	int number = GetDesktopNumber(virtualDesktop);
+	if (virtualDesktop) virtualDesktop->Release();
+	return number;
+}
+
+bool DllExport RemoveDesktopByNumber(int number, int fallback) {
+	_RegisterService();
+
+	if (pDesktopManagerInternal == nullptr) {
+		return false;
+	}
+
+	bool ok = false;
+	IVirtualDesktop* virtualDesktop = _GetDesktopByNumber(number);
+	IVirtualDesktop* fallbackDesktop = _GetDesktopByNumber(fallback);
+	if (virtualDesktop && fallbackDesktop) {
+		HRESULT hr = pDesktopManagerInternal->RemoveDesktop(virtualDesktop, fallbackDesktop);
+		ok = SUCCEEDED(hr);
+	}
+	if (fallbackDesktop) fallbackDesktop->Release();
+	if (virtualDesktop) virtualDesktop->Release();
+	return ok;
+}
+
+bool DllExport GoToDesktopNumber(int number) {
+	_RegisterService();
+
+	if (pDesktopManagerInternal == nullptr) {
+		return false;
 	}
 
 	IVirtualDesktop* oldDesktop = GetCurrentDesktop();
@@ -336,6 +373,7 @@ void DllExport GoToDesktopNumber(int number) {
 	HRESULT hr = pDesktopManagerInternal->GetDesktops(&pObjectArray);
 	int found = -1;
 
+	bool ok = false;
 	if (SUCCEEDED(hr))
 	{
 		UINT count;
@@ -353,7 +391,8 @@ void DllExport GoToDesktopNumber(int number) {
 				GUID id = { 0 };
 				pDesktop->GetID(&id);
 				if (i == number) {
-					pDesktopManagerInternal->SwitchDesktop(pDesktop);
+					hr = pDesktopManagerInternal->SwitchDesktop(pDesktop);
+					ok = SUCCEEDED(hr);
 				}
 
 				pDesktop->Release();
@@ -361,6 +400,7 @@ void DllExport GoToDesktopNumber(int number) {
 		}
 		pObjectArray->Release();
 	}
+	return ok;
 }
 
 struct ShowWindowOnDesktopAction {
@@ -866,14 +906,24 @@ int64_t DesktopManager::GetDesktopCount()
 	return ::GetDesktopCount();
 }
 
+int64_t DesktopManager::CreateDesktopNumber()
+{
+	return ::CreateDesktopNumber();
+}
+
 int64_t DesktopManager::GetCurrentDesktopNumber()
 {
 	return ::GetCurrentDesktopNumber();
 }
 
-void DesktopManager::GoToDesktopNumber(int64_t number)
+bool  DesktopManager::GoToDesktopNumber(int64_t number)
 {
-	::GoToDesktopNumber((int)number);
+	return ::GoToDesktopNumber((int)number);
+}
+
+bool DesktopManager::RemoveDesktopByNumber(int64_t number, int64_t fallback)
+{
+	return ::RemoveDesktopByNumber((int)number, (int)fallback);
 }
 
 int64_t DesktopManager::GetWindowDesktopNumber(int64_t window)

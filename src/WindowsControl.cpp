@@ -225,19 +225,25 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"DrawShadow", u"НарисоватьТень",
 		[&](VH p, VH x, VH y, VH w, VH h) { (new ShadowPainter(p, x, y, w, h))->run(); }
 	);
-	AddFunction(u"GetDesktopCount", u"GetDesktopCount",
+	AddFunction(u"GetDesktopCount", u"ПолучитьКоличествоРабочихСтолов",
 		[&]() { this->result = DesktopManager::GetDesktopCount(); }
 	);
-	AddFunction(u"GetCurrentDesktopNumber", u"GetCurrentDesktopNumber",
+	AddFunction(u"GetCurrentDesktop", u"ПолучитьТекущийРабочийСтол",
 		[&]() { this->result = DesktopManager::GetCurrentDesktopNumber(); }
 	);
-	AddProcedure(u"GoToDesktopNumber", u"GoToDesktopNumber",
+	AddFunction(u"CreateDesktop", u"СоздатьРабочийСтод",
+		[&]() { this->result = DesktopManager::CreateDesktopNumber(); }
+	);
+	AddFunction(u"RemoveDesktop", u"УдалитьРабочийСтол",
+		[&](VH number, VH fallback) { this->result = DesktopManager::RemoveDesktopByNumber(number, fallback); }
+	);
+	AddProcedure(u"GoToDesktop", u"ПереключитьРабочийСтол",
 		[&](VH number) { DesktopManager::GoToDesktopNumber(number); }
 	);
-	AddFunction(u"GetWindowDesktopNumber", u"GetWindowDesktopNumber",
+	AddFunction(u"GetWindowDesktop", u"ПолучитьРабочийСтолОкна",
 			[&](VH window) { this->result = DesktopManager::GetWindowDesktopNumber(window); }
 	);
-	AddFunction(u"MoveWindowToDesktopNumber", u"MoveWindowToDesktopNumber",
+	AddFunction(u"MoveWindowToDesktop", u"ПереместитьОкноНаРабочийСтол",
 		[&](VH window, VH number) { this->result = DesktopManager::MoveWindowToDesktopNumber(window, number); }
 	);
 #endif//_WINDOWS
