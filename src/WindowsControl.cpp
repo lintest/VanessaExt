@@ -12,6 +12,7 @@
 #include "WindowsControl.h"
 #include "ClickEffect.h"
 #include "ClipboardManager.h"
+#include "DesktopManager.h"
 #include "FileFinder.h"
 #include "ImageFinder.h"
 #include "ProcessManager.h"
@@ -223,6 +224,21 @@ WindowsControl::WindowsControl() {
 	);
 	AddProcedure(u"DrawShadow", u"НарисоватьТень",
 		[&](VH p, VH x, VH y, VH w, VH h) { (new ShadowPainter(p, x, y, w, h))->run(); }
+	);
+	AddFunction(u"GetDesktopCount", u"GetDesktopCount",
+		[&]() { this->result = DesktopManager::GetDesktopCount(); }
+	);
+	AddFunction(u"GetCurrentDesktopNumber", u"GetCurrentDesktopNumber",
+		[&]() { this->result = DesktopManager::GetCurrentDesktopNumber(); }
+	);
+	AddProcedure(u"GoToDesktopNumber", u"GoToDesktopNumber",
+		[&](VH number) { DesktopManager::GoToDesktopNumber(number); }
+	);
+	AddFunction(u"GetWindowDesktopNumber", u"GetWindowDesktopNumber",
+			[&](VH window) { this->result = DesktopManager::GetWindowDesktopNumber(window); }
+	);
+	AddFunction(u"MoveWindowToDesktopNumber", u"MoveWindowToDesktopNumber",
+		[&](VH window, VH number) { this->result = DesktopManager::MoveWindowToDesktopNumber(window, number); }
 	);
 #endif//_WINDOWS
 

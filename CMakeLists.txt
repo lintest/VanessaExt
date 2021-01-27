@@ -71,6 +71,8 @@ add_library(${TARGET} SHARED
 	src/ClipboardControl.h
 	src/ClipboardManager.cpp 
 	src/ClipboardManager.h 
+	src/DesktopManager.cpp
+	src/DesktopManager.h
 	src/FileFinder.cpp
 	src/FileFinder.h
 	src/GitManager.cpp
