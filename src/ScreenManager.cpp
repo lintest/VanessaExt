@@ -5,7 +5,7 @@
 
 BOOL BaseHelper::ScreenManager::CaptureProcess(VH variant, int64_t pid)
 {
-	int64_t window = WindowsManager::GetProcessWindow(pid);
+	int64_t window = WindowsManager::GetTopProcessWindow(pid);
 	return window && CaptureWindow(variant, window);
 }
 

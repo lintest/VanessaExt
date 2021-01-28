@@ -7,7 +7,8 @@ class WindowsManager {
 public:
 	static int64_t ActiveWindow();
 	static int64_t ActivateProcess(int64_t pid);
-	static int64_t GetProcessWindow(int64_t pid);
+	static int64_t GetTopProcessWindow(int64_t pid);
+	static int64_t GetMainProcessWindow(int64_t pid);
 	static std::string GetWindowList(int64_t pid);
 	static std::string GetWindowInfo(int64_t window);
 	static std::string GetWindowSize(int64_t window);

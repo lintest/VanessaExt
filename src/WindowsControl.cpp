@@ -79,7 +79,13 @@ WindowsControl::WindowsControl() {
 		[&](VH status) { this->ExitCurrentProcess(status); }, { {0, (int64_t)0 } }
 	);
 	AddFunction(u"GetProcessWindow", u"ПолучитьОкноПроцесса",
-		[&](VH pid) { this->result = WindowsManager::GetProcessWindow(pid); }
+		[&](VH pid) { this->result = WindowsManager::GetTopProcessWindow(pid); }
+	);
+	AddFunction(u"GetTopProcessWindow", u"ПолучитьВерхнееОкноПроцесса",
+		[&](VH pid) { this->result = WindowsManager::GetTopProcessWindow(pid); }
+	);
+	AddFunction(u"GetMainProcessWindow", u"ПолучитьОсновноеОкноПроцесса",
+		[&](VH pid) { this->result = WindowsManager::GetMainProcessWindow(pid); }
 	);
 	AddFunction(u"GetDisplayList", u"ПолучитьСписокДисплеев",
 		[&](VH window) { this->result = ScreenManager::GetDisplayList(window); }, { {0, (int64_t)0 } }

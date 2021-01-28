@@ -3,7 +3,7 @@
 
 int64_t WindowsManager::ActivateProcess(int64_t pid)
 {
-	int64_t window = GetProcessWindow(pid);
+	int64_t window = GetTopProcessWindow(pid);
 	return window && Activate(window);
 }
 
@@ -94,15 +94,14 @@ int64_t WindowsManager::ActiveWindow()
 	return (int64_t)::GetForegroundWindow();
 }
 
-int64_t WindowsManager::GetProcessWindow(int64_t pid)
+int64_t WindowsManager::GetTopProcessWindow(int64_t pid)
 {
 	class Param {
 	public:
 		DWORD pid = 0;
 		std::map<HWND, bool> map;
 	};
-	Param p;
-	p.pid = (DWORD)pid;
+	Param p{ (DWORD)pid, {} };
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
@@ -127,6 +126,33 @@ int64_t WindowsManager::GetProcessWindow(int64_t pid)
 		if (it->second) return (int64_t)it->first;
 	}
 	return 0;
+}
+
+int64_t WindowsManager::GetMainProcessWindow(int64_t pid)
+{
+	class Param {
+	public:
+		DWORD pid = 0;
+		HWND hWnd = 0;
+	};
+	Param p{ (DWORD)pid, 0 };
+	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+		{
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
+				Param* p = (Param*)lParam;
+				DWORD dwProcessId;
+				WCHAR buffer[256];
+				::GetWindowThreadProcessId(hWnd, &dwProcessId);
+				if (p->pid == dwProcessId
+					&& ::GetClassName(hWnd, buffer, 256)
+					&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+					) {
+					p->hWnd = hWnd;
+				}
+			}
+			return TRUE;
+		}, (LPARAM)&p);
+	return (int64_t)p.hWnd;
 }
 
 bool WindowsManager::SetWindowSize(int64_t window, int64_t w, int64_t h)
@@ -334,6 +360,31 @@ public:
 	}
 };
 
+class MainWindows : public WindowEnumerator
+{
+private:
+	const unsigned long m_pid = 0;
+	Window m_window = 0;
+protected:
+	virtual bool EnumWindow(Window window) {
+		unsigned long pid = GetWindowPid(window);
+		if (m_pid == pid) {
+			Window parent = GetWindowOwner(window);
+			if (!parent) m_window = window;
+		}
+		return true;
+	}
+public:
+	MainWindows(unsigned long pid)
+		: WindowEnumerator(), m_pid(pid) {}
+
+	static Window TopWindow(unsigned long pid) {
+		MainWindows p(pid);
+		p.Enumerate();
+		return m_window;
+	}
+};
+
 class WindowInfo : public WindowHelper
 {
 public:
@@ -379,7 +430,12 @@ std::string WindowsManager::GetWindowList(int64_t pid)
 	return WindowList(pid).Enumerate();
 }
 
-int64_t WindowsManager::GetProcessWindow(int64_t pid)
+int64_t WindowsManager::GetMainProcessWindow(int64_t pid)
+{
+	return (int64_t)MainWindows::MainWindow(pid);
+}
+
+int64_t WindowsManager::GetTopProcessWindow(int64_t pid)
 {
 	return (int64_t)ProcWindows::TopWindow(pid);
 }
