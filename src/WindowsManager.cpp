@@ -331,7 +331,7 @@ public:
 		: WindowEnumerator(), m_pid(pid) {}
 };
 
-class ProcWindows : public WindowEnumerator
+class TopWindows : public WindowEnumerator
 {
 private:
 	const unsigned long m_pid = 0;
@@ -347,11 +347,11 @@ protected:
 		return true;
 	}
 public:
-	ProcWindows(unsigned long pid)
+	TopWindows(unsigned long pid)
 		: WindowEnumerator(), m_pid(pid) {}
 
-	static Window TopWindow(unsigned long pid) {
-		ProcWindows p(pid);
+	static Window find(unsigned long pid) {
+		TopWindows p(pid);
 		p.Enumerate();
 		for (auto it = p.m_map.begin(); it != p.m_map.end(); it++) {
 			if (it->second) return it->first;
@@ -378,7 +378,7 @@ public:
 	MainWindows(unsigned long pid)
 		: WindowEnumerator(), m_pid(pid) {}
 
-	static Window TopWindow(unsigned long pid) {
+	static Window find(unsigned long pid) {
 		MainWindows p(pid);
 		p.Enumerate();
 		return p.m_window;
@@ -432,12 +432,12 @@ std::string WindowsManager::GetWindowList(int64_t pid)
 
 int64_t WindowsManager::GetMainProcessWindow(int64_t pid)
 {
-	return (int64_t)MainWindows::MainWindow(pid);
+	return (int64_t)MainWindows::find(pid);
 }
 
 int64_t WindowsManager::GetTopProcessWindow(int64_t pid)
 {
-	return (int64_t)ProcWindows::TopWindow(pid);
+	return (int64_t)TopWindows::find(pid);
 }
 
 std::string WindowsManager::GetWindowInfo(int64_t window)
