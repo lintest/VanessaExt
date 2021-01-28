@@ -179,33 +179,32 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 	JSON json = ProcessEnumerator(query.c_str()).json();
 	if (!json.is_array() || json.empty()) return {};
 
-	std::pair<HWND, DWORD> params = { 0, (DWORD)json[0]["ProcessId"] };
-	// Enumerate the windows using a lambda to process each window
+	using EnumParam = std::pair<DWORD, HWND>;
+	EnumParam params{ (DWORD)json[0]["ProcessId"], 0};
 	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
-			auto pParams = (std::pair<HWND, DWORD>*)(lParam);
+			auto pParams = (EnumParam*)lParam;
 			wchar_t buffer[256];
 			DWORD pid;
 			if (IsWindowVisible(hWnd)
 				&& ::GetWindowThreadProcessId(hWnd, &pid)
-				&& pid == pParams->second
+				&& pid == pParams->first
 				&& ::GetClassName(hWnd, buffer, 256)
 				&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
 				) {
 				// Stop enumerating
 				SetLastError(-1);
-				pParams->first = hWnd;
+				pParams->second = hWnd;
 				return FALSE;
 			}
 			// Continue enumerating
 			return TRUE;
 		}, (LPARAM)&params);
 
-	HWND hWnd = params.first;
-	if (!bResult && GetLastError() == -1 && hWnd)
-	{
+	HWND hWnd = params.second;
+	if (!bResult && GetLastError() == -1 && hWnd) {
 		nlohmann::json j = json[0];
-		j["Window"] = (UINT64)hWnd;
+		j["Window"] = (uint64_t)hWnd;
 		const int length = GetWindowTextLength(hWnd);
 		if (length != 0) {
 			std::wstring text;
@@ -323,7 +322,7 @@ protected:
 		unsigned long pid = GetWindowPid(window);
 		if (NotFound(pid)) return true;
 		json["Name"] = GetProcessName(pid);
-		json["Window"] = (unsigned long)window;
+		json["Window"] = (uint64_t)window;
 		json["Title"] = GetWindowTitle(window);
 		json["CommandLine"] = GetCommandLine(pid);
 		json["CreationDate"] = GetCreationDate(pid);
@@ -366,7 +365,7 @@ protected:
 		v.push_back(pid);
 		JSON j;
 		j["Name"] = GetProcessName(pid);
-		j["Window"] = (unsigned long)window;
+		j["Window"] = (uint64_t)window;
 		j["Title"] = GetWindowTitle(window);
 		j["CommandLine"] = GetCommandLine(pid);
 		j["CreationDate"] = GetCreationDate(pid);

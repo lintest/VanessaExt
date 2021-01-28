@@ -16,9 +16,9 @@ static JSON WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
 	if (dwProcessId == 0) ::GetWindowThreadProcessId(hWnd, &dwProcessId);
 
 	JSON json;
-	json["Window"] = (int64_t)hWnd;
+	json["Window"] = (uint64_t)hWnd;
 	json["Enabled"] = (boolean)::IsWindowEnabled(hWnd);
-	json["Owner"] = (int64_t)::GetWindow(hWnd, GW_OWNER);
+	json["Owner"] = (uint64_t)::GetWindow(hWnd, GW_OWNER);
 	json["ProcessId"] = dwProcessId;
 
 	WCHAR buffer[256];
@@ -37,28 +37,23 @@ static JSON WindowInfo(HWND hWnd, DWORD dwProcessId = 0)
 
 std::string WindowsManager::GetWindowList(int64_t pid)
 {
-	class Param {
-	public:
-		DWORD pid = 0;
-		JSON json;
-	};
-	Param param;
-	param.pid = (DWORD)pid;
+	using EnumParam = std::pair<DWORD, JSON>;
+	EnumParam p{ (DWORD)pid, {} };
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
-				Param* p = (Param*)lParam;
+				auto p = (EnumParam*)lParam;
 				DWORD dwProcessId;
 				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				if (p->pid == 0 || p->pid == dwProcessId) {
+				if (p->first == 0 || p->first == dwProcessId) {
 					JSON j = WindowInfo(hWnd, dwProcessId);
-					p->json.push_back(j);
+					p->second.push_back(j);
 				}
 			}
 			return TRUE;
-		}, (LPARAM)&param);
+		}, (LPARAM)&p);
 
-	return param.json.dump();
+	return p.second.dump();
 }
 
 std::string WindowsManager::GetWindowInfo(int64_t window)
@@ -85,7 +80,7 @@ std::string WindowsManager::GetWindowSize(int64_t window)
 	json["Bottom"] = rect.bottom;
 	json["Width"] = rect.right - rect.left;
 	json["Height"] = rect.bottom - rect.top;
-	json["Window"] = (INT64)hWnd;
+	json["Window"] = (uint64_t)hWnd;
 	return json.dump();
 }
 
@@ -96,33 +91,30 @@ int64_t WindowsManager::ActiveWindow()
 
 int64_t WindowsManager::GetTopProcessWindow(int64_t pid)
 {
-	class Param {
-	public:
-		DWORD pid = 0;
-		std::map<HWND, bool> map;
-	};
-	Param p{ (DWORD)pid, {} };
+	using EnumParam = std::pair<DWORD, std::map<HWND, bool>>;
+	EnumParam p{ (DWORD)pid, {} };
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
-				Param* p = (Param*)lParam;
+				auto p = (EnumParam*)lParam;
 				DWORD dwProcessId;
 				WCHAR buffer[256];
 				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				if (p->pid == dwProcessId
+				if (p->first == dwProcessId
 					&& ::GetClassName(hWnd, buffer, 256)
 					&& (wcscmp(L"V8TopLevelFrameSDIsec", buffer) == 0
 						|| wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
 						|| wcscmp(L"V8TopLevelFrame", buffer) == 0)
 					) {
-					if (p->map.find(hWnd) == p->map.end()) p->map[hWnd] = true;
+					auto& map = p->second;
+					if (map.find(hWnd) == map.end()) map[hWnd] = true;
 					HWND hParent = ::GetWindow(hWnd, GW_OWNER);
-					if (hParent) p->map[hParent] = false;
+					if (hParent) map[hParent] = false;
 				}
 			}
 			return TRUE;
 		}, (LPARAM)&p);
-	for (auto it = p.map.begin(); it != p.map.end(); it++) {
+	for (auto it = p.second.begin(); it != p.second.end(); it++) {
 		if (it->second) return (int64_t)it->first;
 	}
 	return 0;
@@ -130,29 +122,25 @@ int64_t WindowsManager::GetTopProcessWindow(int64_t pid)
 
 int64_t WindowsManager::GetMainProcessWindow(int64_t pid)
 {
-	class Param {
-	public:
-		DWORD pid = 0;
-		HWND hWnd = 0;
-	};
-	Param p{ (DWORD)pid, 0 };
+	using EnumParam = std::pair<DWORD, HWND>;
+	EnumParam p{ (DWORD)pid, 0 };
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
-				Param* p = (Param*)lParam;
+				auto p = (EnumParam*)lParam;
 				DWORD dwProcessId;
 				WCHAR buffer[256];
 				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				if (p->pid == dwProcessId
+				if (p->first == dwProcessId
 					&& ::GetClassName(hWnd, buffer, 256)
 					&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
 					) {
-					p->hWnd = hWnd;
+					p->second = hWnd;
 				}
 			}
 			return TRUE;
 		}, (LPARAM)&p);
-	return (int64_t)p.hWnd;
+	return (int64_t)p.second;
 }
 
 bool WindowsManager::SetWindowSize(int64_t window, int64_t w, int64_t h)
@@ -317,7 +305,7 @@ protected:
 		unsigned long pid = GetWindowPid(window);
 		if (m_pid == 0 || m_pid == pid) {
 			JSON j;
-			j["Window"] = window;
+			j["Window"] = (uint64_t)window;
 			j["Owner"] = GetWindowOwner(window);
 			j["Class"] = GetWindowClass(window);
 			j["Title"] = GetWindowTitle(window);
@@ -389,7 +377,7 @@ class WindowInfo : public WindowHelper
 {
 public:
 	WindowInfo(Window window) {
-		json["Window"] = window;
+		json["Window"] = (uint64_t)window;
 		json["Owner"] = GetWindowOwner(window);
 		json["Class"] = GetWindowClass(window);
 		json["Title"] = GetWindowTitle(window);
@@ -415,7 +403,7 @@ public:
 		json["Height"] = h;
 		json["Right"] = x + w;
 		json["Bottom"] = y + h;
-		json["Window"] = window;
+		json["Window"] = (uint64_t)window;
 	}
 };
 
