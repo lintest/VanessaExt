@@ -243,8 +243,8 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"RemoveDesktop", u"УдалитьРабочийСтол",
 		[&](VH number, VH fallback) { this->result = DesktopManager::RemoveDesktopByNumber(number, fallback); }
 	);
-	AddProcedure(u"GoToDesktop", u"ПереключитьРабочийСтол",
-		[&](VH number) { DesktopManager::GoToDesktopNumber(number); }
+	AddFunction(u"GoToDesktop", u"ПереключитьРабочийСтол",
+		[&](VH number) { this->result = DesktopManager::GoToDesktopNumber(number); }
 	);
 	AddFunction(u"GetWindowDesktop", u"ПолучитьРабочийСтолОкна",
 			[&](VH window) { this->result = DesktopManager::GetWindowDesktopNumber(window); }
