@@ -10,7 +10,5 @@ class GherkinParser:
 private:
     static std::vector<std::u16string> names;
     GherkinParser();
-private:
-    std::string Parse(const std::string& filename);
 };
 #endif //__GHERKINPARSER_H__

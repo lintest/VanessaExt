@@ -17,11 +17,14 @@ namespace Gherkin {
 		Param,
 		Table,
 		Cell,
+		Text,
 		Date,
 		Tag,
 		None
 	};
 }
+
+using GherkinTags = std::vector<std::pair<std::string, std::string>>;
 
 class GherkinLexer;
 class GherkinToken;
@@ -46,8 +49,9 @@ class GherkinProvider {
 private:
 	static std::vector<GherkinKeword> keywords;
 public:
-	static GherkinKeword* matchKeyword(const GherkinLine& line);
 	static void setKeywords(const std::string& text);
+	static GherkinKeword* matchKeyword(const GherkinLine& line);
+	static std::string ParseFile(const std::wstring& filename);
 };
 
 class GherkinToken {
@@ -87,9 +91,11 @@ private:
 	std::vector<GherkinLine> lines;
 	GherkinLine* current = nullptr;
 	std::string text;
+	JSON tags2json() const;
 public:
 	GherkinDocument() {}
 	std::string dump() const;
+	GherkinTags tags() const;
 	void next() { current = nullptr; }
 	void push(Gherkin::TokenType t, GherkinLexer& l);
 };
