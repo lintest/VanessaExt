@@ -226,9 +226,6 @@ int IsWindowOnDesktopNumber(HWND window, int number) {
 BOOL MoveWindowToDesktopNumber(HWND window, int number) {
 	_RegisterService();
 	IVirtualDesktop* pDesktop = _GetDesktopByNumber(number);
-	if (pDesktopManager == nullptr) {
-		throw u"ARRGH?";
-	}
 	if (window == 0) {
 		return false;
 	}
