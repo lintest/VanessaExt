@@ -8,18 +8,8 @@
 #include <windows.h>
 #include <inspectable.h>
 #include <SDKDDKVer.h>
-#include <stdio.h>
-#include <tchar.h>
-#include <string>
-#include <objbase.h>
 #include <ObjectArray.h>
-#include <iostream>
-#include <map>
-#include <vector>
-#include <algorithm>
 #include "Win10Desktops.h"
-
-#define DllExport
 
 #define VDA_VirtualDesktopCreated 5
 #define VDA_VirtualDesktopDestroyBegin 4
@@ -43,17 +33,6 @@ BOOL registeredForNotifications = FALSE;
 
 DWORD idNotificationService = 0;
 
-struct ChangeDesktopAction {
-	GUID newDesktopGuid;
-	GUID oldDesktopGuid;
-};
-
-void _PostMessageToListeners(int msgOffset, WPARAM wParam, LPARAM lParam) {
-	for each (std::pair<HWND, int> listener in listeners) {
-		PostMessage(listener.first, listener.second + msgOffset, wParam, lParam);
-	}
-}
-
 void _RegisterService(BOOL force = FALSE) {
 	if (force) {
 		pServiceProvider = nullptr;
@@ -74,8 +53,7 @@ void _RegisterService(BOOL force = FALSE) {
 		__uuidof(IServiceProvider), (PVOID*)&pServiceProvider);
 
 	if (pServiceProvider == nullptr) {
-		std::wcout << L"FATAL ERROR: pServiceProvider is null";
-		return;
+		throw u"FATAL ERROR: pServiceProvider is null";
 	}
 	pServiceProvider->QueryService(__uuidof(IApplicationViewCollection), &viewCollection);
 
@@ -90,13 +68,11 @@ void _RegisterService(BOOL force = FALSE) {
 		__uuidof(IVirtualDesktopManagerInternal), (PVOID*)&pDesktopManagerInternal);
 
 	if (viewCollection == nullptr) {
-		std::wcout << L"FATAL ERROR: viewCollection is null";
-		return;
+		throw u"FATAL ERROR: viewCollection is null";
 	}
 
 	if (pDesktopManagerInternal == nullptr) {
-		std::wcout << L"FATAL ERROR: pDesktopManagerInternal is null";
-		return;
+		throw u"FATAL ERROR: pDesktopManagerInternal is null";
 	}
 
 	// Notification service
@@ -106,23 +82,7 @@ void _RegisterService(BOOL force = FALSE) {
 		(PVOID*)&pDesktopNotificationService);
 }
 
-
-IApplicationView* _GetApplicationViewForHwnd(HWND hwnd) {
-	if (hwnd == 0)
-		return nullptr;
-	IApplicationView* app = nullptr;
-	viewCollection->GetViewForHwnd(hwnd, &app);
-	return app;
-}
-
-void DllExport EnableKeepMinimized() {
-	//_keepMinimized = true;
-}
-
-void DllExport RestoreMinimized() {
-}
-
-int DllExport GetDesktopCount()
+int GetDesktopCount()
 {
 	_RegisterService();
 
@@ -140,7 +100,7 @@ int DllExport GetDesktopCount()
 	return -1;
 }
 
-int DllExport GetDesktopNumberById(GUID desktopId) {
+int GetDesktopNumberById(const GUID &desktopId) {
 	_RegisterService();
 
 	IObjectArray *pObjectArray = nullptr;
@@ -197,7 +157,7 @@ IVirtualDesktop* _GetDesktopByNumber(int number) {
 	return found;
 }
 
-GUID DllExport GetWindowDesktopId(HWND window) {
+GUID GetWindowDesktopId(HWND window) {
 	_RegisterService();
 
 	GUID pDesktopId = {};
@@ -206,7 +166,7 @@ GUID DllExport GetWindowDesktopId(HWND window) {
 	return pDesktopId;
 }
 
-int DllExport GetWindowDesktopNumber(HWND window) {
+int GetWindowDesktopNumber(HWND window) {
 	_RegisterService();
 
 	GUID pDesktopId = {};
@@ -217,7 +177,7 @@ int DllExport GetWindowDesktopNumber(HWND window) {
 	return -1;
 }
 
-int DllExport IsWindowOnCurrentVirtualDesktop(HWND window) {
+int IsWindowOnCurrentVirtualDesktop(HWND window) {
 	_RegisterService();
 
 	BOOL b;
@@ -228,7 +188,7 @@ int DllExport IsWindowOnCurrentVirtualDesktop(HWND window) {
 	return -1;
 }
 
-GUID DllExport GetDesktopIdByNumber(int number) {
+GUID GetDesktopIdByNumber(int number) {
 	GUID id;
 	IVirtualDesktop* pDesktop = _GetDesktopByNumber(number);
 	if (pDesktop != nullptr) {
@@ -238,7 +198,7 @@ GUID DllExport GetDesktopIdByNumber(int number) {
 	return id;
 }
 
-int DllExport IsWindowOnDesktopNumber(HWND window, int number) {
+int IsWindowOnDesktopNumber(HWND window, int number) {
 	_RegisterService();
 	IApplicationView* app = nullptr;
 	if (window == 0) {
@@ -263,12 +223,11 @@ int DllExport IsWindowOnDesktopNumber(HWND window, int number) {
 	return -1;
 }
 
-BOOL DllExport MoveWindowToDesktopNumber(HWND window, int number) {
+BOOL MoveWindowToDesktopNumber(HWND window, int number) {
 	_RegisterService();
 	IVirtualDesktop* pDesktop = _GetDesktopByNumber(number);
 	if (pDesktopManager == nullptr) {
-		std::wcout << L"ARRGH?";
-		return false;
+		throw u"ARRGH?";
 	}
 	if (window == 0) {
 		return false;
@@ -287,7 +246,7 @@ BOOL DllExport MoveWindowToDesktopNumber(HWND window, int number) {
 	return false;
 }
 
-int DllExport GetDesktopNumber(IVirtualDesktop *pDesktop) {
+int GetDesktopNumber(IVirtualDesktop *pDesktop) {
 	_RegisterService();
 
 	if (pDesktop == nullptr) {
@@ -302,6 +261,7 @@ int DllExport GetDesktopNumber(IVirtualDesktop *pDesktop) {
 
 	return -1;
 }
+
 IVirtualDesktop* GetCurrentDesktop() {
 	_RegisterService();
 
@@ -313,7 +273,7 @@ IVirtualDesktop* GetCurrentDesktop() {
 	return found;
 }
 
-int DllExport GetCurrentDesktopNumber() {
+int GetCurrentDesktopNumber() {
 	IVirtualDesktop* virtualDesktop = GetCurrentDesktop();
 	int number = GetDesktopNumber(virtualDesktop);
 	if (virtualDesktop) virtualDesktop->Release();
@@ -331,14 +291,14 @@ IVirtualDesktop* CreateDesktopW() {
 	return found;
 }
 
-int DllExport CreateDesktopNumber() {
+int CreateDesktopNumber() {
 	IVirtualDesktop* virtualDesktop = CreateDesktopW();
 	int number = GetDesktopNumber(virtualDesktop);
 	if (virtualDesktop) virtualDesktop->Release();
 	return number;
 }
 
-bool DllExport RemoveDesktopByNumber(int number, int fallback) {
+bool RemoveDesktopByNumber(int number, int fallback) {
 	_RegisterService();
 
 	if (pDesktopManagerInternal == nullptr) {
@@ -357,7 +317,7 @@ bool DllExport RemoveDesktopByNumber(int number, int fallback) {
 	return ok;
 }
 
-bool DllExport GoToDesktopNumber(int number) {
+bool GoToDesktopNumber(int number) {
 	_RegisterService();
 
 	if (pDesktopManagerInternal == nullptr) {
@@ -401,502 +361,6 @@ bool DllExport GoToDesktopNumber(int number) {
 		pObjectArray->Release();
 	}
 	return ok;
-}
-
-struct ShowWindowOnDesktopAction {
-	int desktopNumber;
-	int cmdShow;
-};
-
-LPWSTR _GetApplicationIdForHwnd(HWND hwnd) {
-	// TODO: This should not return a pointer, it should take in a pointer, or return either wstring or std::string
-
-	if (hwnd == 0)
-		return nullptr;
-	IApplicationView* app = _GetApplicationViewForHwnd(hwnd);
-	if (app != nullptr) {
-		LPWSTR appId = new TCHAR[1024];
-		app->GetAppUserModelId(&appId);
-		app->Release();
-		return appId;
-	}
-	return nullptr;
-}
-
-int DllExport IsPinnedWindow(HWND hwnd) {
-	if (hwnd == 0)
-		return -1;
-	_RegisterService();
-	IApplicationView* pView = _GetApplicationViewForHwnd(hwnd);
-	BOOL isPinned = false;
-	if (pView != nullptr) {
-		pinnedApps->IsViewPinned(pView, &isPinned);
-		pView->Release();
-		if (isPinned) {
-			return 1;
-		}
-		else {
-			return 0;
-		}
-	}
-
-	return -1;
-}
-
-void DllExport PinWindow(HWND hwnd) {
-	if (hwnd == 0)
-		return;
-	_RegisterService();
-	IApplicationView* pView = _GetApplicationViewForHwnd(hwnd);
-	if (pView != nullptr) {
-		pinnedApps->PinView(pView);
-		pView->Release();
-	}
-}
-
-void DllExport UnPinWindow(HWND hwnd) {
-	if (hwnd == 0)
-		return;
-	_RegisterService();
-	IApplicationView* pView = _GetApplicationViewForHwnd(hwnd);
-	if (pView != nullptr) {
-		pinnedApps->UnpinView(pView);
-		pView->Release();
-	}
-}
-
-int DllExport IsPinnedApp(HWND hwnd) {
-	if (hwnd == 0)
-		return -1;
-	_RegisterService();
-	LPWSTR appId = _GetApplicationIdForHwnd(hwnd);
-	if (appId != nullptr) {
-		BOOL isPinned = false;
-		pinnedApps->IsAppIdPinned(appId, &isPinned);
-		if (isPinned) {
-			return 1;
-		}
-		else {
-			return 0;
-		}
-	}
-	return -1;
-}
-
-void DllExport PinApp(HWND hwnd) {
-	if (hwnd == 0)
-		return;
-	_RegisterService();
-	LPWSTR appId = _GetApplicationIdForHwnd(hwnd);
-	if (appId != nullptr) {
-		pinnedApps->PinAppID(appId);
-	}
-}
-
-void DllExport UnPinApp(HWND hwnd) {
-	if (hwnd == 0)
-		return;
-	_RegisterService();
-	LPWSTR appId = _GetApplicationIdForHwnd(hwnd);
-	if (appId != nullptr) {
-		pinnedApps->UnpinAppID(appId);
-	}
-}
-
-int DllExport ViewIsShownInSwitchers(HWND hwnd) {
-
-	//// Iterate views for fun
-	//IObjectArray* arr = nullptr;
-	//UINT count;
-	//viewCollection->GetViews(&arr);
-	//arr->GetCount(&count);
-
-	//for (int i = 0; i < count; i++)
-	//{
-	//	IApplicationView* app2;
-	//	HRESULT getAtResult = arr->GetAt(i, IID_IApplicationView, (void**)&app2);
-	//	if (app2 != nullptr && getAtResult == S_OK) {
-	//		PWSTR modelId;
-	//		app2->GetAppUserModelId(&modelId);
-
-	//		BOOL showInSwitchers = 0;
-	//		app2->GetShowInSwitchers(&showInSwitchers);
-
-	//		BOOL isVisible = 0;
-	//		app2->GetVisibility(&isVisible);
-
-	//		int unknown1 = 0;
-	//		HRESULT res1 = app2->Unknown1(&unknown1);
-	//		int unknown2 = 0;
-	//		HRESULT res2 = app2->Unknown2(&unknown2);
-	//		int unknown3 = 0;
-	//		HRESULT res3 = app2->Unknown3(&unknown3);
-	//		int unknown5 = 0;
-	//		HRESULT res5 = app2->Unknown5(&unknown5);
-	//		int unknown8 = 0;
-	//		HRESULT res8 = app2->Unknown8(&unknown8);
-
-	//		/* E_NOTIMPL
-	//		BOOL isInHighZOrderBand = 0;
-	//		HRESULT zres = app2->IsInHighZOrderBand(&isInHighZOrderBand);
-	//		*/
-
-	//		/* Access violation
-	//		BOOL isTray = 0;
-	//		HRESULT isTrayRes = app2->IsTray(&isTray);
-	//		*/
-
-	//		wprintf(L"modelId: %s switcher: %d visible: %d  %d %d %d %d %d\n", modelId, showInSwitchers, isVisible, unknown1, unknown2, unknown3, unknown5, unknown8);
-
-	//		/* Seems to be always nullptr
-	//		HSTRING className;
-	//		app2->GetRuntimeClassName(&className);
-	//		*/
-
-	//		/*
-	//		Seems to be always 0xcccccccc00000000
-	//		IApplicationView* app2Owner;
-	//		if (app2->GetRootSwitchableOwner(&app2Owner) == S_OK && app2Owner != (IApplicationView*) 0xcccccccc00000000) {
-	//			PWSTR modelIdOwner;
-	//			app2Owner->GetAppUserModelId(&modelIdOwner);
-	//			wprintf(L"modelId owner: %s \n", modelIdOwner);
-	//			app2Owner->Release();
-	//		}
-	//		*/
-	//	}
-	//	app2->Release();
-	//}
-
-
-	_RegisterService();
-	IApplicationView* view = _GetApplicationViewForHwnd(hwnd);
-	int result = -1;
-	if (view != nullptr) {
-		BOOL show = 0;
-		if (view->GetShowInSwitchers(&show) == S_OK) {
-			result = show;
-		}
-		view->Release();
-	}
-	return result;
-}
-
-int DllExport ViewIsVisible(HWND hwnd) {
-	_RegisterService();
-	IApplicationView* view = _GetApplicationViewForHwnd(hwnd);
-	int result = -1;
-	if (view != nullptr) {
-		int show = 0;
-		if (view->GetVisibility(&show) == S_OK) {
-			result = show;
-		}
-		view->Release();
-	}
-	return result;
-}
-
-HWND DllExport ViewGetThumbnailHwnd(HWND hwnd) {
-	_RegisterService();
-	IApplicationView* view = _GetApplicationViewForHwnd(hwnd);
-	HWND result = 0;
-	if (view != nullptr) {
-		if (view->GetThumbnailWindow(&result) != S_OK) {
-			result = 0;
-		}
-		view->Release();
-	}
-	return result;
-}
-
-HRESULT DllExport ViewSetFocus(HWND hwnd) {
-	_RegisterService();
-	IApplicationView* view = _GetApplicationViewForHwnd(hwnd);
-	HRESULT result = -1;
-	if (view != nullptr) {
-		result = view->SetFocus();
-		view->Release();
-	}
-	return result;
-}
-
-HWND DllExport ViewGetFocused() {
-	_RegisterService();
-	IApplicationView* view;
-	HRESULT getAtResult = viewCollection->GetViewInFocus(&view);
-	HWND ret = 0;
-	if (view != nullptr && getAtResult == S_OK) {
-		HWND wnd = 0;
-		if (view->GetThumbnailWindow(&wnd) == S_OK && wnd != 0) {
-			ret = wnd;
-		}
-		view->Release();
-	}
-	return ret;
-}
-
-HRESULT DllExport ViewSwitchTo(HWND hwnd) {
-	_RegisterService();
-	IApplicationView* view = _GetApplicationViewForHwnd(hwnd);
-	HRESULT result = -1;
-	if (view != nullptr) {
-		result = view->SwitchTo();
-		view->Release();
-	}
-	return result;
-}
-
-UINT DllExport ViewGetByZOrder(HWND *windows, UINT count, BOOL onlySwitcherWindows, BOOL onlyCurrentDesktop) {
-	_RegisterService();
-	IObjectArray* arr = nullptr;
-	UINT countViews;
-	IApplicationView* view;
-	int fill = 0;
-	if (viewCollection->GetViewsByZOrder(&arr) != S_OK) {
-		return 0;
-	}
-	arr->GetCount(&countViews);
-	if (countViews > count) {
-		arr->Release();
-		return 0;
-	}
-
-	for (UINT i = 0; i < count; i++)
-	{
-		HRESULT getAtResult = arr->GetAt(i - 1, IID_IApplicationView, (void**)&view);
-		
-		if (view != nullptr && getAtResult == S_OK) {
-			HWND wnd = 0;
-			BOOL showInSwitchers = false;
-			BOOL isOnCurrentDesktop = false;
-			if (onlySwitcherWindows && (view->GetShowInSwitchers(&showInSwitchers) != S_OK || !showInSwitchers)) {
-				view->Release();
-				continue;
-			}
-			if (view->GetThumbnailWindow(&wnd) != S_OK || wnd == 0) {
-				view->Release();
-				continue;
-			}
-			if (onlyCurrentDesktop && (pDesktopManager->IsWindowOnCurrentVirtualDesktop(wnd, &isOnCurrentDesktop) != S_OK || !isOnCurrentDesktop)) {
-				view->Release();
-				continue;
-			}
-			windows[fill] = wnd;
-			fill++;
-			view->Release();
-		}
-	}
-	arr->Release();
-	return fill;
-}
-
-struct TempWindowEntry {
-	HWND hwnd;
-	ULONGLONG lastActivationTimestamp;
-};
-
-UINT DllExport ViewGetByLastActivationOrder(HWND *windows, UINT count, BOOL onlySwitcherWindows, BOOL onlyCurrentDesktop) {
-	_RegisterService();
-	IObjectArray* arr = nullptr;
-	UINT countViews;
-	IApplicationView* view;
-	if (viewCollection->GetViews(&arr) != S_OK) {
-		return 0;
-	}
-	arr->GetCount(&countViews);
-	if (countViews > count) {
-		arr->Release();
-		return 0;
-	}
-
-	std::vector<TempWindowEntry> unsorted;
-	for (UINT i = 0; i < count; i++)
-	{
-		HRESULT getAtResult = arr->GetAt(i - 1, IID_IApplicationView, (void**)&view);
-		if (view != nullptr && getAtResult == S_OK) {
-			HWND wnd = 0;
-			ULONGLONG lastActivationTimestamp = 0;
-			BOOL showInSwitchers = false;
-			BOOL isOnCurrentDesktop = false;
-
-			if (onlySwitcherWindows && (view->GetShowInSwitchers(&showInSwitchers) != S_OK || !showInSwitchers)) {
-				view->Release();
-				continue;
-			}
-			if (view->GetThumbnailWindow(&wnd) != S_OK || wnd == 0) {
-				view->Release();
-				continue;
-			}
-
-			if (onlyCurrentDesktop && (pDesktopManager->IsWindowOnCurrentVirtualDesktop(wnd, &isOnCurrentDesktop) != S_OK || !isOnCurrentDesktop)) {
-				view->Release();
-				continue;
-			}
-
-			if (view->GetLastActivationTimestamp(&lastActivationTimestamp) != S_OK) {
-				view->Release();
-				continue;
-			}
-			TempWindowEntry entry;
-			entry.hwnd = wnd;
-			entry.lastActivationTimestamp = lastActivationTimestamp;
-			unsorted.push_back(entry);
-			view->Release();
-		}
-	}
-	arr->Release();
-
-	std::sort(unsorted.begin(), unsorted.end(), [](auto const& lhs, auto const& rhs) {
-		return lhs.lastActivationTimestamp > rhs.lastActivationTimestamp;
-	});
-
-	UINT i = 0;
-	for (auto entry : unsorted) {
-		windows[i] = entry.hwnd;
-		i++;
-	}
-	
-	return i;
-}
-
-ULONGLONG DllExport ViewGetLastActivationTimestamp(HWND hwnd) {
-	_RegisterService();
-	IApplicationView* view = _GetApplicationViewForHwnd(hwnd);
-	ULONGLONG result = 0;
-	if (view != nullptr) {
-		if (view->GetLastActivationTimestamp(&result) != S_OK) {
-			result = 0;
-		}
-		view->Release();
-	}
-	return result;
-}
-
-class _Notifications : public IVirtualDesktopNotification {
-private:
-	ULONG _referenceCount;
-public:
-	// Inherited via IVirtualDesktopNotification
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void ** ppvObject) override
-	{
-		// Always set out parameter to NULL, validating it first.
-		if (!ppvObject)
-			return E_INVALIDARG;
-		*ppvObject = NULL;
-
-		if (riid == IID_IUnknown || riid == IID_IVirtualDesktopNotification)
-		{
-			// Increment the reference count and return the pointer.
-			*ppvObject = (LPVOID)this;
-			AddRef();
-			return S_OK;
-		}
-		return E_NOINTERFACE;
-	}
-	virtual ULONG STDMETHODCALLTYPE AddRef() override
-	{
-		return InterlockedIncrement(&_referenceCount);
-	}
-
-	virtual ULONG STDMETHODCALLTYPE Release() override
-	{
-		ULONG result = InterlockedDecrement(&_referenceCount);
-		if (result == 0)
-		{
-			delete this;
-		}
-		return 0;
-	}
-	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopCreated(IVirtualDesktop * pDesktop) override
-	{
-		_PostMessageToListeners(VDA_VirtualDesktopCreated, GetDesktopNumber(pDesktop), 0);
-		return S_OK;
-	}
-	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopDestroyBegin(IVirtualDesktop * pDesktopDestroyed, IVirtualDesktop * pDesktopFallback) override
-	{
-		_PostMessageToListeners(VDA_VirtualDesktopDestroyBegin, GetDesktopNumber(pDesktopDestroyed), GetDesktopNumber(pDesktopFallback));
-		return S_OK;
-	}
-	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopDestroyFailed(IVirtualDesktop * pDesktopDestroyed, IVirtualDesktop * pDesktopFallback) override
-	{
-		_PostMessageToListeners(VDA_VirtualDesktopDestroyFailed, GetDesktopNumber(pDesktopDestroyed), GetDesktopNumber(pDesktopFallback));
-		return S_OK;
-	}
-	virtual HRESULT STDMETHODCALLTYPE VirtualDesktopDestroyed(IVirtualDesktop * pDesktopDestroyed, IVirtualDesktop * pDesktopFallback) override
-	{
-		_PostMessageToListeners(VDA_VirtualDesktopDestroyed, GetDesktopNumber(pDesktopDestroyed), GetDesktopNumber(pDesktopFallback));
-		return S_OK;
-	}
-	virtual HRESULT STDMETHODCALLTYPE ViewVirtualDesktopChanged(IApplicationView * pView) override
-	{
-		_PostMessageToListeners(VDA_ViewVirtualDesktopChanged, 0, 0);
-		return S_OK;
-	}
-	virtual HRESULT STDMETHODCALLTYPE CurrentVirtualDesktopChanged(
-		IVirtualDesktop *pDesktopOld,
-		IVirtualDesktop *pDesktopNew) override
-	{
-		viewCollection->RefreshCollection();
-		ChangeDesktopAction act;
-		if (pDesktopOld != nullptr) {
-			pDesktopOld->GetID(&act.oldDesktopGuid);
-		}
-		if (pDesktopNew != nullptr) {
-			pDesktopNew->GetID(&act.newDesktopGuid);
-		}
-
-		_PostMessageToListeners(VDA_CurrentVirtualDesktopChanged, GetDesktopNumberById(act.oldDesktopGuid), GetDesktopNumberById(act.newDesktopGuid));
-		return S_OK;
-	}
-};
-
-void _RegisterDesktopNotifications() {
-	_RegisterService();
-	if (pDesktopNotificationService == nullptr) {
-		return;
-	}
-	if (registeredForNotifications) {
-		return;
-	}
-
-	// TODO: This is never deleted
-	_Notifications *nf = new _Notifications();
-	HRESULT res = pDesktopNotificationService->Register(nf, &idNotificationService);
-	if (SUCCEEDED(res)) {
-		registeredForNotifications = TRUE;
-	}
-}
-
-void DllExport RestartVirtualDesktopAccessor() {
-	_RegisterService(TRUE);
-	_RegisterDesktopNotifications();
-}
-
-void DllExport RegisterPostMessageHook(HWND listener, int messageOffset) {
-	_RegisterService();
-
-	listeners.insert(std::pair<HWND, int>(listener, messageOffset));
-	if (listeners.size() != 1) {
-		return;
-	}
-	_RegisterDesktopNotifications();
-}
-
-void DllExport UnregisterPostMessageHook(HWND hwnd) {
-	_RegisterService();
-
-	listeners.erase(hwnd);
-	if (listeners.size() != 0) {
-		return;
-	}
-
-	if (pDesktopNotificationService == nullptr) {
-		return;
-	}
-
-	if (idNotificationService > 0) {
-		registeredForNotifications = TRUE;
-		pDesktopNotificationService->Unregister(idNotificationService);
-	}
 }
 
 #include "DesktopManager.h"
