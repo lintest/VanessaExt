@@ -58,6 +58,15 @@
 - <a href="#RestoreWindow">РазвернутьОкно (RestoreWindow)</a>
 - <a href="#MinimizeWindow">СвернутьОкно (MinimizeWindow)</a>
 
+Виртуальные рабочие столы (только для Windows):
+- <a href="#"GetDesktopCount">ПолучитьКоличествоРабочихСтолов (GetDesktopCount)</a>
+- <a href="#"GetCurrentDesktop">ПолучитьТекущийРабочийСтол (GetCurrentDesktop)</a>
+- <a href="#"CreateDesktop">СоздатьРабочийСтол (CreateDesktop)</a>
+- <a href="#"RemoveDesktop">УдалитьРабочийСтол (RemoveDesktop)</a>
+- <a href="#"GoToDesktop">ПереключитьРабочийСтол (GoToDesktop)</a>
+- <a href="#"GetWindowDesktop">ПолучитьРабочийСтолОкна (GetWindowDesktop)</a>
+- <a href="#"MoveWindowToDesktop">ПереместитьОкноНаРабочийСтол (MoveWindowToDesktop)</a>
+
 Эмуляция действий пользователя (только для Windows):
 - <a href="#EmulateMouse">ЭмуляцияДвиженияМыши (EmulateMouse)</a>
 - <a href="#EmulateClick">ЭмуляцияНажатияМыши (EmulateClick)</a>

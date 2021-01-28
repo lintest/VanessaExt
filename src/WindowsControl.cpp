@@ -237,7 +237,7 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"GetCurrentDesktop", u"ПолучитьТекущийРабочийСтол",
 		[&]() { this->result = DesktopManager::GetCurrentDesktopNumber(); }
 	);
-	AddFunction(u"CreateDesktop", u"СоздатьРабочийСтод",
+	AddFunction(u"CreateDesktop", u"СоздатьРабочийСтол",
 		[&]() { this->result = DesktopManager::CreateDesktopNumber(); }
 	);
 	AddFunction(u"RemoveDesktop", u"УдалитьРабочийСтол",
