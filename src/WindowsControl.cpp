@@ -84,7 +84,7 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"GetTopProcessWindow", u"ПолучитьВерхнееОкноПроцесса",
 		[&](VH pid) { this->result = WindowsManager::GetTopProcessWindow(pid); }
 	);
-	AddFunction(u"GetMainProcessWindow", u"ПолучитьОсновноеОкноПроцесса",
+	AddFunction(u"GetMainProcessWindow", u"ПолучитьГлавноеОкноПроцесса",
 		[&](VH pid) { this->result = WindowsManager::GetMainProcessWindow(pid); }
 	);
 	AddFunction(u"GetDisplayList", u"ПолучитьСписокДисплеев",
