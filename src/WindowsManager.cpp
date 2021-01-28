@@ -381,7 +381,7 @@ public:
 	static Window TopWindow(unsigned long pid) {
 		MainWindows p(pid);
 		p.Enumerate();
-		return m_window;
+		return p.m_window;
 	}
 };
 

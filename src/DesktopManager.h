@@ -17,6 +17,6 @@ public:
 	static bool MoveWindowToDesktopNumber(int64_t window, int64_t number);
 };
 
-#endif _WINDOWS
+#endif//_WINDOWS
 
 #endif//DESKTOPMANAGER_H
