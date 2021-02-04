@@ -1,68 +1,124 @@
 %top{
-  #include "gherkin.h"
+	#include "gherkin.h"
+	using namespace Gherkin;
 %}
 
 %class{
-private:
-  GherkinDocument document;
 public:
-  void next() {
-    document.next();
-  }
-  void push(Gherkin::TokenType type) {
-    document.push(type, *this);
-  }
-  GherkinTags tags() const {
-    return document.tags();
-  }
-  std::string dump() const {
-    return document.dump();
-  }
+	TokenType current_token;
+	GherkinDocument* document;
+	std::vector<GherkinLine> lines;
+	GherkinLine* currentLine = nullptr;
+	GherkinTable* currentTable = nullptr;
+	GherkinTags tagStack;
+	GherkinComments commentStack;
+	std::vector<std::pair<int, GherkinElement*>> elementStack;
+	GherkinElement* lastElement = nullptr;
+public:
+	JSON parse(GherkinDocument& doc) {
+		document = &doc;
+		lex();
+		return JSON(doc);
+	}
+	void next() {
+		document->next(*this);
+	}
+	void push(TokenType tt, char ch = 0) {
+		document->push(*this, tt, ch);
+	}
+	void tail(TokenType type) {
+		current_token = type;
+		start(TAIL);
+	}
+	bool isPrimitiveEscaping() const {
+		return document ? document->provider.primitiveEscaping : false;
+	}
+	virtual void lexer_error(const char *message = NULL) override {
+		document->exception(*this, message);
+	}
 }
 
 %option fast nodefault unicode
-%xstate TABLE
+
+%xstate LINE
 %xstate TAG
-%xstate TEXT
+%xstate TAIL
+%xstate TABLE
+%xstate STR_A
+%xstate STR_D
 
 new_line      \r?\n
+language      #\s*(?i)(language)\s*:\s*
+encoding      #\s*(?i)(encoding)\s*:\s*
+asterisk      \*
 operator      \w+
-number        -?(\\d*\\.)?\\d+
+number        -?(\d*[\.\,])?\d+
 date          \d+\.\d+\.\d+|\d+\/\d+\/\d+
-param         \"[^\"\n\r]*\"|'[^'\n\r]*'|<[^>\n\r]*>
-comment       #[^\n\r]*|\/\/[^\n\r]*
+param_d       \"([^\\\"\n\r]|\\.)*\"
+param_a       `([^\\`\n\r]|\\.)*`
+param_b       <([^\\>\n\r]|\\.)*>
+param_s       '([^\\'\n\r]|\\.)*'
+comment       #|\/\/
 space         \h+
 colon         :
 table         \|
-cell          [^\n\r\|]+
-text          [^\r\n]+
+cell          (\\\||[^\s\|])(\\\||[^\|\n\r\\])*
+text          [^\s][^\r\n]*
+str_a         \`\`\`[^\n\r]*
+str_d         \"\"\"[^\n\r]*
 tag           @
 
 %%
 
 <INITIAL>{new_line}   { next(); start(INITIAL); }
 <INITIAL>{space}      // ignore
-<INITIAL>{colon}      { push(Gherkin::Colon); }
-<INITIAL>{operator}   { push(Gherkin::Operator); }
-<INITIAL>{param}      { push(Gherkin::Param); }
-<INITIAL>{date}       { push(Gherkin::Date); }
-<INITIAL>{number}     { push(Gherkin::Number); }
-<INITIAL>{comment}    { push(Gherkin::Comment); }
-<INITIAL>{table}      { push(Gherkin::Table); start(TABLE); }
-<INITIAL>{tag}        { push(Gherkin::Tag); start(TAG); }
-<INITIAL>.            { push(Gherkin::Symbol); }
+<INITIAL>{asterisk}   { tail(TokenType::Asterisk); }
+<INITIAL>{language}   { tail(TokenType::Language); }
+<INITIAL>{encoding}   { tail(TokenType::Encoding); }
+<INITIAL>{comment}    { tail(TokenType::Comment); }
+<INITIAL>{tag}        { tail(TokenType::Tag); }
+<INITIAL>{operator}   { start(LINE);  push(TokenType::Operator); }
+<INITIAL>{table}      { start(TABLE); push(TokenType::Table); }
+<INITIAL>{str_a}      { start(STR_A); push(TokenType::Multiline); }
+<INITIAL>{str_d}      { start(STR_D); push(TokenType::Multiline); }
+<INITIAL>.            { start(LINE);  push(TokenType::Symbol); }
+
+<LINE>{new_line}      { next(); start(INITIAL); }
+<LINE>{space}         // ignore
+<LINE>{comment}       { tail(TokenType::Comment); }
+<LINE>{operator}      { push(TokenType::Operator); }
+<LINE>{colon}         { push(TokenType::Colon); }
+<LINE>{date}          { push(TokenType::Date); }
+<LINE>{number}        { push(TokenType::Number); }
+<LINE>{param_a}       { push(TokenType::Param, '`'); }
+<LINE>{param_b}       { push(TokenType::Param, '>'); }
+<LINE>{param_d}       { push(TokenType::Param, '\"'); }
+<LINE>{param_s}       { push(TokenType::Param, '\''); }
+<LINE>.               { push(TokenType::Symbol); }
+
+<TAIL>{new_line}      { next(); start(INITIAL); }
+<TAIL>{text}          { push(current_token); }
+<TAIL>{space}         // ignore
 
 <TABLE>{new_line}     { next(); start(INITIAL); }
+<TABLE>{table}        { push(TokenType::Table); }
+<TABLE>{param_a}      { push(TokenType::Cell, '`'); }
+<TABLE>{param_b}      { push(TokenType::Cell, '>'); }
+<TABLE>{param_d}      { push(TokenType::Cell, '\"'); }
+<TABLE>{param_s}      { push(TokenType::Cell, '\''); }
+<TABLE>{cell}         { push(TokenType::Cell); }
 <TABLE>{space}        // ignore
-<TABLE>{table}        { push(Gherkin::Table); }
-<TABLE>{cell}         { push(Gherkin::Cell); }
 
-<TAG>{new_line}       { next(); start(INITIAL); }
-<TAG>{space}          // ignore
-<TAG>{operator}       { push(Gherkin::Operator); }
-<TAG>{colon}          { push(Gherkin::Colon); start(TEXT); }
+<STR_A>{new_line}     { next(); }
+<STR_A>{str_a}        { push(TokenType::Multiline); start(INITIAL); }
+<STR_A>{text}         { push(TokenType::Line); }
+<STR_A>{space}         // ignore
 
-<TEXT>{new_line}       { next(); start(INITIAL); }
-<TEXT>{text}           { push(Gherkin::Text); }
+<STR_D>{new_line}     { next(); }
+<STR_D>{str_d}        { push(TokenType::Multiline); start(INITIAL); }
+<STR_D>{text}         { push(TokenType::Line); }
+<STR_D>{space}         // ignore
+
+<<EOF>>               { next(); return 0; }
 
 %%

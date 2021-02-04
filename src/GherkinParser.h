@@ -4,11 +4,18 @@
 #include "stdafx.h"
 #include "AddInNative.h"
 
-class GherkinParser:
-    public AddInNative
+namespace Gherkin {
+	class GherkinProvider;
+}
+
+class GherkinParser :
+	public AddInNative
 {
 private:
-    static std::vector<std::u16string> names;
-    GherkinParser();
+	static std::vector<std::u16string> names;
+	GherkinParser();
+private:
+	std::unique_ptr<Gherkin::GherkinProvider> provider;
+	void ExitCurrentProcess(int64_t status);
 };
 #endif //__GHERKINPARSER_H__
