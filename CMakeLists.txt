@@ -43,6 +43,7 @@ if (WITH_GHERKIN)
 		RE-flex/unicode/block_scripts.cpp
 		RE-flex/unicode/language_scripts.cpp
 		RE-flex/unicode/letter_scripts.cpp
+		src/GherkinParser.cpp
 		gherkin.lex.cpp
 		gherkin.lex.h
 		src/gherkin.cpp
