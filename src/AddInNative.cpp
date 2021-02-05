@@ -405,7 +405,7 @@ std::u16string AddInNative::getComponentNames() {
 
 std::u16string AddInNative::AddComponent(const std::u16string& name, CompFunction creator)
 {
-	components.insert({ name, creator });
+	components[name] = creator;
 	return name;
 }
 

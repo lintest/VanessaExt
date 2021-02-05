@@ -60,7 +60,6 @@ endif (WITH_GHERKIN)
 
 add_library(${TARGET} SHARED
 	version.h
-	${GherkinLexer_SRCS}
 	src/AddInNative.cpp
 	src/AddInNative.def
 	src/AddInNative.h
@@ -102,6 +101,7 @@ add_library(${TARGET} SHARED
 	src/WindowsManager.h
 	src/X11Screenshot.cpp
 	src/X11Screenshot.h
+	${GherkinLexer_SRCS}
 	src/json.hpp
 	src/stdafx.h)
 

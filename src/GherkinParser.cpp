@@ -1,5 +1,6 @@
-﻿#include "GherkinParser.h"
+﻿#include "stdafx.h"
 #include "gherkin.h"
+#include "GherkinParser.h"
 
 std::vector<std::u16string> GherkinParser::names = {
 	AddComponent(u"GherkinParser", []() { return new GherkinParser; }),
