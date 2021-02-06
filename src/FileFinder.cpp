@@ -7,11 +7,15 @@
 #include <fstream>
 #include <codecvt>
 
+static void wstr_tolower(std::wstring& text)
+{
+	std::use_facet<std::ctype<wchar_t> >(std::locale()).tolower(&text[0], &text[0] + text.size());
+}
+
 FileFinder::FileFinder(const std::wstring& text, bool ignoreCase)
 	: m_text(text), m_ignoreCase(ignoreCase)
 {
-	if (ignoreCase) 
-		std::use_facet<std::ctype<wchar_t> >(std::locale()).tolower(&text[0], &text[0] + text.size());
+	if (ignoreCase) wstr_tolower(m_text);
 }
 
 bool FileFinder::search(const std::wstring& path)
