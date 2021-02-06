@@ -5,16 +5,6 @@
 #define ID_TIMER_REPAINT 1
 #define ID_TIMER_TIMEOUT 2
 
-JSON PainterBase::parse(const std::string& text)
-{
-	try {
-		return JSON::parse(text);
-	}
-	catch (...) {
-		throw std::u16string(u"JSON parsing error");
-	}
-}
-
 PainterBase::PainterBase(const std::string& params, int x, int y, int w, int h)
 	: x(x), y(y), w(w), h(h)
 {
@@ -124,7 +114,7 @@ void EllipsePainter::draw(Graphics& graphics)
 BezierPainter::BezierPainter(const std::string& params, const std::string& text)
 	: PainterBase(params)
 {
-	auto list = parse(text);
+	auto list = JSON::parse(text);
 	for (size_t i = 0; i < list.size(); i++) {
 		auto item = list[i];
 		points.push_back({ item["x"], item["y"] });

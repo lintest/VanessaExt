@@ -214,14 +214,9 @@ public:
 		push_back(ip);
 	}
 	void add(const std::wstring &text) {
-		try {
-			auto json = JSON::parse(WC2MB(text));
-			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
-				add((WORD)it.value());
-			}
-		}
-		catch (nlohmann::json::parse_error&) {
-			throw u"JSON parse error";
+		auto json = JSON::parse(WC2MB(text));
+		for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
+			add((WORD)it.value());
 		}
 	}
 	void send() {
@@ -621,14 +616,9 @@ public:
 		if (m_display) XCloseDisplay(m_display);
 	}
 	void add(const std::wstring& text) {
-		try {
-			auto json = JSON::parse(WC2MB(text));
-			for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
-				add(it.value());
-			}
-		}
-		catch (nlohmann::json::parse_error e) {
-			throw u"JSON parse error";
+		auto json = JSON::parse(WC2MB(text));
+		for (JSON::iterator it = json.begin(); it != json.end(); ++it) {
+			add(it.value());
 		}
 	}
 	void add(JSON value) {

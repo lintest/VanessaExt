@@ -114,8 +114,6 @@ protected:
 	VarinantHelper result;
 
 public:
-	static std::u16string upper(std::u16string& str);
-	static std::wstring upper(std::wstring& str);
 	WCHAR_T* W(const char16_t* str) const;
 	static std::string version();
 

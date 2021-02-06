@@ -5,7 +5,7 @@
 #ifndef __STDAFX_H__
 #define __STDAFX_H__
 
-#include <types.h>
+#include <../include/types.h>
 #include <string>
 
 #ifdef _WINDOWS
@@ -17,6 +17,11 @@ std::string WC2MB(const std::wstring& source);
 std::u16string MB2WCHAR(std::string_view src);
 std::string WCHAR2MB(std::basic_string_view<WCHAR_T> src);
 std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src);
+
+std::u16string upper(std::u16string& str);
+std::u16string lower(std::u16string& str);
+std::wstring upper(std::wstring& str);
+std::wstring lower(std::wstring& str);
 
 #include "json.hpp"
 using JSON = nlohmann::json;

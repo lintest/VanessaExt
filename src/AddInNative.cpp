@@ -163,6 +163,10 @@ bool AddInNative::GetPropVal(const long lPropNum, tVariant* pvarPropVal)
 		it->getter(VA(pvarPropVal, &(*it)));
 		return true;
 	}
+	catch (const std::exception& e) {
+		AddError(MB2WCHAR(e.what()));
+		return false;
+	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
 		return false;
@@ -180,6 +184,10 @@ bool AddInNative::SetPropVal(const long lPropNum, tVariant* pvarPropVal)
 	try {
 		it->setter(VA(pvarPropVal, &(*it)));
 		return true;
+	}
+	catch (const std::exception& e) {
+		AddError(MB2WCHAR(e.what()));
+		return false;
 	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
@@ -284,6 +292,10 @@ bool AddInNative::GetParamDefValue(const long lMethodNum, const long lParamNum, 
 		}
 		return true;
 	}
+	catch (const std::exception& e) {
+		AddError(MB2WCHAR(e.what()));
+		return false;
+	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
 		return false;
@@ -357,6 +369,10 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 		result << VA(nullptr);
 		return CallMethod(&it->handler, paParams, &(*it), lSizeArray);
 	}
+	catch (const std::exception& e) {
+		AddError(MB2WCHAR(e.what()));
+		return false;
+	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
 		return false;
@@ -375,6 +391,10 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 		bool ok = CallMethod(&it->handler, paParams, &(*it), lSizeArray);
 		result << VA(nullptr);
 		return ok;
+	}
+	catch (const std::exception& e) {
+		AddError(MB2WCHAR(e.what()));
+		return false;
 	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
@@ -477,15 +497,27 @@ std::u16string MB2WCHAR(std::string_view src) {
 
 std::locale locale_ru = std::locale("ru_RU.UTF-8");
 
-std::u16string AddInNative::upper(std::u16string& str)
+std::u16string upper(std::u16string& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::toupper(ch, locale_ru); });
 	return str;
 }
 
-std::wstring AddInNative::upper(std::wstring& str)
+std::u16string lower(std::u16string& str)
+{
+	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::tolower(ch, locale_ru); });
+	return str;
+}
+
+std::wstring upper(std::wstring& str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::toupper(ch, locale_ru); });
+	return str;
+}
+
+std::wstring lower(std::wstring& str)
+{
+	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::tolower(ch, locale_ru); });
 	return str;
 }
 
