@@ -8,6 +8,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
+#include "GherkinParser.h"
 
 #ifdef USE_BOOST
 
@@ -45,12 +46,12 @@ static bool comparei(std::wstring a, std::wstring b)
 
 #endif//USE_BOOST
 
-static FILE* fileopen(const std::wstring& filepath)
+static FILE* fileopen(const boost::filesystem::path& path)
 {
 #ifdef _WINDOWS
-	return _wfopen(filepath.c_str(), L"rb");
+	return _wfopen(path.wstring().c_str(), L"rb");
 #else
-	return fopen(WC2MB(filepath).c_str(), "rb");
+	return fopen(path.string().c_str(), "rb");
 #endif
 }
 
@@ -63,6 +64,58 @@ namespace Gherkin {
 		auto matcher = reflex::Matcher(pattern, text);
 		return matcher.find() ? matcher.text() : std::string();
 	}
+
+	enum class MatchType {
+		Include,
+		Exclude,
+		Unknown
+	};
+
+	class GherkinFilter {
+	private:
+		std::set<std::wstring> include;
+		std::set<std::wstring> exclude;
+	public:
+		GherkinFilter(const std::string& text) {
+			if (text.empty())
+				return;
+
+			auto json = JSON::parse(text);
+
+			for (auto& tag : json["include"]) {
+				std::wstring wstr = MB2WC(tag);
+				include.emplace(lower(wstr));
+			}
+
+			for (auto& tag : json["exclude"]) {
+				std::wstring wstr = MB2WC(tag);
+				exclude.emplace(lower(wstr));
+			}
+		}
+		MatchType match(const GherkinTags& tags) {
+			if (!exclude.empty())
+				for (auto& tag : tags) {
+					std::wstring wstr = MB2WC(tag);
+					if (exclude.find(lower(wstr)) != exclude.end())
+						return MatchType::Exclude;
+				}
+			if (!include.empty()) {
+				for (auto& tag : tags) {
+					std::wstring wstr = MB2WC(tag);
+					if (include.find(lower(wstr)) != include.end())
+						return MatchType::Include;
+				}
+			}
+			return MatchType::Unknown;
+		}
+		bool match(const GherkinDocument& doc) {
+			switch (match(doc.getTags())) {
+			case MatchType::Exclude: return false;
+			case MatchType::Include: return true;
+			default: return include.empty();
+			}
+		}
+	};
 
 	GherkinProvider::Keyword::Keyword(KeywordType type, const std::string& text)
 		:type(type), text(text)
@@ -125,7 +178,6 @@ namespace Gherkin {
 		keywords.clear();
 		for (auto lang = json.begin(); lang != json.end(); ++lang) {
 			std::string language = lang.key();
-			if ((language != "en") && (language != "ru")) continue; // TODO: remove this line
 			auto& vector = keywords[language];
 			auto& types = lang.value();
 			for (auto type = types.begin(); type != types.end(); ++type) {
@@ -155,9 +207,13 @@ namespace Gherkin {
 		return nullptr;
 	}
 
-	std::string GherkinProvider::ParseFolder(const std::wstring& root) const
+	std::string GherkinProvider::ParseFolder(const std::wstring& root, const std::string& tags, AbstractProgress* progress) const
 	{
-		JSON json;
+		if (root.empty()) return {};
+
+		size_t id = identifier;
+		GherkinFilter filter(tags);
+		std::vector<boost::filesystem::path> files;
 		const std::wstring mask = L"^.+\\.feature$";
 		boost::wregex pattern(mask, boost::regex::icase);
 		boost::filesystem::recursive_directory_iterator end_itr; // Default ctor yields past-the-end
@@ -166,34 +222,74 @@ namespace Gherkin {
 				boost::wsmatch what;
 				std::wstring path = i->path().wstring();
 				std::wstring name = i->path().filename().wstring();
-				if (!boost::regex_match(name, what, pattern)) continue;
-				std::unique_ptr<FILE, decltype(&fclose)> file(fileopen(path), &fclose);
-				reflex::Input input(file.get());
-				GherkinDocument doc(*this);
-				GherkinLexer lexer(input);
-				auto j = lexer.parse(doc);
-				j["filepath"] = WC2MB(path);
-				json.push_back(j);
+				if (boost::regex_match(name, what, pattern))
+					files.push_back(path);
 			}
+			if (id != identifier) 
+				return {};
+		}
+
+		JSON json;
+		size_t pos = 0;
+		for (auto& path : files) {
+			if (id != identifier) 
+				return json.dump();
+
+			if (progress) {
+				JSON info;
+				info["pos"] = ++pos;
+				info["max"] = files.size();
+				info["path"] = WC2MB(path.wstring());
+				info["name"] = WC2MB(path.filename().wstring());
+				progress->Send(info.dump());
+			}
+			std::unique_ptr<FILE, decltype(&fclose)> file(fileopen(path), &fclose);
+			reflex::Input input(file.get());
+			GherkinDocument doc(*this);
+			GherkinLexer lexer(input);
+			JSON js;
+			try {
+				lexer.parse(doc);
+				if (!filter.match(doc)) 
+					continue;
+				js = JSON(doc);
+			}
+			catch (const GherkinException& e) {
+				js["errors"].push_back(e);
+			}
+			catch (const std::exception& e) {
+				JSON j;
+				j["message"] = e.what();
+				js["errors"].push_back(j);
+			}
+			js["filepath"] = WC2MB(path.wstring());
+			json.push_back(js);
 		}
 		return json.dump();
 	}
 
+#ifdef _WINDOWS
+#endif// _WINDOWS
+
 	std::string GherkinProvider::ParseFile(const std::wstring& path) const
 	{
+		if (path.empty()) return {};
 		std::unique_ptr<FILE, decltype(&fclose)> file(fileopen(path), &fclose);
 		reflex::Input input(file.get());
 		GherkinDocument doc(*this);
 		GherkinLexer lexer(input);
-		return lexer.parse(doc).dump();
+		lexer.parse(doc);
+		return JSON(doc).dump();
 	}
 
 	std::string GherkinProvider::ParseText(const std::string& text) const
 	{
+		if (text.empty()) return {};
 		reflex::Input input(text);
 		GherkinDocument doc(*this);
 		GherkinLexer lexer(input);
-		return lexer.parse(doc).dump();
+		lexer.parse(doc);
+		return JSON(doc).dump();
 	}
 
 	KeywordType GherkinKeyword::str2type(const std::string& text)
@@ -206,6 +302,7 @@ namespace Gherkin {
 			{ "but", KeywordType::But },
 			{ "examples", KeywordType::Examples },
 			{ "feature", KeywordType::Feature },
+			{ "if", KeywordType::If },
 			{ "given", KeywordType::Given },
 			{ "rule", KeywordType::Rule },
 			{ "scenario", KeywordType::Scenario },
@@ -213,7 +310,8 @@ namespace Gherkin {
 			{ "then", KeywordType::Then },
 			{ "when", KeywordType::When },
 		};
-		return types.count(type) ? types[type] : KeywordType::None;
+		auto it = types.find(type);
+		return it == types.end() ? KeywordType::None : it->second;
 	}
 
 	std::string GherkinKeyword::type2str(KeywordType type)
@@ -230,7 +328,7 @@ namespace Gherkin {
 		case KeywordType::Rule: return "Rule";
 		case KeywordType::Then: return "Then";
 		case KeywordType::When: return "When";
-		default: return {};
+		default: return "None";
 		}
 	}
 
@@ -548,6 +646,30 @@ namespace Gherkin {
 		return json;
 	}
 
+	GherkinException::GherkinException(GherkinLexer& lexer, const std::string& message)
+		: std::runtime_error(message.c_str()), line(lexer.lineno()), column(lexer.columno())
+	{
+	}
+
+	GherkinException::GherkinException(GherkinLexer& lexer, char const* const message)
+		: std::runtime_error(message), line(lexer.lineno()), column(lexer.columno())
+	{
+	}
+
+	GherkinException::GherkinException(const GherkinException& src)
+		: std::runtime_error(*this), line(src.line), column(src.column)
+	{
+	}
+
+	GherkinException::operator JSON() const
+	{
+		JSON json;
+		json["line"] = line;
+		json["column"] = column;
+		json["message"] = what();
+		return json;
+	}
+
 	GherkinError::GherkinError(GherkinLexer& lexer, const std::string& message)
 		: line(lexer.lineno()), column(lexer.columno()), message(message)
 	{
@@ -563,7 +685,9 @@ namespace Gherkin {
 		JSON json;
 		json["line"] = line;
 		json["text"] = message;
-		if (column) json["column"] = column;
+		if (column) 
+			json["column"] = column;
+			
 		return json;
 	}
 
@@ -605,7 +729,7 @@ namespace Gherkin {
 
 	void GherkinDocument::addScenarioDefinition(GherkinLexer& lexer, GherkinLine& line)
 	{
-		scenarios.emplace_back(new GherkinDefinition(lexer, line));
+		scenarios.emplace_back(std::make_unique<GherkinDefinition>(lexer, line));
 		resetElementStack(lexer, *scenarios.back().get());
 	}
 
@@ -618,7 +742,7 @@ namespace Gherkin {
 	{
 		std::stringstream stream_message;
 		stream_message << (message != NULL ? message : "lexer error") << " at " << lexer.lineno() << ":" << lexer.columno();
-		throw MB2WCHAR(stream_message.str());
+		throw GherkinException(lexer, stream_message.str());
 	}
 
 	void GherkinDocument::error(GherkinLexer& lexer, const std::string& error)
@@ -673,7 +797,7 @@ namespace Gherkin {
 			lexer.elementStack.pop_back();
 		}
 		if (lexer.elementStack.empty()) {
-			throw u"Element statck is empty";
+			throw GherkinException(lexer, "Element statck is empty");
 		}
 		auto parent = lexer.elementStack.back().second;
 		if (auto element = parent->push(lexer, line)) {

@@ -15,10 +15,9 @@ public:
 	std::vector<std::pair<int, GherkinElement*>> elementStack;
 	GherkinElement* lastElement = nullptr;
 public:
-	JSON parse(GherkinDocument& doc) {
+	void parse(GherkinDocument& doc) {
 		document = &doc;
 		lex();
-		return JSON(doc);
 	}
 	void next() {
 		document->next(*this);
@@ -86,10 +85,10 @@ tag           @
 <LINE>{new_line}      { next(); start(INITIAL); }
 <LINE>{space}         // ignore
 <LINE>{comment}       { tail(TokenType::Comment); }
-<LINE>{operator}      { push(TokenType::Operator); }
 <LINE>{colon}         { push(TokenType::Colon); }
 <LINE>{date}          { push(TokenType::Date); }
 <LINE>{number}        { push(TokenType::Number); }
+<LINE>{operator}      { push(TokenType::Operator); }
 <LINE>{param_a}       { push(TokenType::Param, '`'); }
 <LINE>{param_b}       { push(TokenType::Param, '>'); }
 <LINE>{param_d}       { push(TokenType::Param, '\"'); }

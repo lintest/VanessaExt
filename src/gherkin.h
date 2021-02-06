@@ -9,6 +9,7 @@
 using JSON = nlohmann::json;
 
 class GherkinLexer;
+class GherkinParser;
 
 namespace Gherkin {
 
@@ -41,6 +42,7 @@ namespace Gherkin {
 		Examples,
 		And,
 		But,
+		If,
 		Given,
 		Rule,
 		Then,
@@ -59,6 +61,11 @@ namespace Gherkin {
 	using GherkinComments = std::vector<std::string>;
 	using GherkinTokens = std::vector<GherkinToken>;
 
+	class AbstractProgress {
+	public:
+		virtual void Send(const std::string& msg) = 0;
+	};
+
 	class GherkinProvider {
 	public:
 		class Keyword {
@@ -71,21 +78,24 @@ namespace Gherkin {
 		public:
 			Keyword(KeywordType type, const std::string& text);
 			GherkinKeyword* match(GherkinTokens& tokens) const;
-			bool comp(const Keyword& other) const { 
-				return words.size() > other.words.size(); 
+			bool comp(const Keyword& other) const {
+				return words.size() > other.words.size();
 			}
 		};
 		using Keywords = std::map<std::string, std::vector<Keyword>>;
 	private:
 		Keywords keywords;
+		size_t identifier = 0;
+		GherkinParser* parser = nullptr;
 	public:
 		bool primitiveEscaping = false;
 		std::string getKeywords() const;
 		void setKeywords(const std::string& text);
 		GherkinKeyword* matchKeyword(const std::string& lang, GherkinTokens& line) const;
-		std::string ParseFolder(const std::wstring& path) const;
+		std::string ParseFolder(const std::wstring& path, const std::string& filter, AbstractProgress* progress = nullptr) const;
 		std::string ParseFile(const std::wstring& path) const;
 		std::string ParseText(const std::string& text) const;
+		void AbortScan() { ++identifier; };
 	};
 
 	class GherkinKeyword {
@@ -103,7 +113,7 @@ namespace Gherkin {
 		KeywordType getType() const { return type; }
 		operator JSON() const;
 	};
-
+ 
 	class GherkinToken {
 	private:
 		std::string type2str() const;
@@ -215,6 +225,18 @@ namespace Gherkin {
 		virtual operator JSON() const override;
 	};
 
+	class GherkinException
+		: public std::runtime_error {
+	private:
+		const size_t line = 0;
+		const size_t column = 0;
+	public:
+		GherkinException(GherkinLexer& lexer, const std::string& message);
+		GherkinException(GherkinLexer& lexer, char const* const message);
+		GherkinException(const GherkinException& src);
+		operator JSON() const;
+	};
+
 	class GherkinError {
 	private:
 		size_t line = 0;
@@ -256,5 +278,12 @@ namespace Gherkin {
 		operator JSON() const;
 	};
 }
+
+#ifdef _WINDOWS
+
+#define WM_PARSING_PROGRESS (WM_USER + 3)
+#define WM_PARSING_FINISHED (WM_USER + 4)
+
+#endif//_WINDOWS
 
 #endif//GHERKIN_H
