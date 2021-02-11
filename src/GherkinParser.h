@@ -18,7 +18,7 @@ public:
 	virtual ~GherkinParser();
 	void CreateProgressMonitor();
 	void OnProgress(UINT id, const std::string& data);
-	void ScanFolder(const std::wstring& path, const std::string& filter);
+	void ScanFolder(const std::string& dirs, const std::string& libs, const std::string& filter);
 	void AbortScan();
 #endif//_WINDOWS
 private:

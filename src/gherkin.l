@@ -30,7 +30,7 @@ public:
 		start(TAIL);
 	}
 	bool isPrimitiveEscaping() const {
-		return document ? document->provider.primitiveEscaping : false;
+		return document ? document->isPrimitiveEscaping() : false;
 	}
 	virtual void lexer_error(const char *message = NULL) override {
 		document->exception(*this, message);

@@ -20,19 +20,24 @@ GherkinParser::GherkinParser()
 	);
 
 	AddFunction(u"Parse", u"Прочитать",
-		[&](VH data) {  this->result = this->provider->ParseText(data); }
+		[&](VH data) { this->result = this->provider->ParseText(data); }
 	);
 
 	AddFunction(u"ParseText", u"ПрочитатьТекст",
-		[&](VH data) {  this->result = this->provider->ParseText(data); }
+		[&](VH data) { this->result = this->provider->ParseText(data); }
 	);
 
 	AddFunction(u"ParseFolder", u"ПрочитатьПапку",
-		[&](VH filepath, VH filter) {  this->result = this->provider->ParseFolder(filepath, filter); }, { {1, u""} }
+		[&](VH dirs, VH libs, VH filter) { this->result = this->provider->ParseFolder(dirs, libs, filter); }, 
+		{ {1, u"[]"}, {2, u""} }
 	);
 
 	AddFunction(u"ParseFile", u"ПрочитатьФайл",
-		[&](VH filepath) {  this->result = this->provider->ParseFile(filepath); }
+		[&](VH file) { this->result = this->provider->ParseFile(file); }
+	);
+
+	AddProcedure(u"ClearCashe", u"ОчиститьКэш",
+		[&](VH filepath) { this->provider->ClearSnippets(); }
 	);
 
 	AddProcedure(u"Exit", u"ЗавершитьРаботуСистемы",
@@ -43,11 +48,12 @@ GherkinParser::GherkinParser()
 	CreateProgressMonitor();
 
 	AddProcedure(u"ScanFolder", u"СканироватьПапку",
-		[&](VH filepath, VH filter) {  this->ScanFolder(filepath, filter); }, { {1, u""} }
+		[&](VH dirs, VH libs, VH filter) { this->ScanFolder(dirs, libs, filter); },
+		{ {1, u"[]"}, { 2, u"" } }
 	);
 
 	AddProcedure(u"AbortScan", u"ПрерватьСканирование",
-		[&]() {  this->AbortScan(); }
+		[&]() { this->AbortScan(); }
 	);
 #endif//_WINDOWS
 }
@@ -60,19 +66,22 @@ private:
 	HWND hWnd;
 	size_t max = 0;
 	size_t pos = 0;
+	std::string dir;
 	std::string step;
 public:
-	GherkinProgress(Gherkin::GherkinProvider& provider, const std::wstring& path, const std::string& filter, HWND hWnd)
-		: provider(provider), path(path), filter(filter), hWnd(hWnd) {}
-	virtual void Start(size_t max, const std::string& step) override {
-		this->pos = 0;
+	GherkinProgress(Gherkin::GherkinProvider& provider, const std::string& dirs, const std::string& libs, const std::string& tags, HWND hWnd)
+		: provider(provider), dirs(dirs), libs(libs), tags(tags), hWnd(hWnd) {}
+	virtual void Start(const std::string& dir, size_t max, const std::string& step) override {
+		this->dir = dir;
 		this->max = max;
+		this->pos = 0;
 		this->step = step;
 	}
 	virtual void Step(const boost::filesystem::path& path) override {
 		Send(JSON({
-			{ "pos", ++pos},
+			{ "dir", dir },
 			{ "max", max },
+			{ "pos", ++pos },
 			{ "step", step },
 			{ "path", WC2MB(path.wstring()) },
 			{ "name", WC2MB(path.filename().wstring()) } }
@@ -82,9 +91,10 @@ public:
 		auto data = (LPARAM)new std::string(msg);
 		::SendMessageW(hWnd, WM_PARSING_PROGRESS, 0, data);
 	}
-	const Gherkin::GherkinProvider& provider;
-	const std::wstring path;
-	const std::string filter;
+	Gherkin::GherkinProvider& provider;
+	const std::string dirs;
+	const std::string libs;
+	const std::string tags;
 	void Scan();
 };
 
@@ -114,7 +124,7 @@ static LRESULT CALLBACK MonitorWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 }
 
 void GherkinProgress::Scan() {
-	auto text = provider.ParseFolder(path, filter, this);
+	auto text = provider.ParseFolder(dirs, libs, tags, this);
 	auto data = (LPARAM)new std::string(text);
 	::SendMessageW(hWnd, WM_PARSING_FINISHED, 0, data);
 }
@@ -146,9 +156,9 @@ void GherkinParser::OnProgress(UINT id, const std::string& data)
 	ExternalEvent(message, MB2WCHAR(data));
 }
 
-void GherkinParser::ScanFolder(const std::wstring& path, const std::string& filter)
+void GherkinParser::ScanFolder(const std::string& dirs, const std::string& libs, const std::string& filter)
 {
-	auto progress = new GherkinProgress(*provider, path, filter, hWndMonitor);
+	auto progress = new GherkinProgress(*provider, dirs, libs, filter, hWndMonitor);
 	CreateThread(0, NULL, ParserThreadProc, (LPVOID)progress, NULL, NULL);
 }
 
