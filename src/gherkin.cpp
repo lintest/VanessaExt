@@ -8,41 +8,12 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
-#ifdef USE_BOOST
-
-#include <boost/algorithm/string.hpp>
-
 static bool comparei(const std::wstring& a, const std::wstring& b)
 {
 	static const std::locale locale_ru("ru_RU.UTF-8");
 	return boost::iequals(a, b, locale_ru);
 }
 
-#else//USE_BOOST
-
-#ifdef _WINDOWS
-
-static bool comparei(const std::wstring& a, const std::wstring& b)
-{
-	static _locale_t locale = _create_locale(LC_ALL, "ru-RU");
-	auto res = _wcsnicmp_l(a.c_str(), b.c_str(), std::max(a.size(), b.size()), locale);
-	return res == 0;
-}
-
-#include <string.h>
-
-#else//_WINDOWS
-
-static bool comparei(std::wstring a, std::wstring b)
-{
-	transform(a.begin(), a.end(), a.begin(), toupper);
-	transform(b.begin(), b.end(), b.begin(), toupper);
-	return (a == b);
-}
-
-#endif//_WINDOWS
-
-#endif//USE_BOOST
 
 static FILE* fileopen(const BoostPath& path)
 {
