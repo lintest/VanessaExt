@@ -10,8 +10,8 @@ public:
 	std::vector<GherkinLine> lines;
 	GherkinLine* currentLine = nullptr;
 	GherkinTable* currentTable = nullptr;
-	GherkinTags tagStack;
-	GherkinComments commentStack;
+	StringLines tagStack;
+	StringLines commentStack;
 	std::vector<std::pair<int, GherkinElement*>> elementStack;
 	GherkinElement* lastElement = nullptr;
 public:

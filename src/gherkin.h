@@ -63,23 +63,29 @@ namespace Gherkin {
 	class GherkinKeyword;
 	class GherkinToken;
 	class GherkinGroup;
+	class GherkinTable;
 	class GherkinLine;
 	class GherkinStep;
+	class StringLine;
 
 	using GherkinSnippet = std::wstring;
-	using GherkinTags = std::vector<std::string>;
-	using GherkinComments = std::vector<std::string>;
+	using StringLines = std::vector<StringLine>;
 	using GherkinTokens = std::vector<GherkinToken>;
 	using SnippetStack = std::set<GherkinSnippet>;
 	using AbsractDef = std::unique_ptr<AbsractDefinition>;
 	using GherkinDef = std::unique_ptr<GherkinDefinition>;
-	using ScenarioMap = std::map<GherkinSnippet, std::unique_ptr<ExportScenario>>;
+	using GherkinSteps = std::vector<std::unique_ptr<GherkinElement>>;
+	using GherkinTables = std::vector<GherkinTable>;
+	using ScenarioRef = std::pair<const GherkinDocument&, const GherkinDefinition&>;
+	using ScenarioMap = std::map<GherkinSnippet, ExportScenario>;
 	using GherkinParams = std::map<std::wstring, GherkinToken>;
+	using BoostPath = boost::filesystem::path;
+	using BoostPaths = std::vector<BoostPath>;
 
 	class AbstractProgress {
 	public:
 		virtual void Start(const std::string& dir, size_t max, const std::string& info) = 0;
-		virtual void Step(const boost::filesystem::path& path) = 0;
+		virtual void Step(const BoostPath& path) = 0;
 		virtual void Send(const std::string& msg) = 0;
 	};
 
@@ -99,10 +105,8 @@ namespace Gherkin {
 				return words.size() > other.words.size();
 			}
 		};
-		using BoostPath = boost::filesystem::path;
-		using BoostPaths = std::vector<BoostPath>;
 		using Keywords = std::map<std::string, std::vector<Keyword>>;
-		using FileCache = std::map<boost::filesystem::path, std::unique_ptr<GherkinDocument>>;
+		using FileCache = std::map<BoostPath, std::unique_ptr<GherkinDocument>>;
 	private:
 		class ScanParams;
 		Keywords keywords;
@@ -201,7 +205,7 @@ namespace Gherkin {
 	private:
 		GherkinTokens tokens;
 		GherkinParams params;
-		std::vector<std::unique_ptr<GherkinElement>> steps;
+		GherkinSteps steps;
 	public:
 		static GeneratedScript* generate(const GherkinStep& owner, const ScenarioMap& map, const SnippetStack& stack);
 		GeneratedScript(const GherkinStep& owner, const ExportScenario& definition);
@@ -215,10 +219,10 @@ namespace Gherkin {
 		std::wstring wstr;
 		std::string text;
 		size_t lineNumber;
-		GherkinTags tags;
-		GherkinComments comments;
-		std::vector<std::unique_ptr<GherkinElement>> steps;
-		std::vector<GherkinTable> tables;
+		StringLines tags;
+		StringLines comments;
+		GherkinSteps steps;
+		GherkinTables tables;
 		friend class GeneratedScript;
 	public:
 		GherkinElement(GherkinLexer& lexer, const GherkinLine& line);
@@ -226,7 +230,7 @@ namespace Gherkin {
 		virtual void generate(const ScenarioMap& map, const SnippetStack &stack);
 		virtual GherkinElement* push(GherkinLexer& lexer, const GherkinLine& line);
 		GherkinTable* pushTable(const GherkinLine& line);
-		const GherkinTags& getTags() const { return tags; }
+		const StringLines& getTags() const { return tags; }
 		virtual KeywordType getType() const { return KeywordType::None; }
 		virtual GherkinSnippet getSnippet() const { return {}; }
 		virtual GherkinElement* copy(const GherkinParams& params) const;
@@ -276,7 +280,7 @@ namespace Gherkin {
 	class GherkinFeature
 		: public AbsractDefinition {
 	private:
-		std::vector<std::string> description;
+		StringLines description;
 	public:
 		GherkinFeature(GherkinLexer& lexer, const GherkinLine& line);
 		virtual GherkinElement* push(GherkinLexer& lexer, const GherkinLine& line) override;
@@ -300,8 +304,8 @@ namespace Gherkin {
 	class ExportScenario
 		: public GherkinDefinition {
 	public:
-		ExportScenario(const GherkinDocument& doc, const GherkinDefinition& def);
-		const boost::filesystem::path filepath;
+		ExportScenario(const ScenarioRef& ref);
+		const BoostPath filepath;
 	};
 
 	class GherkinException
@@ -329,6 +333,17 @@ namespace Gherkin {
 		operator JSON() const;
 	};
 
+	class StringLine {
+	public:
+		StringLine(const GherkinLexer& lexer);
+		StringLine(const GherkinLine& line);
+		StringLine(const StringLine& src);
+		const std::string text;
+		const std::wstring wstr;
+		const size_t lineNumber;
+		operator JSON() const;
+	};
+
 	class GherkinDocument {
 	private:
 		GherkinProvider& provider;
@@ -347,9 +362,9 @@ namespace Gherkin {
 		void addTableLine(GherkinLexer& lexer, GherkinLine& line);
 		void addElement(GherkinLexer& lexer, GherkinLine& line);
 	public:
-		GherkinDocument(GherkinProvider& provider, const boost::filesystem::path& path);
+		GherkinDocument(GherkinProvider& provider, const BoostPath& path);
 		GherkinDocument(GherkinProvider& provider, const std::string& text);
-		const boost::filesystem::path filepath;
+		const BoostPath filepath;
 		const time_t filetime;
 		void next(GherkinLexer& lexer);
 		void push(GherkinLexer& lexer, TokenType type, char ch = 0);
@@ -360,7 +375,7 @@ namespace Gherkin {
 		void getExportSnippets(ScenarioMap& snippets) const;
 		bool isPrimitiveEscaping() const;
 		void generate(const ScenarioMap& map);
-		const GherkinTags& getTags() const;
+		const StringLines& getTags() const;
 		JSON dump(const GherkinFilter &filter) const;
 		operator JSON() const;
 	};
