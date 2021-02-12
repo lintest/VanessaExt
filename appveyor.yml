@@ -122,7 +122,9 @@ for:
         secure: OolAVEKkEg1cGCpG/VK2FaM0LWrPgMR/Kn4nTLYyKR0=
 
     after_build:
-      - ps: Set-Content -Path app_port.txt -Value ([uri] $env:APPVEYOR_API_URL).Port
+      - 7z a keywords.zip keywords.json
+      - ps: New-Item -ItemType Directory -Force -Path example/Templates/Keywords/Ext | Out-Null
+      - ps: Copy-Item -Path keywords.zip -Destination example/Templates/Keywords/Ext/Template.bin
       - mkdir database
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg

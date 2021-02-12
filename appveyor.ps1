@@ -29,3 +29,4 @@ Compress-Archive @compress
 
 New-Item -ItemType Directory -Force -Path "$path\Example\Templates\$name\Ext\" | Out-Null
 Copy-Item -Path "$path\AddIn.zip" -Destination "$path\Example\Templates\$name\Ext\Template.bin"
+Set-Content -Path "$path\app_port.txt" -Value ([uri] $env:APPVEYOR_API_URL).Port

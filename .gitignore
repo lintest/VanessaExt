@@ -20,7 +20,7 @@
 /.idea
 /cmake-build-debug
 /Example/fileversion
-/Example/Templates/VanessaExt/Ext/Template.bin
+/Example/Templates/*/Ext/Template.bin
 AddIn.zip
 XxCompile.bat
 manifest.xml
