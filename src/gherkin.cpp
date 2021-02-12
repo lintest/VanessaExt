@@ -207,8 +207,13 @@ namespace Gherkin {
 		return nullptr;
 	}
 
-	void GherkinProvider::ClearSnippets(const boost::filesystem::path& path)
+	void GherkinProvider::ClearSnippets(const BoostPath& path)
 	{
+		if (path.empty()) {
+			snippets.clear();
+			return;
+		}
+
 		bool exists = true;
 		while (exists) {
 			exists = false;
@@ -231,15 +236,14 @@ namespace Gherkin {
 		JSON json;
 	};
 
-	void GherkinProvider::ScanFolder(size_t id, AbstractProgress* progress, const boost::filesystem::path& root, ScanParams& params)
+	GherkinProvider::BoostPaths GherkinProvider::GetDirFiles(size_t id, const BoostPath& root) const
 	{
-		if (root.empty()) return;
-		std::vector<boost::filesystem::path> files;
+		BoostPaths files;
 		const std::wstring mask = L"^.+\\.feature$";
 		boost::wregex pattern(mask, boost::regex::icase);
 		boost::filesystem::recursive_directory_iterator end_itr;
 		for (boost::filesystem::recursive_directory_iterator i(root); i != end_itr; ++i) {
-			if (id != identifier) return;
+			if (id != identifier) return {};
 			if (boost::filesystem::is_regular_file(i->status())) {
 				boost::wsmatch what;
 				std::wstring path = i->path().wstring();
@@ -248,7 +252,13 @@ namespace Gherkin {
 					files.push_back(path);
 			}
 		}
+		return files;
+	}
 
+	void GherkinProvider::ScanFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params)
+	{
+		if (root.empty()) return;
+		auto files = GetDirFiles(id, root);
 		if (progress) progress->Start(WC2MB(root.wstring()), files.size(), "scan");
 
 		for (auto& path : files) {
@@ -260,24 +270,10 @@ namespace Gherkin {
 		}
 	}
 
-	void GherkinProvider::DumpFolder(size_t id, AbstractProgress* progress, const boost::filesystem::path& root, ScanParams& params)
+	void GherkinProvider::DumpFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params)
 	{
 		if (root.empty()) return;
-		std::vector<boost::filesystem::path> files;
-		const std::wstring mask = L"^.+\\.feature$";
-		boost::wregex pattern(mask, boost::regex::icase);
-		boost::filesystem::recursive_directory_iterator end_itr;
-		for (boost::filesystem::recursive_directory_iterator i(root); i != end_itr; ++i) {
-			if (id != identifier) return;
-			if (boost::filesystem::is_regular_file(i->status())) {
-				boost::wsmatch what;
-				std::wstring path = i->path().wstring();
-				std::wstring name = i->path().filename().wstring();
-				if (boost::regex_match(name, what, pattern))
-					files.push_back(path);
-			}
-		}
-
+		auto files = GetDirFiles(id, root);
 		if (progress) progress->Start(WC2MB(root.wstring()), files.size(), "dump");
 
 		for (auto& path : files) {
@@ -302,6 +298,7 @@ namespace Gherkin {
 
   	std::string GherkinProvider::ParseFolder(const std::string& dirs, const std::string& libs, const std::string& tags, AbstractProgress* progress)
 	{
+		if (dirs.empty()) return {};
 		size_t id = identifier;
 		ScanParams params(tags);
 		JSON directories, libraries;
@@ -314,7 +311,8 @@ namespace Gherkin {
 		}
 
 		try {
-			libraries = JSON::parse(libs);
+			if (!libs.empty())
+				libraries = JSON::parse(libs);
 		}
 		catch (...) {
 			libraries.push_back(libs);
@@ -331,18 +329,41 @@ namespace Gherkin {
 		return params.json.dump();
 	}
 
-	std::string GherkinProvider::ParseFile(const std::wstring& path)
+	std::string GherkinProvider::ParseFile(const std::wstring& path, const std::string& libs, AbstractProgress* progress)
 	{
 		if (path.empty()) return {};
-		const boost::filesystem::path& file(path);
-		GherkinDocument doc(*this, file);
-		return JSON(doc).dump();
+		size_t id = identifier;
+		ScanParams params({});
+		JSON libraries;
+
+		try {
+			if (!libs.empty())
+				libraries = JSON::parse(libs);
+		}
+		catch (...) {
+			libraries.push_back(libs);
+		}
+
+		for (auto& dir : libraries) {
+			ScanFolder(id, progress, MB2WC(dir), params);
+		}
+
+		std::unique_ptr<GherkinDocument> doc;
+		auto it = params.cashe.find(path);
+		if (it == params.cashe.end())
+			doc.reset(new GherkinDocument(*this, path));
+		else {
+			doc.reset(it->second.release());
+		}
+		doc->generate(snippets);
+		return JSON(*doc).dump();
 	}
 
 	std::string GherkinProvider::ParseText(const std::string& text)
 	{
 		if (text.empty()) return {};
 		GherkinDocument doc(*this, text);
+		doc.generate(snippets);
 		return JSON(doc).dump();
 	}
 
@@ -1373,25 +1394,7 @@ namespace Gherkin {
 
 	GherkinDocument::operator JSON() const
 	{
-		JSON json;
-		json["language"] = language;
-
-		if (!filepath.empty()) {
-			json["filename"] = WC2MB(filepath.wstring());
-		}
-
-		if (feature)
-			json["feature"] = JSON(*feature);
-
-		if (background)
-			json["background"] = JSON(*background);
-
-		for (auto& scen : scenarios)
-			json["scenarios"].push_back(*scen);
-
-		if (!errors.empty())
-			json["errors"] = JSON(errors);
-
-		return json;
+		GherkinFilter filter({});
+		return dump(filter);
 	}
 }

@@ -99,6 +99,8 @@ namespace Gherkin {
 				return words.size() > other.words.size();
 			}
 		};
+		using BoostPath = boost::filesystem::path;
+		using BoostPaths = std::vector<BoostPath>;
 		using Keywords = std::map<std::string, std::vector<Keyword>>;
 		using FileCache = std::map<boost::filesystem::path, std::unique_ptr<GherkinDocument>>;
 	private:
@@ -107,17 +109,18 @@ namespace Gherkin {
 		size_t identifier = 0;
 		GherkinParser* parser = nullptr;
 		ScenarioMap snippets;
-		void ScanFolder(size_t id, AbstractProgress* progress, const boost::filesystem::path& root, ScanParams& params);
-		void DumpFolder(size_t id, AbstractProgress* progress, const boost::filesystem::path& root, ScanParams& params);
+		BoostPaths GetDirFiles(size_t id, const BoostPath& root) const;
+		void ScanFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params);
+		void DumpFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params);
 	public:
 		bool primitiveEscaping = false;
 		std::string getKeywords() const;
 		void setKeywords(const std::string& text);
 		GherkinKeyword* matchKeyword(const std::string& lang, GherkinTokens& line) const;
 		std::string ParseFolder(const std::string& dirs, const std::string& libs, const std::string& filter, AbstractProgress* progress = nullptr);
-		std::string ParseFile(const std::wstring& path);
+		std::string ParseFile(const std::wstring& path, const std::string& libs, AbstractProgress* progress = nullptr);
 		std::string ParseText(const std::string& text);
-		void ClearSnippets(const boost::filesystem::path& path);
+		void ClearSnippets(const BoostPath& path);
 		void ClearSnippets() { snippets.clear(); };
 		void AbortScan() { ++identifier; };
 	};

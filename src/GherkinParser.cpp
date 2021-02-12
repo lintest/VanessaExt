@@ -33,11 +33,11 @@ GherkinParser::GherkinParser()
 	);
 
 	AddFunction(u"ParseFile", u"ПрочитатьФайл",
-		[&](VH file) { this->result = this->provider->ParseFile(file); }
+		[&](VH file, VH libs) { this->result = this->provider->ParseFile(file, libs); }, { {1, u"[]"} }
 	);
 
 	AddProcedure(u"ClearCashe", u"ОчиститьКэш",
-		[&](VH filepath) { this->provider->ClearSnippets(); }
+		[&](VH filename) { this->provider->ClearSnippets((std::wstring)filename); }, { {0, u""} }
 	);
 
 	AddProcedure(u"Exit", u"ЗавершитьРаботуСистемы",
