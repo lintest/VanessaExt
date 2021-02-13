@@ -497,26 +497,30 @@ std::u16string MB2WCHAR(std::string_view src) {
 
 std::locale locale_ru = std::locale("ru_RU.UTF-8");
 
-std::u16string upper(std::u16string& str)
+std::u16string upper(const std::u16string& src)
 {
+	std::u16string str = src;
 	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::toupper(ch, locale_ru); });
 	return str;
 }
 
-std::u16string lower(std::u16string& str)
+std::u16string lower(const std::u16string& src)
 {
+	std::u16string str = src;
 	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::tolower(ch, locale_ru); });
 	return str;
 }
 
-std::wstring upper(std::wstring& str)
+std::wstring upper(const std::wstring& src)
 {
+	std::wstring str = src;
 	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::toupper(ch, locale_ru); });
 	return str;
 }
 
-std::wstring lower(std::wstring& str)
+std::wstring lower(const std::wstring& src)
 {
+	std::wstring str = src;
 	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::tolower(ch, locale_ru); });
 	return str;
 }

@@ -10,6 +10,7 @@ public:
 	std::vector<GherkinLine> lines;
 	GherkinLine* currentLine = nullptr;
 	GherkinTable* currentTable = nullptr;
+	GherkinMultiline* currentMultiline = nullptr;
 	StringLines tagStack;
 	StringLines commentStack;
 	std::vector<std::pair<int, GherkinElement*>> elementStack;
