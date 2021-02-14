@@ -809,8 +809,12 @@ namespace Gherkin {
 	}
 
 	GeneratedScript::GeneratedScript(const GherkinStep& owner, const ExportScenario& definition)
-		: filename(WC2MB(definition.filepath.wstring())), snippet(definition.getSnippet())
+		: filename(WC2MB(definition.filepath.wstring()))
+		, snippet(definition.getSnippet())
 	{
+		if (auto t = definition.getExamples())
+			examples.reset(new GherkinTable(*t));
+
 		std::vector<GherkinToken> source, target;
 		for (auto& token : owner.getTokens()) {
 			switch (token.getType()) {
@@ -850,6 +854,10 @@ namespace Gherkin {
 
 	void GeneratedScript::replace(GherkinTables& tabs, GherkinMultilines& mlns)
 	{
+		if (examples && !tabs.empty()) {
+			*examples = tabs.back();
+			tabs.pop_back();
+		}
 		for (auto& step : steps) {
 			step->replace(tabs, mlns);
 		}
@@ -862,6 +870,7 @@ namespace Gherkin {
 		set(json, "filename", filename);
 		set(json, "params", params);
 		set(json, "steps", steps);
+		set(json, "examples", examples);
 		return json;
 	}
 
@@ -991,6 +1000,11 @@ namespace Gherkin {
 	{
 	}
 
+	AbsractDefinition::AbsractDefinition(const AbsractDefinition& src, const GherkinParams& params)
+		: GherkinElement(src, params), name(name), keyword(keyword)
+	{
+	}
+
 	GherkinElement* AbsractDefinition::push(GherkinLexer& lexer, const GherkinLine& line)
 	{
 		return GherkinElement::push(lexer, line);
@@ -1030,6 +1044,20 @@ namespace Gherkin {
 	GherkinDefinition::GherkinDefinition(const GherkinDocument& doc, const GherkinDefinition& def)
 		: AbsractDefinition(doc, def), tokens(def.tokens)
 	{
+		if (def.examples)
+			examples.reset((GherkinStep*)def.examples->copy({}));
+	}
+
+	GherkinDefinition::GherkinDefinition(const GherkinDefinition& src, const GherkinParams& params)
+		: AbsractDefinition(src, params), tokens(src.tokens)
+	{
+		if (src.examples)
+			examples.reset((GherkinStep*)src.examples->copy(params));
+	}
+
+	void GherkinDefinition::replace(GherkinTables& tabs, GherkinMultilines& mlns)
+	{
+		if (!examples) return;
 	}
 
 	GherkinElement* GherkinDefinition::push(GherkinLexer& lexer, const GherkinLine& line)
@@ -1044,6 +1072,11 @@ namespace Gherkin {
 		}
 		else
 			return GherkinElement::push(lexer, line);
+	}
+
+	GherkinElement* GherkinDefinition::copy(const GherkinParams& params) const
+	{
+		return new GherkinDefinition(*this, params);
 	}
 
 	GherkinSnippet GherkinDefinition::getSnippet() const
@@ -1163,6 +1196,13 @@ namespace Gherkin {
 	ExportScenario::ExportScenario(const ScenarioRef& ref)
 		: GherkinDefinition(ref.first, ref.second), filepath(ref.first.filepath)
 	{
+	}
+
+	const GherkinTable* ExportScenario::getExamples() const
+	{
+		if (!examples) return nullptr;
+		auto& tables = examples->getTables();
+		return tables.empty() ? nullptr : &tables[0];
 	}
 
 	GherkinException::GherkinException(GherkinLexer& lexer, const std::string& message)

@@ -233,6 +233,7 @@ namespace Gherkin {
 		GherkinTokens tokens;
 		GherkinParams params;
 		GherkinSteps steps;
+		std::unique_ptr<GherkinTable> examples;
 	public:
 		static GeneratedScript* generate(const GherkinStep& owner, const ScenarioMap& map, const SnippetStack& stack);
 		GeneratedScript(const GherkinStep& owner, const ExportScenario& definition);
@@ -262,6 +263,7 @@ namespace Gherkin {
 		GherkinMultiline* pushMultiline(const GherkinLine& line);
 		virtual void replace(GherkinTables& tabs, GherkinMultilines& mlns);
 		const StringLines& getTags() const { return tags; }
+		const GherkinTables& getTables() const { return tables; }
 		virtual KeywordType getType() const { return KeywordType::None; }
 		virtual GherkinSnippet getSnippet() const { return {}; }
 		virtual GherkinElement* copy(const GherkinParams& params) const;
@@ -304,6 +306,7 @@ namespace Gherkin {
 	public:
 		AbsractDefinition(GherkinLexer& lexer, const GherkinLine& line);
 		AbsractDefinition(const GherkinDocument& doc, const AbsractDefinition& def);
+		AbsractDefinition(const AbsractDefinition& src, const GherkinParams& params);
 		virtual GherkinElement* push(GherkinLexer& lexer, const GherkinLine& line) override;
 		virtual KeywordType getType() const override { return keyword.getType(); };
 		virtual operator JSON() const override;
@@ -327,8 +330,11 @@ namespace Gherkin {
 	public:
 		GherkinDefinition(GherkinLexer& lexer, const GherkinLine& line);
 		GherkinDefinition(const GherkinDocument& doc, const GherkinDefinition& def);
+		GherkinDefinition(const GherkinDefinition& src, const GherkinParams& params);
 		const GherkinTokens& getTokens() const { return tokens; }
+		virtual void replace(GherkinTables& tabs, GherkinMultilines& mlns) override;
 		virtual GherkinElement* push(GherkinLexer& lexer, const GherkinLine& line) override;
+		virtual GherkinElement* copy(const GherkinParams& params) const override;
 		virtual GherkinSnippet getSnippet() const override;
 		virtual operator JSON() const override;
 	};
@@ -337,6 +343,7 @@ namespace Gherkin {
 		: public GherkinDefinition {
 	public:
 		ExportScenario(const ScenarioRef& ref);
+		const GherkinTable* getExamples() const;
 		const BoostPath filepath;
 	};
 
