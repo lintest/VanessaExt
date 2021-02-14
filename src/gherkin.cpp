@@ -38,6 +38,29 @@ namespace Gherkin {
 			json[key] = value;
 	}
 
+	void set(JSON& json, const std::string& key, const FileCache &value) {
+		if (!value.empty()) {
+			JSON js;
+			for (const auto& [key, val] : value) {
+				char buf[24];
+				strftime(buf, 20, "%Y-%m-%dT%H:%M:%S", localtime(&val.second));
+				js.push_back(JSON({ {"file", WC2MB(key.wstring())}, {"id", val.first }, { "date", std::string(buf) } }));
+			}
+			json[key] = js;
+		}
+	}
+
+	void set(JSON& json, const std::string& key, const ScenarioMap& value) {
+		if (!value.empty()) {
+			JSON js;
+			for (auto& [k, v] : value) {
+				auto filename = WC2MB(v.filepath.wstring());
+				js.push_back({ {"filename", filename }, { "snippet", v } });
+			}
+			json[key] = js;
+		}
+	}
+
 	void set(JSON& json, const std::string& key, const std::string& value) {
 		if (!value.empty())
 			json[key] = value;
@@ -61,8 +84,8 @@ namespace Gherkin {
 	void set(JSON& json, const std::string& key, const GherkinParams& value) {
 		if (!value.empty()) {
 			JSON js;
-			for (const auto& [id, value] : value)
-				js.push_back(JSON({ {"key", WC2MB(id)}, {"value", value } }));
+			for (const auto& [i, v] : value)
+				js.push_back(JSON({ {"key", WC2MB(i)}, {"value", v } }));
 
 			json[key] = js;
 		}
@@ -135,7 +158,7 @@ namespace Gherkin {
 		}
 	};
 
-	GherkinProvider::Keyword::Keyword(KeywordType type, const std::string name, const std::string& text)
+	GherkinProvider::Keyword::Keyword(KeywordType type, const std::string &name, const std::string& text)
 		:type(type), name(name), text(text)
 	{
 		static const std::string regex = reflex::Matcher::convert("\\w+", reflex::convert_flag::unicode);
@@ -227,9 +250,14 @@ namespace Gherkin {
 	void GherkinProvider::ClearSnippets(const BoostPath& path)
 	{
 		if (path.empty()) {
+			fileCache.clear();
 			snippets.clear();
 			return;
 		}
+
+		auto it = fileCache.find(path);
+		if (it != fileCache.end())
+			fileCache.erase(it);
 
 		bool exists = true;
 		while (exists) {
@@ -244,12 +272,21 @@ namespace Gherkin {
 		}
 	}
 
+	std::string GherkinProvider::GetCashe() const
+	{
+		JSON json;
+		set(json, "files", fileCache);
+		set(json, "snippets", snippets);
+		return json.dump();
+	}
+
 	class GherkinProvider::ScanParams {
 	public:
+		using DocumentCache = std::map<BoostPath, std::unique_ptr<GherkinDocument>>;
 		ScanParams(const std::string& filter) : filter(filter) {}
 		std::set<BoostPath> ready;
 		GherkinFilter filter;
-		FileCache cashe;
+		DocumentCache cashe;
 		JSON json;
 	};
 
@@ -280,9 +317,19 @@ namespace Gherkin {
 
 		for (auto& path : files) {
 			if (id != identifier) return;
+			auto it = fileCache.find(path);
+			time_t time = 0;
+			if (it != fileCache.end()) {
+				auto& info = it->second;
+				if (info.first == identifier) continue;
+				time = boost::filesystem::last_write_time(path);
+				if (time == info.second) continue;
+			}
 			if (progress) progress->Step(path);
+			if (time == 0) time = boost::filesystem::last_write_time(path);
 			auto doc = std::make_unique<GherkinDocument>(*this, path);
 			doc->getExportSnippets(snippets);
+			fileCache[path] = { identifier, time };
 			params.cashe.emplace(path, doc.release());
 		}
 	}
@@ -316,7 +363,7 @@ namespace Gherkin {
 	std::string GherkinProvider::ParseFolder(const std::string& dirs, const std::string& libs, const std::string& tags, AbstractProgress* progress)
 	{
 		if (dirs.empty()) return {};
-		size_t id = identifier;
+		size_t id = ++identifier;
 		ScanParams params(tags);
 		JSON directories, libraries;
 
@@ -349,7 +396,7 @@ namespace Gherkin {
 	std::string GherkinProvider::ParseFile(const std::wstring& path, const std::string& libs, AbstractProgress* progress)
 	{
 		if (path.empty()) return {};
-		size_t id = identifier;
+		size_t id = ++identifier;
 		ScanParams params({});
 		JSON libraries;
 

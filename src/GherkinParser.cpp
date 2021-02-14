@@ -36,6 +36,10 @@ GherkinParser::GherkinParser()
 		[&](VH file, VH libs) { this->result = this->provider->ParseFile(file, libs); }, { {1, u"[]"} }
 	);
 
+	AddFunction(u"GetCashe", u"ПолучитьКэш",
+		[&]() { this->result = this->provider->GetCashe(); }
+	);
+
 	AddProcedure(u"ClearCashe", u"ОчиститьКэш",
 		[&](VH filename) { this->provider->ClearSnippets((std::wstring)filename); }, { {0, u""} }
 	);
