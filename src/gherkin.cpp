@@ -135,8 +135,8 @@ namespace Gherkin {
 		}
 	};
 
-	GherkinProvider::Keyword::Keyword(KeywordType type, const std::string& text)
-		:type(type), text(text)
+	GherkinProvider::Keyword::Keyword(KeywordType type, const std::string name, const std::string& text)
+		:type(type), name(name), text(text)
 	{
 		static const std::string regex = reflex::Matcher::convert("\\w+", reflex::convert_flag::unicode);
 		static const reflex::Pattern pattern(regex);
@@ -182,8 +182,7 @@ namespace Gherkin {
 		for (auto& language : keywords) {
 			JSON js;
 			for (auto& keyword : language.second) {
-				auto type = GherkinKeyword::type2str(keyword.type);
-				js[type].push_back(keyword.text);
+				js[keyword.name].push_back(keyword.text);
 			}
 			json[language.first] = js;
 		}
@@ -205,7 +204,7 @@ namespace Gherkin {
 					for (auto word = words.begin(); word != words.end(); ++word) {
 						std::string text = trim(*word);
 						if (text == "*") continue;
-						vector.push_back({ t, *word });
+						vector.push_back({ t, type.key(), *word });
 					}
 				}
 			}
@@ -407,29 +406,11 @@ namespace Gherkin {
 		return it == types.end() ? KeywordType::None : it->second;
 	}
 
-	std::string GherkinKeyword::type2str(KeywordType type)
-	{
-		switch (type) {
-		case KeywordType::And: return "And";
-		case KeywordType::Background: return "Background";
-		case KeywordType::But: return "But";
-		case KeywordType::Examples: return "Examples";
-		case KeywordType::Feature: return "Feature";
-		case KeywordType::Given: return "Given";
-		case KeywordType::Scenario: return "Scenario";
-		case KeywordType::ScenarioOutline: return "ScenarioOutline";
-		case KeywordType::Rule: return "Rule";
-		case KeywordType::Then: return "Then";
-		case KeywordType::When: return "When";
-		default: return "None";
-		}
-	}
-
 	GherkinKeyword::operator JSON() const
 	{
 		JSON json;
+		json["type"] = name;
 		json["text"] = text;
-		json["type"] = type2str(type);
 		if (toplevel)
 			json["toplevel"] = toplevel;
 
@@ -1232,10 +1213,8 @@ namespace Gherkin {
 	{
 		if (definition) {
 			auto keyword = line.getKeyword();
-			if (keyword) {
-				std::string type = GherkinKeyword::type2str(keyword->getType());
-				error(line, type + " keyword duplicate error");
-			}
+			if (keyword)
+				error(line, keyword->getName() + " keyword duplicate error");
 			else
 				error(line, "Unknown keyword type");
 		}
