@@ -1,5 +1,4 @@
-#ifndef __CLIPMNGR_H__
-#define __CLIPMNGR_H__
+#pragma once
 
 #ifdef USE_LIBGIT2
 
@@ -78,5 +77,3 @@ private:
 };
 
 #endif //USE_LIBGIT2
-
-#endif //__CLIPMNGR_H__

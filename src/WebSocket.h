@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef __WEBSOCKET_H__
-#define __WEBSOCKET_H__
-
 #ifdef USE_BOOST
 
 #include <string>
@@ -16,5 +13,3 @@ public:
 };
 
 #endif//USE_BOOST
-
-#endif //__WEBSOCKET_H__

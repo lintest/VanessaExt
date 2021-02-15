@@ -1,5 +1,4 @@
-#ifndef SCREENSHOT_H_INCLUDED_
-#define SCREENSHOT_H_INCLUDED_
+#pragma once
 #include <vector>
 #include <string>
 #include <X11/Xlib.h>
@@ -59,5 +58,3 @@ class X11Screenshot {
         */
         std::vector<std::vector<unsigned char>> process(XImage * image);
 };
-
-#endif

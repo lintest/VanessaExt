@@ -1,6 +1,4 @@
-#ifndef __IMAGEHELPER_H__
-#define __IMAGEHELPER_H__
-
+#pragma once
 #include "stdafx.h"
 #include "BaseHelper.h"
 
@@ -34,5 +32,3 @@ private:
 	Gdiplus::Bitmap* m_bitmap = 0;
 };
 #endif //_WINDOWS
-
-#endif //__IMAGEHELPER_H__

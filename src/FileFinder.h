@@ -1,6 +1,4 @@
-#ifndef __FILEFINDER_H__
-#define __FILEFINDER_H__
-
+#pragma once
 #include "stdafx.h"
 #include "json.hpp"
 
@@ -17,5 +15,3 @@ private:
 	void files(const std::wstring& root, const std::wstring& mask);
 	bool search(const std::wstring& path);
 };
-
-#endif//__FILEFINDER_H__

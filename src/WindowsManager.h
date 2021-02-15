@@ -1,6 +1,4 @@
-#ifndef __WINDOWSMANAGER_H__
-#define __WINDOWSMANAGER_H__
-
+#pragma once
 #include "stdafx.h"
 
 class WindowsManager {
@@ -30,5 +28,3 @@ public:
 	static bool IsMaximized(int64_t window);
 #endif//_WINDOWS
 };
-
-#endif //__WINDOWSMANAGER_H__

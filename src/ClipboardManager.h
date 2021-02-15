@@ -1,6 +1,4 @@
-#ifndef __CLIPBOARDMANAGER_H__
-#define __CLIPBOARDMANAGER_H__
-
+#pragma once
 #include "AddInNative.h"
 #include "BaseHelper.h"
 #include <map>
@@ -22,5 +20,3 @@ private:
 	static const std::map<int, std::string> sm_formats;
 	bool m_isOpened = false;
 };
-
-#endif //__CLIPBOARDMANAGER_H__

@@ -1,5 +1,4 @@
-#ifndef __IMAGEFINDER_H__
-#define __IMAGEFINDER_H__
+#pragma once
 
 #ifdef USE_OPENCV
 
@@ -12,5 +11,3 @@ public:
 };
 
 #endif//USE_OPENCV
-
-#endif//__IMAGEFINDER_H__

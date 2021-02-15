@@ -1,5 +1,4 @@
-#ifndef __RegExpComponent_H__
-#define __RegExpComponent_H__
+#pragma once
 
 #ifdef USE_BOOST
 
@@ -18,5 +17,3 @@ private:
 };
 
 #endif //USE_BOOST
-
-#endif //__RegExpComponent_H__

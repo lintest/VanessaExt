@@ -1,8 +1,5 @@
-#ifndef __SCREENMANAGER_H__
-#define __SCREENMANAGER_H__
-
+#pragma once
 #include "stdafx.h"
-
 #include "AddInNative.h"
 #include "BaseHelper.h"
 
@@ -40,5 +37,3 @@ public:
 	static BOOL EmulateWheel(int64_t sign, VH variant);
 	static BOOL EmulateText(const std::wstring& text, int64_t pause);
 };
-
-#endif //__SCREENMANAGER_H__

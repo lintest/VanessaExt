@@ -1,5 +1,4 @@
-#ifndef __ADDINNATIVE_H__
-#define __ADDINNATIVE_H__
+#pragma once
 
 #ifdef _WINDOWS
 #include <wtypes.h>
@@ -188,4 +187,3 @@ private:
 	IMemoryManager* m_iMemory = nullptr;
 	IAddInDefBase* m_iConnect = nullptr;
 };
-#endif //__ADDINNATIVE_H__

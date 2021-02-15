@@ -1,5 +1,4 @@
-#ifndef CLICKEFFECT_H
-#define CLICKEFFECT_H
+#pragma once
 
 #ifdef _WINDOWS
 #include <windows.h>
@@ -19,5 +18,3 @@ public:
 };
 
 #endif //_WINDOWS
-
-#endif //CLICKEFFECT_H

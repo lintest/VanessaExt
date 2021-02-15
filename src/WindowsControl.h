@@ -1,6 +1,4 @@
-﻿#ifndef __WINDOWSCONTROL_H__
-#define __WINDOWSCONTROL_H__
-
+﻿#pragma once
 #include "stdafx.h"
 #include "BaseHelper.h"
 #include "VideoPainter.h"
@@ -36,5 +34,3 @@ private:
 public:
 	virtual ~WindowsControl() override;
 };
-
-#endif //__WINDOWSCONTROL_H__

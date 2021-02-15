@@ -1,6 +1,4 @@
-#ifndef __PROCESSCONTROL_H__
-#define __PROCESSCONTROL_H__
-
+#pragma once
 #include "stdafx.h"
 #include "BaseHelper.h"
 
@@ -32,5 +30,3 @@ private:
 	int64_t ExitCode();
 	bool IsActive();
 };
-
-#endif //__PROCESSCONTROL_H__

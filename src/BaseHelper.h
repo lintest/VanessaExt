@@ -1,6 +1,4 @@
-#ifndef __BASEHELPER_H__
-#define __BASEHELPER_H__
-
+#pragma once
 #include "AddInNative.h"
 #include "stdafx.h"
 
@@ -13,5 +11,3 @@ protected:
 	class ImageHelper;
 	class ImageFinder;
 };
-
-#endif // __BASEHELPER_H__

@@ -1,5 +1,4 @@
-#ifndef VIDEOPAINTER_H
-#define VIDEOPAINTER_H
+#pragma once
 
 #ifdef _WINDOWS
 
@@ -92,5 +91,3 @@ public:
 };
 
 #endif //_WINDOWS
-
-#endif //VIDEOPAINTER_H

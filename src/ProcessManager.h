@@ -1,6 +1,4 @@
-#ifndef __PROCESSMANAGER_H__
-#define __PROCESSMANAGER_H__
-
+#pragma once
 #include <types.h>
 #include <string>
 #include "IMemoryManager.h"
@@ -19,5 +17,3 @@ public:
 	static void Sleep(int64_t interval);
 	static int64_t ProcessId();
 };
-
-#endif //__PROCESSMANAGER_H__

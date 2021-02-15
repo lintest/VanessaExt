@@ -1,10 +1,4 @@
-// stdafx.h : include file for standard system include files,
-// or project specific include files that are used frequently, but
-// are changed infrequently
-//
-#ifndef __STDAFX_H__
-#define __STDAFX_H__
-
+#pragma once
 #include <../include/types.h>
 #include <string>
 
@@ -27,5 +21,3 @@ std::wstring lower(const std::wstring& str);
 using JSON = nlohmann::json;
 
 constexpr auto PROCESS_FINISHED = u"PROCESS_FINISHED";
-
-#endif //__STDAFX_H__

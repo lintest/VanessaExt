@@ -1,6 +1,4 @@
-#ifndef __GHERKINPARSER_H__
-#define __GHERKINPARSER_H__
-
+#pragma once
 #include "stdafx.h"
 #include "AddInNative.h"
 
@@ -28,5 +26,3 @@ private:
 	std::unique_ptr<Gherkin::GherkinProvider> provider;
 	void ExitCurrentProcess(int64_t status);
 };
-
-#endif //__GHERKINPARSER_H__

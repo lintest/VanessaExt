@@ -1,6 +1,4 @@
-#ifndef __XWINBASE_H__
-#define __XWINBASE_H__
-
+#pragma once
 #include "stdafx.h"
 
 #ifndef _WINDOWS
@@ -258,5 +256,3 @@ public:
 };
 
 #endif //_WINDOWS
-
-#endif //__XWINBASE_H__

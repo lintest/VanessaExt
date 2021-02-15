@@ -1,9 +1,6 @@
-﻿#ifndef __CLIPBOARDCONTROL_H__
-#define __CLIPBOARDCONTROL_H__
-
+﻿#pragma once
 #include "stdafx.h"
 #include "BaseHelper.h"
-
 class ClipboardControl : public BaseHelper
 {
 #ifdef _WINDOWS
@@ -19,5 +16,3 @@ private:
     ClipboardControl();
     virtual ~ClipboardControl();
 };
-
-#endif //__CLIPBOARDCONTROL_H__

@@ -1,5 +1,4 @@
-#ifndef DESKTOPMANAGER_H
-#define DESKTOPMANAGER_H
+#pragma once
 
 #ifdef _WINDOWS
 
@@ -18,5 +17,3 @@ public:
 };
 
 #endif//_WINDOWS
-
-#endif//DESKTOPMANAGER_H

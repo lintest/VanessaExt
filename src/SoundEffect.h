@@ -1,5 +1,4 @@
-#ifndef SOUNDEFFECT_H
-#define SOUNDEFFECT_H
+#pragma once
 
 #ifdef _WINDOWS
 #include <windows.h>
@@ -13,5 +12,3 @@ public:
 };
 
 #endif //_WINDOWS
-
-#endif //SOUNDEFFECT_H
