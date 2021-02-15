@@ -102,11 +102,13 @@ tag           @
 
 <TABLE>{new_line}     { next(); start(INITIAL); }
 <TABLE>{table}        { push(TokenType::Table); }
-<TABLE>{param_a}      { push(TokenType::Cell, '`'); }
-<TABLE>{param_b}      { push(TokenType::Cell, '>'); }
-<TABLE>{param_d}      { push(TokenType::Cell, '\"'); }
-<TABLE>{param_s}      { push(TokenType::Cell, '\''); }
-<TABLE>{cell}         { push(TokenType::Cell); }
+<TABLE>{date}         { push(TokenType::Date); }
+<TABLE>{number}       { push(TokenType::Number); }
+<TABLE>{param_a}      { push(TokenType::Param, '`'); }
+<TABLE>{param_b}      { push(TokenType::Param, '>'); }
+<TABLE>{param_d}      { push(TokenType::Param, '\"'); }
+<TABLE>{param_s}      { push(TokenType::Param, '\''); }
+<TABLE>{cell}         { push(TokenType::Param); }
 <TABLE>{space}        // ignore
 
 <STR_A>{new_line}     { next(); }

@@ -29,7 +29,6 @@ namespace Gherkin {
 		Colon,
 		Param,
 		Table,
-		Cell,
 		Line,
 		Text,
 		Date,
@@ -175,22 +174,19 @@ namespace Gherkin {
 
 	class GherkinLine {
 	private:
-		std::wstring wstr;
 		GherkinTokens tokens;
-		std::string text;
-		size_t lineNumber;
 	private:
 		std::unique_ptr<GherkinKeyword> keyword;
 	public:
 		GherkinLine(GherkinLexer& l);
 		GherkinLine(size_t lineNumber);
+		const size_t lineNumber;
+		const std::string text;
+		const std::wstring wstr;
 		void push(GherkinLexer& lexer, TokenType type, char ch);
 		GherkinKeyword* matchKeyword(GherkinDocument& document);
 		const GherkinTokens getTokens() const { return tokens; }
 		const GherkinKeyword* getKeyword() const { return keyword.get(); }
-		size_t getLineNumber() const { return lineNumber; }
-		std::wstring getWstr() const { return wstr; }
-		std::string getText() const { return text; }
 		TokenType getType() const;
 		int getIndent() const;
 		operator JSON() const;
@@ -198,9 +194,22 @@ namespace Gherkin {
 
 	class GherkinTable {
 	private:
-		size_t lineNumber;
-		GherkinTokens head;
-		std::vector<GherkinTokens> body;
+		class TableRow {
+		private:
+			std::string text;
+			size_t lineNumber;
+			GherkinTokens tokens;
+		public:
+			TableRow(const GherkinLine& line);
+			TableRow(const TableRow& src, const GherkinParams& params);
+			void push(const GherkinToken& token, const GherkinParams& params);
+			TableRow& operator=(const TableRow& src);
+			bool empty() const { return tokens.empty(); }
+			operator JSON() const;
+		};
+		TableRow head;
+		std::vector<TableRow> body;
+		const size_t lineNumber;
 	public:
 		GherkinTable(const GherkinLine& line);
 		GherkinTable(const GherkinTable& src, const GherkinParams& params);
@@ -355,6 +364,7 @@ namespace Gherkin {
 	public:
 		GherkinException(GherkinLexer& lexer, const std::string& message);
 		GherkinException(GherkinLexer& lexer, char const* const message);
+		GherkinException(size_t line, char const* const message);
 		GherkinException(const GherkinException& src);
 		GherkinException(char const* const message);
 		operator JSON() const;
@@ -378,8 +388,8 @@ namespace Gherkin {
 		StringLine(const GherkinLine& line);
 		StringLine(const StringLine& src);
 		StringLine(size_t lineNumber);
-		const std::string text;
 		const std::wstring wstr;
+		const std::string text;
 		const size_t lineNumber;
 		operator JSON() const;
 	};
