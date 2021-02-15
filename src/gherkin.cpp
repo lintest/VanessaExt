@@ -436,21 +436,14 @@ namespace Gherkin {
 		std::string type = text;
 		transform(type.begin(), type.end(), type.begin(), tolower);
 		static std::map<std::string, KeywordType> types{
-			{ "and", KeywordType::And},
 			{ "background", KeywordType::Background },
-			{ "but", KeywordType::But },
 			{ "examples", KeywordType::Examples },
 			{ "feature", KeywordType::Feature },
-			{ "if", KeywordType::If },
-			{ "given", KeywordType::Given },
-			{ "rule", KeywordType::Rule },
 			{ "scenario", KeywordType::Scenario },
 			{ "scenariooutline", KeywordType::ScenarioOutline },
-			{ "then", KeywordType::Then },
-			{ "when", KeywordType::When },
 		};
 		auto it = types.find(type);
-		return it == types.end() ? KeywordType::None : it->second;
+		return it == types.end() ? KeywordType::Step : it->second;
 	}
 
 	GherkinKeyword::operator JSON() const
@@ -844,28 +837,31 @@ namespace Gherkin {
 		if (stack.count(snippet)) return nullptr;
 
 		std::unique_ptr<GeneratedScript> result;
-		result.reset(doc.find(snippet, owner));
-		if (!result) {
+		std::unique_ptr<ExportScenario> definition(doc.find(snippet, owner));
+		if (definition) 
+			result.reset(new GeneratedScript(*definition, {}));
+		else {
 			auto it = map.find(snippet);
 			if (it == map.end()) return nullptr;
-			const ExportScenario& definition = it->second;
-			result.reset(new GeneratedScript(owner, definition));
+			definition.reset(new ExportScenario(it->second));
+			result.reset(new GeneratedScript(owner, *definition));
 		}
 		SnippetStack next = stack;
 		next.insert(snippet);
 
-		for (auto& step : result->steps)
-			step->generate(doc, map, next);
+		if (!result->examples) {
+			for (auto& step : result->steps)
+				step->generate(doc, map, next);
+		}
 
 		return result.release();
 	}
 
-	GeneratedScript* GherkinDocument::find(const GherkinSnippet& snippet, const GherkinStep& owner) const
+	ExportScenario* GherkinDocument::find(const GherkinSnippet& snippet, const GherkinStep& owner) const
 	{
 		for (auto& def : scenarios) {
 			if (def->getSnippet() == snippet) {
-				ExportScenario exp({ *this, *def });
-				return new GeneratedScript(owner, exp);
+				return new ExportScenario({ *this, *def });
 			}
 		}
 		return nullptr;
@@ -925,6 +921,13 @@ namespace Gherkin {
 		}
 	}
 
+	GeneratedScript::GeneratedScript(const GherkinSteps& src, const GherkinParams& params)
+	{
+		for (auto& step : src) {
+			steps.emplace_back(step->copy(params));
+		}
+	}
+
 	void GeneratedScript::replace(GherkinTables& tabs, GherkinMultilines& mlns)
 	{
 		if (examples && !tabs.empty()) {
@@ -933,6 +936,13 @@ namespace Gherkin {
 		}
 		for (auto& step : steps) {
 			step->replace(tabs, mlns);
+		}
+		if (examples) {
+			auto& table = *examples;
+			for (auto& row : table.body) {
+				auto params = table.params(row);
+				row.script.reset(new GeneratedScript(steps, params));
+			}
 		}
 	}
 
@@ -1253,6 +1263,14 @@ namespace Gherkin {
 			auto tabs = reverse(tables);
 			auto mlns = reverse(multilines);
 			script->replace(tabs, mlns);
+			if (script->examples) {
+				SnippetStack next = stack;
+				next.insert(script->snippet);
+				auto& table = *script->examples;
+				for (auto& row : table.body)
+					for (auto& step : row.script->steps)
+						step->generate(doc, map, next);
+			}
 		}
 	}
 
@@ -1305,6 +1323,11 @@ namespace Gherkin {
 
 	ExportScenario::ExportScenario(const ScenarioRef& ref)
 		: GherkinDefinition(ref.first, ref.second), filepath(ref.first.filepath)
+	{
+	}
+
+	ExportScenario::ExportScenario(const ExportScenario& src)
+		: GherkinDefinition(src, {}), filepath(src.filepath)
 	{
 	}
 

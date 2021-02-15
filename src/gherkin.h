@@ -40,13 +40,7 @@ namespace Gherkin {
 		Scenario,
 		ScenarioOutline,
 		Examples,
-		And,
-		But,
-		If,
-		Given,
-		Rule,
-		Then,
-		When,
+		Step,
 		None
 	};
 
@@ -199,7 +193,9 @@ namespace Gherkin {
 			size_t lineNumber;
 			GherkinTokens tokens;
 			std::unique_ptr<GeneratedScript> script = nullptr;
+			friend class GherkinStep;
 			friend class GherkinTable;
+			friend class GeneratedScript;
 			friend class GherkinDefinition;
 		public:
 			TableRow(const GherkinLine& line);
@@ -214,6 +210,8 @@ namespace Gherkin {
 		TableRow head;
 		std::vector<TableRow> body;
 		const size_t lineNumber;
+		friend class GherkinStep;
+		friend class GeneratedScript;
 		friend class GherkinDefinition;
 	public:
 		GherkinTable(const GherkinLine& line);
@@ -250,10 +248,12 @@ namespace Gherkin {
 		GherkinParams params;
 		GherkinSteps steps;
 		std::unique_ptr<GherkinTable> examples;
+		friend class GherkinStep;
 	public:
 		static GeneratedScript* generate(const GherkinStep& owner, const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack);
 		GeneratedScript(const GherkinStep& owner, const ExportScenario& definition);
 		GeneratedScript(const GherkinDefinition& definition, const GherkinParams& params);
+		GeneratedScript(const GherkinSteps& src, const GherkinParams& params);
 		void replace(GherkinTables& tabs, GherkinMultilines& mlns);
 		const std::string filename;
 		const GherkinSnippet snippet;
@@ -311,6 +311,7 @@ namespace Gherkin {
 		const GherkinTokens& getTokens() const { return tokens; }
 		virtual void generate(const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack) override;
 		virtual void replace(GherkinTables& tabs, GherkinMultilines& mlns) override;
+		virtual KeywordType getType() const override { return KeywordType::Step; }
 		virtual GherkinSnippet getSnippet() const override;
 		virtual GherkinElement* copy(const GherkinParams& params) const override;
 		virtual operator JSON() const override;
@@ -362,6 +363,7 @@ namespace Gherkin {
 		: public GherkinDefinition {
 	public:
 		ExportScenario(const ScenarioRef& ref);
+		ExportScenario(const ExportScenario& src);
 		const GherkinTable* getExamples() const;
 		const BoostPath filepath;
 	};
@@ -425,7 +427,7 @@ namespace Gherkin {
 	public:
 		GherkinDocument(GherkinProvider& provider, const BoostPath& path);
 		GherkinDocument(GherkinProvider& provider, const std::string& text);
-		GeneratedScript* find(const GherkinSnippet& snippet, const GherkinStep& owner) const;
+		ExportScenario* find(const GherkinSnippet& snippet, const GherkinStep& owner) const;
 		const BoostPath filepath;
 		const time_t filetime;
 		void next(GherkinLexer& lexer);
