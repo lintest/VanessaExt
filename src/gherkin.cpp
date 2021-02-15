@@ -465,17 +465,17 @@ namespace Gherkin {
 	}
 
 	StringLine::StringLine(const GherkinLexer& lexer)
-		: wstr(lexer.wstr()), text(lexer.text()), lineNumber(lexer.lineno())
+		: lineNumber(lexer.lineno()), text(lexer.text()), wstr(lexer.wstr())
 	{
 	}
 
 	StringLine::StringLine(const GherkinLine& line)
-		: wstr(MB2WC(text)), text(trim(line.text)), lineNumber(line.lineNumber)
+		: lineNumber(line.lineNumber), text(trim(line.text)), wstr(MB2WC(text))
 	{
 	}
 
 	StringLine::StringLine(const StringLine& src)
-		: wstr(src.wstr), text(src.text), lineNumber(src.lineNumber)
+		: lineNumber(src.lineNumber), text(src.text), wstr(src.wstr)
 	{
 	}
 

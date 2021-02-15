@@ -388,9 +388,9 @@ namespace Gherkin {
 		StringLine(const GherkinLine& line);
 		StringLine(const StringLine& src);
 		StringLine(size_t lineNumber);
-		const std::wstring wstr;
-		const std::string text;
 		const size_t lineNumber;
+		const std::string text;
+		const std::wstring wstr;
 		operator JSON() const;
 	};
 
