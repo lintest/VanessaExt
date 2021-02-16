@@ -157,7 +157,7 @@ namespace Gherkin {
 			: type(src.type), wstr(src.wstr), text(src.text), column(src.column), symbol(src.symbol) {}
 		GherkinToken(GherkinLexer& lexer, TokenType type, char ch);
 		GherkinToken& operator=(const GherkinToken& src);
-		void replace(const GherkinParams& params);
+		bool replace(const GherkinParams& params);
 		friend std::wstringstream& operator<<(std::wstringstream& os, const GherkinToken& dt);
 		std::string getText() const { return text; }
 		std::wstring getWstr() const { return wstr; }
@@ -176,12 +176,12 @@ namespace Gherkin {
 		const size_t lineNumber;
 		const std::string text;
 		const std::wstring wstr;
+		const int indent;
 		void push(GherkinLexer& lexer, TokenType type, char ch);
 		GherkinKeyword* matchKeyword(GherkinDocument& document);
 		const GherkinTokens getTokens() const { return tokens; }
 		const GherkinKeyword* getKeyword() const { return keyword.get(); }
 		TokenType getType() const;
-		int getIndent() const;
 		operator JSON() const;
 	};
 
@@ -303,6 +303,7 @@ namespace Gherkin {
 	private:
 		GherkinKeyword keyword;
 		GherkinTokens tokens;
+		const GherkinSnippet snippet;
 		std::unique_ptr<GeneratedScript> script;
 		friend class GherkinDefinition;
 	public:
@@ -312,7 +313,7 @@ namespace Gherkin {
 		virtual void generate(const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack) override;
 		virtual void replace(GherkinTables& tabs, GherkinMultilines& mlns) override;
 		virtual KeywordType getType() const override { return KeywordType::Step; }
-		virtual GherkinSnippet getSnippet() const override;
+		virtual GherkinSnippet getSnippet() const override { return snippet; };
 		virtual GherkinElement* copy(const GherkinParams& params) const override;
 		virtual operator JSON() const override;
 	};
@@ -345,6 +346,7 @@ namespace Gherkin {
 		: public AbsractDefinition {
 	protected:
 		GherkinTokens tokens;
+		const GherkinSnippet snippet;
 		std::unique_ptr<GherkinStep> examples;
 	public:
 		GherkinDefinition(GherkinLexer& lexer, const GherkinLine& line);
@@ -355,7 +357,7 @@ namespace Gherkin {
 		virtual void replace(GherkinTables& tabs, GherkinMultilines& mlns) override;
 		virtual GherkinElement* push(GherkinLexer& lexer, const GherkinLine& line) override;
 		virtual GherkinElement* copy(const GherkinParams& params) const override;
-		virtual GherkinSnippet getSnippet() const override;
+		virtual GherkinSnippet getSnippet() const override { return snippet; };
 		virtual operator JSON() const override;
 	};
 

@@ -108,6 +108,39 @@ namespace Gherkin {
 		}
 	}
 
+	static inline std::wstring& ltrim(std::wstring& s) {
+		s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
+		return s;
+	}
+
+	static inline std::wstring& rtrim(std::wstring& s) {
+		s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+		return s;
+	}
+
+	static inline std::wstring& trim(std::wstring& s) {
+		return rtrim(ltrim(s));
+	}
+
+	static int indent(const std::string &text)
+	{
+		int indent = 0;
+		const int tabSize = 4;
+		for (auto ch : text) {
+			switch (ch) {
+			case ' ':
+				indent++;
+				break;
+			case '\t':
+				indent = indent + tabSize - (indent % tabSize);
+				break;
+			default:
+				return indent;
+			}
+		}
+		return INT_MAX;
+	}
+
 	enum class MatchType {
 		Include,
 		Exclude,
@@ -532,19 +565,22 @@ namespace Gherkin {
 		}
 		else {
 			text = trim(text);
-			wstr = MB2WC(text);
+			wstr = trim(wstr);
 		}
 	}
 
-	void GherkinToken::replace(const GherkinParams& params)
+	bool GherkinToken::replace(const GherkinParams& params)
 	{
+		bool result = false;
 		if (type == TokenType::Param) {
 			auto key = lower(getWstr());
 			auto it = params.find(key);
 			if (it != params.end()) {
 				*this = it->second;
+				result = true;
 			}
 		}
+		return result;
 	}
 
 	std::wstringstream& operator<<(std::wstringstream& os, const GherkinToken& token)
@@ -557,6 +593,23 @@ namespace Gherkin {
 		if (token.symbol)
 			os << MB2WC(std::string(1, (token.symbol == '<' ? '>' : token.symbol)));
 
+		return os;
+	}
+
+	std::wstringstream& operator<<(std::wstringstream& os, const GherkinTokens& tokens)
+	{
+		bool split = false;
+		const wchar_t splitter = L' ';
+		for (auto& token : tokens) {
+			if (split) {
+				if (token.getType() != TokenType::Symbol)
+					os << splitter;
+			}
+			else {
+				split = true;
+			}
+			os << token;
+		}
 		return os;
 	}
 
@@ -607,12 +660,12 @@ namespace Gherkin {
 	}
 
 	GherkinLine::GherkinLine(GherkinLexer& l)
-		: lineNumber(l.lineno()), text(l.matcher().line()), wstr(MB2WC(text))
+		: lineNumber(l.lineno()), text(l.matcher().line()), wstr(MB2WC(text)), indent(::indent(text))
 	{
 	}
 
 	GherkinLine::GherkinLine(size_t lineNumber)
-		: lineNumber(lineNumber)
+		: lineNumber(lineNumber), indent(0)
 	{
 	}
 
@@ -654,25 +707,6 @@ namespace Gherkin {
 	Gherkin::TokenType GherkinLine::getType() const
 	{
 		return tokens.empty() ? TokenType::None : tokens.begin()->type;
-	}
-
-	int GherkinLine::getIndent() const
-	{
-		int indent = 0;
-		const int tabSize = 4;
-		for (auto ch : text) {
-			switch (ch) {
-			case ' ':
-				indent++;
-				break;
-			case '\t':
-				indent = indent + tabSize - (indent % tabSize);
-				break;
-			default:
-				return indent;
-			}
-		}
-		return INT_MAX;
 	}
 
 	GherkinTable::TableRow::TableRow(const GherkinLine& line)
@@ -838,7 +872,7 @@ namespace Gherkin {
 
 		std::unique_ptr<GeneratedScript> result;
 		std::unique_ptr<ExportScenario> definition(doc.find(snippet, owner));
-		if (definition) 
+		if (definition)
 			result.reset(new GeneratedScript(*definition, {}));
 		else {
 			auto it = map.find(snippet);
@@ -1120,19 +1154,19 @@ namespace Gherkin {
 	}
 
 	GherkinDefinition::GherkinDefinition(GherkinLexer& lexer, const GherkinLine& line)
-		: AbsractDefinition(lexer, line), tokens(line.getTokens())
+		: AbsractDefinition(lexer, line), tokens(line.getTokens()), snippet(::snippet(tokens))
 	{
 	}
 
 	GherkinDefinition::GherkinDefinition(const GherkinDocument& doc, const GherkinDefinition& def)
-		: AbsractDefinition(doc, def), tokens(def.tokens)
+		: AbsractDefinition(doc, def), tokens(def.tokens), snippet(def.snippet)
 	{
 		if (def.examples)
 			examples.reset((GherkinStep*)def.examples->copy({}));
 	}
 
 	GherkinDefinition::GherkinDefinition(const GherkinDefinition& src, const GherkinParams& params)
-		: AbsractDefinition(src, params), tokens(src.tokens)
+		: AbsractDefinition(src, params), tokens(src.tokens), snippet(src.snippet)
 	{
 		if (src.examples)
 			examples.reset((GherkinStep*)src.examples->copy(params));
@@ -1193,11 +1227,6 @@ namespace Gherkin {
 		return new GherkinDefinition(*this, params);
 	}
 
-	GherkinSnippet GherkinDefinition::getSnippet() const
-	{
-		return snippet(tokens);
-	}
-
 	GherkinDefinition::operator JSON() const
 	{
 		JSON json = AbsractDefinition::operator JSON();
@@ -1215,29 +1244,34 @@ namespace Gherkin {
 	}
 
 	GherkinStep::GherkinStep(GherkinLexer& lexer, const GherkinLine& line)
-		: GherkinElement(lexer, line), keyword(*line.getKeyword()), tokens(line.getTokens())
+		: GherkinElement(lexer, line)
+		, keyword(*line.getKeyword())
+		, tokens(line.getTokens())
+		, snippet(::snippet(tokens))
 	{
 	}
 
 	GherkinStep::GherkinStep(const GherkinStep& src, const GherkinParams& params)
-		: GherkinElement(src, params), keyword(src.keyword), tokens(src.tokens)
+		: GherkinElement(src, params)
+		, keyword(src.keyword)
+		, tokens(src.tokens)
+		, snippet(src.snippet)
 	{
-		bool split = false;
-		const wchar_t splitter = L' ';
-		std::wstringstream ss;
-		for (auto& token : tokens) {
-			token.replace(params);
-			if (split) {
-				if (token.getType() != TokenType::Symbol)
-					ss << splitter;
+		if (!params.empty()) {
+			bool changed = false;
+			for (auto& token : tokens) {
+				changed |= token.replace(params);
 			}
-			else {
-				split = true;
+			if (changed) {
+				std::wstringstream ss;
+				for (auto& ch : wstr) 
+					if (std::isspace(ch)) ss << ch; else break;
+
+				ss << tokens;
+				wstr = ss.str();
+				text = WC2MB(wstr);
 			}
-			ss << token;
 		}
-		wstr = ss.str();
-		text = WC2MB(wstr);
 	}
 
 	GherkinElement* GherkinStep::copy(const GherkinParams& params) const
@@ -1282,11 +1316,6 @@ namespace Gherkin {
 			auto mlns = reverse(multilines);
 			script->replace(tabs, mlns);
 		}
-	}
-
-	GherkinSnippet GherkinStep::getSnippet() const
-	{
-		return snippet(tokens);
 	}
 
 	GherkinStep::operator JSON() const
@@ -1556,9 +1585,8 @@ namespace Gherkin {
 
 	void GherkinDocument::addElement(GherkinLexer& lexer, GherkinLine& line)
 	{
-		auto indent = line.getIndent();
 		while (!lexer.elementStack.empty()) {
-			if (lexer.elementStack.back().first < indent) break;
+			if (lexer.elementStack.back().first < line.indent) break;
 			lexer.elementStack.pop_back();
 		}
 		if (lexer.elementStack.empty()) {
@@ -1566,7 +1594,7 @@ namespace Gherkin {
 		}
 		auto parent = lexer.elementStack.back().second;
 		if (auto element = parent->push(lexer, line)) {
-			lexer.elementStack.emplace_back(indent, element);
+			lexer.elementStack.emplace_back(line.indent, element);
 			lexer.lastElement = element;
 		}
 	}
