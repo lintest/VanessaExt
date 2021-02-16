@@ -546,6 +546,7 @@ namespace Gherkin {
 					case L't': ss << L'\t'; break;
 					case L'n': ss << L'\n'; break;
 					case L'r': ss << L'\r'; break;
+					case L'|': ss << L'|'; break;
 					default:
 						if (lexer.isPrimitiveEscaping())
 							ss << L'\\';
