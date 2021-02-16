@@ -258,7 +258,6 @@ namespace Gherkin {
 				auto& words = type.value();
 				if (words.is_array()) {
 					for (auto word = words.begin(); word != words.end(); ++word) {
-						std::string text = trim(*word);
 						if (text == "*") continue;
 						vector.push_back({ t, type.key(), *word });
 					}
@@ -564,8 +563,14 @@ namespace Gherkin {
 			text = WC2MB(wstr);
 		}
 		else {
-			text = trim(text);
-			wstr = trim(wstr);
+			switch (getType()) {
+			case TokenType::Param:
+			case TokenType::Number:
+			case TokenType::Date:
+				wstr = trim(wstr);
+				text = WC2MB(wstr);
+				break;
+			}
 		}
 	}
 
@@ -660,12 +665,16 @@ namespace Gherkin {
 	}
 
 	GherkinLine::GherkinLine(GherkinLexer& l)
-		: lineNumber(l.lineno()), text(l.matcher().line()), wstr(MB2WC(text)), indent(::indent(text))
+		: lineNumber(l.lineno()), 
+		text(l.matcher().line()), 
+		wstr(l.matcher().wline()), 
+		indent(::indent(text))
 	{
 	}
 
 	GherkinLine::GherkinLine(size_t lineNumber)
-		: lineNumber(lineNumber), indent(0)
+		: lineNumber(lineNumber)
+		, indent(0)
 	{
 	}
 

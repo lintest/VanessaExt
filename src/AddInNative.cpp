@@ -69,13 +69,13 @@ long DestroyObject(IComponentBase** pInterface)
 
 std::string WC2MB(const std::wstring& wstr)
 {
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	return converter.to_bytes(wstr);
 }
 
 std::wstring MB2WC(const std::string& str)
 {
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	return converter.from_bytes(str);
 }
 
@@ -478,7 +478,7 @@ std::wstring WCHAR2WC(std::basic_string_view<WCHAR_T> src) {
 #ifdef _WINDOWS
 	return std::wstring(src);
 #else
-	std::wstring_convert<std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>> conv;
+	static std::wstring_convert<std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>> conv;
 	return conv.from_bytes(reinterpret_cast<const char*>(src.data()),
 		reinterpret_cast<const char*>(src.data() + src.size()));
 #endif//_WINDOWS
