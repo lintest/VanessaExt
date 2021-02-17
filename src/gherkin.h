@@ -113,6 +113,8 @@ namespace Gherkin {
 		BoostPaths GetDirFiles(size_t id, const BoostPath& root) const;
 		void ScanFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params);
 		void DumpFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params);
+		void ScanFile(const BoostPath& path, ScanParams& params);
+		void DumpFile(const BoostPath& path, ScanParams& params);
 	public:
 		std::wstring escapedCharacters;
 		std::string getKeywords() const;
