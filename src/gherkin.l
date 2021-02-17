@@ -30,8 +30,8 @@ public:
 		current_token = type;
 		start(TAIL);
 	}
-	bool isPrimitiveEscaping() const {
-		return document ? document->isPrimitiveEscaping() : false;
+	bool escaped(wchar_t ch) const {
+		return document ? document->isEscapedChar(ch) : true;
 	}
 	virtual void lexer_error(const char *message = NULL) override {
 		document->exception(*this, message);

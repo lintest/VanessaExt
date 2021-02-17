@@ -14,9 +14,9 @@ GherkinParser::GherkinParser()
 		[&](VH value) { this->provider->setKeywords(value); }
 	);
 
-	AddProperty(u"PrimitiveEscaping", u"ПримитивноеЭкранирование",
-		[&](VH value) { value = this->provider->primitiveEscaping; },
-		[&](VH value) { this->provider->primitiveEscaping = value; }
+	AddProperty(u"EscapedCharacters", u"ЭкранируемыеСимволы",
+		[&](VH value) { value = this->provider->escapedCharacters; },
+		[&](VH value) { this->provider->escapedCharacters = (std::wstring)value; }
 	);
 
 	AddFunction(u"Parse", u"Прочитать",

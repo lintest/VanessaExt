@@ -114,7 +114,7 @@ namespace Gherkin {
 		void ScanFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params);
 		void DumpFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params);
 	public:
-		bool primitiveEscaping = false;
+		std::wstring escapedCharacters;
 		std::string getKeywords() const;
 		void setKeywords(const std::string& text);
 		GherkinKeyword* matchKeyword(const std::string& lang, GherkinTokens& line) const;
@@ -439,7 +439,7 @@ namespace Gherkin {
 		void error(GherkinLine& line, const std::string& error);
 		GherkinKeyword* matchKeyword(GherkinTokens& line);
 		void getExportSnippets(ScenarioMap& snippets) const;
-		bool isPrimitiveEscaping() const;
+		bool isEscapedChar(wchar_t ch) const;
 		void generate(const ScenarioMap& map);
 		const StringLines& getTags() const;
 		JSON dump(const GherkinFilter& filter) const;
