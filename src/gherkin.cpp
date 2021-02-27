@@ -601,7 +601,7 @@ namespace Gherkin {
 		wstr = src.wstr;
 		text = src.text;
 		column = src.column;
-		symbol = src.symbol;
+		if (src.type != TokenType::Param || src.symbol) symbol = src.symbol;
 		return *this;
 	}
 
