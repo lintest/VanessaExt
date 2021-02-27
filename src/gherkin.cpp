@@ -1051,14 +1051,14 @@ namespace Gherkin {
 
 	void GeneratedScript::replace(GherkinTables& tabs, GherkinMultilines& mlns)
 	{
-		if (examples && !tabs.empty()) {
-			*examples = tabs.back();
-			tabs.pop_back();
-		}
 		for (auto& step : steps) {
 			step->replace(tabs, mlns);
 		}
 		if (examples) {
+			if (!tabs.empty()) {
+				*examples = tabs.back();
+				tabs.pop_back();
+			}
 			auto& table = *examples;
 			for (auto& row : table.body) {
 				auto params = table.params(row);
