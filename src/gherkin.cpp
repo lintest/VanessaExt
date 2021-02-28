@@ -1050,10 +1050,12 @@ namespace Gherkin {
 	{
 		for (auto& step : steps) {
 			step->replace(tabs, mlns);
+			for (auto& table : step->tables) 
+				table = GherkinTable(table, params);
 		}
 		if (examples) {
 			if (!tabs.empty()) {
-				*examples = tabs.back();
+				*examples = GherkinTable(tabs.back(), params);
 				tabs.pop_back();
 			}
 			auto& table = *examples;
@@ -1688,9 +1690,9 @@ namespace Gherkin {
 	void GherkinDocument::processLine(GherkinLexer& lexer, GherkinLine& line)
 	{
 		auto type = line.getType();
-		if (type != TokenType::Table)
+		if (type != TokenType::Table && type != TokenType::Comment) {
 			lexer.currentTable = nullptr;
-
+		}
 		if (auto keyword = line.matchKeyword(*this)) {
 			switch (keyword->getType()) {
 			case KeywordType::Feature:
