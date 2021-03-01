@@ -774,8 +774,13 @@ namespace Gherkin {
 	{
 		std::wstringstream ss;
 		for (auto& token : tokens) {
-			if (token.getType() == TokenType::Operator) {
+			switch (token.getType()) {
+			case TokenType::Operator:
 				ss << lower(token.getWstr());
+				break;
+			case TokenType::Symbol:
+				if (token.getText() == "-") ss << L'_';
+				break;
 			}
 		}
 		return ss.str();
