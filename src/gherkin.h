@@ -220,7 +220,7 @@ namespace Gherkin {
 		GherkinTable(const GherkinLine& line);
 		GherkinTable(const GherkinTable& src);
 		GherkinTable(const GherkinTable& src, const GherkinParams& params);
-		GherkinParams params(const TableRow& row) const;
+		GherkinParams params(const GherkinParams& src, const TableRow& row) const;
 		bool empty() const { return head.empty() && body.empty(); }
 		GherkinTable& operator=(const GherkinTable& src);
 		void push(const GherkinLine& line);

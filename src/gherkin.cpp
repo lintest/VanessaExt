@@ -1068,8 +1068,8 @@ namespace Gherkin {
 			}
 			auto& table = *examples;
 			for (auto& row : table.body) {
-				auto params = table.params(row);
-				row.script.reset(new GeneratedScript(steps, params));
+				auto p = table.params(params, row);
+				row.script.reset(new GeneratedScript(steps, p));
 			}
 		}
 	}
@@ -1266,17 +1266,25 @@ namespace Gherkin {
 			examples.reset((GherkinStep*)src.examples->copy(params));
 	}
 
-	GherkinParams GherkinTable::params(const TableRow& row) const
+	GherkinParams GherkinTable::params(const GherkinParams& src, const TableRow& row) const
 	{
 		GherkinParams params;
 		auto i = head.tokens.begin();
 		auto j = row.tokens.begin();
 		for (; i != head.tokens.end() && j != row.tokens.end(); ++i, ++j) {
 			auto key = lower(i->getWstr());
-			if (params.count(key) == 0)
-				params.emplace(key, *j);
-			else
+			if (params.count(key)) {
 				throw GherkinException("Duplicate param keys");
+			}
+			if (j->getType() == TokenType::Param) {
+				auto value = lower(j->getWstr());
+				if (src.count(value)) {
+					auto& token = src.at(value);
+					params.emplace(key, token);
+					continue;
+				}
+			}
+			params.emplace(key, *j);
 		}
 		return params;
 	}
@@ -1287,7 +1295,7 @@ namespace Gherkin {
 		if (examples && !examples->tables.empty()) {
 			auto& table = examples->tables[0];
 			for (auto& row : table.body) {
-				auto params = table.params(row);
+				auto params = table.params({}, row);
 				row.script.reset(new GeneratedScript(*this, params));
 			}
 		}
