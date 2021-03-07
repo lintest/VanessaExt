@@ -147,6 +147,7 @@ namespace Gherkin {
 
 	class GherkinToken {
 	private:
+		void unescape(GherkinLexer& lexer);
 		std::string type2str() const;
 	public:
 		std::wstring wstr;

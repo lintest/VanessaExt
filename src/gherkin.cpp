@@ -605,50 +605,53 @@ namespace Gherkin {
 		return *this;
 	}
 
+	void GherkinToken::unescape(GherkinLexer& lexer)
+	{
+		if (wstr.empty()) return;
+		bool escaping = false;
+		std::wstringstream ss;
+		auto start = wstr.begin();
+		auto finish = wstr.end();
+		if (symbol) {
+			++start;
+			--finish;
+		}
+		for (auto& it = start; it != finish; ++it) {
+			if (escaping) {
+				escaping = false;
+				wchar_t wc = *it;
+				if (lexer.escaped(wc))
+					switch (wc) {
+					case L'a': wc = L'\a'; break;
+					case L'b': wc = L'\b'; break;
+					case L'f': wc = L'\f'; break;
+					case L'n': wc = L'\n'; break;
+					case L'r': wc = L'\r'; break;
+					case L't': wc = L'\t'; break;
+					case L'v': wc = L'\v'; break;
+					case L'0': wc = L'\0'; break;
+					}
+				else ss << L'\\';
+				ss << wc;
+			}
+			else {
+				if (*it == L'\\') {
+					if (it + 1 == finish) ss << *it;
+					else escaping = true;
+				}
+				else ss << *it;
+			}
+		}
+		wstr = ss.str();
+		text = WC2MB(wstr);
+	}
+
 	GherkinToken::GherkinToken(GherkinLexer& lexer, TokenType type, char ch)
 		: type(type), wstr(lexer.wstr()), text(lexer.text()), column(lexer.columno()), symbol(ch)
 	{
-		if (ch != 0) {
-			bool escaping = false;
-			std::wstringstream ss;
-			for (auto it = wstr.begin() + 1; it + 1 != wstr.end(); ++it) {
-				if (escaping) {
-					escaping = false;
-					wchar_t wc = *it;
-					if (lexer.escaped(wc))
-						switch (wc) {
-						case L'a': wc = L'\a'; break;
-						case L'b': wc = L'\b'; break;
-						case L'f': wc = L'\f'; break;
-						case L'n': wc = L'\n'; break;
-						case L'r': wc = L'\r'; break;
-						case L't': wc = L'\t'; break;
-						case L'v': wc = L'\v'; break;
-						case L'0': wc = L'\0'; break;
-						}
-					else ss << L'\\';
-					ss << wc;
-				}
-				else {
-					if (*it == L'\\') {
-						if (it + 2 == wstr.end()) ss << *it;
-						else escaping = true;
-					}
-					else ss << *it;
-				}
-			}
-			wstr = ss.str();
-			text = WC2MB(wstr);
-		}
-		else {
-			switch (getType()) {
-			case TokenType::Param:
-			case TokenType::Number:
-			case TokenType::Date:
-				wstr = trim(wstr);
-				text = WC2MB(wstr);
-				break;
-			}
+		if (getType() == TokenType::Param) {
+			if (ch == 0) wstr = trim(wstr);
+			unescape(lexer);
 		}
 	}
 
