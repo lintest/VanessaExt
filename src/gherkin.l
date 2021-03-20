@@ -59,6 +59,7 @@ param_a       `([^\\`\n\r]|\\.)*`
 param_b       <([^\\>\n\r]|\\.)*>
 param_s       '([^\\'\n\r]|\\.)*'
 comment       #|\/\/
+symbol        [^\r\n]
 space         \h+
 colon         :
 table         \|
@@ -81,7 +82,7 @@ tag           @
 <INITIAL>{table}      { start(TABLE); push(TokenType::Table); }
 <INITIAL>{str_a}      { start(STR_A); push(TokenType::Multiline); }
 <INITIAL>{str_d}      { start(STR_D); push(TokenType::Multiline); }
-<INITIAL>.            { start(LINE);  push(TokenType::Symbol); }
+<INITIAL>{symbol}     { start(LINE);  push(TokenType::Symbol); }
 
 <LINE>{new_line}      { next(); start(INITIAL); }
 <LINE>{space}         // ignore
@@ -94,7 +95,7 @@ tag           @
 <LINE>{param_b}       { push(TokenType::Param, '>'); }
 <LINE>{param_d}       { push(TokenType::Param, '\"'); }
 <LINE>{param_s}       { push(TokenType::Param, '\''); }
-<LINE>.               { push(TokenType::Symbol); }
+<LINE>{symbol}        { push(TokenType::Symbol); }
 
 <TAIL>{new_line}      { next(); start(INITIAL); }
 <TAIL>{text}          { push(current_token); }

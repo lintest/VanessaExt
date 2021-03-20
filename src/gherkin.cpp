@@ -655,6 +655,11 @@ namespace Gherkin {
 		}
 	}
 
+	GherkinToken::GherkinToken(GherkinLexer& lexer, std::wstring wstr)
+		: type(TokenType::Symbol), wstr(wstr), text(WC2MB(wstr)), column(lexer.columno()), symbol(0)
+	{
+	}
+
 	bool GherkinToken::replace(const GherkinParams& params)
 	{
 		bool result = false;
@@ -705,6 +710,7 @@ namespace Gherkin {
 		json["text"] = text;
 		json["column"] = column;
 		json["type"] = type2str();
+
 		if (type == TokenType::Number) {
 			try {
 				std::string str = text;
@@ -761,7 +767,10 @@ namespace Gherkin {
 
 	void GherkinLine::push(GherkinLexer& lexer, TokenType type, char ch)
 	{
-		tokens.emplace_back(lexer, type, ch);
+		if (type == TokenType::Symbol)
+			tokens.emplace_back(lexer, lexer.wstr());
+		else
+			tokens.emplace_back(lexer, type, ch);
 	}
 
 	GherkinKeyword* GherkinLine::matchKeyword(GherkinDocument& document)
@@ -1058,7 +1067,7 @@ namespace Gherkin {
 	{
 		for (auto& step : steps) {
 			step->replace(tabs, mlns);
-			for (auto& table : step->tables) 
+			for (auto& table : step->tables)
 				table = GherkinTable(table, params);
 		}
 		if (examples) {

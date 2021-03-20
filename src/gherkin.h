@@ -159,6 +159,7 @@ namespace Gherkin {
 		GherkinToken(const GherkinToken& src)
 			: type(src.type), wstr(src.wstr), text(src.text), column(src.column), symbol(src.symbol) {}
 		GherkinToken(GherkinLexer& lexer, TokenType type, char ch);
+		GherkinToken(GherkinLexer& lexer, std::wstring wstr);
 		GherkinToken& operator=(const GherkinToken& src);
 		bool replace(const GherkinParams& params);
 		friend std::wstringstream& operator<<(std::wstringstream& os, const GherkinToken& dt);
