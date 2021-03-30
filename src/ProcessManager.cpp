@@ -186,8 +186,7 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 			auto pParams = (EnumParam*)lParam;
 			wchar_t buffer[256];
 			DWORD pid;
-			if (IsWindowVisible(hWnd)
-				&& ::GetWindowThreadProcessId(hWnd, &pid)
+			if (::GetWindowThreadProcessId(hWnd, &pid)
 				&& pid == pParams->first
 				&& ::GetClassName(hWnd, buffer, 256)
 				&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
