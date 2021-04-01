@@ -816,9 +816,19 @@ namespace Gherkin {
 	GherkinTable::TableRow::TableRow(const GherkinLine& line)
 		: lineNumber(line.lineNumber), text(line.text)
 	{
+		bool first = true;
+		GherkinToken current = TokenType::None;
 		for (auto& token : line.getTokens()) {
-			if (token.getType() != TokenType::Table)
-				tokens.emplace_back(token);
+			if (first)
+				first = false;
+			else {
+				if (token.getType() == TokenType::Table) {
+					tokens.emplace_back(current);
+					current = TokenType::None;
+				}
+				else
+					current = token;
+			}
 		}
 	}
 
@@ -866,6 +876,9 @@ namespace Gherkin {
 	GherkinTable::GherkinTable(const GherkinLine& line)
 		: lineNumber(line.lineNumber), head(line)
 	{
+		if (head.tokens.size() == 1 && head.tokens[0].getType() == TokenType::None) {
+			head.tokens.clear();
+		}
 	}
 
 	GherkinTable::GherkinTable(const GherkinTable& src)

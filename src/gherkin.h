@@ -156,6 +156,8 @@ namespace Gherkin {
 		size_t column;
 		char symbol;
 	public:
+		GherkinToken(TokenType type)
+			: type(type), column(0), symbol(0) {}
 		GherkinToken(const GherkinToken& src)
 			: type(src.type), wstr(src.wstr), text(src.text), column(src.column), symbol(src.symbol) {}
 		GherkinToken(GherkinLexer& lexer, TokenType type, char ch);
