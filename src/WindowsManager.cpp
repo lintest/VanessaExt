@@ -41,7 +41,7 @@ std::string WindowsManager::GetWindowList(int64_t pid)
 	EnumParam p{ (DWORD)pid, {} };
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
-			if (::IsWindow(hWnd)) {
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
 				auto p = (EnumParam*)lParam;
 				DWORD dwProcessId;
 				::GetWindowThreadProcessId(hWnd, &dwProcessId);
@@ -95,7 +95,7 @@ int64_t WindowsManager::GetTopProcessWindow(int64_t pid)
 	EnumParam p{ (DWORD)pid, {} };
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
-			if (::IsWindow(hWnd)) {
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
 				auto p = (EnumParam*)lParam;
 				DWORD dwProcessId;
 				WCHAR buffer[256];
@@ -126,7 +126,7 @@ int64_t WindowsManager::GetMainProcessWindow(int64_t pid)
 	EnumParam p{ (DWORD)pid, 0 };
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
-			if (::IsWindow(hWnd)) {
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
 				auto p = (EnumParam*)lParam;
 				DWORD dwProcessId;
 				WCHAR buffer[256];
