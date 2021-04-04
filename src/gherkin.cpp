@@ -662,16 +662,43 @@ namespace Gherkin {
 
 	bool GherkinToken::replace(const GherkinParams& params)
 	{
-		bool result = false;
+		bool changed = false;
 		if (type == TokenType::Param) {
 			auto key = lower(getWstr());
 			auto it = params.find(key);
 			if (it != params.end()) {
 				*this = it->second;
-				result = true;
+				changed = true;
+			}
+			else {
+				std::wstringstream ss;
+				static const boost::wregex expression(L"\\[\\w+\\]");
+				std::wstring::const_iterator start = wstr.begin();
+				std::wstring::const_iterator end = wstr.end();
+				boost::match_results<std::wstring::const_iterator> what;
+				boost::match_flag_type flags = boost::match_default;
+				while (regex_search(start, end, what, expression, flags)) {
+					auto& match = what[0];
+					if (match.first > start)
+						ss << std::wstring(start, match.first);
+					start = match.second;
+					auto key = std::wstring(match.begin() + 1, match.end() - 1);
+					auto it = params.find(key);
+					if (it == params.end())
+						ss << match;
+					else {
+						ss << it->second.getWstr();
+						changed = true;
+					}
+				}
+				if (changed) {
+					ss << std::wstring(start, end);
+					wstr = ss.str();
+					text = WC2MB(wstr);
+				}
 			}
 		}
-		return result;
+		return changed;
 	}
 
 	std::wstringstream& operator<<(std::wstringstream& os, const GherkinToken& token)
