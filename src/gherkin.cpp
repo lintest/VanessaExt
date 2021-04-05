@@ -683,7 +683,7 @@ namespace Gherkin {
 						ss << std::wstring(start, match.first);
 					start = match.second;
 					auto key = std::wstring(match.begin() + 1, match.end() - 1);
-					auto it = params.find(key);
+					auto it = params.find(lower(key));
 					if (it == params.end())
 						ss << match;
 					else {
