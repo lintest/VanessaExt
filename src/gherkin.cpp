@@ -108,13 +108,17 @@ namespace Gherkin {
 		}
 	}
 
+	static inline bool notspace(int ch) {
+		return !std::isspace(ch);
+	}
+
 	static inline std::wstring& ltrim(std::wstring& s) {
-		s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
+		s.erase(s.begin(), std::find_if(s.begin(), s.end(), notspace));
 		return s;
 	}
 
 	static inline std::wstring& rtrim(std::wstring& s) {
-		s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
+		s.erase(std::find_if(s.rbegin(), s.rend(), notspace).base(), s.end());
 		return s;
 	}
 
