@@ -108,7 +108,7 @@ namespace Gherkin {
 		}
 	}
 
-	static inline bool notspace(int ch) {
+	static inline bool notspace(wchar_t ch) {
 		return !std::isspace(ch);
 	}
 
