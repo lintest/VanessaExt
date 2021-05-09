@@ -180,7 +180,7 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 	if (!json.is_array() || json.empty()) return {};
 
 	using EnumParam = std::pair<DWORD, HWND>;
-	EnumParam params{ (DWORD)json[0]["ProcessId"], 0};
+	EnumParam params{ (DWORD)json[0]["ProcessId"], 0 };
 	BOOL bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			auto pParams = (EnumParam*)lParam;
@@ -427,3 +427,33 @@ bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 }
 
 #endif //_WINDOWS
+
+std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
+{
+#ifdef _WINDOWS
+	ULARGE_INTEGER uFreeBytesAvailableToCaller;
+	ULARGE_INTEGER uTotalNumberOfBytes;
+	ULARGE_INTEGER uTotalNumberOfFreeBytes;
+	BOOL ok = GetDiskFreeSpaceExW(disk.c_str(), &uFreeBytesAvailableToCaller, &uTotalNumberOfBytes, &uTotalNumberOfFreeBytes);
+	if (ok) {
+		JSON json{
+			{"available", uFreeBytesAvailableToCaller.QuadPart},
+			{"capacity", uTotalNumberOfBytes.QuadPart},
+			{"free", uTotalNumberOfFreeBytes.QuadPart}
+		};
+		return json.dump();
+	}
+	else {
+		return JSON({ {"error", GetLastError()} }).dump();
+	}
+#else //_WINDOWS
+	std::error_code ec;
+	const std::filesystem::space_info si = std::filesystem::space(disk, ec);
+	JSON json{
+		{"available", si.available},
+		{"capacity", si.capacity},
+		{"free", si.free}
+	};
+	return json.dump();
+#endif //_WINDOWS
+}

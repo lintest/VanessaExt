@@ -177,6 +177,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"OutputToConsole", u"ВывестиВКонсоль",
 		[&](VH text, VH encoding) { this->result = ProcessManager::ConsoleOut(text, encoding); }, { {1, (int64_t)866} }
 	);
+	AddFunction(u"GetFreeDiskSpace", u"СвободноеМестоНаДиске",
+		[&](VH disk) { this->result = ProcessManager::GetFreeDiskSpace(disk); }
+	);
 	AddProcedure(u"Sleep", u"Пауза",
 		[&](VH msec) { ProcessManager::Sleep(msec); }
 	);
@@ -247,7 +250,7 @@ WindowsControl::WindowsControl() {
 		[&](VH number) { this->result = DesktopManager::GoToDesktopNumber(number); }
 	);
 	AddFunction(u"GetWindowDesktop", u"ПолучитьРабочийСтолОкна",
-			[&](VH window) { this->result = DesktopManager::GetWindowDesktopNumber(window); }
+		[&](VH window) { this->result = DesktopManager::GetWindowDesktopNumber(window); }
 	);
 	AddFunction(u"MoveWindowToDesktop", u"ПереместитьОкноНаРабочийСтол",
 		[&](VH window, VH number) { this->result = DesktopManager::MoveWindowToDesktopNumber(window, number); }
@@ -323,7 +326,7 @@ static DWORD WINAPI ProcessThreadProc(LPVOID lpParam)
 	DWORD dwExitCode = 0;
 	json["ProcessId"] = pi->dwProcessId;
 	WaitForSingleObject(pi->hProcess, INFINITE);
-	if (GetExitCodeProcess(pi->hProcess, &dwExitCode)) 
+	if (GetExitCodeProcess(pi->hProcess, &dwExitCode))
 		pi->ExtrenalEvent(dwExitCode);
 	CloseHandle(pi->hProcess);
 	CloseHandle(pi->hThread);
@@ -338,7 +341,7 @@ LRESULT CALLBACK ProcessWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		auto component = (WindowsControl*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 		component->OnProcessFinished((DWORD)wParam, (DWORD)lParam);
 		return 0;
-	} 
+	}
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -417,7 +420,7 @@ static void OnProcessTimer(int sig)
 			std::u16string name = wsComponentName;
 			std::u16string msg = PROCESS_FINISHED;
 			std::u16string data = MB2WCHAR(json.dump());
-			if (pAddInConnection) 
+			if (pAddInConnection)
 				pAddInConnection->ExternalEvent(T(name), T(msg), T(data));
 			vProcessList.erase(it);
 		}
