@@ -551,6 +551,7 @@ namespace Gherkin {
 		transform(type.begin(), type.end(), type.begin(), tolower);
 		static std::map<std::string, KeywordType> types{
 			{ "background", KeywordType::Background },
+			{ "hyperlinks", KeywordType::Hyperlinks },
 			{ "examples", KeywordType::Examples },
 			{ "feature", KeywordType::Feature },
 			{ "scenario", KeywordType::Scenario },
@@ -1770,6 +1771,9 @@ namespace Gherkin {
 			case KeywordType::Background:
 				setDefinition(background, lexer, line);
 				break;
+			case KeywordType::Hyperlinks:
+				setDefinition(hyperlinks, lexer, line);
+				break;
 			case KeywordType::Scenario:
 			case KeywordType::ScenarioOutline:
 				addScenarioDefinition(lexer, line);
@@ -1903,6 +1907,7 @@ namespace Gherkin {
 			}
 			set(json, "feature", feature);
 			set(json, "background", background);
+			set(json, "hyperlinks", hyperlinks);
 			set(json, "errors", errors);
 		}
 		catch (const std::exception& e) {

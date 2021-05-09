@@ -37,6 +37,7 @@ namespace Gherkin {
 	enum class KeywordType {
 		Feature,
 		Background,
+		Hyperlinks,
 		Scenario,
 		ScenarioOutline,
 		Examples,
@@ -420,6 +421,7 @@ namespace Gherkin {
 		std::string language;
 		AbsractDef feature;
 		AbsractDef background;
+		AbsractDef hyperlinks;
 		std::vector<GherkinDef> scenarios;
 		std::vector<GherkinError> errors;
 	private:
