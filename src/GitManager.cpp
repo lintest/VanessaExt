@@ -593,7 +593,45 @@ int diff_file_cb(const git_diff_delta* delta, float progress, void* payload)
 	return 0;
 }
 
-std::string GitManager::diff(const std::u16string& s1, const std::u16string& s2)
+int diff_hunk_cb(const git_diff_delta* delta, const git_diff_hunk* hunk, void* payload)
+{
+	JSON j, & json = *(JSON*)payload;
+	j["old_start"] = hunk->old_start;
+	j["old_lines"] = hunk->old_lines;
+	j["new_start"] = hunk->new_start;
+	j["new_lines"] = hunk->new_lines;
+	j["header_len"] = hunk->header_len;
+	j["header"] = hunk->header;
+	json["hunk"].push_back(j);
+	return 0;
+}
+
+int diff_line_cb(const git_diff_delta* delta, const git_diff_hunk* hunk, const git_diff_line* line, void* payload)
+{
+	JSON j, &json = *(JSON*)payload;
+	j["origin"] = std::string(1, line->origin);
+	j["old_lineno"] = line->old_lineno;
+	j["new_lineno"] = line->new_lineno;
+	j["num_lines"] = line->new_lineno;
+	j["content_len"] = line->content_len;
+	j["content_offset"] = line->content_offset;
+	json["line"].push_back(j);
+	return 0;
+}
+
+std::string GitManager::diff(VH& old_data, VH& new_data)
+{
+	JSON json;
+	json["hunk"] = JSON();
+	json["line"] = JSON();
+	ASSERT(git_diff_buffers(
+		old_data.data(), old_data.size(), nullptr,
+		new_data.data(), new_data.size(), nullptr,
+		nullptr, nullptr, nullptr, diff_hunk_cb, diff_line_cb, &json));
+	return json.dump();
+}
+
+std::string GitManager::diff_dir(const std::u16string& s1, const std::u16string& s2)
 {
 	CHECK_REPO();
 	GIT_diff diff = NULL;

@@ -65,7 +65,8 @@ private:
 	std::string commit(const std::string& msg);
 	std::string history(const std::string& msg);
 	std::string compare(const std::string& ref1, const std::string& ref2);
-	std::string diff(const std::u16string &s1, const std::u16string& s2);
+	std::string diff(VH& old_blob, VH& new_blob);
+	std::string diff_dir(const std::u16string &s1, const std::u16string& s2);
 	std::string file(const std::string& path, bool full);
 	std::string tree(const std::string& id);
 	std::string branchList();
