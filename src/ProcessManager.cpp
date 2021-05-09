@@ -428,6 +428,23 @@ bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 
 #endif //_WINDOWS
 
+#ifdef USE_BOOST
+
+#include <boost/filesystem.hpp>
+
+std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
+{
+	boost::filesystem::path path(disk);
+	auto space = boost::filesystem::space(path);
+	JSON json;
+	json["available"] = space.available;
+	json["capacity"] = space.capacity;
+	json["free"] = space.free;
+	return json.dump();
+}
+
+#else //USE_BOOST
+
 std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
 {
 #ifdef _WINDOWS
@@ -447,13 +464,8 @@ std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
 		return JSON({ {"error", GetLastError()} }).dump();
 	}
 #else //_WINDOWS
-	std::error_code ec;
-	const std::filesystem::space_info si = std::filesystem::space(disk, ec);
-	JSON json{
-		{"available", si.available},
-		{"capacity", si.capacity},
-		{"free", si.free}
-	};
-	return json.dump();
+	return JSON({ {"error", "Boost not found"} }).dump();
 #endif //_WINDOWS
 }
+
+#endif // USE_BOOST
