@@ -8,7 +8,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
-static bool comparei(const std::wstring& a, const std::wstring& b)
+template<typename T>
+static bool comparei(const T& a, const T& b)
 {
 	static const std::locale locale_ru("ru_RU.UTF-8");
 	return boost::iequals(a, b, locale_ru);
@@ -677,7 +678,7 @@ namespace Gherkin {
 			}
 			else {
 				std::wstringstream ss;
-				static const boost::wregex expression(L"\\[\\w+\\]");
+				static const boost::wregex expression(L"\\[[^\\]]+\\]");
 				std::wstring::const_iterator start = wstr.begin();
 				std::wstring::const_iterator end = wstr.end();
 				boost::match_results<std::wstring::const_iterator> what;
@@ -736,6 +737,32 @@ namespace Gherkin {
 		return os;
 	}
 
+	static JSON str2dec(const std::string& text, double numb, double sign) {
+		double mult = 0.1;
+		for (auto it = text.begin(); it != text.end(); ++it) {
+			numb += (*it - '0') * mult;
+			mult *= 0.1;
+		}
+		return numb * sign;
+	}
+
+	static JSON str2num(const std::string &text) {
+		int64_t numb = 0, sign = 1;
+		for (auto it = text.begin(); it != text.end(); ++it) {
+			switch (*it) {
+			case '-':
+				sign = -1;
+				break;
+			case ',':
+			case '.':
+				return str2dec(std::string(it + 1, text.end()), numb, sign);
+			default:
+				numb = numb * 10 + int64_t(*it - '0');
+			}
+		}
+		return numb * sign;
+	}
+
 	GherkinToken::operator JSON() const
 	{
 		JSON json;
@@ -745,9 +772,7 @@ namespace Gherkin {
 
 		if (type == TokenType::Number) {
 			try {
-				std::string str = text;
-				boost::replace_all(str, ",", ".");
-				json["text"] = std::stold(str);
+				json["text"] = str2num(text);
 			}
 			catch (std::exception& e) {
 				json["error"] = e.what();
@@ -1261,12 +1286,13 @@ namespace Gherkin {
 	}
 
 	AbsractDefinition::AbsractDefinition(const GherkinDocument& doc, const AbsractDefinition& def)
-		: GherkinElement(def, {}), name(name), keyword(keyword)
+		: GherkinElement(def, {}), name(def.name), keyword(def.keyword)
 	{
+		std::cout << "AbsractDefinition::AbsractDefinition: " << std::endl;
 	}
 
 	AbsractDefinition::AbsractDefinition(const AbsractDefinition& src, const GherkinParams& params)
-		: GherkinElement(src, params), name(name), keyword(keyword)
+		: GherkinElement(src, params), name(src.name), keyword(src.keyword)
 	{
 	}
 
@@ -1823,7 +1849,7 @@ namespace Gherkin {
 	{
 		const std::string test = "ExportScenarios";
 		for (auto& tag : tags) {
-			if (boost::iequals(tag.text, test)) {
+			if (comparei(tag.text, test)) {
 				return true;
 			}
 		}
