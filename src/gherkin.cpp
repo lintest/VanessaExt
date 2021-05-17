@@ -1288,7 +1288,6 @@ namespace Gherkin {
 	AbsractDefinition::AbsractDefinition(const GherkinDocument& doc, const AbsractDefinition& def)
 		: GherkinElement(def, {}), name(def.name), keyword(def.keyword)
 	{
-		std::cout << "AbsractDefinition::AbsractDefinition: " << std::endl;
 	}
 
 	AbsractDefinition::AbsractDefinition(const AbsractDefinition& src, const GherkinParams& params)
