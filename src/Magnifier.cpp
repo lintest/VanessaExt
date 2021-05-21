@@ -27,10 +27,10 @@ static LRESULT CALLBACK MagnifierWndProc(HWND hWnd, UINT message, WPARAM wParam,
 class MagnifierData {
 public:
 	float factor = 2.0f;
-	int x, y, w, h, ww, hh, t;
+	int x, y, w, h, ww, hh;
 	const UINT interval = 16;
-	MagnifierData(int x, int y, int w, int h, int t, double z)
-		: x(x), y(y), w(w), h(h), t(t), factor(z), ww(0), hh(0) {}
+	MagnifierData(int x, int y, int w, int h, float z)
+		: x(x), y(y), w(w), h(h), factor(z), ww(0), hh(0) {}
 };
 
 static void CALLBACK MagnifierUpdateProc(HWND hMag, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
@@ -76,10 +76,12 @@ static DWORD WINAPI MagnifierThreadProc(LPVOID lpParam)
 
 	RECT rect;
 	GetClientRect(hWnd, &rect);
-	rect.left += data->t; 
-	rect.top += data->t;
-	data->ww = rect.right - rect.left - data->t;
-	data->hh = rect.bottom - rect.top - data->t;
+	int cx = GetSystemMetrics(SM_CXDLGFRAME);
+	int cy = GetSystemMetrics(SM_CYDLGFRAME);
+	rect.left += cx;
+	rect.top += cy;
+	data->ww = rect.right - rect.left - cx;
+	data->hh = rect.bottom - rect.top - cy;
 	DWORD dwMagStyle = WS_CHILD | MS_SHOWMAGNIFIEDCURSOR | WS_VISIBLE;
 	HWND hMag = CreateWindow(WC_MAGNIFIER, NULL, dwMagStyle, rect.left, rect.top, data->ww, data->hh, hWnd, NULL, hModule, 0);
 	if (!hMag) return FALSE;
@@ -104,10 +106,10 @@ static DWORD WINAPI MagnifierThreadProc(LPVOID lpParam)
 	return (int)msg.wParam;
 }
 
-void Magnifier::Show(int x, int y, int w, int h, int t, double z)
+void Magnifier::Show(int x, int y, int w, int h, double z)
 {
 	Hide();
-	auto data = new MagnifierData(x, y, w, h, t, z);
+	auto data = new MagnifierData(x, y, w, h, (float)z);
 	CreateThread(0, NULL, MagnifierThreadProc, (LPVOID)data, NULL, NULL);
 }
 

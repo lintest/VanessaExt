@@ -257,8 +257,8 @@ WindowsControl::WindowsControl() {
 		[&](VH window, VH number) { this->result = DesktopManager::MoveWindowToDesktopNumber(window, number); }
 	);
 	AddProcedure(u"ShowMagnifier", u"ПоказатьУвеличение",
-		[&](VH x, VH y, VH w, VH h, VH t, VH z) { Magnifier::Show(x, y, w, h, t, z); },
-		{ { 4, (int64_t)4 }, { 5, 2.0f } }
+		[&](VH x, VH y, VH w, VH h, VH z) { Magnifier::Show(x, y, w, h, z); },
+		{ { 5, 2.0f } }
 	);
 	AddProcedure(u"HideMagnifier", u"СкрытьУвеличение",
 		[&]() { Magnifier::Hide(); }
