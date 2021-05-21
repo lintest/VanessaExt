@@ -81,6 +81,8 @@ add_library(${TARGET} SHARED
 	src/ImageFinder.h
 	src/ImageHelper.cpp
 	src/ImageHelper.h
+	src/Magnifier.cpp
+	src/Magnifier.h
 	src/ProcessControl.cpp
 	src/ProcessControl.h
 	src/ProcessManager.cpp

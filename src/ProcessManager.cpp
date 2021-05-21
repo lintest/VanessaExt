@@ -434,13 +434,18 @@ bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 
 std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
 {
-	boost::filesystem::path path(disk);
-	auto space = boost::filesystem::space(path);
-	JSON json;
-	json["available"] = space.available;
-	json["capacity"] = space.capacity;
-	json["free"] = space.free;
-	return json.dump();
+	try {
+		boost::filesystem::path path(disk);
+		auto space = boost::filesystem::space(path);
+		JSON json;
+		json["available"] = space.available;
+		json["capacity"] = space.capacity;
+		json["free"] = space.free;
+		return json.dump();
+	}
+	catch (std::exception& e) {
+		return JSON({ {"error", e.what()} }).dump();
+	}
 }
 
 #else //USE_BOOST

@@ -19,6 +19,7 @@
 #include "ScreenManager.h"
 #include "SoundEffect.h"
 #include "WindowsManager.h"
+#include "Magnifier.h"
 
 std::vector<std::u16string> WindowsControl::names = {
 	AddComponent(u"WindowsControl", []() { return new WindowsControl; }),
@@ -255,6 +256,13 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"MoveWindowToDesktop", u"ПереместитьОкноНаРабочийСтол",
 		[&](VH window, VH number) { this->result = DesktopManager::MoveWindowToDesktopNumber(window, number); }
 	);
+	AddProcedure(u"ShowMagnifier", u"ПоказатьУвеличение",
+		[&](VH x, VH y, VH w, VH h, VH t, VH z) { Magnifier::Show(x, y, w, h, t, z); },
+		{ { 4, (int64_t)4 }, { 5, 2.0f } }
+	);
+	AddProcedure(u"HideMagnifier", u"СкрытьУвеличение",
+		[&]() { Magnifier::Hide(); }
+	);
 #endif//_WINDOWS
 
 #ifdef USE_OPENCV
@@ -296,6 +304,7 @@ WindowsControl::~WindowsControl()
 	if (hProcessMonitor)
 		DestroyWindow(hProcessMonitor);
 	ClickEffect::Unhook();
+	Magnifier::Hide();
 #endif//_WINDOWS
 }
 
