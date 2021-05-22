@@ -27,10 +27,11 @@ static LRESULT CALLBACK MagnifierWndProc(HWND hWnd, UINT message, WPARAM wParam,
 class MagnifierData {
 public:
 	float factor = 2.0f;
-	int x, y, w, h, ww, hh;
+	int x, y, w, h, ww, hh, form;
 	const UINT interval = 16;
-	MagnifierData(int x, int y, int w, int h, float z)
-		: x(x), y(y), w(w), h(h), factor(z), ww(0), hh(0) {}
+	MagnifierData(int x, int y, int w, int h, float z, int f)
+		: x(x), y(y), w(w), h(h), factor(z), form(f), ww(0), hh(0) {}
+	HWND create();
 };
 
 static void CALLBACK MagnifierUpdateProc(HWND hMag, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
@@ -54,11 +55,19 @@ static void CALLBACK MagnifierUpdateProc(HWND hMag, UINT uMsg, UINT_PTR idEvent,
 
 LPCWSTR wsMagnifierName = L"VanessaMagnifierWindow";
 
-static DWORD WINAPI MagnifierThreadProc(LPVOID lpParam)
+void setRegion(HWND hWnd, int form, int x, int y, int w, int h)
 {
-	std::unique_ptr<MagnifierData> data((MagnifierData*)lpParam);
-	if (FALSE == MagInitialize()) return 0;
+	HRGN hRgn = 0;
+	int r = min(w, h) / 8;
+	switch (form) {
+	case 1: hRgn = CreateRoundRectRgn(x, y, w, h, r, r); break;
+	case 2: hRgn = CreateEllipticRgn(x, y, w, h); break;
+	}
+	if (hRgn) SetWindowRgn(hWnd, hRgn, FALSE);
+}
 
+HWND MagnifierData::create()
+{
 	WNDCLASS wndClass = {};
 	wndClass.style = CS_HREDRAW | CS_VREDRAW;
 	wndClass.lpfnWndProc = MagnifierWndProc;
@@ -68,8 +77,10 @@ static DWORD WINAPI MagnifierThreadProc(LPVOID lpParam)
 	RegisterClass(&wndClass);
 
 	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT;
-	HWND hWnd = CreateWindowEx(dwExStyle, wsMagnifierName, NULL, WS_POPUP, data->x, data->y, data->w, data->h, NULL, NULL, hModule, 0);
-	if (!hWnd) return FALSE;
+	HWND hWnd = CreateWindowEx(dwExStyle, wsMagnifierName, NULL, WS_POPUP, x, y, w, h, NULL, NULL, hModule, 0);
+	if (!hWnd) return NULL;
+	setRegion(hWnd, form, 0, 0, w, h);
+
 	SetLayeredWindowAttributes(hWnd, 0, 255, LWA_ALPHA);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
@@ -80,22 +91,33 @@ static DWORD WINAPI MagnifierThreadProc(LPVOID lpParam)
 	int cy = GetSystemMetrics(SM_CYDLGFRAME);
 	rect.left += cx;
 	rect.top += cy;
-	data->ww = rect.right - rect.left - cx;
-	data->hh = rect.bottom - rect.top - cy;
+	ww = rect.right - rect.left - cx;
+	hh = rect.bottom - rect.top - cy;
 	DWORD dwMagStyle = WS_CHILD | MS_SHOWMAGNIFIEDCURSOR | WS_VISIBLE;
-	HWND hMag = CreateWindow(WC_MAGNIFIER, NULL, dwMagStyle, rect.left, rect.top, data->ww, data->hh, hWnd, NULL, hModule, 0);
-	if (!hMag) return FALSE;
+	HWND hMag = CreateWindow(WC_MAGNIFIER, NULL, dwMagStyle, rect.left, rect.top, ww, hh, hWnd, NULL, hModule, 0);
+	setRegion(hMag, form, 0, 0, ww, hh);
+	if (!hMag) return NULL;
 
-	SetWindowLongPtr(hMag, GWLP_USERDATA, (LONG_PTR)lpParam);
-	UINT_PTR timerId = SetTimer(hMag, 0, data->interval, MagnifierUpdateProc);
+	SetWindowLongPtr(hMag, GWLP_USERDATA, (LONG_PTR)this);
 
 	MAGTRANSFORM matrix;
 	memset(&matrix, 0, sizeof(matrix));
-	matrix.v[0][0] = data->factor;
-	matrix.v[1][1] = data->factor;
+	matrix.v[0][0] = factor;
+	matrix.v[1][1] = factor;
 	matrix.v[2][2] = 1.0f;
 	BOOL ret = MagSetWindowTransform(hMag, &matrix);
 
+	return hMag;
+}
+
+static DWORD WINAPI MagnifierThreadProc(LPVOID lpParam)
+{
+	std::unique_ptr<MagnifierData> data((MagnifierData*)lpParam);
+	if (FALSE == MagInitialize()) return 0;
+	auto hMag = data->create();
+	if (FALSE == hMag) return 0;
+
+	UINT_PTR timerId = SetTimer(hMag, 0, data->interval, MagnifierUpdateProc);
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
@@ -106,10 +128,10 @@ static DWORD WINAPI MagnifierThreadProc(LPVOID lpParam)
 	return (int)msg.wParam;
 }
 
-void Magnifier::Show(int x, int y, int w, int h, double z)
+void Magnifier::Show(int x, int y, int w, int h, double z, int f)
 {
 	Hide();
-	auto data = new MagnifierData(x, y, w, h, (float)z);
+	auto data = new MagnifierData(x, y, w, h, (float)z, f);
 	CreateThread(0, NULL, MagnifierThreadProc, (LPVOID)data, NULL, NULL);
 }
 
