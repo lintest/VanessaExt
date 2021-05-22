@@ -132,7 +132,7 @@ OPENCV_INSTALL32="\
   -DCMAKE_C_FLAGS=-m32 \
   -DCMAKE_CXX_FLAGS=-m32 "
 
-cd opencv-4.5.1
+cd opencv-4.5.2
 mkdir build32
 cd build32
 cmake $OPENCV_OPTIONS $OPENCV_INSTALL32 ..
@@ -149,7 +149,7 @@ OPENCV_INSTALL64="\
   -DCMAKE_C_FLAGS=-m64 \
   -DCMAKE_CXX_FLAGS=-m64 "
 
-cd opencv-4.5.1
+cd opencv-4.5.2
 mkdir build64
 cd build64
 cmake $OPENCV_OPTIONS $OPENCV_INSTALL64 ..
