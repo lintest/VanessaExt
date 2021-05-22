@@ -346,29 +346,6 @@ namespace Gherkin {
 		return files;
 	}
 
-#ifdef _WINDOWS
-
-	static std::string cp1251_to_utf8(const char* str) {
-		int size_u = MultiByteToWideChar(1251, 0, str, -1, 0, 0);
-		if (!size_u) return {};
-		std::wstring ures((size_t)size_u, 0);
-		if (!MultiByteToWideChar(1251, 0, str, -1, ures.data(), size_u)) return {};
-		int size_c = WideCharToMultiByte(65001, 0, ures.data(), -1, 0, 0, 0, 0);
-		if (!size_c) return {};
-		std::string cres((size_t)size_c, 0);
-		if (!WideCharToMultiByte(65001, 0, ures.data(), -1, cres.data(), size_c, 0, 0)) return {};
-		return cres.data();
-	}
-
-#else
-
-	static std::string cp1251_to_utf8(const char* str)
-	{
-		return str;
-	}
-
-#endif
-
 	static void push(JSON& json, const std::string& message, const BoostPath& path) {
 		json.push_back({ {"filename", WC2MB(path.wstring()) }, {"error",  message} });
 	}

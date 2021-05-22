@@ -443,6 +443,9 @@ std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
 		json["free"] = space.free;
 		return json.dump();
 	}
+	catch (boost::filesystem::filesystem_error& e) {
+		return JSON({ {"error", cp1251_to_utf8(e.what())} }).dump();
+	}
 	catch (std::exception& e) {
 		return JSON({ {"error", e.what()} }).dump();
 	}

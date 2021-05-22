@@ -17,6 +17,8 @@ std::u16string lower(const std::u16string& str);
 std::wstring upper(const std::wstring& str);
 std::wstring lower(const std::wstring& str);
 
+std::string cp1251_to_utf8(const char* str);
+
 #include "json.hpp"
 using JSON = nlohmann::json;
 
