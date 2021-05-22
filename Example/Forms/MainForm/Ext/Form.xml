@@ -1412,6 +1412,11 @@
 															<CommandName>Form.Command.УвеличениеПоказать</CommandName>
 															<ExtendedTooltip name="ПоказатьУвеличениеРасширеннаяПодсказка" id="784"/>
 														</Button>
+														<Button name="УвеличениеЭллипс" id="791">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.УвеличениеЭллипс</CommandName>
+															<ExtendedTooltip name="УвеличениеЭллипсРасширеннаяПодсказка" id="792"/>
+														</Button>
 														<Button name="УвеличениеЗакрыть" id="785">
 															<Type>CommandBarButton</Type>
 															<CommandName>Form.Command.УвеличениеЗакрыть</CommandName>
@@ -5756,7 +5761,7 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Показать увеличение</v8:content>
+					<v8:content>Прямоугольник</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
@@ -5801,6 +5806,26 @@
 				</v8:item>
 			</ToolTip>
 			<Action>СвободноеМесто</Action>
+		</Command>
+		<Command name="УвеличениеЭллипс" id="86">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Эллипс</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Увеличение показать</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Picture>
+				<xr:Ref>0:35bc8caa-f7ce-4158-87da-d9bf785afa39</xr:Ref>
+				<xr:LoadTransparent>true</xr:LoadTransparent>
+			</Picture>
+			<Action>УвеличениеЭллипс</Action>
+			<Representation>TextPicture</Representation>
 		</Command>
 	</Commands>
 </Form>

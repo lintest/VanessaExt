@@ -46,6 +46,7 @@
 Информация об окружении:
 - <a href="#GetDisplayList">ПолучитьСписокДисплеев (GetDisplayList)</a>
 - <a href="#GetDisplayInfo">ПолучитьСвойстваДисплея (GetDisplayInfo)</a>
+- <a href="#GetFreeDiskSpace">СвободноеМестоНаДиске (GetFreeDiskSpace)</a>
 
 Управление окном приложения:
 - <a href="#GetWindowList">ПолучитьСписокОкон (GetWindowList)</a>
@@ -90,6 +91,9 @@
 - <a href="#DrawArrow">НарисоватьСтрелку (DrawArrow)</a>
 - <a href="#DrawBezier">НарисоватьКривую (DrawBezier)</a>
 - <a href="#DrawShadow">НарисоватьТень (DrawShadow)</a>
+- <a href="#ShowMagnifier">ПоказатьУвеличение (ShowMagnifier)</a>
+- <a href="#HideMagnifier">СкрытьУвеличение (HideMagnifier)</a>
+- <a href="#ScaleImage">МасштабироватьИзображение (ScaleImage)</a>
 
 Воспроизведение мультимедиа файлов (только для Windows):
 - <a href="#PlaySound">ВоспроизвестиЗвук (PlaySound)</a>
