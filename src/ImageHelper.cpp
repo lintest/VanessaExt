@@ -152,4 +152,17 @@ BOOL BaseHelper::ImageHelper::Save(VH variant)
 	return Ret;
 }
 
+BOOL BaseHelper::ImageHelper::Scale(VH source, VH target, double factor)
+{
+	ImageHelper src(source);
+	double w = factor * (double)src.m_bitmap->GetWidth();
+	double h = factor * (double)src.m_bitmap->GetHeight();
+	ImageHelper result((int)w, (int)h);
+	Gdiplus::Graphics g(result.m_bitmap);
+	g.ScaleTransform(factor, factor);
+	g.DrawImage(src.m_bitmap, 0, 0);
+	result.Save(target);
+	return false;
+}
+
 #endif //_WINDOWS

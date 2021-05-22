@@ -15,6 +15,7 @@
 #include "DesktopManager.h"
 #include "FileFinder.h"
 #include "ImageFinder.h"
+#include "ImageHelper.h"
 #include "ProcessManager.h"
 #include "ScreenManager.h"
 #include "SoundEffect.h"
@@ -262,6 +263,9 @@ WindowsControl::WindowsControl() {
 	);
 	AddProcedure(u"HideMagnifier", u"СкрытьУвеличение",
 		[&]() { Magnifier::Hide(); }
+	);
+	AddFunction(u"ScaleImage", u"МасштабироватьИзображение",
+		[&](VH image, VH factor) { ImageHelper::Scale(image, this->result, factor); }
 	);
 #endif//_WINDOWS
 
