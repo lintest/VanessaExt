@@ -1376,6 +1376,51 @@
 												</ButtonGroup>
 											</ChildItems>
 										</CommandBar>
+										<CommandBar name="ГруппаУвеличение" id="781">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа увеличение</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа увеличение</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ГруппаУвеличениеРасширеннаяПодсказка" id="782"/>
+											<ChildItems>
+												<ButtonGroup name="ГруппаКнопокУвеличение" id="787">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок увеличение</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа кнопок увеличение</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ГруппаКнопокУвеличениеРасширеннаяПодсказка" id="788"/>
+													<ChildItems>
+														<Button name="ПоказатьУвеличение" id="783">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.УвеличениеПоказать</CommandName>
+															<ExtendedTooltip name="ПоказатьУвеличениеРасширеннаяПодсказка" id="784"/>
+														</Button>
+														<Button name="УвеличениеЗакрыть" id="785">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.УвеличениеЗакрыть</CommandName>
+															<ExtendedTooltip name="УвеличениеЗакрытьРасширеннаяПодсказка" id="786"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
 									</ChildItems>
 								</UsualGroup>
 								<Table name="ТочкиФигуры" id="654">
@@ -2978,8 +3023,14 @@
 											<ContextMenu name="ДиректорияКонтекстноеМеню" id="479"/>
 											<ExtendedTooltip name="ДиректорияРасширеннаяПодсказка" id="480"/>
 										</InputField>
+										<Button name="СвободноеМесто" id="789">
+											<Type>UsualButton</Type>
+											<CommandName>Form.Command.СвободноеМесто</CommandName>
+											<ExtendedTooltip name="СвободноеМестоРасширеннаяПодсказка" id="790"/>
+										</Button>
 										<InputField name="МаскаПоиска" id="481">
 											<DataPath>МаскаПоиска</DataPath>
+											<Width>8</Width>
 											<ContextMenu name="МаскаПоискаКонтекстноеМеню" id="482"/>
 											<ExtendedTooltip name="МаскаПоискаРасширеннаяПодсказка" id="483"/>
 										</InputField>
@@ -5700,6 +5751,56 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ВыражениеРазделить</Action>
+		</Command>
+		<Command name="УвеличениеПоказать" id="83">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Показать увеличение</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Увеличение показать</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Picture>
+				<xr:Ref>0:35bc8caa-f7ce-4158-87da-d9bf785afa39</xr:Ref>
+				<xr:LoadTransparent>true</xr:LoadTransparent>
+			</Picture>
+			<Action>УвеличениеПоказать</Action>
+			<Representation>TextPicture</Representation>
+		</Command>
+		<Command name="УвеличениеЗакрыть" id="84">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Закрыть</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Увеличение закрыть</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>УвеличениеЗакрыть</Action>
+		</Command>
+		<Command name="СвободноеМесто" id="85">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Свободное место</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Свободное место</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>СвободноеМесто</Action>
 		</Command>
 	</Commands>
 </Form>
