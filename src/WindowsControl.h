@@ -3,6 +3,7 @@
 #include "BaseHelper.h"
 #include "VideoPainter.h"
 #include "WebSocket.h"
+#include <uiautomation.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl
@@ -12,6 +13,9 @@ class WindowsControl : public BaseHelper
 private:
 	HWND hProcessMonitor = NULL;
 	void StartProcessMonitoring();
+	IUIAutomation* pAutomation = nullptr;
+	std::string GetElements(HWND hWnd);
+	JSON info(IUIAutomationElement* element);
 public:
 	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
 #endif//_WINDOWS

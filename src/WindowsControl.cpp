@@ -267,6 +267,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"ScaleImage", u"МасштабироватьИзображение",
 		[&](VH image, VH factor) { ImageHelper::Scale(image, this->result, factor); }
 	);
+	AddFunction(u"GetElements", u"ПолучитьЭлементы",
+		[&](VH window) { this->result = GetElements((HWND)(int64_t)window); }
+	);
 #endif//_WINDOWS
 
 #ifdef USE_OPENCV
@@ -307,6 +310,8 @@ WindowsControl::~WindowsControl()
 #ifdef _WINDOWS
 	if (hProcessMonitor)
 		DestroyWindow(hProcessMonitor);
+	if (pAutomation)
+		pAutomation->Release();
 	ClickEffect::Unhook();
 	Magnifier::Hide();
 #endif//_WINDOWS
@@ -410,6 +415,82 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 void WindowsControl::ExitCurrentProcess(int64_t status)
 {
 	ExitProcess((UINT)status);
+}
+
+class UIString {
+private:
+	BSTR name = nullptr;
+public:
+	UIString() {}
+	virtual ~UIString() { SysFreeString(name); }
+	BSTR* operator &() { return &name; }
+	operator std::wstring() {
+		return std::wstring(name, SysStringLen(name));
+	}
+};
+
+#include <sstream>
+
+JSON WindowsControl::info(IUIAutomationElement* element)
+{
+	if (element == nullptr) return {};
+	JSON json;
+
+	UIString name;
+	if (element && SUCCEEDED(element->get_CurrentName(&name))) {
+		json["name"] = WC2MB(name);
+	}
+
+	std::stringstream ss;
+	SAFEARRAY* id = nullptr;
+	if (element && SUCCEEDED(element->GetRuntimeId(&id))) {
+		void* pVoid = 0;
+		::SafeArrayAccessData(id, &pVoid);
+		const long* pLongs = reinterpret_cast<long*>(pVoid);
+		for (ULONG i = 0; i < id->rgsabound[0].cElements; ++i) {
+			const long val = pLongs[i];
+			if (i) ss << ".";
+			ss << std::hex << val;
+		}
+		::SafeArrayUnaccessData(id);
+	}
+	json["id"] = ss.str();
+
+	RECT rect;
+	if (element && SUCCEEDED(element->get_CurrentBoundingRectangle(&rect))) {
+		json["size"] = {
+			{"left", rect.left },
+			{"top", rect.top },
+			{"right", rect.right },
+			{"bottom", rect.bottom },
+			{"width", rect.right - rect.left },
+			{"heigth", rect.bottom - rect.top },
+		};
+	}
+
+	IUIAutomationTreeWalker* walker;
+	pAutomation->get_ControlViewWalker(&walker);
+	IUIAutomationElement* child = nullptr;
+	walker->GetFirstChildElement(element, &child);
+	while (child) {
+		json["tree"].push_back(info(child));
+		walker->GetNextSiblingElement(child, &child);
+	}
+
+	return json;
+}
+
+std::string WindowsControl::GetElements(HWND hWnd)
+{
+	if (pAutomation == nullptr) {
+		if (FAILED(CoInitialize(NULL))) return {};
+		if (FAILED(CoCreateInstance(CLSID_CUIAutomation, NULL,
+			CLSCTX_INPROC_SERVER, IID_IUIAutomation,
+			reinterpret_cast<void**>(&pAutomation)))) return {};
+	}
+	IUIAutomationElement* root = nullptr;
+	if (FAILED(pAutomation->ElementFromHandle(hWnd, &root))) return {};
+	return info(root).dump();
 }
 
 #else//_WINDOWS
