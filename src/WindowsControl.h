@@ -3,7 +3,10 @@
 #include "BaseHelper.h"
 #include "VideoPainter.h"
 #include "WebSocket.h"
+
+#ifdef _WINDOWS
 #include <uiautomation.h>
+#endif//_WINDOWS
 
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl
