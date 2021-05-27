@@ -430,7 +430,7 @@ public:
 };
 
 #include <sstream>
-
+#include <atlcomcli.h>
 #include <UIAutomationClient.h>
 
 std::string type2str(CONTROLTYPEID typeId) {
@@ -528,6 +528,11 @@ JSON WindowsControl::info(IUIAutomationElement* element)
 		};
 	}
 
+	CComVariant value;
+	if (SUCCEEDED(element->GetCurrentPropertyValue(UIA_ValueValuePropertyId, &value)))
+		if (auto length = SysStringLen(value.bstrVal))
+			json["value"] = WC2MB(std::wstring(value.bstrVal, length));
+
 	IUIAutomationTreeWalker* walker;
 	pAutomation->get_ControlViewWalker(&walker);
 	IUIAutomationElement* child = nullptr;
@@ -542,6 +547,7 @@ JSON WindowsControl::info(IUIAutomationElement* element)
 
 std::string WindowsControl::GetElements(HWND hWnd)
 {
+	if (hWnd == NULL) hWnd = ::GetActiveWindow();
 	if (pAutomation == nullptr) {
 		if (FAILED(CoInitialize(NULL))) return {};
 		if (FAILED(CoCreateInstance(CLSID_CUIAutomation, NULL,
