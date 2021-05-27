@@ -1412,11 +1412,6 @@
 															<CommandName>Form.Command.УвеличениеПоказать</CommandName>
 															<ExtendedTooltip name="ПоказатьУвеличениеРасширеннаяПодсказка" id="784"/>
 														</Button>
-														<Button name="УвеличениеЭллипс" id="791">
-															<Type>CommandBarButton</Type>
-															<CommandName>Form.Command.УвеличениеЭллипс</CommandName>
-															<ExtendedTooltip name="УвеличениеЭллипсРасширеннаяПодсказка" id="792"/>
-														</Button>
 														<Button name="УвеличениеЗакрыть" id="785">
 															<Type>CommandBarButton</Type>
 															<CommandName>Form.Command.УвеличениеЗакрыть</CommandName>
@@ -1491,6 +1486,112 @@
 								</Table>
 							</ChildItems>
 						</UsualGroup>
+					</ChildItems>
+				</Page>
+				<Page name="СтраницаЭлементы" id="791">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Элементы формы</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Страница элементы</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="СтраницаЭлементыРасширеннаяПодсказка" id="792"/>
+					<ChildItems>
+						<Button name="ПолучитьЭлементы" id="812">
+							<Type>UsualButton</Type>
+							<CommandName>Form.Command.ПолучитьЭлементы</CommandName>
+							<ExtendedTooltip name="ПолучитьЭлементыРасширеннаяПодсказка" id="813"/>
+						</Button>
+						<Table name="ДеревоЭлементов" id="793">
+							<Representation>Tree</Representation>
+							<CommandBarLocation>None</CommandBarLocation>
+							<ReadOnly>true</ReadOnly>
+							<AutoInsertNewRow>true</AutoInsertNewRow>
+							<EnableStartDrag>true</EnableStartDrag>
+							<EnableDrag>true</EnableDrag>
+							<DataPath>ДеревоЭлементов</DataPath>
+							<ContextMenu name="ДеревоЭлементовКонтекстноеМеню" id="794"/>
+							<AutoCommandBar name="ДеревоЭлементовКоманднаяПанель" id="795"/>
+							<ExtendedTooltip name="ДеревоЭлементовРасширеннаяПодсказка" id="796"/>
+							<SearchStringAddition name="ДеревоЭлементовСтрокаПоиска" id="797">
+								<AdditionSource>
+									<Item>ДеревоЭлементов</Item>
+									<Type>SearchStringRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="ДеревоЭлементовСтрокаПоискаКонтекстноеМеню" id="798"/>
+								<ExtendedTooltip name="ДеревоЭлементовСтрокаПоискаРасширеннаяПодсказка" id="799"/>
+							</SearchStringAddition>
+							<ViewStatusAddition name="ДеревоЭлементовСостояниеПросмотра" id="800">
+								<AdditionSource>
+									<Item>ДеревоЭлементов</Item>
+									<Type>ViewStatusRepresentation</Type>
+								</AdditionSource>
+								<ContextMenu name="ДеревоЭлементовСостояниеПросмотраКонтекстноеМеню" id="801"/>
+								<ExtendedTooltip name="ДеревоЭлементовСостояниеПросмотраРасширеннаяПодсказка" id="802"/>
+							</ViewStatusAddition>
+							<SearchControlAddition name="ДеревоЭлементовУправлениеПоиском" id="803">
+								<AdditionSource>
+									<Item>ДеревоЭлементов</Item>
+									<Type>SearchControl</Type>
+								</AdditionSource>
+								<ContextMenu name="ДеревоЭлементовУправлениеПоискомКонтекстноеМеню" id="804"/>
+								<ExtendedTooltip name="ДеревоЭлементовУправлениеПоискомРасширеннаяПодсказка" id="805"/>
+							</SearchControlAddition>
+							<ChildItems>
+								<InputField name="ДеревоЭлементовid" id="809">
+									<DataPath>ДеревоЭлементов.id</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="ДеревоЭлементовidКонтекстноеМеню" id="810"/>
+									<ExtendedTooltip name="ДеревоЭлементовidРасширеннаяПодсказка" id="811"/>
+								</InputField>
+								<InputField name="ДеревоЭлементовname" id="806">
+									<DataPath>ДеревоЭлементов.name</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="ДеревоЭлементовnameКонтекстноеМеню" id="807"/>
+									<ExtendedTooltip name="ДеревоЭлементовnameРасширеннаяПодсказка" id="808"/>
+								</InputField>
+								<InputField name="ДеревоЭлементовtype" id="826">
+									<DataPath>ДеревоЭлементов.type</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="ДеревоЭлементовtypeКонтекстноеМеню" id="827"/>
+									<ExtendedTooltip name="ДеревоЭлементовtypeРасширеннаяПодсказка" id="828"/>
+								</InputField>
+								<InputField name="ДеревоЭлементовLeft" id="823">
+									<DataPath>ДеревоЭлементов.Left</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>4</Width>
+									<ContextMenu name="ДеревоЭлементовLeftКонтекстноеМеню" id="824"/>
+									<ExtendedTooltip name="ДеревоЭлементовLeftРасширеннаяПодсказка" id="825"/>
+								</InputField>
+								<InputField name="ДеревоЭлементовTop" id="814">
+									<DataPath>ДеревоЭлементов.Top</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>4</Width>
+									<ContextMenu name="ДеревоЭлементовTopКонтекстноеМеню" id="815"/>
+									<ExtendedTooltip name="ДеревоЭлементовTopРасширеннаяПодсказка" id="816"/>
+								</InputField>
+								<InputField name="ДеревоЭлементовWidth" id="817">
+									<DataPath>ДеревоЭлементов.Width</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>4</Width>
+									<ContextMenu name="ДеревоЭлементовWidthКонтекстноеМеню" id="818"/>
+									<ExtendedTooltip name="ДеревоЭлементовWidthРасширеннаяПодсказка" id="819"/>
+								</InputField>
+								<InputField name="ДеревоЭлементовHeight" id="820">
+									<DataPath>ДеревоЭлементов.Heigth</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<Width>4</Width>
+									<ContextMenu name="ДеревоЭлементовHeightКонтекстноеМеню" id="821"/>
+									<ExtendedTooltip name="ДеревоЭлементовHeightРасширеннаяПодсказка" id="822"/>
+								</InputField>
+							</ChildItems>
+						</Table>
 					</ChildItems>
 				</Page>
 				<Page name="СтраницаМультимедиа" id="571">
@@ -4513,6 +4614,143 @@
 				</v8:StringQualifiers>
 			</Type>
 		</Attribute>
+		<Attribute name="ДеревоЭлементов" id="65">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Дерево элементов</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8:ValueTree</v8:Type>
+			</Type>
+			<Columns>
+				<Column name="name" id="1">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Наименование</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="id" id="2">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Идентификатор</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="Left" id="3">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>X</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Top" id="4">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Y</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Width" id="5">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>W</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="Heigth" id="6">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>H</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:decimal</v8:Type>
+						<v8:NumberQualifiers>
+							<v8:Digits>10</v8:Digits>
+							<v8:FractionDigits>0</v8:FractionDigits>
+							<v8:AllowedSign>Any</v8:AllowedSign>
+						</v8:NumberQualifiers>
+					</Type>
+				</Column>
+				<Column name="type" id="7">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Тип</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="control" id="8">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Назначение</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+			</Columns>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -5761,7 +5999,7 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Прямоугольник</v8:content>
+					<v8:content>Показать увеличение</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
@@ -5807,25 +6045,20 @@
 			</ToolTip>
 			<Action>СвободноеМесто</Action>
 		</Command>
-		<Command name="УвеличениеЭллипс" id="86">
+		<Command name="ПолучитьЭлементы" id="86">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Эллипс</v8:content>
+					<v8:content>Получить элементы</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Увеличение показать</v8:content>
+					<v8:content>Получить элементы</v8:content>
 				</v8:item>
 			</ToolTip>
-			<Picture>
-				<xr:Ref>0:35bc8caa-f7ce-4158-87da-d9bf785afa39</xr:Ref>
-				<xr:LoadTransparent>true</xr:LoadTransparent>
-			</Picture>
-			<Action>УвеличениеЭллипс</Action>
-			<Representation>TextPicture</Representation>
+			<Action>ПолучитьЭлементы</Action>
 		</Command>
 	</Commands>
 </Form>
