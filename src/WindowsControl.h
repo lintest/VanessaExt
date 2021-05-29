@@ -3,20 +3,7 @@
 #include "BaseHelper.h"
 #include "VideoPainter.h"
 #include "WebSocket.h"
-
-#ifdef _WINDOWS
-
-#include <uiautomation.h>
-
-template<typename T>
-struct UIAutoDeleter {
-	void operator()(T* a) { if (a) a->Release(); }
-};
-
-template<typename T>
-using UIAutoUniquePtr = std::unique_ptr<T, UIAutoDeleter<T>>;
-
-#endif//_WINDOWS
+#include "WinUIAuto.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl
@@ -24,11 +11,9 @@ class WindowsControl : public BaseHelper
 {
 #ifdef _WINDOWS
 private:
+	WinUIAuto uiAutomation;
 	HWND hProcessMonitor = NULL;
 	void StartProcessMonitoring();
-	std::string GetElements(int64_t pid);
-	JSON info(IUIAutomationElement* element);
-	UIAutoUniquePtr<IUIAutomation> pAutomation;
 public:
 	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
 #endif//_WINDOWS
