@@ -18,7 +18,58 @@ public:
 #include <atlcomcli.h>
 #include <UIAutomationClient.h>
 
-std::string type2str(CONTROLTYPEID typeId) {
+static CONTROLTYPEID str2type(const std::string& type) {
+	if (type.empty()) return 0;
+	static const std::map<std::string, CONTROLTYPEID> map{
+		{"button", UIA_ButtonControlTypeId},
+		{"calendar", UIA_CalendarControlTypeId},
+		{"checkbox", UIA_CheckBoxControlTypeId},
+		{"combobox", UIA_ComboBoxControlTypeId},
+		{"edit", UIA_EditControlTypeId},
+		{"hyperlink", UIA_HyperlinkControlTypeId},
+		{"image", UIA_ImageControlTypeId},
+		{"listitem", UIA_ListItemControlTypeId},
+		{"list", UIA_ListControlTypeId},
+		{"menu", UIA_MenuControlTypeId},
+		{"menubar", UIA_MenuBarControlTypeId},
+		{"menuitem", UIA_MenuItemControlTypeId},
+		{"progressbar", UIA_ProgressBarControlTypeId},
+		{"radiobutton", UIA_RadioButtonControlTypeId},
+		{"scrollbar", UIA_ScrollBarControlTypeId},
+		{"slider", UIA_SliderControlTypeId},
+		{"spinner", UIA_SpinnerControlTypeId},
+		{"statusbar", UIA_StatusBarControlTypeId},
+		{"tab", UIA_TabControlTypeId},
+		{"tabitem", UIA_TabItemControlTypeId},
+		{"text", UIA_TextControlTypeId},
+		{"toolbar", UIA_ToolBarControlTypeId},
+		{"tooltip", UIA_ToolTipControlTypeId},
+		{"tree", UIA_TreeControlTypeId},
+		{"treeitem", UIA_TreeItemControlTypeId},
+		{"custom", UIA_CustomControlTypeId},
+		{"group", UIA_GroupControlTypeId},
+		{"thumb", UIA_ThumbControlTypeId},
+		{"datagrid", UIA_DataGridControlTypeId},
+		{"dataitem", UIA_DataItemControlTypeId},
+		{"document", UIA_DocumentControlTypeId},
+		{"splitbutton", UIA_SplitButtonControlTypeId},
+		{"window", UIA_WindowControlTypeId},
+		{"pane", UIA_PaneControlTypeId},
+		{"header", UIA_HeaderControlTypeId},
+		{"headeritem", UIA_HeaderItemControlTypeId},
+		{"table", UIA_TableControlTypeId},
+		{"titlebar", UIA_TitleBarControlTypeId},
+		{"separator", UIA_SeparatorControlTypeId},
+		{"semanticzoom", UIA_SemanticZoomControlTypeId},
+		{"appbar", UIA_AppBarControlTypeId},
+	};
+	std::string text = type;
+	std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c) { return std::tolower(c); });
+	auto it = map.find(text);
+	return it == map.end() ? 0 : it->second;
+}
+
+static std::string type2str(CONTROLTYPEID typeId) {
 	switch (typeId) {
 	case UIA_ButtonControlTypeId: return "Button";
 	case UIA_CalendarControlTypeId: return "Calendar";
@@ -189,7 +240,7 @@ std::string WinUIAuto::GetElements(DWORD pid)
 	return info(parent.get(), true).dump();
 }
 
-std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name)
+std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type)
 {
 	InitAutomation();
 
@@ -199,12 +250,17 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name)
 	if (FAILED(pAutomation->GetRootElement(&UI(root)))) return {};
 
 	std::vector<IUIAutomationCondition*> conditions;
-	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2;
+	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
 	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), &UI(cProc));
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, &UI(cName1));
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, &UI(cName2));
 	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), &UI(cName));
 	conditions.push_back(cName.get());
+
+	if (auto iType = str2type(type)) {
+		pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), &UI(cType));
+		conditions.push_back(cType.get());
+	}
 
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	root->FindFirst(TreeScope_Children, cProc.get(), &UI(parent));

@@ -1528,8 +1528,20 @@
 								</Button>
 								<InputField name="ИмяЭлемента" id="832">
 									<DataPath>ИмяЭлемента</DataPath>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Имя</v8:content>
+										</v8:item>
+									</Title>
 									<ContextMenu name="ИмяЭлементаКонтекстноеМеню" id="833"/>
 									<ExtendedTooltip name="ИмяЭлементаРасширеннаяПодсказка" id="834"/>
+								</InputField>
+								<InputField name="ТипЭлемента" id="842">
+									<DataPath>ТипЭлемента</DataPath>
+									<ListChoiceMode>true</ListChoiceMode>
+									<ContextMenu name="ТипЭлементаКонтекстноеМеню" id="843"/>
+									<ExtendedTooltip name="ТипЭлементаРасширеннаяПодсказка" id="844"/>
 								</InputField>
 								<Button name="НайтиЭлементы" id="837">
 									<Type>UsualButton</Type>
@@ -4813,6 +4825,21 @@
 				<v8:item>
 					<v8:lang>ru</v8:lang>
 					<v8:content>Имя элемента</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ТипЭлемента" id="67">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Тип</v8:content>
 				</v8:item>
 			</Title>
 			<Type>

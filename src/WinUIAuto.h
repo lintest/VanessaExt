@@ -32,7 +32,7 @@ private:
 	void InitAutomation();
 public:
 	std::string GetElements(DWORD pid);
-	std::string FindElements(DWORD pid, const std::wstring& name);
+	std::string FindElements(DWORD pid, const std::wstring& name, const std::string& type);
 };
 
 #endif//_WINDOWS
