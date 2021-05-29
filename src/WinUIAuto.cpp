@@ -246,9 +246,6 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 
 	if (pid == 0) ::GetWindowThreadProcessId(::GetActiveWindow(), &pid);
 
-	UIAutoUniquePtr<IUIAutomationElement> root;
-	if (FAILED(pAutomation->GetRootElement(&UI(root)))) return {};
-
 	std::vector<IUIAutomationCondition*> conditions;
 	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
 	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), &UI(cProc));
@@ -262,13 +259,14 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 		conditions.push_back(cType.get());
 	}
 
-	UIAutoUniquePtr<IUIAutomationElement> parent;
-	root->FindFirst(TreeScope_Children, cProc.get(), &UI(parent));
+	UIAutoUniquePtr<IUIAutomationElement> root, owner;
+	if (FAILED(pAutomation->GetRootElement(&UI(root)))) return {};
+	root->FindFirst(TreeScope_Children, cProc.get(), &UI(owner));
 
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), &UI(cond));
-	parent->FindAll(TreeScope_Subtree, cond.get(), &UI(elements));
+	owner->FindAll(TreeScope_Subtree, cond.get(), &UI(elements));
 
 	JSON json;
 	int count;
