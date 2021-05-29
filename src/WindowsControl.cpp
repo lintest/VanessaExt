@@ -267,6 +267,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"ScaleImage", u"МасштабироватьИзображение",
 		[&](VH image, VH factor) { ImageHelper::Scale(image, this->result, factor); }
 	);
+	AddFunction(u"CropImage", u"ОбрезатьИзображение",
+		[&](VH image, VH x, VH y, VH w, VH h) { ImageHelper::Crop(image, this->result, x, y, w, h); }
+	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
 		[&](VH pid) { this->result = uiAutomation.GetElements((DWORD)(int64_t)pid); }
 	);

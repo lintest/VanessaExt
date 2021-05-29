@@ -174,7 +174,7 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 			{"right", rect.right },
 			{"bottom", rect.bottom },
 			{"width", rect.right - rect.left },
-			{"heigth", rect.bottom - rect.top },
+			{"height", rect.bottom - rect.top },
 		};
 	}
 

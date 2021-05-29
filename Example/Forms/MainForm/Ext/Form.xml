@@ -1575,6 +1575,47 @@
 								</InputField>
 							</ChildItems>
 						</UsualGroup>
+						<UsualGroup name="ГруппаПоискКнопки" id="855">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа поиск кнопки</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа поиск кнопки</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаПоискКнопкиРасширеннаяПодсказка" id="856"/>
+							<ChildItems>
+								<InputField name="ТестовоеПоле" id="852">
+									<DataPath>ТестовоеПоле</DataPath>
+									<DropListButton>true</DropListButton>
+									<ChoiceButton>true</ChoiceButton>
+									<ClearButton>true</ClearButton>
+									<SpinButton>true</SpinButton>
+									<OpenButton>true</OpenButton>
+									<CreateButton>true</CreateButton>
+									<ContextMenu name="ТестовоеПолеКонтекстноеМеню" id="853"/>
+									<ExtendedTooltip name="ТестовоеПолеРасширеннаяПодсказка" id="854"/>
+								</InputField>
+								<InputField name="НомерКартинки" id="857">
+									<DataPath>НомерКартинки</DataPath>
+									<SpinButton>true</SpinButton>
+									<ContextMenu name="НомерКартинкиКонтекстноеМеню" id="858"/>
+									<ExtendedTooltip name="НомерКартинкиРасширеннаяПодсказка" id="859"/>
+								</InputField>
+								<Button name="НайтиКнопку" id="850">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.НайтиКнопку</CommandName>
+									<ExtendedTooltip name="НайтиКнопкуРасширеннаяПодсказка" id="851"/>
+								</Button>
+							</ChildItems>
+						</UsualGroup>
 						<Table name="ДеревоЭлементов" id="793">
 							<Representation>Tree</Representation>
 							<CommandBarLocation>None</CommandBarLocation>
@@ -1663,7 +1704,7 @@
 									<ExtendedTooltip name="ДеревоЭлементовWidthРасширеннаяПодсказка" id="819"/>
 								</InputField>
 								<InputField name="ДеревоЭлементовHeight" id="820">
-									<DataPath>ДеревоЭлементов.Heigth</DataPath>
+									<DataPath>ДеревоЭлементов.Height</DataPath>
 									<EditMode>EnterOnInput</EditMode>
 									<Width>4</Width>
 									<ContextMenu name="ДеревоЭлементовHeightКонтекстноеМеню" id="821"/>
@@ -4782,7 +4823,7 @@
 						</v8:NumberQualifiers>
 					</Type>
 				</Column>
-				<Column name="Heigth" id="6">
+				<Column name="Height" id="6">
 					<Title>
 						<v8:item>
 							<v8:lang>ru</v8:lang>
@@ -4888,6 +4929,37 @@
 					<v8:Length>0</v8:Length>
 					<v8:AllowedLength>Variable</v8:AllowedLength>
 				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ТестовоеПоле" id="69">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Тест</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="НомерКартинки" id="70">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Номер картинки</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>1</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
 			</Type>
 		</Attribute>
 	</Attributes>
@@ -6213,6 +6285,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>НайтиЭлементы</Action>
+		</Command>
+		<Command name="НайтиКнопку" id="88">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти кнопку</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти кнопку</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НайтиКнопку</Action>
 		</Command>
 	</Commands>
 </Form>

@@ -26,6 +26,7 @@ public:
 	ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData);
 	virtual ~ImageHelper() { if (m_bitmap) delete m_bitmap; }
 	static BOOL Scale(VH source, VH target, double factor);
+	static BOOL Crop(VH source, VH target, int64_t x, int64_t y, int64_t w, int64_t h);
 	BOOL Save(VH variant);
 	BOOL Save(std::vector<BYTE>& buffer);
 	operator bool() const { return m_bitmap; }
