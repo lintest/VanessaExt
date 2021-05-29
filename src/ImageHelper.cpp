@@ -170,6 +170,7 @@ BOOL BaseHelper::ImageHelper::Crop(VH source, VH target, int64_t x, int64_t y, i
 	ImageHelper src(source);
 	ImageHelper result((int)w, (int)h);
 	Gdiplus::Graphics g(result.m_bitmap);
+	g.Clear(Gdiplus::Color::White);
 	g.DrawImage(src.m_bitmap, (float)-x, (float)-y);
 	result.Save(target);
 	return false;
