@@ -1537,17 +1537,42 @@
 									<ContextMenu name="ИмяЭлементаКонтекстноеМеню" id="833"/>
 									<ExtendedTooltip name="ИмяЭлементаРасширеннаяПодсказка" id="834"/>
 								</InputField>
+								<Button name="НайтиЭлементы" id="837">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.НайтиЭлементы</CommandName>
+									<ExtendedTooltip name="НайтиЭлементыРасширеннаяПодсказка" id="838"/>
+								</Button>
+							</ChildItems>
+						</UsualGroup>
+						<UsualGroup name="ГруппаОтборЭлементов" id="848">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа отбор элементов</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа отбор элементов</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Group>Horizontal</Group>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаОтборЭлементовРасширеннаяПодсказка" id="849"/>
+							<ChildItems>
 								<InputField name="ТипЭлемента" id="842">
 									<DataPath>ТипЭлемента</DataPath>
 									<ListChoiceMode>true</ListChoiceMode>
 									<ContextMenu name="ТипЭлементаКонтекстноеМеню" id="843"/>
 									<ExtendedTooltip name="ТипЭлементаРасширеннаяПодсказка" id="844"/>
 								</InputField>
-								<Button name="НайтиЭлементы" id="837">
-									<Type>UsualButton</Type>
-									<CommandName>Form.Command.НайтиЭлементы</CommandName>
-									<ExtendedTooltip name="НайтиЭлементыРасширеннаяПодсказка" id="838"/>
-								</Button>
+								<InputField name="ЭлементРодитель" id="845">
+									<DataPath>ЭлементРодитель</DataPath>
+									<ContextMenu name="ЭлементРодительКонтекстноеМеню" id="846"/>
+									<ExtendedTooltip name="ЭлементРодительРасширеннаяПодсказка" id="847"/>
+								</InputField>
 							</ChildItems>
 						</UsualGroup>
 						<Table name="ДеревоЭлементов" id="793">
@@ -4840,6 +4865,21 @@
 				<v8:item>
 					<v8:lang>ru</v8:lang>
 					<v8:content>Тип</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ЭлементРодитель" id="68">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Родитель</v8:content>
 				</v8:item>
 			</Title>
 			<Type>

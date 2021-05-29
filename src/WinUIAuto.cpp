@@ -240,7 +240,19 @@ std::string WinUIAuto::GetElements(DWORD pid)
 	return info(parent.get(), true).dump();
 }
 
-std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type)
+static std::vector<int> str2id(const std::string& text) {
+	std::vector<int> result;
+	std::stringstream ss(text);
+	while (ss.good()) {
+		std::string sub;
+		std::getline(ss, sub, '.');
+		int i = std::stoul(sub, 0, 16);
+		result.push_back(i);
+	}
+	return result;
+}
+
+std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent)
 {
 	InitAutomation();
 
@@ -261,16 +273,26 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 
 	UIAutoUniquePtr<IUIAutomationElement> root, owner;
 	if (FAILED(pAutomation->GetRootElement(&UI(root)))) return {};
-	root->FindFirst(TreeScope_Children, cProc.get(), &UI(owner));
+	if (root) root->FindFirst(TreeScope_Children, cProc.get(), &UI(owner));
+
+	if (!parent.empty()) {
+		auto v = str2id(parent);
+		SAFEARRAY* sa;
+		UIAutoUniquePtr<IUIAutomationCondition> cond;
+		pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), &sa);
+		pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa), &UI(cond));
+		if (owner) owner->FindFirst(TreeScope_Subtree, cond.get(), &UI(owner));
+		SafeArrayDestroy(sa);
+	}
 
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), &UI(cond));
-	owner->FindAll(TreeScope_Subtree, cond.get(), &UI(elements));
+	if (owner) owner->FindAll(TreeScope_Subtree, cond.get(), &UI(elements));
 
 	JSON json;
-	int count;
-	elements->get_Length(&count);
+	int count = 0;
+	if (elements) elements->get_Length(&count);
 	for (int i = 0; i < count; ++i) {
 		UIAutoUniquePtr<IUIAutomationElement> element;
 		elements->GetElement(i, &UI(element));

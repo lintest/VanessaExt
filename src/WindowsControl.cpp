@@ -271,7 +271,7 @@ WindowsControl::WindowsControl() {
 		[&](VH pid) { this->result = uiAutomation.GetElements((DWORD)(int64_t)pid); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
-		[&](VH pid, VH name, VH type) { this->result = uiAutomation.FindElements((DWORD)(int64_t)pid, name, type); },
+		[&](VH pid, VH name, VH type, VH parent) { this->result = uiAutomation.FindElements((DWORD)(int64_t)pid, name, type, parent); },
 		{ {2, u""}, { 3, u""} }
 	);
 #endif//_WINDOWS
