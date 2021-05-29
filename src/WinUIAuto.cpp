@@ -65,7 +65,22 @@ std::string type2str(CONTROLTYPEID typeId) {
 	}
 }
 
-JSON WinUIAuto::info(IUIAutomationElement* element)
+bool WinUIAuto::isWindow(IUIAutomationElement* element, JSON& json)
+{
+	CONTROLTYPEID typeId;
+	if (SUCCEEDED(element->get_CurrentControlType(&typeId))) {
+		if (typeId == UIA_WindowControlTypeId) {
+			UIString name;
+			if (SUCCEEDED(element->get_CurrentName(&name))) {
+				json["window"] = WC2MB(name);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 {
 	if (element == nullptr) return {};
 	JSON json;
@@ -119,51 +134,95 @@ JSON WinUIAuto::info(IUIAutomationElement* element)
 
 	IUIAutomationTreeWalker* walker;
 	pAutomation->get_ControlViewWalker(&walker);
-	IUIAutomationElement* ptr = nullptr;
-	walker->GetFirstChildElement(element, &ptr);
-	UIAutoUniquePtr<IUIAutomationElement> child(ptr);
-	while (child) {
-		json["tree"].push_back(info(child.get()));
-		walker->GetNextSiblingElement(child.get(), &ptr);
-		child.reset(ptr);
+	if (subtree) {
+		UIAutoUniquePtr<IUIAutomationElement> child;
+		walker->GetFirstChildElement(element, &UI(child));
+		while (child) {
+			json["tree"].push_back(info(child.get(), true));
+			walker->GetNextSiblingElement(child.get(), &UI(child));
+		}
+	}
+	else {
+		if (!isWindow(element, json)) {
+			UIAutoUniquePtr<IUIAutomationElement> parent;
+			walker->GetParentElement(element, &UI(parent));
+			while (parent) {
+				if (isWindow(parent.get(), json)) break;
+				walker->GetParentElement(parent.get(), &UI(parent));
+			}
+		}
 	}
 
 	return json;
 }
 
-std::string WinUIAuto::GetElements(int64_t pid)
+void WinUIAuto::InitAutomation()
 {
 	if (pAutomation == nullptr) {
-		IUIAutomation* p;
-		if (FAILED(CoInitialize(NULL))) return {};
-		if (FAILED(CoCreateInstance(CLSID_CUIAutomation, NULL,
-			CLSCTX_INPROC_SERVER, IID_IUIAutomation,
-			reinterpret_cast<void**>(&p)))) return {};
-		pAutomation.reset(p);
+		if (FAILED(CoInitialize(NULL)))
+			throw std::runtime_error("CoInitialize error");
+
+		if (FAILED(CoCreateInstance(CLSID_CUIAutomation,
+			NULL, CLSCTX_INPROC_SERVER, IID_IUIAutomation,
+			reinterpret_cast<void**>(&UI(pAutomation)))))
+			throw std::runtime_error("CoInitialize error");
 	}
+}
+
+std::string WinUIAuto::GetElements(DWORD pid)
+{
+	InitAutomation();
 
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	if (pid == 0) {
-		IUIAutomationElement* p = nullptr;
 		auto hWnd = ::GetActiveWindow();
-		if (FAILED(pAutomation->ElementFromHandle(hWnd, &p))) return {};
-		parent.reset(p);
+		if (FAILED(pAutomation->ElementFromHandle(hWnd, &UI(parent)))) return {};
 	}
 	else {
-		IUIAutomationElement* ptr = nullptr;
 		UIAutoUniquePtr<IUIAutomationElement> root;
-		if (FAILED(pAutomation->GetRootElement(&ptr))) return {};
-		root.reset(ptr);
-		VARIANT variant = { 0 };
-		V_INT(&variant) = pid;
-		V_VT(&variant) = VT_INT;
-		IUIAutomationCondition* pCond;
-		pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, variant, &pCond);
-		UIAutoUniquePtr<IUIAutomationCondition> condition(pCond);
-		root->FindFirst(TreeScope_Children, condition.get(), &ptr);
-		parent.reset(ptr);
+		if (FAILED(pAutomation->GetRootElement(&UI(root)))) return {};
+
+		UIAutoUniquePtr<IUIAutomationCondition> cond;
+		pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), &UI(cond));
+		root->FindFirst(TreeScope_Children, cond.get(), &UI(parent));
 	}
-	return info(parent.get()).dump();
+	return info(parent.get(), true).dump();
+}
+
+std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name)
+{
+	InitAutomation();
+
+	if (pid == 0) ::GetWindowThreadProcessId(::GetActiveWindow(), &pid);
+
+	UIAutoUniquePtr<IUIAutomationElement> root;
+	if (FAILED(pAutomation->GetRootElement(&UI(root)))) return {};
+
+	std::vector<IUIAutomationCondition*> conditions;
+	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2;
+	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), &UI(cProc));
+	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, &UI(cName1));
+	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, &UI(cName2));
+	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), &UI(cName));
+	conditions.push_back(cName.get());
+
+	UIAutoUniquePtr<IUIAutomationElement> parent;
+	root->FindFirst(TreeScope_Children, cProc.get(), &UI(parent));
+
+	UIAutoUniquePtr<IUIAutomationCondition> cond;
+	UIAutoUniquePtr<IUIAutomationElementArray> elements;
+	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), &UI(cond));
+	parent->FindAll(TreeScope_Subtree, cond.get(), &UI(elements));
+
+	JSON json;
+	int count;
+	elements->get_Length(&count);
+	for (int i = 0; i < count; ++i) {
+		UIAutoUniquePtr<IUIAutomationElement> element;
+		elements->GetElement(i, &UI(element));
+		json.push_back(info(element.get(), false));
+	}
+	return json.dump();
 }
 
 #endif//_WINDOWS

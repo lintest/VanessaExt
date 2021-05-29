@@ -268,7 +268,10 @@ WindowsControl::WindowsControl() {
 		[&](VH image, VH factor) { ImageHelper::Scale(image, this->result, factor); }
 	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
-		[&](VH pid) { this->result = uiAutomation.GetElements(pid); }
+		[&](VH pid) { this->result = uiAutomation.GetElements((DWORD)(int64_t)pid); }
+	);
+	AddFunction(u"FindElements", u"НайтиЭлементы",
+		[&](VH pid, VH name) { this->result = uiAutomation.FindElements((DWORD)(int64_t)pid, name); }
 	);
 #endif//_WINDOWS
 

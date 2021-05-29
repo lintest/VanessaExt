@@ -15,10 +15,24 @@ using UIAutoUniquePtr = std::unique_ptr<T, UIAutoDeleter<T>>;
 
 class WinUIAuto {
 private:
-	JSON info(IUIAutomationElement* element);
+	template<typename T>
+	class UI {
+	private:
+		T* ptr = nullptr;
+		UIAutoUniquePtr<T>& src;
+	public:
+		UI(UIAutoUniquePtr<T>& p) : ptr(p.get()), src(p) { }
+		virtual ~UI() { src.reset(ptr); }
+		T** operator&() { return &ptr; }
+	};
+private:
+	bool isWindow(IUIAutomationElement* element, JSON& json);
+	JSON info(IUIAutomationElement* element, bool subtree);
 	UIAutoUniquePtr<IUIAutomation> pAutomation;
+	void InitAutomation();
 public:
-	std::string GetElements(int64_t pid);
+	std::string GetElements(DWORD pid);
+	std::string FindElements(DWORD pid, const std::wstring& name);
 };
 
 #endif//_WINDOWS

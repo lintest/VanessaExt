@@ -1503,11 +1503,41 @@
 					</ToolTip>
 					<ExtendedTooltip name="СтраницаЭлементыРасширеннаяПодсказка" id="792"/>
 					<ChildItems>
-						<Button name="ПолучитьЭлементы" id="812">
-							<Type>UsualButton</Type>
-							<CommandName>Form.Command.ПолучитьЭлементы</CommandName>
-							<ExtendedTooltip name="ПолучитьЭлементыРасширеннаяПодсказка" id="813"/>
-						</Button>
+						<UsualGroup name="ГруппаПоискЭлементов" id="835">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа поиск элементов</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа поиск элементов</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Group>Horizontal</Group>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ExtendedTooltip name="ГруппаПоискЭлементовРасширеннаяПодсказка" id="836"/>
+							<ChildItems>
+								<Button name="ПолучитьЭлементы" id="812">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.ПолучитьЭлементы</CommandName>
+									<ExtendedTooltip name="ПолучитьЭлементыРасширеннаяПодсказка" id="813"/>
+								</Button>
+								<InputField name="ИмяЭлемента" id="832">
+									<DataPath>ИмяЭлемента</DataPath>
+									<ContextMenu name="ИмяЭлементаКонтекстноеМеню" id="833"/>
+									<ExtendedTooltip name="ИмяЭлементаРасширеннаяПодсказка" id="834"/>
+								</InputField>
+								<Button name="НайтиЭлементы" id="837">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.НайтиЭлементы</CommandName>
+									<ExtendedTooltip name="НайтиЭлементыРасширеннаяПодсказка" id="838"/>
+								</Button>
+							</ChildItems>
+						</UsualGroup>
 						<Table name="ДеревоЭлементов" id="793">
 							<Representation>Tree</Representation>
 							<CommandBarLocation>None</CommandBarLocation>
@@ -1561,6 +1591,12 @@
 									<EditMode>EnterOnInput</EditMode>
 									<ContextMenu name="ДеревоЭлементовtypeКонтекстноеМеню" id="827"/>
 									<ExtendedTooltip name="ДеревоЭлементовtypeРасширеннаяПодсказка" id="828"/>
+								</InputField>
+								<InputField name="ДеревоЭлементовwindow" id="839">
+									<DataPath>ДеревоЭлементов.window</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="ДеревоЭлементовwindowКонтекстноеМеню" id="840"/>
+									<ExtendedTooltip name="ДеревоЭлементовwindowРасширеннаяПодсказка" id="841"/>
 								</InputField>
 								<InputField name="ДеревоЭлементовvalue" id="829">
 									<DataPath>ДеревоЭлементов.value</DataPath>
@@ -4755,7 +4791,37 @@
 						</v8:StringQualifiers>
 					</Type>
 				</Column>
+				<Column name="window" id="9">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Заголовок окна</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
 			</Columns>
+		</Attribute>
+		<Attribute name="ИмяЭлемента" id="66">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Имя элемента</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
 		</Attribute>
 	</Attributes>
 	<Commands>
@@ -6065,6 +6131,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ПолучитьЭлементы</Action>
+		</Command>
+		<Command name="НайтиЭлементы" id="87">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти элементы</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Найти элементы</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НайтиЭлементы</Action>
 		</Command>
 	</Commands>
 </Form>
