@@ -268,7 +268,7 @@ WindowsControl::WindowsControl() {
 		[&](VH image, VH factor) { ImageHelper::Scale(image, this->result, factor); }
 	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
-		[&](VH window) { this->result = GetElements((HWND)(int64_t)window); }
+		[&](VH pid) { this->result = GetElements(pid); }
 	);
 #endif//_WINDOWS
 
@@ -310,8 +310,6 @@ WindowsControl::~WindowsControl()
 #ifdef _WINDOWS
 	if (hProcessMonitor)
 		DestroyWindow(hProcessMonitor);
-	if (pAutomation)
-		pAutomation->Release();
 	ClickEffect::Unhook();
 	Magnifier::Hide();
 #endif//_WINDOWS
@@ -480,7 +478,6 @@ std::string type2str(CONTROLTYPEID typeId) {
 	}
 }
 
-
 JSON WindowsControl::info(IUIAutomationElement* element)
 {
 	if (element == nullptr) return {};
@@ -535,28 +532,51 @@ JSON WindowsControl::info(IUIAutomationElement* element)
 
 	IUIAutomationTreeWalker* walker;
 	pAutomation->get_ControlViewWalker(&walker);
-	IUIAutomationElement* child = nullptr;
-	walker->GetFirstChildElement(element, &child);
+	IUIAutomationElement* ptr = nullptr;
+	walker->GetFirstChildElement(element, &ptr);
+	UIAutoUniquePtr<IUIAutomationElement> child(ptr);
 	while (child) {
-		json["tree"].push_back(info(child));
-		walker->GetNextSiblingElement(child, &child);
+		json["tree"].push_back(info(child.get()));
+		walker->GetNextSiblingElement(child.get(), &ptr);
+		child.reset(ptr);
 	}
 
 	return json;
 }
 
-std::string WindowsControl::GetElements(HWND hWnd)
+std::string WindowsControl::GetElements(int64_t pid)
 {
-	if (hWnd == NULL) hWnd = ::GetActiveWindow();
 	if (pAutomation == nullptr) {
+		IUIAutomation* p;
 		if (FAILED(CoInitialize(NULL))) return {};
 		if (FAILED(CoCreateInstance(CLSID_CUIAutomation, NULL,
 			CLSCTX_INPROC_SERVER, IID_IUIAutomation,
-			reinterpret_cast<void**>(&pAutomation)))) return {};
+			reinterpret_cast<void**>(&p)))) return {};
+		pAutomation.reset(p);
 	}
-	IUIAutomationElement* root = nullptr;
-	if (FAILED(pAutomation->ElementFromHandle(hWnd, &root))) return {};
-	return info(root).dump();
+
+	UIAutoUniquePtr<IUIAutomationElement> parent;
+	if (pid == 0) {
+		IUIAutomationElement* p = nullptr;
+		auto hWnd = ::GetActiveWindow();
+		if (FAILED(pAutomation->ElementFromHandle(hWnd, &p))) return {};
+		parent.reset(p);
+	}
+	else {
+		IUIAutomationElement* ptr = nullptr;
+		UIAutoUniquePtr<IUIAutomationElement> root;
+		if (FAILED(pAutomation->GetRootElement(&ptr))) return {};
+		root.reset(ptr);
+		VARIANT variant = { 0 };
+		V_INT(&variant) = pid;
+		V_VT(&variant) = VT_INT;
+		IUIAutomationCondition* pCond;
+		pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, variant, &pCond);
+		UIAutoUniquePtr<IUIAutomationCondition> condition(pCond);
+		root->FindFirst(TreeScope_Children, condition.get(), &ptr);
+		parent.reset(ptr);
+	}
+	return info(parent.get()).dump();
 }
 
 #else//_WINDOWS

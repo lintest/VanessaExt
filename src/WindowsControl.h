@@ -5,7 +5,17 @@
 #include "WebSocket.h"
 
 #ifdef _WINDOWS
+
 #include <uiautomation.h>
+
+template<typename T>
+struct UIAutoDeleter {
+	void operator()(T* a) { if (a) a->Release(); }
+};
+
+template<typename T>
+using UIAutoUniquePtr = std::unique_ptr<T, UIAutoDeleter<T>>;
+
 #endif//_WINDOWS
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,9 +26,9 @@ class WindowsControl : public BaseHelper
 private:
 	HWND hProcessMonitor = NULL;
 	void StartProcessMonitoring();
-	IUIAutomation* pAutomation = nullptr;
-	std::string GetElements(HWND hWnd);
+	std::string GetElements(int64_t pid);
 	JSON info(IUIAutomationElement* element);
+	UIAutoUniquePtr<IUIAutomation> pAutomation;
 public:
 	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
 #endif//_WINDOWS
