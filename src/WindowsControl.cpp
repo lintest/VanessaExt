@@ -277,6 +277,9 @@ WindowsControl::WindowsControl() {
 		[&](VH pid, VH name, VH type, VH parent) { this->result = uiAutomation.FindElements((DWORD)(int64_t)pid, name, type, parent); },
 		{ {2, u""}, { 3, u""} }
 	);
+	AddProperty(u"ActiveElement", u"АктивныйЭлемент",
+		[&](VH var) { var = uiAutomation.GetFocusedElement(); }
+	);
 #endif//_WINDOWS
 
 #ifdef USE_OPENCV

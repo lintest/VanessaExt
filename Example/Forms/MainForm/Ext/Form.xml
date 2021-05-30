@@ -1542,6 +1542,11 @@
 									<CommandName>Form.Command.НайтиЭлементы</CommandName>
 									<ExtendedTooltip name="НайтиЭлементыРасширеннаяПодсказка" id="838"/>
 								</Button>
+								<Button name="АктивныйЭлемент" id="863">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.АктивныйЭлемент</CommandName>
+									<ExtendedTooltip name="АктивныйЭлементРасширеннаяПодсказка" id="864"/>
+								</Button>
 							</ChildItems>
 						</UsualGroup>
 						<UsualGroup name="ГруппаОтборЭлементов" id="848">
@@ -6430,6 +6435,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>НайтиКнопку</Action>
+		</Command>
+		<Command name="АктивныйЭлемент" id="89">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Активный элемент</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Активный элемент</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>АктивныйЭлемент</Action>
 		</Command>
 	</Commands>
 </Form>

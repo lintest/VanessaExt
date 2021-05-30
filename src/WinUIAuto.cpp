@@ -187,23 +187,35 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 	pAutomation->get_ControlViewWalker(&walker);
 	if (subtree) {
 		UIAutoUniquePtr<IUIAutomationElement> child;
-		walker->GetFirstChildElement(element, &UI(child));
+		walker->GetFirstChildElement(element, UI(child));
 		while (child) {
 			json["tree"].push_back(info(child.get(), true));
-			walker->GetNextSiblingElement(child.get(), &UI(child));
+			walker->GetNextSiblingElement(child.get(), UI(child));
 		}
 	}
 	else {
 		if (!isWindow(element, json)) {
 			UIAutoUniquePtr<IUIAutomationElement> parent;
-			walker->GetParentElement(element, &UI(parent));
+			walker->GetParentElement(element, UI(parent));
 			while (parent) {
 				if (isWindow(parent.get(), json)) break;
-				walker->GetParentElement(parent.get(), &UI(parent));
+				walker->GetParentElement(parent.get(), UI(parent));
 			}
 		}
 	}
 
+	return json;
+}
+
+JSON WinUIAuto::info(IUIAutomationElementArray* elements) {
+	JSON json;
+	int count = 0;
+	if (elements) elements->get_Length(&count);
+	for (int i = 0; i < count; ++i) {
+		UIAutoUniquePtr<IUIAutomationElement> element;
+		elements->GetElement(i, UI(element));
+		json.push_back(info(element.get(), false));
+	}
 	return json;
 }
 
@@ -220,6 +232,15 @@ void WinUIAuto::InitAutomation()
 	}
 }
 
+std::string WinUIAuto::GetFocusedElement()
+{
+	InitAutomation();
+
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	if (FAILED(pAutomation->GetFocusedElement(UI(element)))) return {};
+	return info(element.get(), false).dump();
+}
+
 std::string WinUIAuto::GetElements(DWORD pid)
 {
 	InitAutomation();
@@ -227,15 +248,15 @@ std::string WinUIAuto::GetElements(DWORD pid)
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	if (pid == 0) {
 		auto hWnd = ::GetActiveWindow();
-		if (FAILED(pAutomation->ElementFromHandle(hWnd, &UI(parent)))) return {};
+		if (FAILED(pAutomation->ElementFromHandle(hWnd, UI(parent)))) return {};
 	}
 	else {
 		UIAutoUniquePtr<IUIAutomationElement> root;
-		if (FAILED(pAutomation->GetRootElement(&UI(root)))) return {};
+		if (FAILED(pAutomation->GetRootElement(UI(root)))) return {};
 
 		UIAutoUniquePtr<IUIAutomationCondition> cond;
-		pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), &UI(cond));
-		root->FindFirst(TreeScope_Children, cond.get(), &UI(parent));
+		pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond));
+		root->FindFirst(TreeScope_Children, cond.get(), UI(parent));
 	}
 	return info(parent.get(), true).dump();
 }
@@ -260,45 +281,36 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 
 	std::vector<IUIAutomationCondition*> conditions;
 	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
-	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), &UI(cProc));
-	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, &UI(cName1));
-	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, &UI(cName2));
-	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), &UI(cName));
+	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cProc));
+	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
+	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
+	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
 	conditions.push_back(cName.get());
 
 	if (auto iType = str2type(type)) {
-		pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), &UI(cType));
+		pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cType));
 		conditions.push_back(cType.get());
 	}
 
 	UIAutoUniquePtr<IUIAutomationElement> root, owner;
-	if (FAILED(pAutomation->GetRootElement(&UI(root)))) return {};
-	if (root) root->FindFirst(TreeScope_Children, cProc.get(), &UI(owner));
+	if (FAILED(pAutomation->GetRootElement(UI(root)))) return {};
+	if (root) root->FindFirst(TreeScope_Children, cProc.get(), UI(owner));
 
 	if (!parent.empty()) {
 		auto v = str2id(parent);
 		SAFEARRAY* sa;
 		UIAutoUniquePtr<IUIAutomationCondition> cond;
 		pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), &sa);
-		pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa), &UI(cond));
-		if (owner) owner->FindFirst(TreeScope_Subtree, cond.get(), &UI(owner));
+		pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa), UI(cond));
+		if (owner) owner->FindFirst(TreeScope_Subtree, cond.get(), UI(owner));
 		SafeArrayDestroy(sa);
 	}
 
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
-	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), &UI(cond));
-	if (owner) owner->FindAll(TreeScope_Subtree, cond.get(), &UI(elements));
-
-	JSON json;
-	int count = 0;
-	if (elements) elements->get_Length(&count);
-	for (int i = 0; i < count; ++i) {
-		UIAutoUniquePtr<IUIAutomationElement> element;
-		elements->GetElement(i, &UI(element));
-		json.push_back(info(element.get(), false));
-	}
-	return json.dump();
+	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
+	if (owner) owner->FindAll(TreeScope_Subtree, cond.get(), UI(elements));
+	return info(elements.get()).dump();
 }
 
 #endif//_WINDOWS

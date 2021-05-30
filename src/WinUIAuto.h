@@ -24,13 +24,17 @@ private:
 		UI(UIAutoUniquePtr<T>& p) : ptr(p.get()), src(p) { }
 		virtual ~UI() { src.reset(ptr); }
 		T** operator&() { return &ptr; }
+		operator T** () { return &ptr; }
+		operator T* () { return ptr; }
 	};
 private:
 	bool isWindow(IUIAutomationElement* element, JSON& json);
 	JSON info(IUIAutomationElement* element, bool subtree);
+	JSON info(IUIAutomationElementArray* elements);
 	UIAutoUniquePtr<IUIAutomation> pAutomation;
 	void InitAutomation();
 public:
+	std::string GetFocusedElement();
 	std::string GetElements(DWORD pid);
 	std::string FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent);
 };
