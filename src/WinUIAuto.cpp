@@ -123,7 +123,7 @@ bool WinUIAuto::isWindow(IUIAutomationElement* element, JSON& json)
 		if (typeId == UIA_WindowControlTypeId) {
 			UIString name;
 			if (SUCCEEDED(element->get_CurrentName(&name))) {
-				json["window"] = WC2MB(name);
+				json["Window"] = WC2MB(name);
 				return true;
 			}
 		}
@@ -140,12 +140,13 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 
 	CONTROLTYPEID typeId;
 	if (SUCCEEDED(element->get_CurrentControlType(&typeId))) {
-		json["type"] = type2str(typeId);
+		json["Type"] = type2str(typeId);
 	}
 
-	SET_JSON("name", get_CurrentName);
-	SET_JSON("help", get_CurrentHelpText);
-	SET_JSON("info", get_CurrentLocalizedControlType);
+	SET_JSON("Name", get_CurrentName);
+	SET_JSON("HelpText", get_CurrentHelpText);
+	SET_JSON("AutomationId", get_CurrentAutomationId);
+	SET_JSON("LocalizedControlType", get_CurrentLocalizedControlType);
 
 	std::stringstream ss;
 	SAFEARRAY* id = nullptr;
@@ -160,24 +161,24 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 		}
 		::SafeArrayUnaccessData(id);
 	}
-	json["id"] = ss.str();
+	json["Id"] = ss.str();
 
 	RECT rect;
 	if (SUCCEEDED(element->get_CurrentBoundingRectangle(&rect))) {
-		json["size"] = {
-			{"left", rect.left },
-			{"top", rect.top },
-			{"right", rect.right },
-			{"bottom", rect.bottom },
-			{"width", rect.right - rect.left },
-			{"height", rect.bottom - rect.top },
+		json["Size"] = {
+			{"Left", rect.left },
+			{"Top", rect.top },
+			{"Right", rect.right },
+			{"Bottom", rect.bottom },
+			{"Width", rect.right - rect.left },
+			{"Height", rect.bottom - rect.top },
 		};
 	}
 
 	CComVariant value;
 	if (SUCCEEDED(element->GetCurrentPropertyValue(UIA_ValueValuePropertyId, &value)))
 		if (auto length = SysStringLen(value.bstrVal))
-			json["value"] = WC2MB(std::wstring(value.bstrVal, length));
+			json["Value"] = WC2MB(std::wstring(value.bstrVal, length));
 
 	IUIAutomationTreeWalker* walker;
 	pAutomation->get_ControlViewWalker(&walker);
@@ -185,7 +186,7 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 		UIAutoUniquePtr<IUIAutomationElement> child;
 		walker->GetFirstChildElement(element, UI(child));
 		while (child) {
-			json["tree"].push_back(info(child.get(), true));
+			json["Tree"].push_back(info(child.get(), true));
 			walker->GetNextSiblingElement(child.get(), UI(child));
 		}
 	}
