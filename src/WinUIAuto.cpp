@@ -235,7 +235,7 @@ std::string WinUIAuto::GetFocusedElement()
 
 	UIAutoUniquePtr<IUIAutomationElement> element;
 	if (FAILED(pAutomation->GetFocusedElement(UI(element)))) return {};
-	return info(element.get(), false).dump();
+	return info(element.get()).dump();
 }
 
 std::string WinUIAuto::GetElements(DWORD pid)
@@ -308,6 +308,26 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
 	if (owner) owner->FindAll(TreeScope_Subtree, cond.get(), UI(elements));
 	return info(elements.get()).dump();
+}
+
+std::string WinUIAuto::InvokeElement(const std::string& id)
+{
+	InitAutomation();
+	UIAutoUniquePtr<IUIAutomationElement> root, element;
+	if (FAILED(pAutomation->GetRootElement(UI(root)))) return {};
+
+	SAFEARRAY* sa;
+	auto v = str2id(id);
+	UIAutoUniquePtr<IUIAutomationCondition> cond;
+	pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), &sa);
+	pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa), UI(cond));
+	if (root) root->FindFirst(TreeScope_Subtree, cond.get(), UI(element));
+	SafeArrayDestroy(sa);
+
+	UIAutoUniquePtr<IUIAutomationInvokePattern> invoke;
+	if (element) element->GetCurrentPattern(UIA_InvokePatternId, (IUnknown**)&UI(invoke));
+	if (invoke) invoke->Invoke();
+	return info(element.get()).dump();
 }
 
 #endif//_WINDOWS

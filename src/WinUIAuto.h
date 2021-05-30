@@ -29,7 +29,7 @@ private:
 	};
 private:
 	bool isWindow(IUIAutomationElement* element, JSON& json);
-	JSON info(IUIAutomationElement* element, bool subtree);
+	JSON info(IUIAutomationElement* element, bool subtree = false);
 	JSON info(IUIAutomationElementArray* elements);
 	UIAutoUniquePtr<IUIAutomation> pAutomation;
 	void InitAutomation();
@@ -37,6 +37,7 @@ public:
 	std::string GetFocusedElement();
 	std::string GetElements(DWORD pid);
 	std::string FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent);
+	std::string InvokeElement(const std::string& id);
 };
 
 #endif//_WINDOWS
