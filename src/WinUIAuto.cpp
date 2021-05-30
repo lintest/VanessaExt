@@ -131,25 +131,21 @@ bool WinUIAuto::isWindow(IUIAutomationElement* element, JSON& json)
 	return false;
 }
 
+#define SET_JSON(key, method) { UIString name; if (SUCCEEDED(element->method(&name))) json[key] = WC2MB(name); }
+
 JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 {
 	if (element == nullptr) return {};
 	JSON json;
-
-	UIString name;
-	if (SUCCEEDED(element->get_CurrentName(&name))) {
-		json["name"] = WC2MB(name);
-	}
 
 	CONTROLTYPEID typeId;
 	if (SUCCEEDED(element->get_CurrentControlType(&typeId))) {
 		json["type"] = type2str(typeId);
 	}
 
-	UIString typeName;
-	if (SUCCEEDED(element->get_CurrentLocalizedControlType(&typeName))) {
-		json["info"] = WC2MB(typeName);
-	}
+	SET_JSON("name", get_CurrentName);
+	SET_JSON("help", get_CurrentHelpText);
+	SET_JSON("info", get_CurrentLocalizedControlType);
 
 	std::stringstream ss;
 	SAFEARRAY* id = nullptr;
