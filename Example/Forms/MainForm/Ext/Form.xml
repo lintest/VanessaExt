@@ -1578,6 +1578,11 @@
 									<ContextMenu name="ЭлементРодительКонтекстноеМеню" id="846"/>
 									<ExtendedTooltip name="ЭлементРодительРасширеннаяПодсказка" id="847"/>
 								</InputField>
+								<Button name="НажатьНаЭлемент" id="865">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.НажатьНаЭлемент</CommandName>
+									<ExtendedTooltip name="НажатьНаЭлементРасширеннаяПодсказка" id="866"/>
+								</Button>
 							</ChildItems>
 						</UsualGroup>
 						<UsualGroup name="ГруппаПоискКнопки" id="855">
@@ -6450,6 +6455,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>АктивныйЭлемент</Action>
+		</Command>
+		<Command name="НажатьНаЭлемент" id="90">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Нажать</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Нажать на элемент</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НажатьНаЭлемент</Action>
 		</Command>
 	</Commands>
 </Form>
