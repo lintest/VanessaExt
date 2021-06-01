@@ -232,30 +232,10 @@ void WinUIAuto::InitAutomation()
 std::string WinUIAuto::GetFocusedElement()
 {
 	InitAutomation();
-
 	UIAutoUniquePtr<IUIAutomationElement> element;
 	if (FAILED(pAutomation->GetFocusedElement(UI(element)))) return {};
+	if (element.get() == nullptr) return {};
 	return info(element.get()).dump();
-}
-
-std::string WinUIAuto::GetElements(DWORD pid)
-{
-	InitAutomation();
-
-	UIAutoUniquePtr<IUIAutomationElement> parent;
-	if (pid == 0) {
-		auto hWnd = ::GetActiveWindow();
-		if (FAILED(pAutomation->ElementFromHandle(hWnd, UI(parent)))) return {};
-	}
-	else {
-		UIAutoUniquePtr<IUIAutomationElement> root;
-		if (FAILED(pAutomation->GetRootElement(UI(root)))) return {};
-
-		UIAutoUniquePtr<IUIAutomationCondition> cond;
-		pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond));
-		root->FindFirst(TreeScope_Children, cond.get(), UI(parent));
-	}
-	return info(parent.get(), true).dump();
 }
 
 static std::vector<int> str2id(const std::string& text) {
@@ -270,15 +250,25 @@ static std::vector<int> str2id(const std::string& text) {
 	return result;
 }
 
+std::string WinUIAuto::GetElements(DWORD pid)
+{
+	InitAutomation();
+	UIAutoUniquePtr<IUIAutomationElement> owner;
+	find(pid, UI(owner));
+	if (owner.get() == nullptr) return {};
+	return info(owner.get(), true).dump();
+}
+
 std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent)
 {
 	InitAutomation();
 
-	if (pid == 0) ::GetWindowThreadProcessId(::GetActiveWindow(), &pid);
+	UIAutoUniquePtr<IUIAutomationElement> owner;
+	if (parent.empty()) find(pid, UI(owner)); else find(parent, UI(owner));
+	if (owner.get() == nullptr) return {};
 
 	std::vector<IUIAutomationCondition*> conditions;
-	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
-	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cProc));
+	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType;
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
 	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
@@ -289,20 +279,6 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 		conditions.push_back(cType.get());
 	}
 
-	UIAutoUniquePtr<IUIAutomationElement> root, owner;
-	if (FAILED(pAutomation->GetRootElement(UI(root)))) return {};
-	if (root) root->FindFirst(TreeScope_Children, cProc.get(), UI(owner));
-
-	if (!parent.empty()) {
-		auto v = str2id(parent);
-		SAFEARRAY* sa;
-		UIAutoUniquePtr<IUIAutomationCondition> cond;
-		pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), &sa);
-		pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa), UI(cond));
-		if (owner) owner->FindFirst(TreeScope_Subtree, cond.get(), UI(owner));
-		SafeArrayDestroy(sa);
-	}
-
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
@@ -310,24 +286,52 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	return info(elements.get()).dump();
 }
 
-std::string WinUIAuto::InvokeElement(const std::string& id)
+void WinUIAuto::find(DWORD pid, IUIAutomationElement** element)
+{
+	if (pid == 0) {
+		if (FAILED(pAutomation->ElementFromHandle(::GetActiveWindow(), element))) return;
+	}
+	else {
+		UIAutoUniquePtr<IUIAutomationElement> root;
+		UIAutoUniquePtr<IUIAutomationCondition> cond;
+		if (FAILED(pAutomation->GetRootElement(UI(root)))) return;
+		if (FAILED(pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)))) return;
+		if (FAILED(root->FindFirst(TreeScope_Children, cond.get(), element))) return;
+	}
+}
+
+void WinUIAuto::find(const std::string& id, IUIAutomationElement** element)
+{
+	UIAutoUniquePtr<IUIAutomationElement> root;
+	if (FAILED(pAutomation->GetRootElement(UI(root)))) return;
+	auto v = str2id(id);
+	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> sa;
+	UIAutoUniquePtr<IUIAutomationCondition> cond;
+	if (FAILED(pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), UI(sa)))) return;
+	if (FAILED(pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa.get()), UI(cond)))) return;
+	if (FAILED(root->FindFirst(TreeScope_Subtree, cond.get(), element))) return;
+}
+
+bool WinUIAuto::InvokeElement(const std::string& id)
 {
 	InitAutomation();
-	UIAutoUniquePtr<IUIAutomationElement> root, element;
-	if (FAILED(pAutomation->GetRootElement(UI(root)))) return {};
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	find(id, UI(element));
+	if (element.get() == nullptr) return false;
+	UIAutoUniquePtr<IUIAutomationInvokePattern> pattern;
+	if (FAILED(element->GetCurrentPattern(UIA_InvokePatternId, (IUnknown**)&UI(pattern)))) return false;
+	return pattern && SUCCEEDED(pattern->Invoke());
+}
 
-	SAFEARRAY* sa;
-	auto v = str2id(id);
-	UIAutoUniquePtr<IUIAutomationCondition> cond;
-	pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), &sa);
-	pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa), UI(cond));
-	if (root) root->FindFirst(TreeScope_Subtree, cond.get(), UI(element));
-	SafeArrayDestroy(sa);
-
-	UIAutoUniquePtr<IUIAutomationInvokePattern> invoke;
-	if (element) element->GetCurrentPattern(UIA_InvokePatternId, (IUnknown**)&UI(invoke));
-	if (invoke) invoke->Invoke();
-	return info(element.get()).dump();
+bool WinUIAuto::SetElementValue(const std::string& id, const std::wstring& value)
+{
+	InitAutomation();
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	find(id, UI(element));
+	if (element.get() == nullptr) return false;
+	UIAutoUniquePtr<IUIAutomationValuePattern> pattern;
+	if (FAILED(element->GetCurrentPattern(UIA_ValuePatternId, (IUnknown**)&UI(pattern)))) return false;
+	return pattern && SUCCEEDED(pattern->SetValue((BSTR)value.c_str()));
 }
 
 #endif//_WINDOWS

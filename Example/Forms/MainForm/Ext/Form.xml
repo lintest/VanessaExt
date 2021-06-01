@@ -1578,11 +1578,6 @@
 									<ContextMenu name="ЭлементРодительКонтекстноеМеню" id="846"/>
 									<ExtendedTooltip name="ЭлементРодительРасширеннаяПодсказка" id="847"/>
 								</InputField>
-								<Button name="НажатьНаЭлемент" id="865">
-									<Type>UsualButton</Type>
-									<CommandName>Form.Command.НажатьНаЭлемент</CommandName>
-									<ExtendedTooltip name="НажатьНаЭлементРасширеннаяПодсказка" id="866"/>
-								</Button>
 							</ChildItems>
 						</UsualGroup>
 						<UsualGroup name="ГруппаПоискКнопки" id="855">
@@ -1738,6 +1733,58 @@
 									<CommandName>Form.Command.НайтиКнопку</CommandName>
 									<ExtendedTooltip name="НайтиКнопкуРасширеннаяПодсказка" id="851"/>
 								</Button>
+							</ChildItems>
+						</UsualGroup>
+						<UsualGroup name="ГруппаУправлениеЭлементом" id="867">
+							<Title>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа управление элементом</v8:content>
+								</v8:item>
+							</Title>
+							<ToolTip>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>Группа управление элементом</v8:content>
+								</v8:item>
+							</ToolTip>
+							<Representation>None</Representation>
+							<ShowTitle>false</ShowTitle>
+							<ThroughAlign>DontUse</ThroughAlign>
+							<ExtendedTooltip name="ГруппаУправлениеЭлементомРасширеннаяПодсказка" id="868"/>
+							<ChildItems>
+								<InputField name="ЗначениеЭлемнта" id="869">
+									<DataPath>ЗначениеЭлемнта</DataPath>
+									<ContextMenu name="ЗначениеЭлемнтаКонтекстноеМеню" id="870"/>
+									<ExtendedTooltip name="ЗначениеЭлемнтаРасширеннаяПодсказка" id="871"/>
+								</InputField>
+								<CommandBar name="ПанельУправленияЭлемертами" id="874">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Панель управления элемертами</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Панель управления элемертами</v8:content>
+										</v8:item>
+									</ToolTip>
+									<ExtendedTooltip name="ПанельУправленияЭлемертамиРасширеннаяПодсказка" id="875"/>
+									<ChildItems>
+										<Button name="УстановитьЗначение" id="872">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.УстановитьЗначение</CommandName>
+											<ExtendedTooltip name="УстановитьЗначениеРасширеннаяПодсказка" id="873"/>
+										</Button>
+										<Button name="НажатьНаЭлемент" id="865">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.НажатьНаЭлемент</CommandName>
+											<ExtendedTooltip name="НажатьНаЭлементРасширеннаяПодсказка" id="866"/>
+										</Button>
+									</ChildItems>
+								</CommandBar>
 							</ChildItems>
 						</UsualGroup>
 						<Table name="ДеревоЭлементов" id="793">
@@ -5102,6 +5149,21 @@
 				</v8:NumberQualifiers>
 			</Type>
 		</Attribute>
+		<Attribute name="ЗначениеЭлемнта" id="72">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Новое значение</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -6470,6 +6532,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>НажатьНаЭлемент</Action>
+		</Command>
+		<Command name="УстановитьЗначение" id="91">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установить значение</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Установить значение</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>УстановитьЗначение</Action>
 		</Command>
 	</Commands>
 </Form>
