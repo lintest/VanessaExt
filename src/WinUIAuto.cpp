@@ -334,4 +334,19 @@ bool WinUIAuto::SetElementValue(const std::string& id, const std::wstring& value
 	return pattern && SUCCEEDED(pattern->SetValue((BSTR)value.c_str()));
 }
 
+std::wstring WinUIAuto::GetElementValue(const std::string& id)
+{
+	InitAutomation();
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	find(id, UI(element));
+	if (element.get() == nullptr) return {};
+
+	CComVariant value;
+	if (SUCCEEDED(element->GetCurrentPropertyValue(UIA_ValueValuePropertyId, &value)))
+		if (auto length = SysStringLen(value.bstrVal))
+			return std::wstring(value.bstrVal, length);
+
+	return {};
+}
+
 #endif//_WINDOWS
