@@ -247,7 +247,7 @@ bool WindowsControl::GetParamDefValue(const long lMethodNum, const long lParamNu
 	case eEmulateWheel: if (lParamNum == 1) return DefInt(pvarParamDefValue);
 	case eEmulateHotkey: if (lParamNum == 1) return DefInt(pvarParamDefValue);
 	case eFindFiles: if (lParamNum == 3) return DefBool(pvarParamDefValue, true);
-	case eOutputToConsole: if (lParamNum == 1) return DefInt(866);
+	case eOutputToConsole: if (lParamNum == 1) return DefInt(pvarParamDefValue, 866);
 	}
 	return false;
 }
