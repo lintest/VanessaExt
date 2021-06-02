@@ -46,6 +46,7 @@ public:
 	std::wstring GetElementValue(const std::string& id);
 	bool SetElementValue(const std::string& id, const std::wstring& value);
 	bool InvokeElement(const std::string& id);
+	bool FocusElement(const std::string& id);
 };
 
 #endif//_WINDOWS
