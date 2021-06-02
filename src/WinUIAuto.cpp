@@ -149,17 +149,17 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 	SET_JSON("LocalizedControlType", get_CurrentLocalizedControlType);
 
 	std::stringstream ss;
-	SAFEARRAY* id = nullptr;
-	if (SUCCEEDED(element->GetRuntimeId(&id))) {
+	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> id;
+	if (SUCCEEDED(element->GetRuntimeId(UI(id)))) {
 		void* pVoid = 0;
-		::SafeArrayAccessData(id, &pVoid);
+		::SafeArrayAccessData(id.get(), &pVoid);
 		const long* pLongs = reinterpret_cast<long*>(pVoid);
 		for (ULONG i = 0; i < id->rgsabound[0].cElements; ++i) {
 			const long val = pLongs[i];
 			if (i) ss << ".";
 			ss << std::hex << val;
 		}
-		::SafeArrayUnaccessData(id);
+		::SafeArrayUnaccessData(id.get());
 	}
 	json["Id"] = ss.str();
 
