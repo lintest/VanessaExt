@@ -323,6 +323,15 @@ bool WinUIAuto::InvokeElement(const std::string& id)
 	return pattern && SUCCEEDED(pattern->Invoke());
 }
 
+bool WinUIAuto::FocusElement(const std::string& id)
+{
+	InitAutomation();
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	find(id, UI(element));
+	if (element.get() == nullptr) return false;
+	return element && SUCCEEDED(element->SetFocus());
+}
+
 bool WinUIAuto::SetElementValue(const std::string& id, const std::wstring& value)
 {
 	InitAutomation();
