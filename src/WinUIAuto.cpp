@@ -175,6 +175,10 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 		};
 	}
 
+	POINT point = {0, 0}; bool gotClickable = false;
+	if (SUCCEEDED(element->GetClickablePoint(&point, &gotClickable)))
+		if (gotClickable) { json["x"] = point.x; json["y"] = point.y; }
+
 	CComVariant value;
 	if (SUCCEEDED(element->GetCurrentPropertyValue(UIA_ValueValuePropertyId, &value)))
 		if (auto length = SysStringLen(value.bstrVal))
