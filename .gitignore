@@ -21,6 +21,7 @@
 /.vc
 /.vs
 /Example/fileversion
+Example/Templates/*/Ext/Template.bin
 AddIn.zip
 XxCompile.bat
 *.epf
