@@ -41,7 +41,7 @@ const std::vector<AddInBase::Alias> WindowsControl::m_MethList{
 	Alias(eGetProcessInfo  , 1, true , L"GetProcessInfo"   , L"ПолучитьСвойстваПроцесса"),
 	Alias(eGetProcessWindow, 1, true , L"GetProcessWindow" , L"ПолучитьОкноПроцесса"),
 	Alias(eActivateProcess , 1, true , L"ActivateProcess"  , L"АктивироватьПроцесс"),
-	Alias(eOutputToConsole , 1, true , L"OutputToConsole"  , L"ВывестиНаКонсоль"),
+	Alias(eOutputToConsole , 2, true , L"OutputToConsole"  , L"ВывестиВКонсоль"),
 	Alias(eGetDisplayList  , 1, true , L"GetDisplayList"   , L"ПолучитьСписокДисплеев"),
 	Alias(eGetDisplayInfo  , 1, true , L"GetDisplayInfo"   , L"ПолучитьСвойстваДисплея"),
 	Alias(eGetScreenInfo   , 0, true , L"GetScreenInfo"    , L"ПолучитьСвойстваЭкрана"),
@@ -247,6 +247,7 @@ bool WindowsControl::GetParamDefValue(const long lMethodNum, const long lParamNu
 	case eEmulateWheel: if (lParamNum == 1) return DefInt(pvarParamDefValue);
 	case eEmulateHotkey: if (lParamNum == 1) return DefInt(pvarParamDefValue);
 	case eFindFiles: if (lParamNum == 3) return DefBool(pvarParamDefValue, true);
+	case eOutputToConsole: if (lParamNum == 1) return DefInt(866);
 	}
 	return false;
 }
