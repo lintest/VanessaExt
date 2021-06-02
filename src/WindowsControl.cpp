@@ -280,6 +280,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"InvokeElement", u"ВызватьЭлемент",
 		[&](VH id) { this->result = uiAutomation.InvokeElement(id); }
 	);
+	AddFunction(u"FocusElement", u"АктивироватьЭлемент",
+		[&](VH id) { this->result = uiAutomation.FocusElement(id); }
+	);
 	AddFunction(u"SetElementValue", u"УстановитьЗначениеЭлемента",
 		[&](VH id, VH value) { this->result = uiAutomation.SetElementValue(id, value); }
 	);
