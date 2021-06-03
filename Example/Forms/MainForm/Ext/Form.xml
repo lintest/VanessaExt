@@ -1753,8 +1753,19 @@
 							<ThroughAlign>DontUse</ThroughAlign>
 							<ExtendedTooltip name="ГруппаУправлениеЭлементомРасширеннаяПодсказка" id="868"/>
 							<ChildItems>
+								<Button name="ПолучитьЗначениеЭлемента" id="878">
+									<Type>UsualButton</Type>
+									<CommandName>Form.Command.ПолучитьЗначениеЭлемента</CommandName>
+									<ExtendedTooltip name="ПолучитьЗначениеЭлементаРасширеннаяПодсказка" id="879"/>
+								</Button>
 								<InputField name="ЗначениеЭлемнта" id="869">
 									<DataPath>ЗначениеЭлемнта</DataPath>
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Значение</v8:content>
+										</v8:item>
+									</Title>
 									<ContextMenu name="ЗначениеЭлемнтаКонтекстноеМеню" id="870"/>
 									<ExtendedTooltip name="ЗначениеЭлемнтаРасширеннаяПодсказка" id="871"/>
 								</InputField>
@@ -1775,8 +1786,13 @@
 									<ChildItems>
 										<Button name="УстановитьЗначение" id="872">
 											<Type>CommandBarButton</Type>
-											<CommandName>Form.Command.УстановитьЗначение</CommandName>
+											<CommandName>Form.Command.УстановитьЗначениеЭлемента</CommandName>
 											<ExtendedTooltip name="УстановитьЗначениеРасширеннаяПодсказка" id="873"/>
+										</Button>
+										<Button name="АктивироватьЭлемент" id="876">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.АктивироватьЭлемент</CommandName>
+											<ExtendedTooltip name="АктивироватьЭлементРасширеннаяПодсказка" id="877"/>
 										</Button>
 										<Button name="НажатьНаЭлемент" id="865">
 											<Type>CommandBarButton</Type>
@@ -6533,7 +6549,7 @@
 			</ToolTip>
 			<Action>НажатьНаЭлемент</Action>
 		</Command>
-		<Command name="УстановитьЗначение" id="91">
+		<Command name="УстановитьЗначениеЭлемента" id="91">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
@@ -6543,10 +6559,40 @@
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Установить значение</v8:content>
+					<v8:content>Установить значение элемента</v8:content>
 				</v8:item>
 			</ToolTip>
-			<Action>УстановитьЗначение</Action>
+			<Action>УстановитьЗначениеЭлемента</Action>
+		</Command>
+		<Command name="ПолучитьЗначениеЭлемента" id="92">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить значение</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить значение элемента</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьЗначениеЭлемента</Action>
+		</Command>
+		<Command name="АктивироватьЭлемент" id="93">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Активировать</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Активировать элемент</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>АктивироватьЭлемент</Action>
 		</Command>
 	</Commands>
 </Form>
