@@ -263,6 +263,15 @@ std::string WinUIAuto::GetElements(DWORD pid)
 	return info(owner.get(), true).dump();
 }
 
+std::string WinUIAuto::GetElements(const std::string& id)
+{
+	InitAutomation();
+	UIAutoUniquePtr<IUIAutomationElement> owner;
+	find(id, UI(owner));
+	if (owner.get() == nullptr) return {};
+	return info(owner.get(), true).dump();
+}
+
 std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent)
 {
 	InitAutomation();

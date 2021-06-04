@@ -271,7 +271,7 @@ WindowsControl::WindowsControl() {
 		[&](VH image, VH x, VH y, VH w, VH h) { ImageHelper::Crop(image, this->result, x, y, w, h); }
 	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
-		[&](VH pid) { this->result = uiAutomation.GetElements((DWORD)(int64_t)pid); }
+		[&](VH id) { GetElements(id); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
 		[&](VH pid, VH name, VH type, VH parent) { this->result = uiAutomation.FindElements((DWORD)(int64_t)pid, name, type, parent); },
@@ -430,6 +430,15 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 		delete pi;
 	}
 	return result;
+}
+
+std::string WindowsControl::GetElements(VH id)
+{
+	switch (id.type()) {
+	case VTYPE_I4: return uiAutomation.GetElements((DWORD)(int64_t)id);
+	case VTYPE_PWSTR: return uiAutomation.GetElements((std::string)id);
+	default: return {};
+	};
 }
 
 void WindowsControl::ExitCurrentProcess(int64_t status)

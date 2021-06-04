@@ -14,6 +14,7 @@ private:
 	WinUIAuto uiAutomation;
 	HWND hProcessMonitor = NULL;
 	void StartProcessMonitoring();
+	std::string GetElements(VH id);
 public:
 	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
 #endif//_WINDOWS
