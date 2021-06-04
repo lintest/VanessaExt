@@ -1,9 +1,20 @@
 #pragma once
 #include <../include/types.h>
 #include <string>
+#include <memory>
 
 #ifdef _WINDOWS
+
 extern HMODULE hModule;
+
+template<class T>
+struct ComDeleter {
+	void operator()(T* a) { if (a) a->Release(); }
+};
+
+template<class T, class D = ComDeleter<T>>
+using ComUniquePtr = std::unique_ptr<T, D>;
+
 #endif //_WINDOWS
 
 std::wstring MB2WC(const std::string& source);

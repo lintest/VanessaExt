@@ -40,10 +40,8 @@ BaseHelper::ImageHelper::ImageHelper(HBITMAP hBitmap)
 BaseHelper::ImageHelper::ImageHelper(VH variant)
 {
 	if (!GgiPlusToken::Init()) return;
-	if (IStream* pStream = CreateMemoryStream((BYTE*)variant.data(), variant.size())) {
-		m_bitmap = Gdiplus::Bitmap::FromStream(pStream);
-		pStream->Release(); // releasing stream
-	}
+	ComUniquePtr<IStream> stream(CreateMemoryStream((BYTE*)variant.data(), variant.size()));
+	if (stream) m_bitmap = Gdiplus::Bitmap::FromStream(stream.get());
 }
 
 BaseHelper::ImageHelper::ImageHelper(const BITMAPINFO* gdiBitmapInfo, VOID* gdiBitmapData)
@@ -94,28 +92,24 @@ BOOL BaseHelper::ImageHelper::Save(std::vector<BYTE>& vec)
 	if (!GgiPlusToken::Init()) return false;
 
 	CLSID clsid;
-	GetEncoderClsid(L"image/png", &clsid); // retrieving JPEG encoder CLSID
+	GetEncoderClsid(L"image/png", &clsid);
 
 	BOOL Ret = FALSE;
-	if (IStream* pStream = CreateMemoryStream(NULL, 0)) // creating stream
-	{
-		Gdiplus::Status status = m_bitmap->Save(pStream, &clsid, 0); // saving image to the stream
+	ComUniquePtr<IStream> stream(CreateMemoryStream(NULL, 0));
+	if (stream) {
+		auto status = m_bitmap->Save(stream.get(), &clsid, 0);
 		if (status == Gdiplus::Ok) {
 			const LARGE_INTEGER lOfs{0};
 			ULARGE_INTEGER lSize;
-			if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_END, &lSize))) // retrieving size of stream data (seek to end)
-			{
+			if (SUCCEEDED(stream->Seek(lOfs, STREAM_SEEK_END, &lSize))) {
 				vec.resize((size_t)lSize.QuadPart);
-				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
-				{
-					if (SUCCEEDED(pStream->Read(vec.data(), (ULONG)vec.size(), 0))) // reading stream to buffer
-					{
+				if (SUCCEEDED(stream->Seek(lOfs, STREAM_SEEK_SET, 0))) {
+					if (SUCCEEDED(stream->Read(vec.data(), (ULONG)vec.size(), 0))) {
 						Ret = TRUE;
 					}
 				}
 			}
 		}
-		pStream->Release(); // releasing stream
 	}
 	return Ret;
 }
@@ -125,29 +119,24 @@ BOOL BaseHelper::ImageHelper::Save(VH variant)
 	if (!GgiPlusToken::Init()) return false;
 
 	CLSID clsid;
-	GetEncoderClsid(L"image/png", &clsid); // retrieving JPEG encoder CLSID
+	GetEncoderClsid(L"image/png", &clsid);
 
 	BOOL Ret = FALSE;
-	if (IStream* pStream = CreateMemoryStream(NULL, 0)) // creating stream
-	{
-		Gdiplus::Status status = m_bitmap->Save(pStream, &clsid, 0); // saving image to the stream
-		if (status == Gdiplus::Ok)
-		{
+	ComUniquePtr<IStream> stream(CreateMemoryStream(NULL, 0));
+	if (stream) {
+		auto status = m_bitmap->Save(stream.get(), &clsid, 0);
+		if (status == Gdiplus::Ok) {
 			const LARGE_INTEGER lOfs{ 0 };
 			ULARGE_INTEGER lSize;
-			if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_END, &lSize))) // retrieving size of stream data (seek to end)
-			{
-				if (SUCCEEDED(pStream->Seek(lOfs, STREAM_SEEK_SET, 0))) // seeking to beginning of the stream data
-				{
+			if (SUCCEEDED(stream->Seek(lOfs, STREAM_SEEK_END, &lSize))) {
+				if (SUCCEEDED(stream->Seek(lOfs, STREAM_SEEK_SET, 0))) {
 					variant.AllocMemory((unsigned long)lSize.QuadPart);
-					if (SUCCEEDED(pStream->Read(variant.data(), (ULONG)lSize.QuadPart, nullptr))) // reading stream to buffer
-					{
+					if (SUCCEEDED(stream->Read(variant.data(), (ULONG)lSize.QuadPart, nullptr))) {
 						Ret = TRUE;
 					}
 				}
 			}
 		}
-		pStream->Release(); // releasing stream
 	}
 	return Ret;
 }
@@ -159,7 +148,7 @@ BOOL BaseHelper::ImageHelper::Scale(VH source, VH target, double factor)
 	double h = factor * (double)src.m_bitmap->GetHeight();
 	ImageHelper result((int)w, (int)h);
 	Gdiplus::Graphics g(result.m_bitmap);
-	g.ScaleTransform(factor, factor);
+	g.ScaleTransform((Gdiplus::REAL)factor, (Gdiplus::REAL)factor);
 	g.DrawImage(src.m_bitmap, 0, 0);
 	result.Save(target);
 	return false;
