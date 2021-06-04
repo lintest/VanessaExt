@@ -270,6 +270,12 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"CropImage", u"ОбрезатьИзображение",
 		[&](VH image, VH x, VH y, VH w, VH h) { ImageHelper::Crop(image, this->result, x, y, w, h); }
 	);
+	AddProperty(u"ScaleFactor", u"Масштаб",
+		[&](VH var) { var = GetScaleFactor(0); }
+	);
+	AddFunction(u"GetScaleFactor", u"ПолучитьМасштаб",
+		[&](VH id) { this->result = GetScaleFactor(id); }, { {0, (int64_t)0} }
+	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
 		[&](VH id) { GetElements(id); }
 	);
@@ -439,6 +445,21 @@ std::string WindowsControl::GetElements(VH id)
 	case VTYPE_PWSTR: return uiAutomation.GetElements((std::string)id);
 	default: return {};
 	};
+}
+
+#include <shellscalingapi.h>
+#pragma comment(lib, "shcore.lib")
+
+int64_t WindowsControl::GetScaleFactor(int64_t window)
+{
+	HWND hWnd = window ? (HWND)window : ::GetActiveWindow();
+	DWORD dwFlags = window ? MONITOR_DEFAULTTONEAREST : MONITOR_DEFAULTTOPRIMARY;
+	auto hMon = MonitorFromWindow(hWnd, dwFlags);
+	DEVICE_SCALE_FACTOR scale = SCALE_100_PERCENT;
+	if (FAILED(GetScaleFactorForMonitor(hMon, &scale))) {
+		scale = SCALE_100_PERCENT;
+	}
+	return (int64_t)scale;
 }
 
 void WindowsControl::ExitCurrentProcess(int64_t status)

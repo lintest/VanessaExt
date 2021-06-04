@@ -15,6 +15,7 @@ private:
 	HWND hProcessMonitor = NULL;
 	void StartProcessMonitoring();
 	std::string GetElements(VH id);
+	int64_t GetScaleFactor(int64_t window);
 public:
 	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
 #endif//_WINDOWS
