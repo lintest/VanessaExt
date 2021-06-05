@@ -58,6 +58,7 @@ protected:
 		std::exception error(TYPEVAR vt) const;
 	public:
 		void AllocMemory(unsigned long size);
+		void resize(unsigned long size) { AllocMemory(size); } 
 		VarinantHelper(const VarinantHelper& va) :pvar(va.pvar), addin(va.addin), prop(va.prop), meth(va.meth), number(va.number) {}
 		VarinantHelper(tVariant* pvar, AddInNative* addin) :pvar(pvar), addin(addin) {}
 		VarinantHelper(tVariant* pvar, AddInNative* addin, Prop* prop) :pvar(pvar), addin(addin), prop(prop) {}
