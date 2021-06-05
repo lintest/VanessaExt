@@ -221,6 +221,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"PostMessage", u"ОтправитьСообщение",
 		[&](VH hWnd, VH Msg, VH wParam, VH lParam) { this->result = WindowsManager::PostMessage(hWnd, Msg, wParam, lParam); }
 	);
+	AddFunction(u"WaitForInputIdle", u"ЖдатьБездействияПроцесса",
+		[&](VH pid, VH msec) { this->result = (int64_t)::WaitForInputIdle((HANDLE)(int64_t)pid, (DWORD)(int64_t)msec); }
+	);
 	AddProcedure(u"DrawRectangle", u"НарисоватьПрямоугольник",
 		[&](VH p, VH x, VH y, VH w, VH h) { (new RecanglePainter(p, x, y, w, h))->run(); }
 	);
@@ -277,7 +280,7 @@ WindowsControl::WindowsControl() {
 		[&](VH id) { this->result = GetScaleFactor(id); }, { {0, (int64_t)0} }
 	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
-		[&](VH id) { GetElements(id); }
+		[&](VH id) { this->result = GetElements(id); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
 		[&](VH pid, VH name, VH type, VH parent) { this->result = uiAutomation.FindElements((DWORD)(int64_t)pid, name, type, parent); },
@@ -441,9 +444,8 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 std::string WindowsControl::GetElements(VH id)
 {
 	switch (id.type()) {
-	case VTYPE_I4: return uiAutomation.GetElements((DWORD)(int64_t)id);
 	case VTYPE_PWSTR: return uiAutomation.GetElements((std::string)id);
-	default: return {};
+	default: return uiAutomation.GetElements((DWORD)(int64_t)id);
 	};
 }
 
