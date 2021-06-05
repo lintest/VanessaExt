@@ -706,6 +706,8 @@ AddInNative::VarinantHelper::operator int64_t() const
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
 	switch (TV_VT(pvar)) {
+	case VTYPE_BOOL:
+		return pvar->bVal ? 1 : 0;
 	case VTYPE_I2:
 	case VTYPE_I4:
 	case VTYPE_UI1:
@@ -723,6 +725,8 @@ AddInNative::VarinantHelper::operator int() const
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
 	switch (TV_VT(pvar)) {
+	case VTYPE_BOOL:
+		return pvar->bVal ? 1 : 0;
 	case VTYPE_I2:
 	case VTYPE_I4:
 	case VTYPE_UI1:

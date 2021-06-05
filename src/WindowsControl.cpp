@@ -190,12 +190,12 @@ WindowsControl::WindowsControl() {
 		[&](VH query) { this->result = ProcessManager::FindProcess(query); }
 	);
 	AddProcedure(u"ShowClick", u"ПоказатьНажатиеМыши",
-		[&](VH color, VH radius, VH width, VH delay, VH trans) { ClickEffect::Show(color, radius, width, delay, trans); },
-		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127} }
+		[&](VH color, VH radius, VH width, VH delay, VH trans, VH echo) { ClickEffect::Show(color, radius, width, delay, trans, echo); },
+		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127}, {5, (int64_t)1} }
 	);
 	AddProcedure(u"VisualizeClick", u"ВизуализацияНажатияМыши",
-		[&](VH color, VH radius, VH width, VH delay, VH trans) { ClickEffect::Hook(color, radius, width, delay, trans); },
-		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127} }
+		[&](VH color, VH radius, VH width, VH delay, VH trans, VH echo) { ClickEffect::Hook(color, radius, width, delay, trans, echo); },
+		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127}, {5, (int64_t)1} }
 	);
 	AddProcedure(u"ShowClickVisualization", u"ПоказатьВизуализациюНажатияМыши",
 		[&]() { ClickEffect::Show(); }

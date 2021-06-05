@@ -11,8 +11,8 @@ public:
 	static Hooker* hooker(LPVOID lpParam);
 	static Painter* painter(HWND hWnd);
 	static Painter* painter(LPVOID lpParam);
-	static void Hook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
-	static void Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
+	static void Hook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans, int64_t echo);
+	static void Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans, int64_t echo);
 	static void Unhook();
 	static void Show();
 };

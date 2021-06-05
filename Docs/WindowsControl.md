@@ -29,9 +29,11 @@
 - <a href="#WindowList">СписокОкон (WindowList)</a>
 - <a href="#ProcessId">ИдентификаторПроцесса (ProcessId)</a>
 - <a href="#ActiveWindow">АктивноеОкно (ActiveWindow)</a>
+- <a href="#ActiveElement">АктивныйЭлемент (ActiveElement)</a>
 - <a href="#ClipboardText">ТекстБуфераОбмена (ClipboardText)</a>
 - <a href="#ClipboardImage">КартинкаБуфераОбмена (ClipboardImage)</a>
 - <a href="#CursorPos">ПозицияКурсора (CursorPos)</a>
+- <a href="#ScaleFactor">Масштаб (ScaleFactor)</a>
 
 ### Методы
 
@@ -67,6 +69,14 @@
 - <a href="#GoToDesktop">ПереключитьРабочийСтол (GoToDesktop)</a>
 - <a href="#GetWindowDesktop">ПолучитьРабочийСтолОкна (GetWindowDesktop)</a>
 - <a href="#MoveWindowToDesktop">ПереместитьОкноНаРабочийСтол (MoveWindowToDesktop)</a>
+
+Автоматизация пользовательского интерфейса (только для Windows):
+- <a href="#GetElements">ПолучитьЭлементы (GetElements)</a>
+- <a href="#FindElements">НайтиЭлементы (FindElements)</a>
+- <a href="#FocusElement">АктивироватьЭлемент (FocusElement)</a>
+- <a href="#InvokeElement">ВызватьЭлемент (InvokeElement)</a>
+- <a href="#GetElementValue">ПолучитьЗначениеЭлемента (GetElementValue)</a>
+- <a href="#SetElementValue">УстановитьЗначениеЭлемента (SetElementValue)</a>
 
 Эмуляция действий пользователя (только для Windows):
 - <a href="#EmulateMouse">ЭмуляцияДвиженияМыши (EmulateMouse)</a>

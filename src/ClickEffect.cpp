@@ -12,13 +12,15 @@ public:
 		int64_t radius,
 		int64_t width,
 		int64_t delay,
-		int64_t trans
-	) :
+		int64_t trans,
+		int64_t echo
+		) :
 		color((COLORREF)color),
 		radius((int)radius),
 		width((int)width),
 		delay((int)delay),
-		trans((int)trans) {}
+		trans((int)trans),
+		echo((int)echo) {}
 
 	Hooker& operator=(const Hooker& d) {
 		color = d.color;
@@ -26,6 +28,7 @@ public:
 		width = d.width;
 		delay = d.delay;
 		trans = d.trans;
+		echo = d.echo;
 		return *this;
 	}
 
@@ -37,6 +40,7 @@ private:
 	int width = 12;
 	int delay = 12;
 	int trans = 127;
+	int echo = 1;
 	friend Painter;
 };
 
@@ -47,6 +51,7 @@ private:
 	const int width;
 	const int delay;
 	const int trans;
+	const int echo;
 	bool last = false;
 	int limit = 0;
 	int step = 0;
@@ -57,6 +62,7 @@ public:
 		width(s.width),
 		delay(s.delay),
 		trans(s.trans),
+		echo(s.echo),
 		limit(s.radius) {}
 	LRESULT Paint(HWND hWnd);
 	void OnTimer(HWND hWnd);
@@ -110,7 +116,7 @@ void ClickEffect::Painter::OnTimer(HWND hWnd)
 	if (step > limit) {
 		bErase = true;
 		KillTimer(hWnd, ID_CLICK_TIMER);
-		if (last) {
+		if (last || echo == 0) {
 			SendMessage(hWnd, WM_DESTROY, 0, 0);
 			return;
 		}
@@ -260,13 +266,13 @@ void ClickEffect::Hooker::Create()
 	hMouseHook = SetWindowsHookEx(WH_MOUSE, &HookProc, hModule, NULL);
 }
 
-void ClickEffect::Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
+void ClickEffect::Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans, int64_t echo)
 {
-	auto painter = new Painter(Hooker(color, radius, width, delay, trans));
+	auto painter = new Painter(Hooker(color, radius, width, delay, trans, echo));
 	CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
 }
 
-typedef void(__cdecl* StartHookProc)(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans);
+typedef void(__cdecl* StartHookProc)(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans, int64_t echo);
 typedef void(__cdecl* StopHookProc)();
 
 static bool GetLibraryFile(std::wstring& path)
@@ -286,11 +292,11 @@ static HMODULE LoadHookLibrary()
 	return GetLibraryFile(path) ? LoadLibrary(path.c_str()) : nullptr;
 }
 
-void ClickEffect::Hook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
+void ClickEffect::Hook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans, int64_t echo)
 {
 	if (auto h = LoadHookLibrary()) {
 		auto proc = (StartHookProc)GetProcAddress(h, "StartClickHook");
-		if (proc) proc(color, radius, width, delay, trans);
+		if (proc) proc(color, radius, width, delay, trans, echo);
 	}
 }
 
@@ -315,10 +321,10 @@ extern "C" {
 		if (hWnd) PostMessage(hWnd, WM_DESTROY, 0, 0);
 		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
 	}
-	__declspec(dllexport) void __cdecl StartClickHook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans)
+	__declspec(dllexport) void __cdecl StartClickHook(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans, int64_t echo)
 	{
 		StopClickHook();
-		ClickEffect::Hooker* settings = new ClickEffect::Hooker(color, radius, width, delay, trans);
+		ClickEffect::Hooker* settings = new ClickEffect::Hooker(color, radius, width, delay, trans, echo);
 		CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
 	}
 }
