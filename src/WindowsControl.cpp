@@ -450,18 +450,26 @@ std::string WindowsControl::GetElements(VH id)
 }
 
 #include <shellscalingapi.h>
-#pragma comment(lib, "shcore.lib")
+
+typedef HRESULT (STDAPICALLTYPE* GetScaleFactorForMonitorType)(HMONITOR hMon, DEVICE_SCALE_FACTOR* pScale);
 
 int64_t WindowsControl::GetScaleFactor(int64_t window)
 {
-	HWND hWnd = window ? (HWND)window : ::GetActiveWindow();
-	DWORD dwFlags = window ? MONITOR_DEFAULTTONEAREST : MONITOR_DEFAULTTOPRIMARY;
-	auto hMon = MonitorFromWindow(hWnd, dwFlags);
-	DEVICE_SCALE_FACTOR scale = SCALE_100_PERCENT;
-	if (FAILED(GetScaleFactorForMonitor(hMon, &scale))) {
-		scale = SCALE_100_PERCENT;
+	static GetScaleFactorForMonitorType GetScaleFactorForMonitorFunc = nullptr;
+	if (GetScaleFactorForMonitorFunc == nullptr) {
+		if (auto lib = LoadLibrary(L"shcore.dll")) {
+			GetScaleFactorForMonitorFunc = reinterpret_cast<GetScaleFactorForMonitorType>(GetProcAddress(lib, "GetScaleFactorForMonitor"));
+		}
 	}
-	return (int64_t)scale;
+	if (GetScaleFactorForMonitorFunc) {
+		HWND hWnd = window ? (HWND)window : ::GetActiveWindow();
+		DWORD dwFlags = window ? MONITOR_DEFAULTTONEAREST : MONITOR_DEFAULTTOPRIMARY;
+		auto hMon = MonitorFromWindow(hWnd, dwFlags);
+		DEVICE_SCALE_FACTOR scale = DEVICE_SCALE_FACTOR_INVALID;
+		if (SUCCEEDED(GetScaleFactorForMonitorFunc(hMon, &scale)))
+			return (int64_t)scale;
+	}
+	return (int64_t)DEVICE_SCALE_FACTOR_INVALID;
 }
 
 void WindowsControl::ExitCurrentProcess(int64_t status)
