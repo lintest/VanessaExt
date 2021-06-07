@@ -1745,6 +1745,12 @@
 									<ContextMenu name="ДеревоЭлементовidКонтекстноеМеню" id="810"/>
 									<ExtendedTooltip name="ДеревоЭлементовidРасширеннаяПодсказка" id="811"/>
 								</InputField>
+								<InputField name="ДеревоЭлементовAutomationId" id="883">
+									<DataPath>ДеревоЭлементов.AutomationId</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<ContextMenu name="ДеревоЭлементовAutomationIdКонтекстноеМеню" id="884"/>
+									<ExtendedTooltip name="ДеревоЭлементовAutomationIdРасширеннаяПодсказка" id="885"/>
+								</InputField>
 								<InputField name="ДеревоЭлементовname" id="806">
 									<DataPath>ДеревоЭлементов.name</DataPath>
 									<EditMode>EnterOnInput</EditMode>
@@ -4961,6 +4967,21 @@
 						<v8:item>
 							<v8:lang>ru</v8:lang>
 							<v8:content>Заголовок окна</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:string</v8:Type>
+						<v8:StringQualifiers>
+							<v8:Length>0</v8:Length>
+							<v8:AllowedLength>Variable</v8:AllowedLength>
+						</v8:StringQualifiers>
+					</Type>
+				</Column>
+				<Column name="AutomationId" id="10">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Ключ</v8:content>
 						</v8:item>
 					</Title>
 					<Type>
