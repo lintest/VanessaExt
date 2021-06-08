@@ -11,8 +11,8 @@ public:
 	std::string GetFormat();
 	std::wstring GetText();
 	std::wstring GetFiles();
-	bool GetImage(VH data);
-	bool SetImage(VH data, bool bEmpty = true);
+	bool GetImage(VH &data);
+	bool SetImage(VH &data, bool bEmpty = true);
 	bool SetText(const std::wstring &text, bool bEmpty = true);
 	bool SetFiles(const std::string& text, bool bEmpty = true);
 	bool Empty();

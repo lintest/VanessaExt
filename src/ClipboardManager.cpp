@@ -163,7 +163,7 @@ bool BaseHelper::ClipboardManager::SetFiles(const std::string &text, bool bEmpty
 	return true;
 }
 
-bool BaseHelper::ClipboardManager::GetImage(VH variant)
+bool BaseHelper::ClipboardManager::GetImage(VH &variant)
 {
 	if (!m_isOpened) return false;
 
@@ -191,7 +191,7 @@ bool BaseHelper::ClipboardManager::GetImage(VH variant)
 	return true;
 }
 
-bool BaseHelper::ClipboardManager::SetImage(VH variant, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetImage(VH &variant, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 
