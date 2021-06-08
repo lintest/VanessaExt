@@ -133,7 +133,7 @@ bool BaseHelper::ClipboardManager::SetText(const std::wstring& text, bool bEmpty
 
 #include <shlobj.h> // DROPFILES
 
-bool BaseHelper::ClipboardManager::SetFiles(const std::string &text, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetFiles(const std::string& text, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 	if (bEmpty) EmptyClipboard();
@@ -163,7 +163,7 @@ bool BaseHelper::ClipboardManager::SetFiles(const std::string &text, bool bEmpty
 	return true;
 }
 
-bool BaseHelper::ClipboardManager::GetImage(VH &variant)
+bool BaseHelper::ClipboardManager::GetImage(VH& variant)
 {
 	if (!m_isOpened) return false;
 
@@ -191,7 +191,7 @@ bool BaseHelper::ClipboardManager::GetImage(VH &variant)
 	return true;
 }
 
-bool BaseHelper::ClipboardManager::SetImage(VH &variant, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetImage(VH& variant, bool bEmpty)
 {
 	if (!m_isOpened) return false;
 
@@ -263,19 +263,19 @@ BaseHelper::ClipboardManager::~ClipboardManager()
 {
 }
 
-bool BaseHelper::ClipboardManager::SetText(const std::wstring &text, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetText(const std::wstring& text, bool bEmpty)
 {
 	return clip::set_text(WC2MB(text));
 }
 
 std::string BaseHelper::ClipboardManager::GetFormat()
 {
-  clip::lock l;
-  if (l.locked()) {
-	if (l.is_convertible(clip::text_format())) return "[{\"key\":1,\"name\":\"TEXT\"}]";
-  	if (l.is_convertible(clip::image_format())) return "[{\"key\":2,\"name\":\"PNG\"}]";
-  }
-  return {};
+	clip::lock l;
+	if (l.locked()) {
+		if (l.is_convertible(clip::text_format())) return "[{\"key\":1,\"name\":\"TEXT\"}]";
+		if (l.is_convertible(clip::image_format())) return "[{\"key\":2,\"name\":\"PNG\"}]";
+	}
+	return {};
 }
 
 std::wstring BaseHelper::ClipboardManager::GetText()
@@ -285,7 +285,7 @@ std::wstring BaseHelper::ClipboardManager::GetText()
 	return MB2WC(text);
 }
 
-bool BaseHelper::ClipboardManager::GetImage(VH data)
+bool BaseHelper::ClipboardManager::GetImage(VH& data)
 {
 	clip::image image;
 	clip::get_image(image);
@@ -297,7 +297,7 @@ bool BaseHelper::ClipboardManager::GetImage(VH data)
 	return true;
 }
 
-bool BaseHelper::ClipboardManager::SetImage(VH data, bool bEmpty)
+bool BaseHelper::ClipboardManager::SetImage(VH& data, bool bEmpty)
 {
 	clip::image image;
 	clip::x11::read_png((uint8_t*)data.data(), data.size(), &image, nullptr);
