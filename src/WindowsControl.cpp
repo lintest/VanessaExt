@@ -292,11 +292,14 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"FocusElement", u"АктивироватьЭлемент",
 		[&](VH id) { this->result = uiAutomation.FocusElement(id); }
 	);
-	AddFunction(u"SetElementValue", u"УстановитьЗначениеЭлемента",
-		[&](VH id, VH value) { this->result = uiAutomation.SetElementValue(id, value); }
+	AddFunction(u"GetParentElement", u"ПолучитьРодителяЭлемента",
+		[&](VH id) { this->result = uiAutomation.GetParentElement(id); }
 	);
 	AddFunction(u"GetElementValue", u"ПолучитьЗначениеЭлемента",
 		[&](VH id) { this->result = uiAutomation.GetElementValue(id); }
+	);
+	AddFunction(u"SetElementValue", u"УстановитьЗначениеЭлемента",
+		[&](VH id, VH value) { this->result = uiAutomation.SetElementValue(id, value); }
 	);
 	AddProperty(u"ActiveElement", u"АктивныйЭлемент",
 		[&](VH var) { var = uiAutomation.GetFocusedElement(); }
@@ -441,7 +444,7 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 	return result;
 }
 
-std::string WindowsControl::GetElements(VH id)
+std::string WindowsControl::GetElements(const VH &id)
 {
 	switch (id.type()) {
 	case VTYPE_PWSTR: return uiAutomation.GetElements((std::string)id);

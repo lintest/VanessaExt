@@ -295,7 +295,7 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
-	if (owner) owner->FindAll(TreeScope_Subtree, cond.get(), UI(elements));
+	owner->FindAll(TreeScope_Subtree, cond.get(), UI(elements));
 	return info(elements.get()).dump();
 }
 
@@ -342,7 +342,22 @@ bool WinUIAuto::FocusElement(const std::string& id)
 	UIAutoUniquePtr<IUIAutomationElement> element;
 	find(id, UI(element));
 	if (element.get() == nullptr) return false;
-	return element && SUCCEEDED(element->SetFocus());
+	return SUCCEEDED(element->SetFocus());
+}
+
+std::string WinUIAuto::GetParentElement(const std::string& id)
+{
+	InitAutomation();
+	UIAutoUniquePtr<IUIAutomationElement> child;
+	find(id, UI(child));
+	if (child.get() == nullptr) return {};
+
+	IUIAutomationTreeWalker* walker;
+	pAutomation->get_ControlViewWalker(&walker);
+	UIAutoUniquePtr<IUIAutomationElement> parent;
+	walker->GetParentElement(child.get(), UI(parent));
+	if (parent.get() == nullptr) return {};
+	return info(parent.get()).dump();
 }
 
 bool WinUIAuto::SetElementValue(const std::string& id, const std::wstring& value)
