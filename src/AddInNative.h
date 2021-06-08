@@ -78,8 +78,8 @@ protected:
 		operator double() const;
 		operator bool() const;
 		operator int() const;
-		uint32_t size();
-		TYPEVAR type();
+		uint32_t size() const;
+		TYPEVAR type() const;
 		char* data();
 		void clear();
 	};

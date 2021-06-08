@@ -525,13 +525,13 @@ std::wstring lower(const std::wstring& src)
 	return str;
 }
 
-TYPEVAR AddInNative::VarinantHelper::type()
+TYPEVAR AddInNative::VarinantHelper::type() const
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
 	return pvar->vt;
 }
 
-uint32_t AddInNative::VarinantHelper::size()
+uint32_t AddInNative::VarinantHelper::size() const
 {
 	if (pvar == nullptr) throw std::bad_variant_access();
 	if (pvar->vt != VTYPE_BLOB) throw error(VTYPE_BLOB);
