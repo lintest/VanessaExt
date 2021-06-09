@@ -31,14 +31,23 @@ private:
 		operator T** () { return &ptr; }
 		operator T* () { return ptr; }
 	};
+	class UICacheRequest {
+	private:
+		UIAutoUniquePtr<IUIAutomationCacheRequest> cache;
+	public:
+		UICacheRequest(WinUIAuto& owner);
+		operator IUIAutomationCacheRequest* () { return cache.get(); }
+		IUIAutomationCacheRequest* operator->() { return cache.get(); }
+	};
 private:
-	HRESULT find(DWORD pid, IUIAutomationElement** element);
-	HRESULT find(const std::string& id, IUIAutomationElement** element);
+	HRESULT find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element);
+	HRESULT find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element);
 	bool isWindow(IUIAutomationElement* element, JSON& json);
-	JSON info(IUIAutomationElement* element, bool subtree = false);
-	JSON info(IUIAutomationElementArray* elements);
+	JSON info(IUIAutomationElement* element, UICacheRequest& cache, bool subtree = false);
+	JSON info(IUIAutomationElementArray* elements, UICacheRequest& cache);
 	UIAutoUniquePtr<IUIAutomation> pAutomation;
 	void InitAutomation();
+	friend UICacheRequest;
 public:
 	std::string GetFocusedElement();
 	std::string GetElements(DWORD pid);

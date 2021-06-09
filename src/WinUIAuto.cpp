@@ -116,6 +116,23 @@ static std::string type2str(CONTROLTYPEID typeId) {
 	}
 }
 
+WinUIAuto::UICacheRequest::UICacheRequest(WinUIAuto& owner)
+{
+	owner.InitAutomation();
+	owner.pAutomation->CreateCacheRequest(UI(cache));
+	cache->AddProperty(UIA_RuntimeIdPropertyId);
+	cache->AddProperty(UIA_BoundingRectanglePropertyId);
+	cache->AddProperty(UIA_ProcessIdPropertyId);
+	cache->AddProperty(UIA_ControlTypePropertyId);
+	cache->AddProperty(UIA_LocalizedControlTypePropertyId);
+	cache->AddProperty(UIA_NamePropertyId);
+	cache->AddProperty(UIA_AutomationIdPropertyId);
+	cache->AddProperty(UIA_HelpTextPropertyId);
+	cache->AddProperty(UIA_ClickablePointPropertyId);
+	cache->AddProperty(UIA_ValueValuePropertyId);
+	cache->put_TreeScope(TreeScope_Subtree);
+}
+
 bool WinUIAuto::isWindow(IUIAutomationElement* element, JSON& json)
 {
 	CONTROLTYPEID typeId;
@@ -133,20 +150,20 @@ bool WinUIAuto::isWindow(IUIAutomationElement* element, JSON& json)
 
 #define SET_JSON(key, method) { UIString name; if (SUCCEEDED(element->method(&name))) json[key] = WC2MB(name); }
 
-JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
+JSON WinUIAuto::info(IUIAutomationElement* element, UICacheRequest& cache, bool subtree)
 {
 	if (element == nullptr) return {};
 	JSON json;
 
 	CONTROLTYPEID typeId;
-	if (SUCCEEDED(element->get_CurrentControlType(&typeId))) {
+	if (SUCCEEDED(element->get_CachedControlType(&typeId))) {
 		json["Type"] = type2str(typeId);
 	}
 
-	SET_JSON("Name", get_CurrentName);
-	SET_JSON("HelpText", get_CurrentHelpText);
-	SET_JSON("AutomationId", get_CurrentAutomationId);
-	SET_JSON("LocalizedControlType", get_CurrentLocalizedControlType);
+	SET_JSON("Name", get_CachedName);
+	SET_JSON("HelpText", get_CachedHelpText);
+	SET_JSON("AutomationId", get_CachedAutomationId);
+	SET_JSON("LocalizedControlType", get_CachedLocalizedControlType);
 
 	std::stringstream ss;
 	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> id;
@@ -180,7 +197,7 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 		if (gotClickable) { json["x"] = point.x; json["y"] = point.y; }
 
 	CComVariant value;
-	if (SUCCEEDED(element->GetCurrentPropertyValue(UIA_ValueValuePropertyId, &value)))
+	if (SUCCEEDED(element->GetCachedPropertyValue(UIA_ValueValuePropertyId, &value)))
 		if (auto length = SysStringLen(value.bstrVal))
 			json["Value"] = WC2MB(std::wstring(value.bstrVal, length));
 
@@ -188,10 +205,10 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 	pAutomation->get_ControlViewWalker(&walker);
 	if (subtree) {
 		UIAutoUniquePtr<IUIAutomationElement> child;
-		walker->GetFirstChildElement(element, UI(child));
+		walker->GetFirstChildElementBuildCache(element, cache, UI(child));
 		while (child) {
-			json["Tree"].push_back(info(child.get(), true));
-			walker->GetNextSiblingElement(child.get(), UI(child));
+			json["Tree"].push_back(info(child.get(), cache, true));
+			walker->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
 		}
 	}
 	else {
@@ -208,7 +225,7 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 	return json;
 }
 
-JSON WinUIAuto::info(IUIAutomationElementArray* elements) {
+JSON WinUIAuto::info(IUIAutomationElementArray* elements, UICacheRequest& cache) {
 	JSON json;
 	int count = 0;
 	if (elements == nullptr) return json;
@@ -216,7 +233,7 @@ JSON WinUIAuto::info(IUIAutomationElementArray* elements) {
 	for (int i = 0; i < count; ++i) {
 		UIAutoUniquePtr<IUIAutomationElement> element;
 		elements->GetElement(i, UI(element));
-		json.push_back(info(element.get(), false));
+		json.push_back(info(element.get(), cache, false));
 	}
 	return json;
 }
@@ -236,11 +253,11 @@ void WinUIAuto::InitAutomation()
 
 std::string WinUIAuto::GetFocusedElement()
 {
-	InitAutomation();
+	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> element;
-	if (FAILED(pAutomation->GetFocusedElement(UI(element)))) return {};
+	if (FAILED(pAutomation->GetFocusedElementBuildCache(cache, UI(element)))) return {};
 	if (element.get() == nullptr) return {};
-	return info(element.get()).dump();
+	return info(element.get(), cache).dump();
 }
 
 static std::vector<int> str2id(const std::string& text) {
@@ -257,35 +274,36 @@ static std::vector<int> str2id(const std::string& text) {
 
 std::string WinUIAuto::GetElements(DWORD pid)
 {
-	InitAutomation();
+	UICacheRequest cache(*this);
+	cache->put_TreeScope(TreeScope_Subtree);
 	UIAutoUniquePtr<IUIAutomationElement> owner;
-	find(pid, UI(owner));
+	find(pid, cache, UI(owner));
 	if (owner.get() == nullptr) return {};
-	return info(owner.get(), true).dump();
+	return info(owner.get(), cache, true).dump();
 }
 
 std::string WinUIAuto::GetElements(const std::string& id)
 {
-	InitAutomation();
+	UICacheRequest cache(*this);
+	cache->put_TreeScope(TreeScope_Subtree);
 	UIAutoUniquePtr<IUIAutomationElement> owner;
-	find(id, UI(owner));
+	find(id, cache, UI(owner));
 	if (owner.get() == nullptr) return {};
-	return info(owner.get(), true).dump();
+	return info(owner.get(), cache, true).dump();
 }
 
 std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent)
 {
-	InitAutomation();
-
+	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> owner;
 	std::vector<IUIAutomationCondition*> conditions;
 	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType, cProc;
 
 	if (parent.empty()) {
-		pAutomation->GetRootElement(UI(owner));
+		pAutomation->GetRootElementBuildCache(cache, UI(owner));
 	}
 	else {
-		find(parent, UI(owner));
+		find(parent, cache, UI(owner));
 	}
 	if (owner.get() == nullptr) return {};
 
@@ -305,13 +323,13 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
-	owner->FindAll(TreeScope_Subtree, cond.get(), UI(elements));
-	return info(elements.get()).dump();
+	owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+	return info(elements.get(), cache).dump();
 }
 
 #define ASSERT(hr) if ((HRESULT)(hr) < 0) return hr;
 
-HRESULT WinUIAuto::find(DWORD pid, IUIAutomationElement** element)
+HRESULT WinUIAuto::find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element)
 {
 	if (pid == 0) {
 		ASSERT(pAutomation->ElementFromHandle(::GetActiveWindow(), element));
@@ -321,12 +339,12 @@ HRESULT WinUIAuto::find(DWORD pid, IUIAutomationElement** element)
 		UIAutoUniquePtr<IUIAutomationCondition> cond;
 		ASSERT(pAutomation->GetRootElement(UI(root)));
 		ASSERT(pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)));
-		ASSERT(root->FindFirst(TreeScope_Children, cond.get(), element));
+		ASSERT(root->FindFirstBuildCache(TreeScope_Subtree, cond.get(), cache, element));
 	}
 	return 0;
 }
 
-HRESULT WinUIAuto::find(const std::string& id, IUIAutomationElement** element)
+HRESULT WinUIAuto::find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element)
 {
 	UIAutoUniquePtr<IUIAutomationElement> root;
 	ASSERT(pAutomation->GetRootElement(UI(root)));
@@ -335,15 +353,15 @@ HRESULT WinUIAuto::find(const std::string& id, IUIAutomationElement** element)
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	ASSERT(pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), UI(sa)));
 	ASSERT(pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa.get()), UI(cond)));
-	ASSERT(root->FindFirst(TreeScope_Subtree, cond.get(), element));
+	ASSERT(root->FindFirstBuildCache(TreeScope_Subtree, cond.get(), cache, element));
 	return 0;
 }
 
 bool WinUIAuto::InvokeElement(const std::string& id)
 {
-	InitAutomation();
+	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> element;
-	find(id, UI(element));
+	find(id, cache, UI(element));
 	if (element.get() == nullptr) return false;
 	UIAutoUniquePtr<IUIAutomationInvokePattern> pattern;
 	if (FAILED(element->GetCurrentPattern(UIA_InvokePatternId, (IUnknown**)&UI(pattern)))) return false;
@@ -352,33 +370,33 @@ bool WinUIAuto::InvokeElement(const std::string& id)
 
 bool WinUIAuto::FocusElement(const std::string& id)
 {
-	InitAutomation();
+	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> element;
-	find(id, UI(element));
+	find(id, cache, UI(element));
 	if (element.get() == nullptr) return false;
 	return SUCCEEDED(element->SetFocus());
 }
 
 std::string WinUIAuto::GetParentElement(const std::string& id)
 {
-	InitAutomation();
+	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> child;
-	find(id, UI(child));
+	find(id, cache, UI(child));
 	if (child.get() == nullptr) return {};
 
 	IUIAutomationTreeWalker* walker;
 	pAutomation->get_ControlViewWalker(&walker);
 	UIAutoUniquePtr<IUIAutomationElement> parent;
-	walker->GetParentElement(child.get(), UI(parent));
+	walker->GetParentElementBuildCache(child.get(), cache, UI(parent));
 	if (parent.get() == nullptr) return {};
-	return info(parent.get()).dump();
+	return info(parent.get(), cache).dump();
 }
 
 bool WinUIAuto::SetElementValue(const std::string& id, const std::wstring& value)
 {
-	InitAutomation();
+	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> element;
-	find(id, UI(element));
+	find(id, cache, UI(element));
 	if (element.get() == nullptr) return false;
 	UIAutoUniquePtr<IUIAutomationValuePattern> pattern;
 	if (FAILED(element->GetCurrentPattern(UIA_ValuePatternId, (IUnknown**)&UI(pattern)))) return false;
@@ -387,9 +405,9 @@ bool WinUIAuto::SetElementValue(const std::string& id, const std::wstring& value
 
 std::wstring WinUIAuto::GetElementValue(const std::string& id)
 {
-	InitAutomation();
+	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> element;
-	find(id, UI(element));
+	find(id, cache, UI(element));
 	if (element.get() == nullptr) return {};
 
 	CComVariant value;
