@@ -430,18 +430,18 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 		si.dwFlags |= STARTF_USESHOWWINDOW;
 		si.wShowWindow = SW_HIDE;
 	}
-	int64_t result = 0;
+	int64_t pid = 0;
 	StartProcessMonitoring();
 	ProcessInfo* pi = new ProcessInfo(hProcessMonitor);
 	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, pi);
 	if (ok) {
-		result = (int64_t)pi->dwProcessId;
+		pid = (int64_t)pi->dwProcessId;
 		CreateThread(0, NULL, ProcessThreadProc, (LPVOID)pi, NULL, NULL);
 	}
 	else {
 		delete pi;
 	}
-	return result;
+	return pid;
 }
 
 std::string WindowsControl::GetElements(const VH &id)

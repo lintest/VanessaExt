@@ -211,7 +211,8 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 JSON WinUIAuto::info(IUIAutomationElementArray* elements) {
 	JSON json;
 	int count = 0;
-	if (elements) elements->get_Length(&count);
+	if (elements == nullptr) return json;
+	elements->get_Length(&count);
 	for (int i = 0; i < count; ++i) {
 		UIAutoUniquePtr<IUIAutomationElement> element;
 		elements->GetElement(i, UI(element));
