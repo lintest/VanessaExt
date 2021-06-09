@@ -278,11 +278,20 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	InitAutomation();
 
 	UIAutoUniquePtr<IUIAutomationElement> owner;
-	if (parent.empty()) find(pid, UI(owner)); else find(parent, UI(owner));
+	std::vector<IUIAutomationCondition*> conditions;
+	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType, cProc;
+
+	if (parent.empty()) {
+		pAutomation->GetRootElement(UI(owner));
+	}
+	else {
+		find(parent, UI(owner));
+	}
 	if (owner.get() == nullptr) return {};
 
-	std::vector<IUIAutomationCondition*> conditions;
-	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType;
+	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cProc));
+	conditions.push_back(cProc.get());
+
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
 	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
@@ -300,30 +309,34 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	return info(elements.get()).dump();
 }
 
-void WinUIAuto::find(DWORD pid, IUIAutomationElement** element)
+#define ASSERT(hr) if ((HRESULT)(hr) < 0) return hr;
+
+HRESULT WinUIAuto::find(DWORD pid, IUIAutomationElement** element)
 {
 	if (pid == 0) {
-		if (FAILED(pAutomation->ElementFromHandle(::GetActiveWindow(), element))) return;
+		ASSERT(pAutomation->ElementFromHandle(::GetActiveWindow(), element));
 	}
 	else {
 		UIAutoUniquePtr<IUIAutomationElement> root;
 		UIAutoUniquePtr<IUIAutomationCondition> cond;
-		if (FAILED(pAutomation->GetRootElement(UI(root)))) return;
-		if (FAILED(pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)))) return;
-		if (FAILED(root->FindFirst(TreeScope_Children, cond.get(), element))) return;
+		ASSERT(pAutomation->GetRootElement(UI(root)));
+		ASSERT(pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)));
+		ASSERT(root->FindFirst(TreeScope_Children, cond.get(), element));
 	}
+	return 0;
 }
 
-void WinUIAuto::find(const std::string& id, IUIAutomationElement** element)
+HRESULT WinUIAuto::find(const std::string& id, IUIAutomationElement** element)
 {
 	UIAutoUniquePtr<IUIAutomationElement> root;
-	if (FAILED(pAutomation->GetRootElement(UI(root)))) return;
+	ASSERT(pAutomation->GetRootElement(UI(root)));
 	auto v = str2id(id);
 	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> sa;
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
-	if (FAILED(pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), UI(sa)))) return;
-	if (FAILED(pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa.get()), UI(cond)))) return;
-	if (FAILED(root->FindFirst(TreeScope_Subtree, cond.get(), element))) return;
+	ASSERT(pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), UI(sa)));
+	ASSERT(pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa.get()), UI(cond)));
+	ASSERT(root->FindFirst(TreeScope_Subtree, cond.get(), element));
+	return 0;
 }
 
 bool WinUIAuto::InvokeElement(const std::string& id)

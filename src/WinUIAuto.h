@@ -32,8 +32,8 @@ private:
 		operator T* () { return ptr; }
 	};
 private:
-	void find(DWORD pid, IUIAutomationElement** element);
-	void find(const std::string& id, IUIAutomationElement** element);
+	HRESULT find(DWORD pid, IUIAutomationElement** element);
+	HRESULT find(const std::string& id, IUIAutomationElement** element);
 	bool isWindow(IUIAutomationElement* element, JSON& json);
 	JSON info(IUIAutomationElement* element, bool subtree = false);
 	JSON info(IUIAutomationElementArray* elements);
