@@ -15,6 +15,19 @@ struct ComDeleter {
 template<class T, class D = ComDeleter<T>>
 using ComUniquePtr = std::unique_ptr<T, D>;
 
+template<class T, class D = ComDeleter<T>>
+class DComPtr {
+private:
+	T* ptr = nullptr;
+	ComUniquePtr<T, D>& src;
+public:
+	DComPtr(ComUniquePtr<T, D>& p) : ptr(p.get()), src(p) { }
+	virtual ~DComPtr() { src.reset(ptr); }
+	T** operator&() { return &ptr; }
+	operator T** () { return &ptr; }
+	operator T* () { return ptr; }
+};
+
 #endif //_WINDOWS
 
 std::wstring MB2WC(const std::string& source);
