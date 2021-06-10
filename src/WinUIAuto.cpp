@@ -175,7 +175,7 @@ JSON WinUIAuto::info(IUIAutomationElement* element, bool subtree)
 		};
 	}
 
-	POINT point = {0, 0}; BOOL gotClickable = false;
+	POINT point = { 0, 0 }; BOOL gotClickable = false;
 	if (SUCCEEDED(element->GetClickablePoint(&point, &gotClickable)))
 		if (gotClickable) { json["x"] = point.x; json["y"] = point.y; }
 
@@ -273,6 +273,26 @@ std::string WinUIAuto::GetElements(const std::string& id)
 	return info(owner.get(), true).dump();
 }
 
+static HWND GetMainProcessWindow(DWORD pid)
+{
+	using EnumParam = std::pair<DWORD, HWND>;
+	EnumParam p{ pid, 0 };
+	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+		{
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)
+				&& ::GetWindow(hWnd, GW_OWNER) == (HWND)0) {
+				auto p = (EnumParam*)lParam;
+				DWORD dwProcessId = 0;
+				::GetWindowThreadProcessId(hWnd, &dwProcessId);
+				if (p->first == dwProcessId) {
+					p->second = hWnd;
+				}
+			}
+			return TRUE;
+		}, (LPARAM)&p);
+	return p.second;
+}
+
 std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent)
 {
 	InitAutomation();
@@ -282,15 +302,12 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType, cProc;
 
 	if (parent.empty()) {
-		pAutomation->GetRootElement(UI(owner));
+		find(pid, UI(owner));
 	}
 	else {
 		find(parent, UI(owner));
 	}
 	if (owner.get() == nullptr) return {};
-
-	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cProc));
-	conditions.push_back(cProc.get());
 
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
@@ -313,17 +330,8 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 
 HRESULT WinUIAuto::find(DWORD pid, IUIAutomationElement** element)
 {
-	if (pid == 0) {
-		ASSERT(pAutomation->ElementFromHandle(::GetActiveWindow(), element));
-	}
-	else {
-		UIAutoUniquePtr<IUIAutomationElement> root;
-		UIAutoUniquePtr<IUIAutomationCondition> cond;
-		ASSERT(pAutomation->GetRootElement(UI(root)));
-		ASSERT(pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)));
-		ASSERT(root->FindFirst(TreeScope_Children, cond.get(), element));
-	}
-	return 0;
+	HWND hWnd = pid ? GetMainProcessWindow(pid) : GetActiveWindow();
+	return pAutomation->ElementFromHandle(hWnd, element);
 }
 
 HRESULT WinUIAuto::find(const std::string& id, IUIAutomationElement** element)
