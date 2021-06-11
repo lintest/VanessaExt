@@ -296,39 +296,20 @@ std::string WinUIAuto::GetElements(const std::string& id)
 	return info(owner.get(), cache, true).dump();
 }
 
-static HWND GetMainProcessWindow(DWORD pid)
+static bool empty(UIAutoUniquePtr<IUIAutomationElementArray>& elements)
 {
-	using EnumParam = std::pair<DWORD, HWND>;
-	EnumParam p{ pid, 0 };
-	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
-		{
-			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)
-				&& ::GetWindow(hWnd, GW_OWNER) == (HWND)0) {
-				auto p = (EnumParam*)lParam;
-				DWORD dwProcessId = 0;
-				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				if (p->first == dwProcessId) {
-					p->second = hWnd;
-				}
-			}
-			return TRUE;
-		}, (LPARAM)&p);
-	return p.second;
+	if (elements.get() == nullptr) return true;
+	int count = 0;
+	elements->get_Length(&count);
+	return count == 0;
 }
 
 std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent)
 {
 	UICacheRequest cache(*this);
-	UIAutoUniquePtr<IUIAutomationElement> owner;
+	UIAutoUniquePtr<IUIAutomationElement> root, owner;
 	std::vector<IUIAutomationCondition*> conditions;
 	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
-
-	if (parent.empty()) {
-		pAutomation->GetRootElement(UI(owner));
-	}
-	else {
-		find(parent, cache, UI(owner));
-	}
 
 	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cProc));
 	conditions.push_back(cProc.get());
@@ -346,7 +327,19 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
-	owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+
+	if (parent.empty()) {
+		pAutomation->GetRootElement(UI(root));
+		if (root) root->FindFirst(TreeScope_Children, cProc.get(), UI(owner));
+		if (owner.get() == nullptr) return {};
+		owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+		if (empty(elements)) root->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+	}
+	else {
+		find(parent, cache, UI(owner));
+		owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+	}
+
 	return info(elements.get(), cache).dump();
 }
 
