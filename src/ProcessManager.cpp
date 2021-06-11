@@ -15,6 +15,10 @@
 class ProcessEnumerator {
 private:
 	HRESULT hInitialize;
+	IWbemLocator* pLoc = NULL;
+	IWbemServices* pSvc = NULL;
+	IEnumWbemClassObject* pEnumerator = NULL;
+	IWbemClassObject* pclsObj = NULL;
 	JSON result;
 private:
 	BOOL CheckError(HRESULT hres)
@@ -31,10 +35,6 @@ public:
 		if (CheckError(hInitialize)) return;
 
 		HRESULT hres;
-		ComUniquePtr<IWbemLocator> pLoc;
-		ComUniquePtr<IWbemServices> pSvc;
-		ComUniquePtr<IEnumWbemClassObject> pEnumerator;
-		ComUniquePtr<IWbemClassObject> pclsObj;
 
 		hres = CoCreateInstance(CLSID_WbemLocator, 0, CLSCTX_INPROC_SERVER, IID_IWbemLocator, (LPVOID*)&pLoc);
 		if (CheckError(hres)) return;
@@ -47,13 +47,13 @@ public:
 			NULL,                    // Security flags.
 			0,                       // Authority (e.g. Kerberos)
 			0,                       // Context object
-			DComPtr(pSvc)            // pointer to IWbemServices proxy
+			&pSvc                    // pointer to IWbemServices proxy
 		);
 		if (CheckError(hres)) return;
 
 		// Set security levels on the proxy -------------------------
 		hres = CoSetProxyBlanket(
-			pSvc.get(),                  // Indicates the proxy to set
+			pSvc,                        // Indicates the proxy to set
 			RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
 			RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
 			NULL,                        // Server principal name
@@ -65,13 +65,13 @@ public:
 		if (CheckError(hres)) return;
 
 		hres = pSvc->ExecQuery(_bstr_t(L"WQL"), _bstr_t(query),
-			WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, DComPtr(pEnumerator));
+			WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, NULL, &pEnumerator);
 		if (CheckError(hres)) return;
 
 		ULONG uReturn = 0;
 		while (pEnumerator)
 		{
-			HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, DComPtr(pclsObj), &uReturn);
+			HRESULT hr = pEnumerator->Next(WBEM_INFINITE, 1, &pclsObj, &uReturn);
 			if (0 == uReturn || CheckError(hr)) break;
 
 			SAFEARRAY* pNames = NULL;
@@ -88,7 +88,6 @@ public:
 				if (FAILED(hr)) continue;
 
 				VARIANT vtProp;
-				VariantInit(&vtProp);
 				hr = pclsObj->Get(name, 0, &vtProp, 0, 0);
 				if (SUCCEEDED(hr)) {
 					if (wcscmp(name, L"CreationDate") == 0) {
@@ -108,7 +107,6 @@ public:
 							break;
 						default:
 							VARIANTARG vtDest;
-							VariantInit(&vtDest);
 							hr = VariantChangeType(&vtDest, &vtProp, VARIANT_ALPHABOOL, VT_BSTR);
 							if SUCCEEDED(hr) json[WC2MB(name)] = WC2MB(vtDest.bstrVal);
 						}
@@ -117,10 +115,15 @@ public:
 				VariantClear(&vtProp);
 			}
 			result.push_back(json);
+			pclsObj->Release();
+			pclsObj = NULL;
 		}
 	}
 
 	~ProcessEnumerator() {
+		if (pEnumerator) pEnumerator->Release();
+		if (pSvc) pSvc->Release();
+		if (pLoc) pLoc->Release();
 		if (SUCCEEDED(hInitialize)) CoUninitialize();
 	}
 
