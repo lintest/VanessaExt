@@ -3,7 +3,6 @@
 #include "BaseHelper.h"
 #include "VideoPainter.h"
 #include "WebSocket.h"
-#include "WinUIAuto.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl
@@ -11,7 +10,6 @@ class WindowsControl : public BaseHelper
 {
 #ifdef _WINDOWS
 private:
-	WinUIAuto uiAutomation;
 	HWND hProcessMonitor = NULL;
 	void StartProcessMonitoring();
 	std::string GetElements(const VH& id);

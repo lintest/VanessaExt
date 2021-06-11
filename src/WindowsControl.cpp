@@ -1,6 +1,8 @@
 ﻿#include "stdafx.h"
 
-#ifndef _WINDOWS
+#ifdef _WINDOWS
+#include "WinUIAuto.h"
+#else //_WINDOWS
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -283,26 +285,26 @@ WindowsControl::WindowsControl() {
 		[&](VH id) { this->result = GetElements(id); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
-		[&](VH pid, VH name, VH type, VH parent) { this->result = uiAutomation.FindElements((DWORD)(int64_t)pid, name, type, parent); },
+		[&](VH pid, VH name, VH type, VH parent) { this->result = WinUIAuto().FindElements((DWORD)(int64_t)pid, name, type, parent); },
 		{ {2, u""}, { 3, u""} }
 	);
 	AddFunction(u"InvokeElement", u"ВызватьЭлемент",
-		[&](VH id) { this->result = uiAutomation.InvokeElement(id); }
+		[&](VH id) { this->result = WinUIAuto().InvokeElement(id); }
 	);
 	AddFunction(u"FocusElement", u"АктивироватьЭлемент",
-		[&](VH id) { this->result = uiAutomation.FocusElement(id); }
+		[&](VH id) { this->result = WinUIAuto().FocusElement(id); }
 	);
 	AddFunction(u"GetParentElement", u"ПолучитьРодителяЭлемента",
-		[&](VH id) { this->result = uiAutomation.GetParentElement(id); }
+		[&](VH id) { this->result = WinUIAuto().GetParentElement(id); }
 	);
 	AddFunction(u"GetElementValue", u"ПолучитьЗначениеЭлемента",
-		[&](VH id) { this->result = uiAutomation.GetElementValue(id); }
+		[&](VH id) { this->result = WinUIAuto().GetElementValue(id); }
 	);
 	AddFunction(u"SetElementValue", u"УстановитьЗначениеЭлемента",
-		[&](VH id, VH value) { this->result = uiAutomation.SetElementValue(id, value); }
+		[&](VH id, VH value) { this->result = WinUIAuto().SetElementValue(id, value); }
 	);
 	AddProperty(u"ActiveElement", u"АктивныйЭлемент",
-		[&](VH var) { var = uiAutomation.GetFocusedElement(); }
+		[&](VH var) { var = WinUIAuto().GetFocusedElement(); }
 	);
 #endif//_WINDOWS
 
@@ -447,8 +449,8 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 std::string WindowsControl::GetElements(const VH &id)
 {
 	switch (id.type()) {
-	case VTYPE_PWSTR: return uiAutomation.GetElements((std::string)id);
-	default: return uiAutomation.GetElements((DWORD)(int64_t)id);
+	case VTYPE_PWSTR: return WinUIAuto().GetElements((std::string)id);
+	default: return WinUIAuto().GetElements((DWORD)(int64_t)id);
 	};
 }
 

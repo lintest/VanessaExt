@@ -46,9 +46,10 @@ private:
 	JSON info(IUIAutomationElement* element, UICacheRequest& cache, bool subtree = false);
 	JSON info(IUIAutomationElementArray* elements, UICacheRequest& cache);
 	UIAutoUniquePtr<IUIAutomation> pAutomation;
-	void InitAutomation();
-	friend UICacheRequest;
+	HRESULT hInitialize;
 public:
+	WinUIAuto();
+	virtual ~WinUIAuto();
 	std::string GetFocusedElement();
 	std::string GetElements(DWORD pid);
 	std::string GetElements(const std::string &id);

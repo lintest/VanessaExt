@@ -118,7 +118,6 @@ static std::string type2str(CONTROLTYPEID typeId) {
 
 WinUIAuto::UICacheRequest::UICacheRequest(WinUIAuto& owner)
 {
-	owner.InitAutomation();
 	owner.pAutomation->CreateCacheRequest(UI(cache));
 	cache->AddProperty(UIA_RuntimeIdPropertyId);
 	cache->AddProperty(UIA_BoundingRectanglePropertyId);
@@ -238,17 +237,22 @@ JSON WinUIAuto::info(IUIAutomationElementArray* elements, UICacheRequest& cache)
 	return json;
 }
 
-void WinUIAuto::InitAutomation()
+WinUIAuto::WinUIAuto()
 {
-	if (pAutomation == nullptr) {
-		if (FAILED(CoInitialize(NULL)))
-			throw std::runtime_error("CoInitialize error");
+	hInitialize = CoInitializeEx(0, COINIT_APARTMENTTHREADED);
 
-		if (FAILED(CoCreateInstance(CLSID_CUIAutomation,
-			NULL, CLSCTX_INPROC_SERVER, IID_IUIAutomation,
-			reinterpret_cast<void**>(&UI(pAutomation)))))
-			throw std::runtime_error("CoInitialize error");
-	}
+	if (FAILED(hInitialize))
+		throw std::runtime_error("CoInitialize error");
+
+	if (FAILED(CoCreateInstance(CLSID_CUIAutomation,
+		NULL, CLSCTX_INPROC_SERVER, IID_IUIAutomation,
+		reinterpret_cast<void**>(&UI(pAutomation)))))
+		throw std::runtime_error("CoInitialize error");
+}
+
+WinUIAuto::~WinUIAuto()
+{
+	if (SUCCEEDED(hInitialize)) CoUninitialize();
 }
 
 std::string WinUIAuto::GetFocusedElement()
@@ -317,15 +321,17 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> owner;
 	std::vector<IUIAutomationCondition*> conditions;
-	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType, cProc;
+	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
 
 	if (parent.empty()) {
-		find(pid, cache, UI(owner));
+		pAutomation->GetRootElement(UI(owner));
 	}
 	else {
 		find(parent, cache, UI(owner));
 	}
-	if (owner.get() == nullptr) return {};
+
+	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cProc));
+	conditions.push_back(cProc.get());
 
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
 	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
