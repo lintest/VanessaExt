@@ -285,8 +285,7 @@ WindowsControl::WindowsControl() {
 		[&](VH id) { this->result = GetElements(id); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
-		[&](VH pid, VH name, VH type, VH parent) { this->result = WinUIAuto().FindElements((DWORD)(int64_t)pid, name, type); },
-		{ {2, u""}, { 3, u""} }
+		[&](VH id, VH name, VH type) { this->result = FindElements(id, name, type); }, { {2, u""} }
 	);
 	AddFunction(u"InvokeElement", u"ВызватьЭлемент",
 		[&](VH id) { this->result = WinUIAuto().InvokeElement(id); }
@@ -446,7 +445,7 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 	return pid;
 }
 
-std::string WindowsControl::GetElements(const VH &id)
+std::string WindowsControl::GetElements(const VH& id)
 {
 	switch (id.type()) {
 	case VTYPE_PWSTR: return WinUIAuto().GetElements((std::string)id);
@@ -454,9 +453,17 @@ std::string WindowsControl::GetElements(const VH &id)
 	};
 }
 
+std::string WindowsControl::FindElements(const VH& id, const VH& name, const VH& type)
+{
+	switch (id.type()) {
+	case VTYPE_PWSTR: return WinUIAuto().FindElements((std::string)id, name, type);
+	default: return WinUIAuto().FindElements((DWORD)(int64_t)id, name, type);
+	};
+}
+
 #include <shellscalingapi.h>
 
-typedef HRESULT (STDAPICALLTYPE* GetScaleFactorForMonitorType)(HMONITOR hMon, DEVICE_SCALE_FACTOR* pScale);
+typedef HRESULT(STDAPICALLTYPE* GetScaleFactorForMonitorType)(HMONITOR hMon, DEVICE_SCALE_FACTOR* pScale);
 
 int64_t WindowsControl::GetScaleFactor(int64_t window)
 {

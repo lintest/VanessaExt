@@ -306,21 +306,20 @@ static bool empty(UIAutoUniquePtr<IUIAutomationElementArray>& elements)
 
 std::vector<HWND> GetProcessWindows(DWORD pid)
 {
-	std::vector<HWND> windows;
-	using EnumParam = std::pair<DWORD, std::vector<HWND>&>;
-	EnumParam p{ (DWORD)pid, windows };
+	using EnumParam = std::pair<DWORD, std::vector<HWND>>;
+	EnumParam param{ (DWORD)pid, {} };
 	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
 		{
 			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
 				DWORD dwProcessId;
 				auto p = (EnumParam*)lParam;
 				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				if (p->first == dwProcessId) 
+				if (p->first == dwProcessId)
 					p->second.push_back(hWnd);
 			}
 			return TRUE;
-		}, (LPARAM)&p);
-	return windows;
+		}, (LPARAM)&param);
+	return param.second;
 }
 
 std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type)
@@ -345,22 +344,19 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
 
-	auto windows = GetProcessWindows(pid);
 	std::map<std::string, JSON> controls;
-	for (auto hWnd : windows) {
+	for (auto hWnd : GetProcessWindows(pid)) {
 		int length = 0;
 		UICacheRequest cache(*this);
 		UIAutoUniquePtr<IUIAutomationElement> owner;
-		if FAILED(pAutomation->ElementFromHandleBuildCache(hWnd, cache, UI(owner))) continue;
+		if (FAILED(pAutomation->ElementFromHandleBuildCache(hWnd, cache, UI(owner)))) continue;
 		if (FAILED(owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements)))) continue;
-		if (elements == nullptr) continue;
-		if (FAILED(elements->get_Length(&length))) continue;
+		if (!elements || FAILED(elements->get_Length(&length))) continue;
 		for (int i = 0; i < length; ++i) {
 			UIAutoUniquePtr<IUIAutomationElement> element;
 			if (FAILED(elements->GetElement(i, UI(element)))) continue;
-			auto j = info(element.get(), cache, false);
-			std::string id = j["Id"];
-			controls[id] = j;
+			auto json = info(element.get(), cache, false);
+			controls[(std::string)json["Id"]] = json;
 		}
 	}
 	JSON json;
@@ -368,6 +364,31 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 		json.push_back(it.second);
 	}
 	return json.dump();
+}
+
+std::string WinUIAuto::FindElements(const std::string& id, const std::wstring& name, const std::string& type)
+{
+	UICacheRequest cache(*this);
+	UIAutoUniquePtr<IUIAutomationElement> owner;
+	find(id, cache, UI(owner));
+
+	std::vector<IUIAutomationCondition*> conditions;
+	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType;
+	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
+	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
+	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
+	conditions.push_back(cName.get());
+
+	if (auto iType = str2type(type)) {
+		pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cType));
+		conditions.push_back(cType.get());
+	}
+
+	UIAutoUniquePtr<IUIAutomationCondition> cond;
+	UIAutoUniquePtr<IUIAutomationElementArray> elements;
+	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
+	owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+	return info(elements.get(), cache).dump();
 }
 
 #define ASSERT(hr) if ((HRESULT)(hr) < 0) return hr;
