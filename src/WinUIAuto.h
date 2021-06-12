@@ -53,7 +53,7 @@ public:
 	std::string GetFocusedElement();
 	std::string GetElements(DWORD pid);
 	std::string GetElements(const std::string &id);
-	std::string FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent);
+	std::string FindElements(DWORD pid, const std::wstring& name, const std::string& type);
 	std::string GetParentElement(const std::string& id);
 	std::wstring GetElementValue(const std::string& id);
 	bool SetElementValue(const std::string& id, const std::wstring& value);

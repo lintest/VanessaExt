@@ -285,7 +285,7 @@ WindowsControl::WindowsControl() {
 		[&](VH id) { this->result = GetElements(id); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
-		[&](VH pid, VH name, VH type, VH parent) { this->result = WinUIAuto().FindElements((DWORD)(int64_t)pid, name, type, parent); },
+		[&](VH pid, VH name, VH type, VH parent) { this->result = WinUIAuto().FindElements((DWORD)(int64_t)pid, name, type); },
 		{ {2, u""}, { 3, u""} }
 	);
 	AddFunction(u"InvokeElement", u"ВызватьЭлемент",

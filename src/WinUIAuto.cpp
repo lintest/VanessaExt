@@ -304,10 +304,27 @@ static bool empty(UIAutoUniquePtr<IUIAutomationElementArray>& elements)
 	return count == 0;
 }
 
-std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type, const std::string& parent)
+std::vector<HWND> GetProcessWindows(DWORD pid)
 {
-	UICacheRequest cache(*this);
-	UIAutoUniquePtr<IUIAutomationElement> root, owner;
+	std::vector<HWND> windows;
+	using EnumParam = std::pair<DWORD, std::vector<HWND>&>;
+	EnumParam p{ (DWORD)pid, windows };
+	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+		{
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
+				DWORD dwProcessId;
+				auto p = (EnumParam*)lParam;
+				::GetWindowThreadProcessId(hWnd, &dwProcessId);
+				if (p->first == dwProcessId) 
+					p->second.push_back(hWnd);
+			}
+			return TRUE;
+		}, (LPARAM)&p);
+	return windows;
+}
+
+std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type)
+{
 	std::vector<IUIAutomationCondition*> conditions;
 	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
 
@@ -328,19 +345,29 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
 
-	if (parent.empty()) {
-		pAutomation->GetRootElement(UI(root));
-		if (root) root->FindFirst(TreeScope_Children, cProc.get(), UI(owner));
-		if (owner.get() == nullptr) return {};
-		owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
-		if (empty(elements)) root->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+	auto windows = GetProcessWindows(pid);
+	std::map<std::string, JSON> controls;
+	for (auto hWnd : windows) {
+		int length = 0;
+		UICacheRequest cache(*this);
+		UIAutoUniquePtr<IUIAutomationElement> owner;
+		if FAILED(pAutomation->ElementFromHandleBuildCache(hWnd, cache, UI(owner))) continue;
+		if (FAILED(owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements)))) continue;
+		if (elements == nullptr) continue;
+		if (FAILED(elements->get_Length(&length))) continue;
+		for (int i = 0; i < length; ++i) {
+			UIAutoUniquePtr<IUIAutomationElement> element;
+			if (FAILED(elements->GetElement(i, UI(element)))) continue;
+			auto j = info(element.get(), cache, false);
+			std::string id = j["Id"];
+			controls[id] = j;
+		}
 	}
-	else {
-		find(parent, cache, UI(owner));
-		owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+	JSON json;
+	for (auto& it : controls) {
+		json.push_back(it.second);
 	}
-
-	return info(elements.get(), cache).dump();
+	return json.dump();
 }
 
 #define ASSERT(hr) if ((HRESULT)(hr) < 0) return hr;
