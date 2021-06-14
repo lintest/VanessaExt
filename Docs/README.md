@@ -91,6 +91,7 @@
 <a href="BuildLibrary.md">Инструкция по самостоятельной сборке библиотеки</a>
 
 При разработке использовались библиотеки:
+- [OpenCV: Open Source Computer Vision](https://docs.opencv.org/master/db/d05/tutorial_config_reference.html)
 - [cpp-c11-make-screenshot by Roman Shuvalov](https://github.com/Butataki/cpp-x11-make-screenshot)
 - [Clip Library by David Capello](https://github.com/dacap/clip)
 - [Boost C++ Libraries](https://www.boost.org/)
