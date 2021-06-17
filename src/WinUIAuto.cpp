@@ -140,8 +140,12 @@ bool WinUIAuto::isWindow(IUIAutomationElement* element, JSON& json)
 			UIString name;
 			if (SUCCEEDED(element->get_CurrentName(&name))) {
 				json["Window"] = WC2MB(name);
-				return true;
 			}
+			UIA_HWND hWnd;
+			if (SUCCEEDED(element->get_CurrentNativeWindowHandle(&hWnd))) {
+				json["Handle"] = (int64_t)hWnd;
+			}
+			return true;
 		}
 	}
 	return false;
