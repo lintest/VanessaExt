@@ -100,15 +100,14 @@ build_script:
   - cmake --build . --config Release
   - cd ..
 
-  - sh: cp bin/VanessaExtLin??.so .
-  - sh: 7z a AddIn.zip VanessaExtLin??.so
-  - cmd: copy bin\Release\VanessaExtWin??.dll .
-  - cmd: Powershell.exe -File appveyor.ps1
-
 for:
   - matrix:
       only:
         - job_name: Linux
+
+    after_build:
+      - 7z a AddIn.zip ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so
+      - 7z a AddIn.zip ./bin64/${APPVEYOR_PROJECT_NAME}Lin64.so
 
     artifacts:
       - path: AddIn.zip
@@ -125,20 +124,22 @@ for:
       - 7z a keywords.zip keywords.json
       - ps: New-Item -ItemType Directory -Force -Path example/Templates/Keywords/Ext | Out-Null
       - ps: Copy-Item -Path keywords.zip -Destination example/Templates/Keywords/Ext/Template.bin
+      - copy bin32\Release\%APPVEYOR_PROJECT_NAME%Win32.dll .
+      - copy bin64\Release\%APPVEYOR_PROJECT_NAME%Win64.dll .
+      - powershell -File appveyor.ps1
+      - appveyor PushArtifact AddIn.zip
       - mkdir database
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg
-      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml VanessaExt.epf /Out example.log
-      - appveyor PushArtifact VanessaExt.epf
-      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute VanessaExt.epf /C install
-      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute VanessaExt.epf /C autotest
+      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml %APPVEYOR_PROJECT_NAME%.epf /Out example.log
+      - appveyor PushArtifact %APPVEYOR_PROJECT_NAME%.epf
+      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute %APPVEYOR_PROJECT_NAME%.epf /C install
+      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute %APPVEYOR_PROJECT_NAME%.epf /C autotest
       - ps: if (!(Test-Path success.txt)) { throw "Имеются ошибки" }
-      - ps: Set-Content "AddIn.SHA256.txt" (get-filehash -Algorithm SHA256 "AddIn.zip").Hash
 
     artifacts:
+      - path: ${APPVEYOR_PROJECT_NAME}.epf
       - path: AddIn.zip
-      - path: AddIn.SHA256.txt
-      - path: VanessaExt.epf
       - path: autotest.log
       - path: example.log
 
