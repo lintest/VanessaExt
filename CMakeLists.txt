@@ -111,9 +111,6 @@ add_library(${TARGET} SHARED
 
 target_compile_definitions(${TARGET} PRIVATE UNICODE _UNICODE)
 target_include_directories(${TARGET} PRIVATE include)
-set (LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
-set (EXECUTABLE_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH})
-set (CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH})
 
 if (UNIX)
 	set(MyPrefix "")
@@ -134,6 +131,10 @@ else(UNIX)
 	set(MyPrefix "lib")
 	set(MySuffix1 "Win")
 endif(UNIX)
+
+set (LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin${MySuffix2})
+set (EXECUTABLE_OUTPUT_PATH ${LIBRARY_OUTPUT_PATH})
+set (CMAKE_COMPILE_PDB_OUTPUT_DIRECTORY ${LIBRARY_OUTPUT_PATH})
 
 set_target_properties( ${PROJECT_NAME} PROPERTIES
 	   PREFIX ""
