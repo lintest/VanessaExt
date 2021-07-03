@@ -300,6 +300,16 @@ std::string WinUIAuto::GetElements(const std::string& id)
 	return info(owner.get(), cache, true).dump();
 }
 
+std::string WinUIAuto::ElementById(const std::string& id)
+{
+	UICacheRequest cache(*this);
+	cache->put_TreeScope(TreeScope_Element);
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	find(id, cache, UI(element));
+	if (element.get() == nullptr) return {};
+	return info(element.get(), cache).dump();
+}
+
 static bool empty(UIAutoUniquePtr<IUIAutomationElementArray>& elements)
 {
 	if (elements.get() == nullptr) return true;
