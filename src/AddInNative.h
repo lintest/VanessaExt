@@ -149,7 +149,7 @@ private:
 	std::u16string name;
 	bool alias = false;
 
-protected:
+public:
 	bool ExternalEvent(const std::u16string& message, const std::u16string& data);
 	bool AddError(const std::u16string& descr, long scode = 0);
 	std::u16string fullname() { return u"AddIn." + name; }
