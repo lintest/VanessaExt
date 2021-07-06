@@ -209,7 +209,7 @@ WindowsControl::WindowsControl() {
 		[&](VH filename, VH async) { SoundEffect::PlaySound(filename, async); }, { {0, u""}, {1, false} }
 	);
 	AddProcedure(u"PlayMedia", u"ВоспроизвестиМедиа",
-		[&](VH uuid, VH filename) { SoundEffect::PlayMedia(uuid, filename); }, { {1, u""} }
+		[&](VH uuid, VH filename) { SoundEffect::PlayMedia(*this, uuid, filename); }, { {1, u""} }
 	);
 	AddFunction(u"PlayingMedia", u"ВоспроизводитсяМедиа",
 		[&](VH uuid) { this->result = SoundEffect::PlayingMedia(uuid); }

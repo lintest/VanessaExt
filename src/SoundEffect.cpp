@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "windows.h"
 #include "SoundEffect.h"
+#include "AddInNative.h"
 
 #include <wbemidl.h>
 #pragma comment(lib, "rpcrt4.lib")
@@ -15,10 +16,10 @@ const LPCWSTR wsSoundName = L"VanessaSoundEffect";
 BOOL SoundEffect::PlaySound(const std::wstring& filename, bool async)
 {
 
-	if (filename.empty()) return ::PlaySound(NULL, NULL, 0);
+	if (filename.empty()) return ::PlaySoundW(NULL, NULL, 0);
 	DWORD fdwSound = SND_FILENAME | SND_NODEFAULT;
 	if (async) fdwSound |= SND_ASYNC;
-	return ::PlaySound(filename.c_str(), 0, fdwSound);
+	return ::PlaySoundW(filename.c_str(), 0, fdwSound);
 }
 
 std::u16string MediaError(MCIERROR err)
@@ -42,6 +43,7 @@ std::wstring SoundEffect::MediaCommand(const std::wstring& command)
 
 class SoundHandler {
 private:
+	AddInNative& addin;
 	std::wstring uuid;
 	std::wstring filename;
 	MCIDEVICEID device = 0;
@@ -49,8 +51,8 @@ public:
 	static SoundHandler* get(HWND hWnd) {
 		return (SoundHandler*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	}
-	SoundHandler(const std::wstring& uuid, const std::wstring& filename)
-		: uuid(uuid), filename(filename) {}
+	SoundHandler(AddInNative& addin, const std::wstring& uuid, const std::wstring& filename)
+		: addin(addin), uuid(uuid), filename(filename) {}
 	bool Open();
 	bool Play();
 	bool Stop();
@@ -63,7 +65,7 @@ LRESULT CALLBACK SoundWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 	{
 	case WM_SOUND_STOP:
 		SoundHandler::get(hWnd)->Stop();
-		[[fallthrough]];
+		return 0;
 	case MM_MCINOTIFY:
 		SendMessage(hWnd, WM_DESTROY, 0, 0);
 		return 0;
@@ -78,7 +80,7 @@ LRESULT CALLBACK SoundWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
 bool SoundHandler::Open()
 {
-	MCI_OPEN_PARMS mciOpenParms;
+	MCI_OPEN_PARMS mciOpenParms = { 0 };
 	mciOpenParms.lpstrDeviceType = NULL;
 	mciOpenParms.lpstrElementName = filename.c_str();
 	auto opReturn = mciSendCommand(NULL, MCI_OPEN, MCI_OPEN_ELEMENT, (DWORD_PTR)&mciOpenParms);
@@ -110,12 +112,13 @@ bool SoundHandler::Stop()
 
 bool SoundHandler::Close()
 {
+	addin.ExternalEvent(u"SOUND_FINISHED", (char16_t*)uuid.c_str());
 	return mciSendCommand(device, MCI_CLOSE, MCI_WAIT, 0) == 0;
 }
 
 static DWORD WINAPI EffectThreadProc(LPVOID lpParam)
 {
-	auto params = (SoundHandler*)lpParam;
+	std::unique_ptr<SoundHandler> params{ (SoundHandler*)lpParam };
 	if (params->Open()) {
 		params->Play();
 		MSG msg;
@@ -123,17 +126,16 @@ static DWORD WINAPI EffectThreadProc(LPVOID lpParam)
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		delete params;
 	}
 	return 0;
 }
 
-void SoundEffect::PlayMedia(const std::wstring& uuid, const std::wstring& filename)
+void SoundEffect::PlayMedia(AddInNative& addin, const std::wstring& uuid, const std::wstring& filename)
 {
 	HWND hWnd = FindWindowEx(NULL, NULL, wsSoundName, uuid.c_str());
 	if (hWnd) SendMessage(hWnd, WM_SOUND_STOP, 0, 0);
 	if (filename.empty()) return;
-	auto params = new SoundHandler(uuid, filename);
+	auto params = new SoundHandler(addin, uuid, filename);
 	CreateThread(0, NULL, EffectThreadProc, (LPVOID)params, NULL, NULL);
 }
 
