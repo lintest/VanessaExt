@@ -130,13 +130,17 @@ static DWORD WINAPI EffectThreadProc(LPVOID lpParam)
 	return 0;
 }
 
-void SoundEffect::PlayMedia(AddInNative& addin, const std::wstring& uuid, const std::wstring& filename)
+void SoundEffect::PlayMedia(AddInNative& addin, const std::wstring& filename, const std::wstring& uuid)
+{
+	if (!uuid.empty()) StopMedia(uuid);
+	auto params = new SoundHandler(addin, uuid, filename);
+	CreateThread(0, NULL, EffectThreadProc, (LPVOID)params, NULL, NULL);
+}
+
+void SoundEffect::StopMedia(const std::wstring& uuid)
 {
 	HWND hWnd = FindWindow(wsSoundName, uuid.c_str());
 	if (hWnd) SendMessage(hWnd, WM_SOUND_STOP, 0, 0);
-	if (filename.empty()) return;
-	auto params = new SoundHandler(addin, uuid, filename);
-	CreateThread(0, NULL, EffectThreadProc, (LPVOID)params, NULL, NULL);
 }
 
 bool SoundEffect::PlayingMedia(const std::wstring& uuid)

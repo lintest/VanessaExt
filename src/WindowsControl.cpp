@@ -209,10 +209,13 @@ WindowsControl::WindowsControl() {
 		[&](VH filename, VH async) { SoundEffect::PlaySound(filename, async); }, { {0, u""}, {1, false} }
 	);
 	AddProcedure(u"PlayMedia", u"ВоспроизвестиМедиа",
-		[&](VH uuid, VH filename) { SoundEffect::PlayMedia(*this, uuid, filename); }, { {1, u""} }
+		[&](VH filename, VH uuid) { SoundEffect::PlayMedia(*this, filename, uuid); }, { {1, u""} }
 	);
 	AddFunction(u"PlayingMedia", u"ВоспроизводитсяМедиа",
 		[&](VH uuid) { this->result = SoundEffect::PlayingMedia(uuid); }
+	);
+	AddProcedure(u"StopMedia", u"ПрерватьМедиа",
+		[&](VH uuid) { SoundEffect::StopMedia(uuid); }
 	);
 	AddFunction(u"MediaCommand", u"МедиаКоманда",
 		[&](VH command) { this->result = SoundEffect::MediaCommand(command); }
