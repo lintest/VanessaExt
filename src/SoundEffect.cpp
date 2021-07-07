@@ -132,7 +132,7 @@ static DWORD WINAPI EffectThreadProc(LPVOID lpParam)
 
 void SoundEffect::PlayMedia(AddInNative& addin, const std::wstring& uuid, const std::wstring& filename)
 {
-	HWND hWnd = FindWindowEx(NULL, NULL, wsSoundName, uuid.c_str());
+	HWND hWnd = FindWindow(wsSoundName, uuid.c_str());
 	if (hWnd) SendMessage(hWnd, WM_SOUND_STOP, 0, 0);
 	if (filename.empty()) return;
 	auto params = new SoundHandler(addin, uuid, filename);
@@ -141,7 +141,7 @@ void SoundEffect::PlayMedia(AddInNative& addin, const std::wstring& uuid, const 
 
 bool SoundEffect::PlayingMedia(const std::wstring& uuid)
 {
-	return FindWindowEx(NULL, NULL, wsSoundName, uuid.c_str());
+	return FindWindow(wsSoundName, uuid.c_str());
 }
 
 #endif //_WINDOWS
