@@ -123,6 +123,7 @@ WinUIAuto::UICacheRequest::UICacheRequest(WinUIAuto& owner)
 	cache->AddProperty(UIA_BoundingRectanglePropertyId);
 	cache->AddProperty(UIA_ProcessIdPropertyId);
 	cache->AddProperty(UIA_ControlTypePropertyId);
+	cache->AddProperty(UIA_HasKeyboardFocusPropertyId);
 	cache->AddProperty(UIA_LocalizedControlTypePropertyId);
 	cache->AddProperty(UIA_NamePropertyId);
 	cache->AddProperty(UIA_AutomationIdPropertyId);
@@ -167,6 +168,11 @@ JSON WinUIAuto::info(IUIAutomationElement* element, UICacheRequest& cache, bool 
 	SET_JSON("HelpText", get_CachedHelpText);
 	SET_JSON("AutomationId", get_CachedAutomationId);
 	SET_JSON("LocalizedControlType", get_CachedLocalizedControlType);
+
+	BOOL focus;
+	if (SUCCEEDED(element->get_CachedHasKeyboardFocus(&focus))) {
+		json["Focus"] = (bool)focus;
+	}
 
 	std::stringstream ss;
 	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> id;
