@@ -346,6 +346,29 @@ namespace Gherkin {
 		return files;
 	}
 
+#ifdef _WINDOWS
+
+	static std::string cp1251_to_utf8(const char* str) {
+		int size_u = MultiByteToWideChar(1251, 0, str, -1, 0, 0);
+		if (!size_u) return {};
+		std::wstring ures((size_t)size_u, 0);
+		if (!MultiByteToWideChar(1251, 0, str, -1, ures.data(), size_u)) return {};
+		int size_c = WideCharToMultiByte(65001, 0, ures.data(), -1, 0, 0, 0, 0);
+		if (!size_c) return {};
+		std::string cres((size_t)size_c, 0);
+		if (!WideCharToMultiByte(65001, 0, ures.data(), -1, cres.data(), size_c, 0, 0)) return {};
+		return cres.data();
+	}
+
+#else
+
+	static std::string cp1251_to_utf8(const char* str)
+	{
+		return str;
+	}
+
+#endif
+
 	static void push(JSON& json, const std::string& message, const BoostPath& path) {
 		json.push_back({ {"filename", WC2MB(path.wstring()) }, {"error",  message} });
 	}
@@ -529,7 +552,7 @@ namespace Gherkin {
 		transform(type.begin(), type.end(), type.begin(), tolower);
 		static std::map<std::string, KeywordType> types{
 			{ "background", KeywordType::Background },
-			{ "hyperlinks", KeywordType::Hyperlinks },
+			{ "variables", KeywordType::Variables },
 			{ "examples", KeywordType::Examples },
 			{ "feature", KeywordType::Feature },
 			{ "scenario", KeywordType::Scenario },
@@ -723,7 +746,7 @@ namespace Gherkin {
 		return numb * sign;
 	}
 
-	static JSON str2num(const std::string &text) {
+	static JSON str2num(const std::string& text) {
 		int64_t numb = 0, sign = 1;
 		for (auto it = text.begin(); it != text.end(); ++it) {
 			switch (*it) {
@@ -777,7 +800,6 @@ namespace Gherkin {
 		case TokenType::Table: return "Table";
 		case TokenType::Line: return "Line";
 		case TokenType::Date: return "Date";
-		case TokenType::Text: return "Text";
 		case TokenType::Tag: return "Tag";
 		case TokenType::Symbol: return "Symbol";
 		case TokenType::Multiline: return "Multiline";
@@ -1303,6 +1325,128 @@ namespace Gherkin {
 		return json;
 	}
 
+	GherkinVariable::GherkinVariable(const GherkinVariable& src)
+		: lineNumber(src.lineNumber), name(src.name), text(src.text)
+	{
+		if (src.value) value.reset(new GherkinToken(*src.value.get()));
+		if (src.table) table.reset(new GherkinTable(*src.table.get()));
+		if (src.lines) lines.reset(new GherkinMultiline(*src.lines.get()));
+	}
+
+	GherkinVariable::GherkinVariable(const GherkinLine& line)
+		: lineNumber(line.lineNumber), text(line.text)
+	{
+		auto& tokens = line.getTokens();
+		switch (line.getType()) {
+		case TokenType::Asterisk:
+			name = tokens[0].getText();
+			break;
+		case TokenType::Keyword:
+		case TokenType::Operator:
+			if (tokens.size() > 1) {
+				name = tokens[0].getText();
+			}
+			if (tokens.size() > 2
+				&& tokens[1].getText() == "="
+				&& tokens[1].getType() == TokenType::Symbol) {
+				switch (tokens[2].getType()) {
+				case TokenType::Param:
+				case TokenType::Number:
+				case TokenType::Date:
+					value.reset(new GherkinToken(tokens[2]));
+				}
+			}
+			break;
+		default:
+			throw GherkinException("Wrong variable definition");
+		}
+	}
+
+	GherkinTable* GherkinVariable::pushTable(const GherkinLine& line)
+	{
+		table.reset(new GherkinTable(line));
+		return table.get();
+	}
+
+	GherkinMultiline* GherkinVariable::pushMultiline(const GherkinLine& line)
+	{
+		lines.reset(new GherkinMultiline(line));
+		return lines.get();
+	}
+
+	GherkinVariable::operator JSON() const
+	{
+		JSON json;
+		set(json, "line", lineNumber);
+		set(json, "name", name);
+		set(json, "text", text);
+		set(json, "value", value);
+		set(json, "table", table);
+		set(json, "lines", lines);
+		return json;
+	}
+
+	GherkinVariables::GherkinVariables(GherkinLexer& lexer, const GherkinLine& line)
+		: AbsractDefinition(lexer, line)
+	{
+	}
+
+	GherkinElement* GherkinVariables::push(GherkinLexer& lexer, const GherkinLine& line)
+	{
+		auto& tokens = line.getTokens();
+		switch (line.getType()) {
+		case TokenType::Asterisk:
+			current.reset(new GherkinVariable(line));
+			return nullptr;
+		case TokenType::Keyword:
+		case TokenType::Operator:
+			if (tokens.size() == 2) {
+				current.reset(new GherkinVariable(line));
+				return nullptr;
+			}
+			if (tokens.size() > 2
+				&& tokens[1].getText() == "="
+				&& tokens[1].getType() == TokenType::Symbol) {
+				switch (tokens[2].getType()) {
+				case TokenType::Param:
+				case TokenType::Number:
+				case TokenType::Date:
+					variables.emplace_back(line);
+					return nullptr;
+				case TokenType::Comment:
+					current.reset(new GherkinVariable(line));
+					return nullptr;
+				}
+			}
+		}
+		throw GherkinException("Wrong variable definition");
+	}
+
+	GherkinTable* GherkinVariables::pushTable(const GherkinLine& line)
+	{
+		std::unique_ptr<GherkinVariable> var(current.release());
+		if (!var) var.reset(new GherkinVariable());
+		variables.emplace_back(*var.get());
+		return variables.back().pushTable(line);
+	}
+
+	GherkinMultiline* GherkinVariables::pushMultiline(const GherkinLine& line)
+	{
+		std::unique_ptr<GherkinVariable> var(current.release());
+		if (!var) current.reset(new GherkinVariable());
+		variables.emplace_back(*var.get());
+		return variables.back().pushMultiline(line);
+	}
+
+	GherkinVariables::operator JSON() const
+	{
+		JSON json = AbsractDefinition::operator JSON();
+		set(json, "name", name);
+		set(json, "keyword", keyword);
+		set(json, "items", variables);
+		return json;
+	}
+
 	GherkinDefinition::GherkinDefinition(GherkinLexer& lexer, const GherkinLine& line)
 		: AbsractDefinition(lexer, line), tokens(line.getTokens()), snippet(::snippet(tokens))
 	{
@@ -1633,10 +1777,17 @@ namespace Gherkin {
 				error(line, "Unknown keyword type");
 		}
 		else {
-			GherkinDefinition* def =
-				line.getKeyword()->getType() == KeywordType::Feature
-				? (GherkinDefinition*) new GherkinFeature(lexer, line)
-				: new GherkinDefinition(lexer, line);
+			GherkinDefinition* def = nullptr;
+			switch (line.getKeyword()->getType()) {
+			case KeywordType::Feature:
+				def = (GherkinDefinition*) new GherkinFeature(lexer, line);
+				break;
+			case KeywordType::Variables:
+				def = (GherkinDefinition*) new GherkinVariables(lexer, line);
+				break;
+			default:
+				def = (GherkinDefinition*) new GherkinDefinition(lexer, line);
+			}
 			definition.reset(def);
 			resetElementStack(lexer, *def);
 		}
@@ -1770,11 +1921,11 @@ namespace Gherkin {
 			case KeywordType::Feature:
 				setDefinition(feature, lexer, line);
 				break;
+			case KeywordType::Variables:
+				setDefinition(variables, lexer, line);
+				break;
 			case KeywordType::Background:
 				setDefinition(background, lexer, line);
-				break;
-			case KeywordType::Hyperlinks:
-				setDefinition(hyperlinks, lexer, line);
 				break;
 			case KeywordType::Scenario:
 			case KeywordType::ScenarioOutline:
@@ -1908,8 +2059,8 @@ namespace Gherkin {
 					return JSON();
 			}
 			set(json, "feature", feature);
+			set(json, "variables", variables);
 			set(json, "background", background);
-			set(json, "hyperlinks", hyperlinks);
 			set(json, "errors", errors);
 		}
 		catch (const std::exception& e) {
