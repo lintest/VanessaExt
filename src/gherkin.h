@@ -40,6 +40,7 @@ namespace Gherkin {
 		Scenario,
 		ScenarioOutline,
 		Examples,
+		Import,
 		Step,
 		None
 	};
@@ -265,6 +266,17 @@ namespace Gherkin {
 		operator JSON() const;
 	};
 
+	class GherkinImport {
+	private:
+		const size_t lineNumber;
+		std::string text;
+		std::string name;
+	public:
+		GherkinImport(const GherkinLine& line);
+		GherkinImport(const GherkinImport& src);
+		operator JSON() const;
+	};
+
 	class GeneratedScript {
 	private:
 		GherkinTokens tokens;
@@ -370,6 +382,7 @@ namespace Gherkin {
 	private:
 		std::unique_ptr<GherkinVariable> current;
 		std::vector<GherkinVariable> variables;
+		std::vector<GherkinImport> imports;
 	public:
 		GherkinVariables(GherkinLexer& lexer, const GherkinLine& line);
 		virtual GherkinElement* push(GherkinLexer& lexer, const GherkinLine& line) override;

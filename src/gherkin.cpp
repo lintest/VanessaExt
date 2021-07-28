@@ -553,6 +553,7 @@ namespace Gherkin {
 		static std::map<std::string, KeywordType> types{
 			{ "background", KeywordType::Background },
 			{ "variables", KeywordType::Variables },
+			{ "import", KeywordType::Import },
 			{ "examples", KeywordType::Examples },
 			{ "feature", KeywordType::Feature },
 			{ "scenario", KeywordType::Scenario },
@@ -1386,6 +1387,29 @@ namespace Gherkin {
 		return json;
 	}
 
+	GherkinImport::GherkinImport(const GherkinLine& line)
+		: lineNumber(line.lineNumber), text(line.text)
+	{
+		auto tokens = line.getTokens();
+		if (tokens.size() > 0 && tokens[1].getType() == TokenType::Param) {
+			name = tokens[1].text;
+		}
+	}
+
+	GherkinImport::GherkinImport(const GherkinImport& src)
+		: lineNumber(src.lineNumber), text(src.text), name(src.name)
+	{
+	}
+
+	GherkinImport::operator JSON() const
+	{
+		JSON json;
+		set(json, "line", lineNumber);
+		set(json, "text", text);
+		set(json, "name", name);
+		return json;
+	}
+
 	GherkinVariables::GherkinVariables(GherkinLexer& lexer, const GherkinLine& line)
 		: AbsractDefinition(lexer, line)
 	{
@@ -1399,7 +1423,12 @@ namespace Gherkin {
 			current.reset(new GherkinVariable(line));
 			return nullptr;
 		case TokenType::Keyword:
+			if (line.getKeyword()->getType() == KeywordType::Import) {
+				imports.emplace_back(line);
+				return nullptr;
+			}
 		case TokenType::Operator:
+			[[fallthrough]];
 			if (tokens.size() == 2) {
 				current.reset(new GherkinVariable(line));
 				return nullptr;
@@ -1443,6 +1472,7 @@ namespace Gherkin {
 		JSON json = AbsractDefinition::operator JSON();
 		set(json, "name", name);
 		set(json, "keyword", keyword);
+		set(json, "import", imports);
 		set(json, "items", variables);
 		return json;
 	}
