@@ -53,6 +53,7 @@ namespace Gherkin {
 	class GherkinDefinition;
 	class GherkinMultiline;
 	class GeneratedScript;
+	class GherkinVariable;
 	class ExportScenario;
 	class GherkinKeyword;
 	class GherkinToken;
@@ -78,6 +79,7 @@ namespace Gherkin {
 	using BoostPaths = std::vector<BoostPath>;
 	using FileInfo = std::pair<size_t, time_t>;
 	using FileCache = std::map<BoostPath, FileInfo>;
+	using VariableCache = std::map<std::wstring, std::vector<GherkinVariable>>;
 
 	class AbstractProgress {
 	public:
@@ -111,6 +113,7 @@ namespace Gherkin {
 		GherkinParser* parser = nullptr;
 		ScenarioMap snippets;
 		FileCache fileCache;
+		VariableCache variables;
 		BoostPaths GetDirFiles(size_t id, const BoostPath& root) const;
 		void ScanFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params);
 		void DumpFolder(size_t id, AbstractProgress* progress, const BoostPath& root, ScanParams& params);
@@ -269,11 +272,12 @@ namespace Gherkin {
 	class GherkinImport {
 	private:
 		const size_t lineNumber;
+		std::wstring filename;
 		std::string text;
-		std::string name;
 	public:
 		GherkinImport(const GherkinLine& line);
 		GherkinImport(const GherkinImport& src);
+		JSON dump(const VariableCache& cache) const;
 		operator JSON() const;
 	};
 
@@ -388,7 +392,9 @@ namespace Gherkin {
 		virtual GherkinElement* push(GherkinLexer& lexer, const GherkinLine& line) override;
 		virtual GherkinTable* pushTable(const GherkinLine& line) override;
 		virtual GherkinMultiline* pushMultiline(const GherkinLine& line) override;
+		JSON dump(const VariableCache& cache) const;
 		virtual operator JSON() const override;
+		friend class GherkinDocument;
 	};
 
 	class GherkinDefinition
@@ -489,10 +495,11 @@ namespace Gherkin {
 		void error(GherkinLine& line, const std::string& error);
 		GherkinKeyword* matchKeyword(GherkinTokens& line);
 		void getExportSnippets(ScenarioMap& snippets) const;
+		void getVariables(VariableCache& cache) const;
 		bool isEscapedChar(wchar_t ch) const;
 		void generate(const ScenarioMap& map);
 		const StringLines& getTags() const;
-		JSON dump(const GherkinFilter& filter) const;
+		JSON dump(const GherkinFilter& filter, const VariableCache& cache) const;
 		operator JSON() const;
 	};
 }

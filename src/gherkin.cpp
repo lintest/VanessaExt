@@ -387,6 +387,7 @@ namespace Gherkin {
 			if (time == 0) time = boost::filesystem::last_write_time(path);
 			auto doc = std::make_unique<GherkinDocument>(*this, path);
 			doc->getExportSnippets(snippets);
+			doc->getVariables(variables);
 			fileCache[path] = { identifier, time };
 			params.cashe.emplace(path, doc.release());
 		}
@@ -407,7 +408,7 @@ namespace Gherkin {
 				params.cashe.erase(it);
 			}
 			doc->generate(snippets);
-			auto js = doc->dump(params.filter);
+			auto js = doc->dump(params.filter, variables);
 			if (!js.empty())
 				params.json.push_back(js);
 		}
@@ -521,7 +522,8 @@ namespace Gherkin {
 				doc.reset(it->second.release());
 			}
 			doc->generate(snippets);
-			result = JSON(*doc);
+			GherkinFilter filter({});
+			result = doc->dump(filter, variables);
 		}
 		catch (boost::filesystem::filesystem_error& e) {
 			auto message = cp1251_to_utf8(e.what());
@@ -1392,21 +1394,36 @@ namespace Gherkin {
 	{
 		auto tokens = line.getTokens();
 		if (tokens.size() > 0 && tokens[1].getType() == TokenType::Param) {
-			name = tokens[1].text;
+			filename = tokens[1].wstr;
 		}
 	}
 
 	GherkinImport::GherkinImport(const GherkinImport& src)
-		: lineNumber(src.lineNumber), text(src.text), name(src.name)
+		: lineNumber(src.lineNumber), text(src.text), filename(src.filename)
 	{
+	}
+
+	JSON GherkinImport::dump(const VariableCache& cache) const
+	{
+		JSON json;
+		set(json, "name", filename);
+		set(json, "line", lineNumber);
+		set(json, "text", text);
+
+		auto it = cache.find(lower(filename));
+		if (it != cache.end()) {
+			set(json, "items", it->second);
+		}
+
+		return json;
 	}
 
 	GherkinImport::operator JSON() const
 	{
 		JSON json;
+		set(json, "name", filename);
 		set(json, "line", lineNumber);
 		set(json, "text", text);
-		set(json, "name", name);
 		return json;
 	}
 
@@ -1465,6 +1482,18 @@ namespace Gherkin {
 		if (!var) current.reset(new GherkinVariable());
 		variables.emplace_back(*var.get());
 		return variables.back().pushMultiline(line);
+	}
+
+	JSON GherkinVariables::dump(const VariableCache& cache) const
+	{
+		JSON json = AbsractDefinition::operator JSON();
+		set(json, "name", name);
+		set(json, "keyword", keyword);
+		set(json, "items", variables);
+		for (auto& it : imports) {
+			json["import"].push_back(it.dump(cache));
+		}
+		return json;
 	}
 
 	GherkinVariables::operator JSON() const
@@ -2027,6 +2056,17 @@ namespace Gherkin {
 		}
 	}
 
+	void GherkinDocument::getVariables(VariableCache& cache) const
+	{
+		if (variables) {
+			auto vars = reinterpret_cast<GherkinVariables*>(variables.get());
+			auto filename = lower(filepath.filename().wstring());
+			auto it = cache.find(filename);
+			if (it != cache.end()) cache.erase(filename);
+			cache.emplace(filename, vars->variables);
+		}
+	}
+
 	void GherkinDocument::generate(const ScenarioMap& map)
 	{
 		try {
@@ -2053,7 +2093,7 @@ namespace Gherkin {
 		return feature ? feature->getTags() : empty;
 	}
 
-	JSON GherkinDocument::dump(const GherkinFilter& filter) const
+	JSON GherkinDocument::dump(const GherkinFilter& filter, const VariableCache& cache) const
 	{
 		JSON json;
 		json["language"] = language;
@@ -2089,9 +2129,13 @@ namespace Gherkin {
 					return JSON();
 			}
 			set(json, "feature", feature);
-			set(json, "variables", variables);
 			set(json, "background", background);
 			set(json, "errors", errors);
+
+			if (variables) {
+				auto vars = reinterpret_cast<GherkinVariables*>(variables.get());
+				set(json, "variables", vars->dump(cache));
+			}
 		}
 		catch (const std::exception& e) {
 			json["errors"].push_back(
@@ -2104,6 +2148,6 @@ namespace Gherkin {
 	GherkinDocument::operator JSON() const
 	{
 		GherkinFilter filter({});
-		return dump(filter);
+		return dump(filter, {});
 	}
 }
