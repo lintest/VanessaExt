@@ -79,7 +79,8 @@ namespace Gherkin {
 	using BoostPaths = std::vector<BoostPath>;
 	using FileInfo = std::pair<size_t, time_t>;
 	using FileCache = std::map<BoostPath, FileInfo>;
-	using VariableCache = std::map<std::wstring, std::vector<GherkinVariable>>;
+	using VariablesFile = std::pair<BoostPath, std::vector<GherkinVariable>>;
+	using VariableCache = std::map<std::wstring, VariablesFile>;
 
 	class AbstractProgress {
 	public:

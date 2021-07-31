@@ -1412,7 +1412,8 @@ namespace Gherkin {
 
 		auto it = cache.find(lower(filename));
 		if (it != cache.end()) {
-			set(json, "items", it->second);
+			set(json, "path", it->second.first.wstring());
+			set(json, "items", it->second.second);
 		}
 
 		return json;
@@ -2063,7 +2064,7 @@ namespace Gherkin {
 			auto filename = lower(filepath.filename().wstring());
 			auto it = cache.find(filename);
 			if (it != cache.end()) cache.erase(filename);
-			cache.emplace(filename, vars->variables);
+			cache.emplace(filename, std::make_pair(filepath, vars->variables));
 		}
 	}
 
