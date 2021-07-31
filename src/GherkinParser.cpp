@@ -19,6 +19,10 @@ GherkinParser::GherkinParser()
 		[&](VH value) { this->provider->escapedCharacters = (std::wstring)value; }
 	);
 
+	AddProperty(u"Variables", u"Переменные",
+		[&](VH value) { value = this->provider->GetVariables({}); }
+	);
+
 	AddFunction(u"Parse", u"Прочитать",
 		[&](VH data) { this->result = this->provider->ParseText(data); }
 	);
@@ -28,7 +32,7 @@ GherkinParser::GherkinParser()
 	);
 
 	AddFunction(u"ParseFolder", u"ПрочитатьПапку",
-		[&](VH dirs, VH libs, VH filter) { this->result = this->provider->ParseFolder(dirs, libs, filter); }, 
+		[&](VH dirs, VH libs, VH filter) { this->result = this->provider->ParseFolder(dirs, libs, filter); },
 		{ {1, u"[]"}, {2, u""} }
 	);
 
@@ -36,12 +40,16 @@ GherkinParser::GherkinParser()
 		[&](VH file, VH libs) { this->result = this->provider->ParseFile(file, libs); }, { {1, u"[]"} }
 	);
 
+	AddFunction(u"GetVariables", u"ПолучитьПеременные",
+		[&](VH value) { this->result = this->provider->GetVariables(value); }, { {0, u""} }
+	);
+
 	AddFunction(u"GetCashe", u"ПолучитьКэш",
 		[&]() { this->result = this->provider->GetCashe(); }
 	);
 
 	AddProcedure(u"ClearCashe", u"ОчиститьКэш",
-		[&](VH filename) { this->provider->ClearSnippets((std::wstring)filename); }, { {0, u""} }
+		[&](VH filename) { this->provider->ClearCashe((std::wstring)filename); }, { {0, u""} }
 	);
 
 	AddProcedure(u"Exit", u"ЗавершитьРаботуСистемы",

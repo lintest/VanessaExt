@@ -55,6 +55,7 @@ namespace Gherkin {
 	class GeneratedScript;
 	class GherkinVariable;
 	class ExportScenario;
+	class VariablesFile;
 	class GherkinKeyword;
 	class GherkinToken;
 	class GherkinGroup;
@@ -79,7 +80,6 @@ namespace Gherkin {
 	using BoostPaths = std::vector<BoostPath>;
 	using FileInfo = std::pair<size_t, time_t>;
 	using FileCache = std::map<BoostPath, FileInfo>;
-	using VariablesFile = std::pair<BoostPath, std::vector<GherkinVariable>>;
 	using VariableCache = std::map<std::wstring, VariablesFile>;
 
 	class AbstractProgress {
@@ -100,7 +100,7 @@ namespace Gherkin {
 			friend class GherkinProvider;
 			friend class GherkinKeyword;
 		public:
-			Keyword(KeywordType type, const std::string &name, const std::string& text);
+			Keyword(KeywordType type, const std::string& name, const std::string& text);
 			GherkinKeyword* match(GherkinTokens& tokens) const;
 			bool comp(const Keyword& other) const {
 				return words.size() > other.words.size();
@@ -128,8 +128,9 @@ namespace Gherkin {
 		std::string ParseFolder(const std::string& dirs, const std::string& libs, const std::string& filter, AbstractProgress* progress = nullptr);
 		std::string ParseFile(const std::wstring& path, const std::string& libs, AbstractProgress* progress = nullptr);
 		std::string ParseText(const std::string& text);
-		void ClearSnippets(const BoostPath& path);
+		void ClearCashe(const BoostPath& path);
 		void AbortScan() { ++identifier; };
+		std::string GetVariables(const std::string& text) const;
 		std::string GetCashe() const;
 	};
 
@@ -267,6 +268,18 @@ namespace Gherkin {
 		GherkinVariable(const GherkinVariable& src);
 		GherkinTable* pushTable(const GherkinLine& line);
 		GherkinMultiline* pushMultiline(const GherkinLine& line);
+		operator JSON() const;
+	};
+
+	class VariablesFile {
+	public:
+		const BoostPath filepath;
+		const std::vector<GherkinVariable> variables;
+	public:
+		VariablesFile(const BoostPath& path, const std::vector<GherkinVariable>& vars)
+			: filepath(path), variables(vars) {}
+		VariablesFile(const VariablesFile& src)
+			: filepath(src.filepath), variables(src.variables) {}
 		operator JSON() const;
 	};
 
