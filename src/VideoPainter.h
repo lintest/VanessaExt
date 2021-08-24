@@ -90,4 +90,18 @@ public:
 	virtual void draw(Graphics& graphics) override;
 };
 
+class SpeechBubble
+	: public PainterBase {
+private:
+	REAL tailWidth = 24;
+	REAL tailLength = 100;
+	REAL tailRotation = -135;
+	REAL fontSize = 24;
+	std::wstring fontName = L"Calibri";
+	std::wstring text;
+public:
+	SpeechBubble(const std::string& p, int x, int y, int w, int h);
+	virtual void draw(Graphics& graphics) override;
+};
+
 #endif //_WINDOWS

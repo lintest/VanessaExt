@@ -105,6 +105,60 @@ void ShadowPainter::draw(Graphics& graphics)
 	graphics.DrawBeziers(&pen, points, 4);
 }
 
+SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h)
+	: PainterBase(p, x, y, w, h)
+{
+	this->delay = 0;
+	this->x -= thick;
+	this->y -= thick;
+	this->w += 2 * thick;
+	this->h += 2 * thick;
+	JSON j = JSON::parse(p);
+	{ auto it = j.find("tailWidth"); if (it != j.end()) tailWidth = *it; }
+	{ auto it = j.find("tailLength"); if (it != j.end()) tailLength = *it; }
+	{ auto it = j.find("tailRotation"); if (it != j.end()) tailRotation = *it; }
+	{ auto it = j.find("fontName"); if (it != j.end()) fontName = MB2WC(*it); }
+	{ auto it = j.find("fontSize"); if (it != j.end()) fontSize = *it; }
+	{ auto it = j.find("text"); if (it != j.end()) text = MB2WC(*it); }
+	REAL tailWidth = 24;
+	REAL tailLength = 100;
+	REAL tailRotation = -135;
+}
+
+void SpeechBubble::draw(Graphics& graphics)
+{
+	SolidBrush brush(Color::White);
+	Pen pen(color, (REAL)thick);
+	GraphicsPath path, tail;
+	path.AddEllipse(thick, thick, w - 2 * thick, h - 2 * thick);
+	graphics.DrawPath(&pen, &path);
+
+	auto gstate = graphics.Save();
+	tail.AddLine(-tailWidth, (REAL)0, tailWidth, (REAL)0);
+	tail.AddLine(tailWidth, (REAL)0, (REAL)0, tailLength);
+	tail.CloseFigure();
+	graphics.TranslateTransform((REAL)w / 2, (REAL)h / 2);
+	graphics.RotateTransform(tailRotation);
+	graphics.DrawPath(&pen, &tail);
+	graphics.Restore(gstate);
+
+	graphics.FillPath(&brush, &path);
+	graphics.TranslateTransform((REAL)w / 2, (REAL)h / 2);
+	graphics.RotateTransform(tailRotation);
+	graphics.FillPath(&brush, &tail);
+	graphics.Restore(gstate);
+
+	SolidBrush textBrush(Color::Red);
+	FontFamily fontFamily(fontName.c_str());
+	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
+	StringFormat format;
+	format.SetAlignment(StringAlignment::StringAlignmentCenter);
+	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+	RectF rect((REAL)x, (REAL)y, (REAL)w, (REAL)h), r;
+	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
+}
+
 void EllipsePainter::draw(Graphics& graphics)
 {
 	Pen pen(color, (REAL)thick);
