@@ -93,10 +93,12 @@ public:
 class SpeechBubble
 	: public PainterBase {
 private:
+	int X, Y, W, H;
 	REAL tailWidth = 24;
 	REAL tailLength = 100;
 	REAL tailRotation = -135;
-	REAL fontSize = 24;
+	REAL fontSize = 12;
+	Color fontColor = { 200, 50, 50 };
 	std::wstring fontName = L"Calibri";
 	std::wstring text;
 public:

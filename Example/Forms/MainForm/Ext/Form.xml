@@ -1463,12 +1463,67 @@
 														</CommandBar>
 													</ChildItems>
 												</UsualGroup>
-												<InputField name="ТекстНадписи" id="890">
-													<DataPath>ТекстНадписи</DataPath>
-													<MultiLine>true</MultiLine>
-													<ContextMenu name="ТекстНадписиContextMenu" id="891"/>
-													<ExtendedTooltip name="ТекстНадписиExtendedTooltip" id="892"/>
-												</InputField>
+												<UsualGroup name="ГруппаТекстНадписи" id="895">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа текст надписи</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа текст надписи</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Group>Vertical</Group>
+													<Representation>None</Representation>
+													<ShowTitle>false</ShowTitle>
+													<ExtendedTooltip name="ГруппаТекстНадписиExtendedTooltip" id="896"/>
+													<ChildItems>
+														<InputField name="ТекстНадписи" id="890">
+															<DataPath>ТекстНадписи</DataPath>
+															<MultiLine>true</MultiLine>
+															<ContextMenu name="ТекстНадписиContextMenu" id="891"/>
+															<ExtendedTooltip name="ТекстНадписиExtendedTooltip" id="892"/>
+														</InputField>
+														<UsualGroup name="ГруппаХвостНадписи" id="897">
+															<Title>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>Группа хвост надписи</v8:content>
+																</v8:item>
+															</Title>
+															<ToolTip>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>Группа хвост надписи</v8:content>
+																</v8:item>
+															</ToolTip>
+															<Group>Horizontal</Group>
+															<Representation>None</Representation>
+															<ShowTitle>false</ShowTitle>
+															<ExtendedTooltip name="ГруппаХвостНадписиExtendedTooltip" id="898"/>
+															<ChildItems>
+																<InputField name="ХвостШирина" id="899">
+																	<DataPath>ХвостШирина</DataPath>
+																	<ContextMenu name="ХвостШиринаContextMenu" id="900"/>
+																	<ExtendedTooltip name="ХвостШиринаExtendedTooltip" id="901"/>
+																</InputField>
+																<InputField name="ХвостДлинна" id="902">
+																	<DataPath>ХвостДлинна</DataPath>
+																	<ContextMenu name="ХвостДлиннаContextMenu" id="903"/>
+																	<ExtendedTooltip name="ХвостДлиннаExtendedTooltip" id="904"/>
+																</InputField>
+																<InputField name="ХвостУгол" id="905">
+																	<DataPath>ХвостУгол</DataPath>
+																	<ContextMenu name="ХвостУголContextMenu" id="906"/>
+																	<ExtendedTooltip name="ХвостУголExtendedTooltip" id="907"/>
+																</InputField>
+															</ChildItems>
+														</UsualGroup>
+													</ChildItems>
+												</UsualGroup>
 											</ChildItems>
 										</UsualGroup>
 									</ChildItems>
@@ -5146,6 +5201,54 @@
 					<v8:Length>0</v8:Length>
 					<v8:AllowedLength>Variable</v8:AllowedLength>
 				</v8:StringQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ХвостШирина" id="74">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Ширина</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>6</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ХвостДлинна" id="75">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Длинна</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>6</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
+			</Type>
+		</Attribute>
+		<Attribute name="ХвостУгол" id="76">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Угол</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:decimal</v8:Type>
+				<v8:NumberQualifiers>
+					<v8:Digits>6</v8:Digits>
+					<v8:FractionDigits>0</v8:FractionDigits>
+					<v8:AllowedSign>Any</v8:AllowedSign>
+				</v8:NumberQualifiers>
 			</Type>
 		</Attribute>
 	</Attributes>

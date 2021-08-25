@@ -5,17 +5,39 @@
 #define ID_TIMER_REPAINT 1
 #define ID_TIMER_TIMEOUT 2
 
+void get(JSON& j, const std::string& name, Color& value)
+{
+	auto it = j.find(name);
+	if (it != j.end())
+		value.SetFromCOLORREF(*it);
+}
+
+void get(JSON& j, const std::string& name, std::wstring& value)
+{
+	auto it = j.find(name);
+	if (it != j.end())
+		value = MB2WC(*it);
+}
+
+template<typename T>
+void get(JSON& j, const std::string& name, T& value)
+{
+	auto it = j.find(name);
+	if (it != j.end())
+		value = *it;
+}
+
 PainterBase::PainterBase(const std::string& params, int x, int y, int w, int h)
 	: x(x), y(y), w(w), h(h)
 {
 	int trans = 0;
 	JSON j = JSON::parse(params);
-	{ auto it = j.find("color"); if (it != j.end()) color.SetFromCOLORREF(*it); }
-	{ auto it = j.find("duration"); if (it != j.end()) duration = *it; }
-	{ auto it = j.find("frameCount"); if (it != j.end()) limit = *it; }
-	{ auto it = j.find("frameDelay"); if (it != j.end()) delay = *it; }
-	{ auto it = j.find("thickness"); if (it != j.end()) thick = *it; }
-	{ auto it = j.find("transparency"); if (it != j.end()) trans = *it; }
+	get(j, "color", color);
+	get(j, "duration", duration);
+	get(j, "frameCount", limit);
+	get(j, "frameDelay", delay);
+	get(j, "thickness", thick);
+	get(j, "transparency", trans);
 	if (trans) color = Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
 	if (limit <= 0) limit = 1;
 	if (delay == 0 || step > limit) step = limit;
@@ -46,9 +68,9 @@ ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h)
 	this->w = rect.left + rect.right;
 	this->h = rect.bottom - rect.top;
 	JSON j = JSON::parse(p);
-	{ auto it = j.find("fontName"); if (it != j.end()) fontName = MB2WC(*it); }
-	{ auto it = j.find("fontSize"); if (it != j.end()) fontSize = *it; }
-	{ auto it = j.find("text"); if (it != j.end()) text = MB2WC(*it); }
+	get(j, "fontName", fontName);
+	get(j, "fontSize", fontSize);
+	get(j, "text", text);
 }
 
 void ShadowPainter::draw(Graphics& graphics)
@@ -114,23 +136,28 @@ SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h)
 	this->w += 2 * thick;
 	this->h += 2 * thick;
 	JSON j = JSON::parse(p);
-	{ auto it = j.find("tailWidth"); if (it != j.end()) tailWidth = *it; }
-	{ auto it = j.find("tailLength"); if (it != j.end()) tailLength = *it; }
-	{ auto it = j.find("tailRotation"); if (it != j.end()) tailRotation = *it; }
-	{ auto it = j.find("fontName"); if (it != j.end()) fontName = MB2WC(*it); }
-	{ auto it = j.find("fontSize"); if (it != j.end()) fontSize = *it; }
-	{ auto it = j.find("text"); if (it != j.end()) text = MB2WC(*it); }
-	REAL tailWidth = 24;
-	REAL tailLength = 100;
-	REAL tailRotation = -135;
+	get(j, "tailWidth", tailWidth);
+	get(j, "tailLength", tailLength);
+	get(j, "tailRotation", tailRotation);
+	get(j, "fontColor", fontColor);
+	get(j, "fontName", fontName);
+	get(j, "fontSize", fontSize);
+	get(j, "text", text);
+	tailRotation = tailRotation + 180;
+	X = Y = tailLength + thick;
+	W = w; H = h;
+	this->x -= tailLength;
+	this->y -= tailLength;
+	this->w += 2 * tailLength;
+	this->h += 2 * tailLength;
 }
 
 void SpeechBubble::draw(Graphics& graphics)
 {
 	SolidBrush brush(Color::White);
-	Pen pen(color, (REAL)thick);
+	Pen pen(color, (REAL)thick * 2);
 	GraphicsPath path, tail;
-	path.AddEllipse(thick, thick, w - 2 * thick, h - 2 * thick);
+	path.AddEllipse(X, Y, W, H);
 	graphics.DrawPath(&pen, &path);
 
 	auto gstate = graphics.Save();
@@ -142,19 +169,20 @@ void SpeechBubble::draw(Graphics& graphics)
 	graphics.DrawPath(&pen, &tail);
 	graphics.Restore(gstate);
 
+	gstate = graphics.Save();
 	graphics.FillPath(&brush, &path);
 	graphics.TranslateTransform((REAL)w / 2, (REAL)h / 2);
 	graphics.RotateTransform(tailRotation);
 	graphics.FillPath(&brush, &tail);
 	graphics.Restore(gstate);
 
-	SolidBrush textBrush(Color::Red);
+	SolidBrush textBrush(color);
 	FontFamily fontFamily(fontName.c_str());
 	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
 	StringFormat format;
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
-	RectF rect((REAL)x, (REAL)y, (REAL)w, (REAL)h), r;
+	RectF rect((REAL)X, (REAL)Y, (REAL)W, (REAL)H), r;
 	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
 	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
 }
