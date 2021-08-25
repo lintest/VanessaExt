@@ -136,6 +136,9 @@ SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h)
 	this->w += 2 * thick;
 	this->h += 2 * thick;
 	JSON j = JSON::parse(p);
+	get(j, "radius", R);
+	get(j, "shape", shape);
+	get(j, "background", background);
 	get(j, "tailWidth", tailWidth);
 	get(j, "tailLength", tailLength);
 	get(j, "tailRotation", tailRotation);
@@ -154,10 +157,31 @@ SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h)
 
 void SpeechBubble::draw(Graphics& graphics)
 {
-	SolidBrush brush(Color::White);
+	SolidBrush brush(background);
 	Pen pen(color, (REAL)thick * 2);
 	GraphicsPath path, tail;
-	path.AddEllipse(X, Y, W, H);
+	switch (shape) {
+	case 0:
+		path.AddEllipse(X, Y, W, H);
+		break;
+	case 1:
+		path.AddRectangle(Rect(X, Y, W, H));
+		break;
+	case 2:
+		if (R * 2 > min(W, H)) R = min(W, H) / 2;
+		path.AddLine(X + R, Y, X + W - (R * 2), Y);
+		path.AddArc(X + W - (R * 2), Y, R * 2, R * 2, 270, 90);
+		path.AddLine(X + W, Y + R, X + W, Y + H - (R * 2));
+		path.AddArc(X + W - (R * 2), Y + H - (R * 2), R * 2, R * 2, 0, 90);
+		path.AddLine(X + W - (R * 2), Y + H, X + R, Y + H);
+		path.AddArc(X, Y + H - (R * 2), R * 2, R * 2, 90, 90);
+		path.AddLine(X, Y + H - (R * 2), X, Y + R);
+		path.AddArc(X, Y, R * 2, R * 2, 180, 90);
+		break;
+	default:
+		path.AddRectangle(Rect(X, Y, W, H));
+	}
+
 	graphics.DrawPath(&pen, &path);
 
 	auto gstate = graphics.Save();
@@ -176,7 +200,7 @@ void SpeechBubble::draw(Graphics& graphics)
 	graphics.FillPath(&brush, &tail);
 	graphics.Restore(gstate);
 
-	SolidBrush textBrush(color);
+	SolidBrush textBrush(fontColor);
 	FontFamily fontFamily(fontName.c_str());
 	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
 	StringFormat format;
