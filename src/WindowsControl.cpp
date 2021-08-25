@@ -247,6 +247,9 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"SpeechBubble", u"НарисоватьТекст",
 		[&](VH p, VH x, VH y, VH w, VH h) { (new SpeechBubble(p, x, y, w, h))->run(); }
 	);
+	AddProcedure(u"ShowHint", u"ПоказатьПодсказку",
+		[&](VH p, VH x, VH y) { (new SpeechRect(p, x, y))->run(); }
+	);
 	AddFunction(u"GetDesktopCount", u"ПолучитьКоличествоРабочихСтолов",
 		[&]() { this->result = DesktopManager::GetDesktopCount(); }
 	);

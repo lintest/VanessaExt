@@ -59,8 +59,12 @@ void RecanglePainter::draw(Graphics& graphics)
 ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h)
 	: PainterBase(p), X(x), Y(y), W(w), H(h)
 {
-	RECT rect;
-	GetWindowRect(GetDesktopWindow(), &rect);
+	MONITORINFO mi{ 0 };
+	mi.cbSize = sizeof(MONITORINFO);
+	RECT rect{ x, y, x + w, y + h };
+	auto hMonitor = MonitorFromRect(&rect, MONITOR_DEFAULTTONEAREST);
+	GetMonitorInfo(hMonitor, &mi);
+	rect = mi.rcMonitor;
 	X -= rect.left;
 	Y -= rect.top;
 	this->x = rect.left;
@@ -209,6 +213,103 @@ void SpeechBubble::draw(Graphics& graphics)
 	RectF rect((REAL)X, (REAL)Y, (REAL)W, (REAL)H), r;
 	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
 	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
+}
+
+SpeechRect::SpeechRect(const std::string& p, int x, int y)
+	: PainterBase(p), tx(x), ty(y)
+{
+	this->delay = 0;
+	JSON j = JSON::parse(p);
+	get(j, "radius", R);
+	get(j, "background", background);
+	get(j, "fontColor", fontColor);
+	get(j, "fontName", fontName);
+	get(j, "fontSize", fontSize);
+	get(j, "text", text);
+
+	MONITORINFO mi{ 0 };
+	mi.cbSize = sizeof(MONITORINFO);
+	POINT pt{ x, y };
+	auto hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+	GetMonitorInfo(hMonitor, &mi);
+	RECT mr = mi.rcMonitor;
+
+	auto hDC = GetDC(NULL);
+	Graphics graphics(hDC);
+	FontFamily fontFamily(fontName.c_str());
+	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
+	StringFormat format;
+	format.SetAlignment(StringAlignment::StringAlignmentCenter);
+	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), r;
+	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+	REAL padding = fontSize + (REAL)thick;
+	W = int(r.Width + padding * 2);
+	H = int(r.Height + padding * 2);
+
+	int tailLength = int(fontSize * 6);
+	if (x * 2 < mr.left + mr.right) {
+		tw = tailLength;
+		X = x;
+	}
+	else {
+		tw = - tailLength;
+		X = x - W;
+	}
+	if (y * 2 < mr.top + mr.bottom) {
+		th = tailLength;
+		Y = y + tailLength;
+	}
+	else {
+		th = - tailLength;
+		Y = y - tailLength - H;
+	}
+
+	this->x = min(x, X) - fontSize;
+	this->y = min(y, Y) - fontSize;
+	this->w = max(x, X + W) + fontSize * 2;
+	this->h = max(y, Y + H) + fontSize * 2;
+}
+
+void SpeechRect::draw(Graphics& graphics)
+{
+	auto gstate = graphics.Save();
+	graphics.TranslateTransform(-x, -y);
+	SolidBrush brush(background);
+	Pen pen(color, (REAL)thick * 2);
+	GraphicsPath path, tail;
+	if (R < 1) {
+		path.AddRectangle(Rect(X, Y, W, H));
+	} else {
+		if (R * 2 > min(W, H)) R = min(W, H) / 2;
+		path.AddLine(X + R, Y, X + W - (R * 2), Y);
+		path.AddArc(X + W - (R * 2), Y, R * 2, R * 2, 270, 90);
+		path.AddLine(X + W, Y + R, X + W, Y + H - (R * 2));
+		path.AddArc(X + W - (R * 2), Y + H - (R * 2), R * 2, R * 2, 0, 90);
+		path.AddLine(X + W - (R * 2), Y + H, X + R, Y + H);
+		path.AddArc(X, Y + H - (R * 2), R * 2, R * 2, 90, 90);
+		path.AddLine(X, Y + H - (R * 2), X, Y + R);
+		path.AddArc(X, Y, R * 2, R * 2, 180, 90);
+	}
+	tail.AddLine((REAL)(tx + tw), (REAL)(ty + th * 1.2), (REAL)(tx), (REAL)(ty));
+	tail.AddLine((REAL)(tx), (REAL)(ty), (REAL)(tx + tw * 1.2), (REAL)(ty + th));
+	tail.CloseFigure();
+
+	graphics.DrawPath(&pen, &path);
+	graphics.DrawPath(&pen, &tail);
+	graphics.FillPath(&brush, &path);
+	graphics.FillPath(&brush, &tail);
+
+	SolidBrush textBrush(fontColor);
+	FontFamily fontFamily(fontName.c_str());
+	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
+	StringFormat format;
+	format.SetAlignment(StringAlignment::StringAlignmentCenter);
+	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+	RectF rect((REAL)X, (REAL)Y, (REAL)W, (REAL)H), r;
+	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
+	graphics.Restore(gstate);
 }
 
 void EllipsePainter::draw(Graphics& graphics)

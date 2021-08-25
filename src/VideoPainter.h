@@ -8,7 +8,6 @@ using namespace Gdiplus;
 
 class PainterBase {
 protected:
-	static JSON parse(const std::string& text);
 	Color color = { 200, 50, 50 };
 	int x = 0, y = 0, w = 0, h = 0;
 	int duration = 5000;
@@ -105,6 +104,21 @@ private:
 	std::wstring text;
 public:
 	SpeechBubble(const std::string& p, int x, int y, int w, int h);
+	virtual void draw(Graphics& graphics) override;
+};
+
+class SpeechRect
+	: public PainterBase {
+private:
+	int X, Y, W, H, R = 20;
+	int tx, ty, tw, th;
+	REAL fontSize = 12;
+	Color background = Color::White;
+	Color fontColor = { 200, 50, 50 };
+	std::wstring fontName = L"Calibri";
+	std::wstring text;
+public:
+	SpeechRect(const std::string& p, int x, int y);
 	virtual void draw(Graphics& graphics) override;
 };
 
