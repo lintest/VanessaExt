@@ -56,8 +56,8 @@ void RecanglePainter::draw(Graphics& graphics)
 	graphics.DrawPolygon(&pen, points, 4);
 }
 
-ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h)
-	: PainterBase(p), X(x), Y(y), W(w), H(h)
+ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h, const std::wstring& text)
+	: PainterBase(p), X(x), Y(y), W(w), H(h), text(text)
 {
 	MONITORINFO mi{ 0 };
 	mi.cbSize = sizeof(MONITORINFO);
@@ -74,7 +74,6 @@ ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h)
 	JSON j = JSON::parse(p);
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
-	get(j, "text", text);
 }
 
 void ShadowPainter::draw(Graphics& graphics)
@@ -131,8 +130,8 @@ void ShadowPainter::draw(Graphics& graphics)
 	graphics.DrawBeziers(&pen, points, 4);
 }
 
-SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h)
-	: PainterBase(p, x, y, w, h)
+SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h, const std::wstring& text)
+	: PainterBase(p, x, y, w, h), text(text)
 {
 	this->delay = 0;
 	this->x -= thick;
@@ -142,6 +141,7 @@ SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h)
 	JSON j = JSON::parse(p);
 	get(j, "radius", R);
 	get(j, "shape", shape);
+	get(j, "color", color);
 	get(j, "background", background);
 	get(j, "tailWidth", tailWidth);
 	get(j, "tailLength", tailLength);
@@ -149,7 +149,6 @@ SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h)
 	get(j, "fontColor", fontColor);
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
-	get(j, "text", text);
 	tailRotation = tailRotation + 180;
 	X = Y = tailLength + thick;
 	W = w; H = h;
@@ -215,17 +214,17 @@ void SpeechBubble::draw(Graphics& graphics)
 	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
 }
 
-SpeechRect::SpeechRect(const std::string& p, int x, int y)
-	: PainterBase(p), tx(x), ty(y)
+SpeechRect::SpeechRect(const std::string& p, int x, int y, const std::wstring& text)
+	: PainterBase(p), tx(x), ty(y), text(text)
 {
 	this->delay = 0;
 	JSON j = JSON::parse(p);
 	get(j, "radius", R);
+	get(j, "color", color);
 	get(j, "background", background);
 	get(j, "fontColor", fontColor);
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
-	get(j, "text", text);
 
 	MONITORINFO mi{ 0 };
 	mi.cbSize = sizeof(MONITORINFO);

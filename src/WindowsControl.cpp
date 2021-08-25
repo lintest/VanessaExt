@@ -242,13 +242,13 @@ WindowsControl::WindowsControl() {
 		[&](VH p, VH x1, VH y1, VH x2, VH y2) { (new ArrowPainter(p, x1, y1, x2, y2))->run(); }
 	);
 	AddProcedure(u"DrawShadow", u"НарисоватьТень",
-		[&](VH p, VH x, VH y, VH w, VH h) { (new ShadowPainter(p, x, y, w, h))->run(); }
+		[&](VH p, VH x, VH y, VH w, VH h, VH text) { (new ShadowPainter(p, x, y, w, h, text))->run(); }
 	);
 	AddProcedure(u"SpeechBubble", u"НарисоватьТекст",
-		[&](VH p, VH x, VH y, VH w, VH h) { (new SpeechBubble(p, x, y, w, h))->run(); }
+		[&](VH p, VH x, VH y, VH w, VH h, VH text) { (new SpeechBubble(p, x, y, w, h, text))->run(); }
 	);
 	AddProcedure(u"ShowHint", u"ПоказатьПодсказку",
-		[&](VH p, VH x, VH y) { (new SpeechRect(p, x, y))->run(); }
+		[&](VH p, VH x, VH y, VH text) { (new SpeechRect(p, x, y, text))->run(); }
 	);
 	AddFunction(u"GetDesktopCount", u"ПолучитьКоличествоРабочихСтолов",
 		[&]() { this->result = DesktopManager::GetDesktopCount(); }

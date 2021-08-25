@@ -1168,6 +1168,40 @@
 												</InputField>
 											</ChildItems>
 										</UsualGroup>
+										<UsualGroup name="ГруппаЦветТекста" id="912">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа цвет текста</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа цвет текста</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>None</Representation>
+											<ShowTitle>false</ShowTitle>
+											<ExtendedTooltip name="ГруппаЦветТекстаExtendedTooltip" id="913"/>
+											<ChildItems>
+												<InputField name="ЦветТекста" id="914">
+													<DataPath>ЦветТекста</DataPath>
+													<ContextMenu name="ЦветТекстаContextMenu" id="915"/>
+													<ExtendedTooltip name="ЦветТекстаExtendedTooltip" id="916"/>
+												</InputField>
+												<InputField name="ЦветФона" id="917">
+													<DataPath>ЦветФона</DataPath>
+													<ContextMenu name="ЦветФонаContextMenu" id="918"/>
+													<ExtendedTooltip name="ЦветФонаExtendedTooltip" id="919"/>
+												</InputField>
+											</ChildItems>
+										</UsualGroup>
+										<InputField name="ШрифтПодсказки" id="920">
+											<DataPath>ШрифтПодсказки</DataPath>
+											<ContextMenu name="ШрифтПодсказкиContextMenu" id="921"/>
+											<ExtendedTooltip name="ШрифтПодсказкиExtendedTooltip" id="922"/>
+										</InputField>
 										<TrackBarField name="Прозрачность" id="644">
 											<DataPath>Прозрачность</DataPath>
 											<TitleLocation>Left</TitleLocation>
@@ -1238,10 +1272,33 @@
 															<CommandName>Form.Command.ФигураЗатенение</CommandName>
 															<ExtendedTooltip name="ФигураЗатенениеРасширеннаяПодсказка" id="704"/>
 														</Button>
+													</ChildItems>
+												</ButtonGroup>
+												<ButtonGroup name="ПодгруппаТекст" id="910">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Подгруппа текст</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Подгруппа текст</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ПодгруппаТекстExtendedTooltip" id="911"/>
+													<ChildItems>
 														<Button name="ФигураТекст" id="893">
 															<Type>CommandBarButton</Type>
 															<CommandName>Form.Command.ФигураПоказатьТекст</CommandName>
 															<ExtendedTooltip name="ФигураТекстExtendedTooltip" id="894"/>
+														</Button>
+														<Button name="ФигураПоказатьПодсказку" id="908">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ФигураПоказатьПодсказку</CommandName>
+															<ExtendedTooltip name="ФигураПоказатьПодсказкуExtendedTooltip" id="909"/>
 														</Button>
 													</ChildItems>
 												</ButtonGroup>
@@ -5251,6 +5308,39 @@
 				</v8:NumberQualifiers>
 			</Type>
 		</Attribute>
+		<Attribute name="ЦветТекста" id="77">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Цвет текста</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:Color</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ЦветФона" id="78">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Цвет фона</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:Color</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ШрифтПодсказки" id="79">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Шрифт подсказки</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:Font</v8:Type>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -6679,6 +6769,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ФигураПоказатьТекст</Action>
+		</Command>
+		<Command name="ФигураПоказатьПодсказку" id="95">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Показать подсказку</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Фигура показать текст</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ФигураПоказатьПодсказку</Action>
 		</Command>
 	</Commands>
 </Form>

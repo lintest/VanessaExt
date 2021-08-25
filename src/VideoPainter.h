@@ -85,7 +85,7 @@ private:
 	std::wstring text;
 	AP pos = AP::T;
 public:
-	ShadowPainter(const std::string& p, int x, int y, int w, int h);
+	ShadowPainter(const std::string& p, int x, int y, int w, int h, const std::wstring& text);
 	virtual void draw(Graphics& graphics) override;
 };
 
@@ -103,7 +103,7 @@ private:
 	std::wstring fontName = L"Calibri";
 	std::wstring text;
 public:
-	SpeechBubble(const std::string& p, int x, int y, int w, int h);
+	SpeechBubble(const std::string& p, int x, int y, int w, int h, const std::wstring& text);
 	virtual void draw(Graphics& graphics) override;
 };
 
@@ -118,7 +118,7 @@ private:
 	std::wstring fontName = L"Calibri";
 	std::wstring text;
 public:
-	SpeechRect(const std::string& p, int x, int y);
+	SpeechRect(const std::string& p, int x, int y, const std::wstring& text);
 	virtual void draw(Graphics& graphics) override;
 };
 
