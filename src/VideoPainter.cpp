@@ -56,8 +56,8 @@ void RecanglePainter::draw(Graphics& graphics)
 	graphics.DrawPolygon(&pen, points, 4);
 }
 
-ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h, const std::wstring& text)
-	: PainterBase(p), X(x), Y(y), W(w), H(h), text(text)
+ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h, const std::wstring& t)
+	: PainterBase(p), X(x), Y(y), W(w), H(h), text(t)
 {
 	MONITORINFO mi{ 0 };
 	mi.cbSize = sizeof(MONITORINFO);
@@ -74,6 +74,7 @@ ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h, c
 	JSON j = JSON::parse(p);
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
+	if (text.empty()) get(j, "text", text);
 }
 
 void ShadowPainter::draw(Graphics& graphics)
@@ -130,8 +131,8 @@ void ShadowPainter::draw(Graphics& graphics)
 	graphics.DrawBeziers(&pen, points, 4);
 }
 
-SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h, const std::wstring& text)
-	: PainterBase(p, x, y, w, h), text(text)
+SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h, const std::wstring& t)
+	: PainterBase(p, x, y, w, h), text(t)
 {
 	this->delay = 0;
 	this->x -= thick;
@@ -149,6 +150,7 @@ SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h, con
 	get(j, "fontColor", fontColor);
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
+	if (text.empty()) get(j, "text", text);
 	tailRotation = tailRotation + 180;
 	X = Y = tailLength + thick;
 	W = w; H = h;
@@ -214,8 +216,8 @@ void SpeechBubble::draw(Graphics& graphics)
 	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
 }
 
-SpeechRect::SpeechRect(const std::string& p, int x, int y, const std::wstring& text)
-	: PainterBase(p), tx(x), ty(y), text(text)
+SpeechRect::SpeechRect(const std::string& p, int x, int y, const std::wstring& t)
+	: PainterBase(p), tx(x), ty(y), text(t)
 {
 	this->delay = 0;
 	JSON j = JSON::parse(p);
@@ -225,6 +227,7 @@ SpeechRect::SpeechRect(const std::string& p, int x, int y, const std::wstring& t
 	get(j, "fontColor", fontColor);
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
+	if (text.empty()) get(j, "text", text);
 
 	MONITORINFO mi{ 0 };
 	mi.cbSize = sizeof(MONITORINFO);
@@ -290,8 +293,8 @@ void SpeechRect::draw(Graphics& graphics)
 		path.AddLine(X, Y + H - (R * 2), X, Y + R);
 		path.AddArc(X, Y, R * 2, R * 2, 180, 90);
 	}
-	tail.AddLine((REAL)(tx + tw), (REAL)(ty + th * 1.2), (REAL)(tx), (REAL)(ty));
-	tail.AddLine((REAL)(tx), (REAL)(ty), (REAL)(tx + tw * 1.2), (REAL)(ty + th));
+	tail.AddLine((REAL)(tx + tw), (REAL)(ty + th * 1.33), (REAL)(tx), (REAL)(ty));
+	tail.AddLine((REAL)(tx), (REAL)(ty), (REAL)(tx + tw * 1.33), (REAL)(ty + th));
 	tail.CloseFigure();
 
 	graphics.DrawPath(&pen, &path);
