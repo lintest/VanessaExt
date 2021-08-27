@@ -1599,7 +1599,9 @@ namespace Gherkin {
 
 	void GherkinDefinition::generate(const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
 	{
-		AbsractDefinition::generate(doc, map, stack);
+		SnippetStack next(stack);
+		next.insert(snippet);
+		AbsractDefinition::generate(doc, map, next);
 		if (examples && !examples->tables.empty()) {
 			auto& table = examples->tables[0];
 			for (auto& row : table.body) {
