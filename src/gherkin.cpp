@@ -1556,7 +1556,8 @@ namespace Gherkin {
 	}
 
 	GherkinDefinition::GherkinDefinition(GherkinLexer& lexer, const GherkinLine& line)
-		: AbsractDefinition(lexer, line), tokens(line.getTokens()), snippet(::snippet(tokens))
+		: AbsractDefinition(lexer, line), tokens(line.getTokens())
+		, snippet(getType() == KeywordType::Background ? std::wstring() : ::snippet(tokens))
 	{
 	}
 
@@ -1599,9 +1600,11 @@ namespace Gherkin {
 
 	void GherkinDefinition::generate(const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
 	{
-		SnippetStack next(stack);
-		next.insert(snippet);
-		AbsractDefinition::generate(doc, map, next);
+		SnippetStack nextStack(stack);
+		if (!snippet.empty())
+			nextStack.insert(snippet);
+
+		AbsractDefinition::generate(doc, map, nextStack);
 		if (examples && !examples->tables.empty()) {
 			auto& table = examples->tables[0];
 			for (auto& row : table.body) {
@@ -1699,7 +1702,11 @@ namespace Gherkin {
 
 	void GherkinStep::generate(const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
 	{
-		script.reset(GeneratedScript::generate(*this, doc, map, stack));
+		if (stack.count(snippet))
+			error = "Recursive call error";
+		else
+			script.reset(GeneratedScript::generate(*this, doc, map, stack));
+
 		GherkinElement::generate(doc, map, stack);
 		if (script) {
 			auto tabs = reverse(tables);
@@ -1732,6 +1739,7 @@ namespace Gherkin {
 		json["keyword"] = keyword;
 		set(json, "tokens", tokens);
 		set(json, "snippet", script);
+		set(json, "error", error);
 		set_params(json, tokens);
 		return json;
 	}

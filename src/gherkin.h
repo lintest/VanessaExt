@@ -354,6 +354,7 @@ namespace Gherkin {
 	class GherkinStep
 		: public GherkinElement {
 	private:
+		std::string error;
 		GherkinKeyword keyword;
 		GherkinTokens tokens;
 		const GherkinSnippet snippet;
