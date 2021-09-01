@@ -467,9 +467,13 @@ std::string WindowsControl::GetElements(const VH& id)
 
 std::string WindowsControl::FindElements(const VH& id, const VH& name, const VH& type)
 {
+	std::unique_ptr<std::wstring> pName;
+	if (name.type() == VTYPE_PWSTR)
+		pName.reset(new std::wstring(name));
+
 	switch (id.type()) {
-	case VTYPE_PWSTR: return WinUIAuto().FindElements((std::string)id, name, type);
-	default: return WinUIAuto().FindElements((DWORD)(int64_t)id, name, type);
+	case VTYPE_PWSTR: return WinUIAuto().FindElements((std::string)id, pName.get(), type);
+	default: return WinUIAuto().FindElements((DWORD)(int64_t)id, pName.get(), type);
 	};
 }
 

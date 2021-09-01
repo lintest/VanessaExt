@@ -342,18 +342,19 @@ std::vector<HWND> GetProcessWindows(DWORD pid)
 	return param.second;
 }
 
-std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const std::string& type)
+std::string WinUIAuto::FindElements(DWORD pid, const std::wstring* name, const std::string& type)
 {
 	std::vector<IUIAutomationCondition*> conditions;
 	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
-
 	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cProc));
 	conditions.push_back(cProc.get());
 
-	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
-	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
-	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
-	conditions.push_back(cName.get());
+	if (name) {
+		pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name->c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
+		pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((*name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
+		pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
+		conditions.push_back(cName.get());
+	}
 
 	if (auto iType = str2type(type)) {
 		pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cType));
@@ -386,7 +387,7 @@ std::string WinUIAuto::FindElements(DWORD pid, const std::wstring& name, const s
 	return json.dump();
 }
 
-std::string WinUIAuto::FindElements(const std::string& id, const std::wstring& name, const std::string& type)
+std::string WinUIAuto::FindElements(const std::string& id, const std::wstring* name, const std::string& type)
 {
 	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> owner;
@@ -394,10 +395,12 @@ std::string WinUIAuto::FindElements(const std::string& id, const std::wstring& n
 
 	std::vector<IUIAutomationCondition*> conditions;
 	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType;
-	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name.c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
-	pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
-	pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
-	conditions.push_back(cName.get());
+	if (name) {
+		pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name->c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
+		pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((*name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
+		pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
+		conditions.push_back(cName.get());
+	}
 
 	if (auto iType = str2type(type)) {
 		pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cType));
