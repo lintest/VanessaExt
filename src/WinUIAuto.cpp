@@ -210,8 +210,8 @@ JSON WinUIAuto::info(IUIAutomationElement* element, UICacheRequest& cache, bool 
 		if (auto length = SysStringLen(value.bstrVal))
 			json["Value"] = WC2MB(std::wstring(value.bstrVal, length));
 
-	IUIAutomationTreeWalker* walker;
-	pAutomation->get_ControlViewWalker(&walker);
+	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
+	pAutomation->get_ControlViewWalker(UI(walker));
 	if (subtree) {
 		UIAutoUniquePtr<IUIAutomationElement> child;
 		walker->GetFirstChildElementBuildCache(element, cache, UI(child));
@@ -471,10 +471,40 @@ std::string WinUIAuto::GetParentElement(const std::string& id)
 	find(id, cache, UI(child));
 	if (child.get() == nullptr) return {};
 
-	IUIAutomationTreeWalker* walker;
-	pAutomation->get_ControlViewWalker(&walker);
+	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
+	pAutomation->get_ControlViewWalker(UI(walker));
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	walker->GetParentElementBuildCache(child.get(), cache, UI(parent));
+	if (parent.get() == nullptr) return {};
+	return info(parent.get(), cache).dump();
+}
+
+std::string WinUIAuto::GetNextElement(const std::string& id)
+{
+	UICacheRequest cache(*this);
+	UIAutoUniquePtr<IUIAutomationElement> child;
+	find(id, cache, UI(child));
+	if (child.get() == nullptr) return {};
+
+	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
+	pAutomation->get_ControlViewWalker(UI(walker));
+	UIAutoUniquePtr<IUIAutomationElement> parent;
+	walker->GetNextSiblingElementBuildCache(child.get(), cache, UI(parent));
+	if (parent.get() == nullptr) return {};
+	return info(parent.get(), cache).dump();
+}
+
+std::string WinUIAuto::GetPreviousElement(const std::string& id)
+{
+	UICacheRequest cache(*this);
+	UIAutoUniquePtr<IUIAutomationElement> child;
+	find(id, cache, UI(child));
+	if (child.get() == nullptr) return {};
+
+	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
+	pAutomation->get_ControlViewWalker(UI(walker));
+	UIAutoUniquePtr<IUIAutomationElement> parent;
+	walker->GetPreviousSiblingElementBuildCache(child.get(), cache, UI(parent));
 	if (parent.get() == nullptr) return {};
 	return info(parent.get(), cache).dump();
 }

@@ -308,6 +308,12 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"GetParentElement", u"ПолучитьРодителяЭлемента",
 		[&](VH id) { this->result = WinUIAuto().GetParentElement(id); }
 	);
+	AddFunction(u"GetNextElement ", u"ПолучитьСледующийЭлемент",
+		[&](VH id) { this->result = WinUIAuto().GetNextElement(id); }
+	);
+	AddFunction(u"GetPreviousElement ", u"ПолучитьПредыдущийЭлемент",
+		[&](VH id) { this->result = WinUIAuto().GetPreviousElement(id); }
+	);
 	AddFunction(u"GetElementValue", u"ПолучитьЗначениеЭлемента",
 		[&](VH id) { this->result = WinUIAuto().GetElementValue(id); }
 	);
