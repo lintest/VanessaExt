@@ -573,11 +573,11 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 			}
 			else if (element.value().is_number_integer()) {
 				auto value = (int)element.value();
-				pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value), PropertyConditionFlags_IgnoreCase, UI(cond));
+				pAutomation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
 			}
 			else if (element.value().is_boolean()) {
 				auto value = (bool)element.value();
-				pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value), PropertyConditionFlags_IgnoreCase, UI(cond));
+				pAutomation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
 			}
 			if (cond) {
 				conditions.push_back(cond.get());
