@@ -30,6 +30,7 @@ install:
   - sh: sudo dpkg --add-architecture i386
   - sh: sudo apt -qq update
   - sh: sudo apt -qq -y install
+      build-essential
       uuid-dev uuid-dev:i386
       libx11-dev libx11-dev:i386
       libxtst-dev libxtst-dev:i386
