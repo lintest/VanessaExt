@@ -342,76 +342,284 @@ std::vector<HWND> GetProcessWindows(DWORD pid)
 	return param.second;
 }
 
-std::string WinUIAuto::FindElements(DWORD pid, const std::wstring* name, const std::string& type)
+const long UIA_ParentPropertyId = UIA_RuntimeIdPropertyId - 1;
+
+std::map<std::string, int> properties = {
+	{ std::string("Parent"), UIA_ParentPropertyId },
+	{ std::string("RuntimeId"), UIA_RuntimeIdPropertyId },
+	{ std::string("BoundingRectangle"), UIA_BoundingRectanglePropertyId },
+	{ std::string("ProcessId"), UIA_ProcessIdPropertyId },
+	{ std::string("ControlType"), UIA_ControlTypePropertyId },
+	{ std::string("LocalizedControlType"), UIA_LocalizedControlTypePropertyId },
+	{ std::string("Name"), UIA_NamePropertyId },
+	{ std::string("AcceleratorKey"), UIA_AcceleratorKeyPropertyId },
+	{ std::string("AccessKey"), UIA_AccessKeyPropertyId },
+	{ std::string("HasKeyboardFocus"), UIA_HasKeyboardFocusPropertyId },
+	{ std::string("IsKeyboardFocusable"), UIA_IsKeyboardFocusablePropertyId },
+	{ std::string("IsEnabled"), UIA_IsEnabledPropertyId },
+	{ std::string("AutomationId"), UIA_AutomationIdPropertyId },
+	{ std::string("ClassName"), UIA_ClassNamePropertyId },
+	{ std::string("HelpText"), UIA_HelpTextPropertyId },
+	{ std::string("ClickablePoint"), UIA_ClickablePointPropertyId },
+	{ std::string("Culture"), UIA_CulturePropertyId },
+	{ std::string("IsControlElement"), UIA_IsControlElementPropertyId },
+	{ std::string("IsContentElement"), UIA_IsContentElementPropertyId },
+	{ std::string("LabeledBy"), UIA_LabeledByPropertyId },
+	{ std::string("IsPassword"), UIA_IsPasswordPropertyId },
+	{ std::string("NativeWindowHandle"), UIA_NativeWindowHandlePropertyId },
+	{ std::string("ItemType"), UIA_ItemTypePropertyId },
+	{ std::string("IsOffscreen"), UIA_IsOffscreenPropertyId },
+	{ std::string("Orientation"), UIA_OrientationPropertyId },
+	{ std::string("FrameworkId"), UIA_FrameworkIdPropertyId },
+	{ std::string("IsRequiredForForm"), UIA_IsRequiredForFormPropertyId },
+	{ std::string("ItemStatus"), UIA_ItemStatusPropertyId },
+	{ std::string("IsDockPatternAvailable"), UIA_IsDockPatternAvailablePropertyId },
+	{ std::string("IsExpandCollapsePatternAvailable"), UIA_IsExpandCollapsePatternAvailablePropertyId },
+	{ std::string("IsGridItemPatternAvailable"), UIA_IsGridItemPatternAvailablePropertyId },
+	{ std::string("IsGridPatternAvailable"), UIA_IsGridPatternAvailablePropertyId },
+	{ std::string("IsInvokePatternAvailable"), UIA_IsInvokePatternAvailablePropertyId },
+	{ std::string("IsMultipleViewPatternAvailable"), UIA_IsMultipleViewPatternAvailablePropertyId },
+	{ std::string("IsRangeValuePatternAvailable"), UIA_IsRangeValuePatternAvailablePropertyId },
+	{ std::string("IsScrollPatternAvailable"), UIA_IsScrollPatternAvailablePropertyId },
+	{ std::string("IsScrollItemPatternAvailable"), UIA_IsScrollItemPatternAvailablePropertyId },
+	{ std::string("IsSelectionItemPatternAvailable"), UIA_IsSelectionItemPatternAvailablePropertyId },
+	{ std::string("IsSelectionPatternAvailable"), UIA_IsSelectionPatternAvailablePropertyId },
+	{ std::string("IsTablePatternAvailable"), UIA_IsTablePatternAvailablePropertyId },
+	{ std::string("IsTableItemPatternAvailable"), UIA_IsTableItemPatternAvailablePropertyId },
+	{ std::string("IsTextPatternAvailable"), UIA_IsTextPatternAvailablePropertyId },
+	{ std::string("IsTogglePatternAvailable"), UIA_IsTogglePatternAvailablePropertyId },
+	{ std::string("IsTransformPatternAvailable"), UIA_IsTransformPatternAvailablePropertyId },
+	{ std::string("IsValuePatternAvailable"), UIA_IsValuePatternAvailablePropertyId },
+	{ std::string("IsWindowPatternAvailable"), UIA_IsWindowPatternAvailablePropertyId },
+	{ std::string("ValueValue"), UIA_ValueValuePropertyId },
+	{ std::string("ValueIsReadOnly"), UIA_ValueIsReadOnlyPropertyId },
+	{ std::string("RangeValueValue"), UIA_RangeValueValuePropertyId },
+	{ std::string("RangeValueIsReadOnly"), UIA_RangeValueIsReadOnlyPropertyId },
+	{ std::string("RangeValueMinimum"), UIA_RangeValueMinimumPropertyId },
+	{ std::string("RangeValueMaximum"), UIA_RangeValueMaximumPropertyId },
+	{ std::string("RangeValueLargeChange"), UIA_RangeValueLargeChangePropertyId },
+	{ std::string("RangeValueSmallChange"), UIA_RangeValueSmallChangePropertyId },
+	{ std::string("ScrollHorizontalScrollPercent"), UIA_ScrollHorizontalScrollPercentPropertyId },
+	{ std::string("ScrollHorizontalViewSize"), UIA_ScrollHorizontalViewSizePropertyId },
+	{ std::string("ScrollVerticalScrollPercent"), UIA_ScrollVerticalScrollPercentPropertyId },
+	{ std::string("ScrollVerticalViewSize"), UIA_ScrollVerticalViewSizePropertyId },
+	{ std::string("ScrollHorizontallyScrollable"), UIA_ScrollHorizontallyScrollablePropertyId },
+	{ std::string("ScrollVerticallyScrollable"), UIA_ScrollVerticallyScrollablePropertyId },
+	{ std::string("SelectionSelection"), UIA_SelectionSelectionPropertyId },
+	{ std::string("SelectionCanSelectMultiple"), UIA_SelectionCanSelectMultiplePropertyId },
+	{ std::string("SelectionIsSelectionRequired"), UIA_SelectionIsSelectionRequiredPropertyId },
+	{ std::string("GridRowCount"), UIA_GridRowCountPropertyId },
+	{ std::string("GridColumnCount"), UIA_GridColumnCountPropertyId },
+	{ std::string("GridItemRow"), UIA_GridItemRowPropertyId },
+	{ std::string("GridItemColumn"), UIA_GridItemColumnPropertyId },
+	{ std::string("GridItemRowSpan"), UIA_GridItemRowSpanPropertyId },
+	{ std::string("GridItemColumnSpan"), UIA_GridItemColumnSpanPropertyId },
+	{ std::string("GridItemContainingGrid"), UIA_GridItemContainingGridPropertyId },
+	{ std::string("DockDockPosition"), UIA_DockDockPositionPropertyId },
+	{ std::string("ExpandCollapseExpandCollapseState"), UIA_ExpandCollapseExpandCollapseStatePropertyId },
+	{ std::string("MultipleViewCurrentView"), UIA_MultipleViewCurrentViewPropertyId },
+	{ std::string("MultipleViewSupportedViews"), UIA_MultipleViewSupportedViewsPropertyId },
+	{ std::string("WindowCanMaximize"), UIA_WindowCanMaximizePropertyId },
+	{ std::string("WindowCanMinimize"), UIA_WindowCanMinimizePropertyId },
+	{ std::string("WindowWindowVisualState"), UIA_WindowWindowVisualStatePropertyId },
+	{ std::string("WindowWindowInteractionState"), UIA_WindowWindowInteractionStatePropertyId },
+	{ std::string("WindowIsModal"), UIA_WindowIsModalPropertyId },
+	{ std::string("WindowIsTopmost"), UIA_WindowIsTopmostPropertyId },
+	{ std::string("SelectionItemIsSelected"), UIA_SelectionItemIsSelectedPropertyId },
+	{ std::string("SelectionItemSelectionContainer"), UIA_SelectionItemSelectionContainerPropertyId },
+	{ std::string("TableRowHeaders"), UIA_TableRowHeadersPropertyId },
+	{ std::string("TableColumnHeaders"), UIA_TableColumnHeadersPropertyId },
+	{ std::string("TableRowOrColumnMajor"), UIA_TableRowOrColumnMajorPropertyId },
+	{ std::string("TableItemRowHeaderItems"), UIA_TableItemRowHeaderItemsPropertyId },
+	{ std::string("TableItemColumnHeaderItems"), UIA_TableItemColumnHeaderItemsPropertyId },
+	{ std::string("ToggleToggleState"), UIA_ToggleToggleStatePropertyId },
+	{ std::string("TransformCanMove"), UIA_TransformCanMovePropertyId },
+	{ std::string("TransformCanResize"), UIA_TransformCanResizePropertyId },
+	{ std::string("TransformCanRotate"), UIA_TransformCanRotatePropertyId },
+	{ std::string("IsLegacyIAccessiblePatternAvailable"), UIA_IsLegacyIAccessiblePatternAvailablePropertyId },
+	{ std::string("LegacyIAccessibleChildId"), UIA_LegacyIAccessibleChildIdPropertyId },
+	{ std::string("LegacyIAccessibleName"), UIA_LegacyIAccessibleNamePropertyId },
+	{ std::string("LegacyIAccessibleValue"), UIA_LegacyIAccessibleValuePropertyId },
+	{ std::string("LegacyIAccessibleDescription"), UIA_LegacyIAccessibleDescriptionPropertyId },
+	{ std::string("LegacyIAccessibleRole"), UIA_LegacyIAccessibleRolePropertyId },
+	{ std::string("LegacyIAccessibleState"), UIA_LegacyIAccessibleStatePropertyId },
+	{ std::string("LegacyIAccessibleHelp"), UIA_LegacyIAccessibleHelpPropertyId },
+	{ std::string("LegacyIAccessibleKeyboardShortcut"), UIA_LegacyIAccessibleKeyboardShortcutPropertyId },
+	{ std::string("LegacyIAccessibleSelection"), UIA_LegacyIAccessibleSelectionPropertyId },
+	{ std::string("LegacyIAccessibleDefaultAction"), UIA_LegacyIAccessibleDefaultActionPropertyId },
+	{ std::string("AriaRole"), UIA_AriaRolePropertyId },
+	{ std::string("AriaProperties"), UIA_AriaPropertiesPropertyId },
+	{ std::string("IsDataValidForForm"), UIA_IsDataValidForFormPropertyId },
+	{ std::string("ControllerFor"), UIA_ControllerForPropertyId },
+	{ std::string("DescribedBy"), UIA_DescribedByPropertyId },
+	{ std::string("FlowsTo"), UIA_FlowsToPropertyId },
+	{ std::string("ProviderDescription"), UIA_ProviderDescriptionPropertyId },
+	{ std::string("IsItemContainerPatternAvailable"), UIA_IsItemContainerPatternAvailablePropertyId },
+	{ std::string("IsVirtualizedItemPatternAvailable"), UIA_IsVirtualizedItemPatternAvailablePropertyId },
+	{ std::string("IsSynchronizedInputPatternAvailable"), UIA_IsSynchronizedInputPatternAvailablePropertyId },
+	{ std::string("OptimizeForVisualContent"), UIA_OptimizeForVisualContentPropertyId },
+	{ std::string("IsObjectModelPatternAvailable"), UIA_IsObjectModelPatternAvailablePropertyId },
+	{ std::string("AnnotationAnnotationTypeId"), UIA_AnnotationAnnotationTypeIdPropertyId },
+	{ std::string("AnnotationAnnotationTypeName"), UIA_AnnotationAnnotationTypeNamePropertyId },
+	{ std::string("AnnotationAuthor"), UIA_AnnotationAuthorPropertyId },
+	{ std::string("AnnotationDateTime"), UIA_AnnotationDateTimePropertyId },
+	{ std::string("AnnotationTarget"), UIA_AnnotationTargetPropertyId },
+	{ std::string("IsAnnotationPatternAvailable"), UIA_IsAnnotationPatternAvailablePropertyId },
+	{ std::string("IsTextPattern2Available"), UIA_IsTextPattern2AvailablePropertyId },
+	{ std::string("StylesStyleId"), UIA_StylesStyleIdPropertyId },
+	{ std::string("StylesStyleName"), UIA_StylesStyleNamePropertyId },
+	{ std::string("StylesFillColor"), UIA_StylesFillColorPropertyId },
+	{ std::string("StylesFillPatternStyle"), UIA_StylesFillPatternStylePropertyId },
+	{ std::string("StylesShape"), UIA_StylesShapePropertyId },
+	{ std::string("StylesFillPatternColor"), UIA_StylesFillPatternColorPropertyId },
+	{ std::string("StylesExtendedProperties"), UIA_StylesExtendedPropertiesPropertyId },
+	{ std::string("IsStylesPatternAvailable"), UIA_IsStylesPatternAvailablePropertyId },
+	{ std::string("IsSpreadsheetPatternAvailable"), UIA_IsSpreadsheetPatternAvailablePropertyId },
+	{ std::string("SpreadsheetItemFormula"), UIA_SpreadsheetItemFormulaPropertyId },
+	{ std::string("SpreadsheetItemAnnotationObjects"), UIA_SpreadsheetItemAnnotationObjectsPropertyId },
+	{ std::string("SpreadsheetItemAnnotationTypes"), UIA_SpreadsheetItemAnnotationTypesPropertyId },
+	{ std::string("IsSpreadsheetItemPatternAvailable"), UIA_IsSpreadsheetItemPatternAvailablePropertyId },
+	{ std::string("Transform2CanZoom"), UIA_Transform2CanZoomPropertyId },
+	{ std::string("IsTransformPattern2Available"), UIA_IsTransformPattern2AvailablePropertyId },
+	{ std::string("LiveSetting"), UIA_LiveSettingPropertyId },
+	{ std::string("IsTextChildPatternAvailable"), UIA_IsTextChildPatternAvailablePropertyId },
+	{ std::string("IsDragPatternAvailable"), UIA_IsDragPatternAvailablePropertyId },
+	{ std::string("DragIsGrabbed"), UIA_DragIsGrabbedPropertyId },
+	{ std::string("DragDropEffect"), UIA_DragDropEffectPropertyId },
+	{ std::string("DragDropEffects"), UIA_DragDropEffectsPropertyId },
+	{ std::string("IsDropTargetPatternAvailable"), UIA_IsDropTargetPatternAvailablePropertyId },
+	{ std::string("DropTargetDropTargetEffect"), UIA_DropTargetDropTargetEffectPropertyId },
+	{ std::string("DropTargetDropTargetEffects"), UIA_DropTargetDropTargetEffectsPropertyId },
+	{ std::string("DragGrabbedItems"), UIA_DragGrabbedItemsPropertyId },
+	{ std::string("Transform2ZoomLevel"), UIA_Transform2ZoomLevelPropertyId },
+	{ std::string("Transform2ZoomMinimum"), UIA_Transform2ZoomMinimumPropertyId },
+	{ std::string("Transform2ZoomMaximum"), UIA_Transform2ZoomMaximumPropertyId },
+	{ std::string("FlowsFrom"), UIA_FlowsFromPropertyId },
+	{ std::string("IsTextEditPatternAvailable"), UIA_IsTextEditPatternAvailablePropertyId },
+	{ std::string("IsPeripheral"), UIA_IsPeripheralPropertyId },
+	{ std::string("IsCustomNavigationPatternAvailable"), UIA_IsCustomNavigationPatternAvailablePropertyId },
+	{ std::string("PositionInSet"), UIA_PositionInSetPropertyId },
+	{ std::string("SizeOfSet"), UIA_SizeOfSetPropertyId },
+	{ std::string("Level"), UIA_LevelPropertyId },
+	{ std::string("AnnotationTypes"), UIA_AnnotationTypesPropertyId },
+	{ std::string("AnnotationObjects"), UIA_AnnotationObjectsPropertyId },
+	{ std::string("LandmarkType"), UIA_LandmarkTypePropertyId },
+	{ std::string("LocalizedLandmarkType"), UIA_LocalizedLandmarkTypePropertyId },
+	{ std::string("FullDescription"), UIA_FullDescriptionPropertyId },
+	{ std::string("FillColor"), UIA_FillColorPropertyId },
+	{ std::string("OutlineColor"), UIA_OutlineColorPropertyId },
+	{ std::string("FillType"), UIA_FillTypePropertyId },
+	{ std::string("VisualEffects"), UIA_VisualEffectsPropertyId },
+	{ std::string("OutlineThickness"), UIA_OutlineThicknessPropertyId },
+	{ std::string("CenterPoint"), UIA_CenterPointPropertyId },
+	{ std::string("Rotation"), UIA_RotationPropertyId },
+	{ std::string("Size"), UIA_SizePropertyId },
+	{ std::string("IsSelectionPattern2Available"), UIA_IsSelectionPattern2AvailablePropertyId },
+	{ std::string("Selection2FirstSelectedItem"), UIA_Selection2FirstSelectedItemPropertyId },
+	{ std::string("Selection2LastSelectedItem"), UIA_Selection2LastSelectedItemPropertyId },
+	{ std::string("Selection2CurrentSelectedItem"), UIA_Selection2CurrentSelectedItemPropertyId },
+	{ std::string("Selection2ItemCount"), UIA_Selection2ItemCountPropertyId },
+	{ std::string("HeadingLevel"), UIA_HeadingLevelPropertyId },
+	{ std::string("IsDialog"), UIA_IsDialogPropertyId },
+};
+
+std::string WinUIAuto::FindElements(const std::string& arg)
 {
-	std::vector<IUIAutomationCondition*> conditions;
-	UIAutoUniquePtr<IUIAutomationCondition> cProc, cName, cName1, cName2, cType;
-	pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cProc));
-	conditions.push_back(cProc.get());
-
-	if (name) {
-		pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name->c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
-		pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((*name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
-		pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
-		conditions.push_back(cName.get());
-	}
-
-	if (auto iType = str2type(type)) {
-		pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cType));
-		conditions.push_back(cType.get());
-	}
-
-	UIAutoUniquePtr<IUIAutomationCondition> cond;
-	UIAutoUniquePtr<IUIAutomationElementArray> elements;
-	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
-
-	std::map<std::string, JSON> controls;
-	for (auto hWnd : GetProcessWindows(pid)) {
-		int length = 0;
-		UICacheRequest cache(*this);
-		UIAutoUniquePtr<IUIAutomationElement> owner;
-		if (FAILED(pAutomation->ElementFromHandleBuildCache(hWnd, cache, UI(owner)))) continue;
-		if (FAILED(owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements)))) continue;
-		if (!elements || FAILED(elements->get_Length(&length))) continue;
-		for (int i = 0; i < length; ++i) {
-			UIAutoUniquePtr<IUIAutomationElement> element;
-			if (FAILED(elements->GetElement(i, UI(element)))) continue;
-			auto json = info(element.get(), cache, false);
-			controls[(std::string)json["Id"]] = json;
-		}
-	}
-	JSON json;
-	for (auto& it : controls) {
-		json.push_back(it.second);
-	}
-	return json.dump();
-}
-
-std::string WinUIAuto::FindElements(const std::string& id, const std::wstring* name, const std::string& type)
-{
+	DWORD pid = 0;
 	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> owner;
-	find(id, cache, UI(owner));
 
+	auto filter = JSON::parse(arg);
 	std::vector<IUIAutomationCondition*> conditions;
-	UIAutoUniquePtr<IUIAutomationCondition> cName, cName1, cName2, cType;
-	if (name) {
-		pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant(name->c_str()), PropertyConditionFlags_IgnoreCase, UI(cName1));
-		pAutomation->CreatePropertyConditionEx(UIA_NamePropertyId, CComVariant((*name + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(cName2));
-		pAutomation->CreateOrCondition(cName1.get(), cName2.get(), UI(cName));
-		conditions.push_back(cName.get());
-	}
-
-	if (auto iType = str2type(type)) {
-		pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cType));
-		conditions.push_back(cType.get());
+	std::vector<UIAutoUniquePtr<IUIAutomationCondition>> deleter;
+	for (auto& element : filter.items()) {
+		auto& it = properties.find(element.key());
+		if (it == properties.end()) {
+			JSON error = { {"error", "Property not found: " + element.key()} };
+			return error.dump();
+		}
+		PROPERTYID propertyId = it->second;
+		switch (propertyId) {
+		case UIA_ProcessIdPropertyId: {
+			pid = (unsigned int)element.value();
+		} break;
+		case UIA_ParentPropertyId: {
+			std::string id = element.value();
+			find(id, cache, UI(owner));
+		} break;
+		case UIA_NamePropertyId: {
+			std::wstring value = MB2WC(element.value());
+			UIAutoUniquePtr<IUIAutomationCondition> cond, name1, name2;
+			pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(name1));
+			pAutomation->CreatePropertyConditionEx(propertyId, CComVariant((value + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(name2));
+			pAutomation->CreateOrCondition(name1.get(), name2.get(), UI(cond));
+			conditions.push_back(cond.get());
+			deleter.emplace_back(cond.release());
+		} break;
+		case UIA_ControlTypePropertyId: {
+			std::string type = element.value();
+			if (auto iType = str2type(type)) {
+				UIAutoUniquePtr<IUIAutomationCondition> cond;
+				pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cond));
+				conditions.push_back(cond.get());
+				deleter.emplace_back(cond.release());
+			}
+		} break;
+		default:
+			UIAutoUniquePtr<IUIAutomationCondition> cond;
+			if (element.value().is_string()) {
+				std::wstring value = MB2WC(element.value());
+				pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(cond));
+			}
+			else if (element.value().is_number_integer()) {
+				auto value = (int)element.value();
+				pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value), PropertyConditionFlags_IgnoreCase, UI(cond));
+			}
+			else if (element.value().is_boolean()) {
+				auto value = (bool)element.value();
+				pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value), PropertyConditionFlags_IgnoreCase, UI(cond));
+			}
+			if (cond) {
+				conditions.push_back(cond.get());
+				deleter.emplace_back(cond.release());
+			}
+		}
 	}
 
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
 	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
-	owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
-	return info(elements.get(), cache).dump();
+
+	if (pid) {
+		std::map<std::string, JSON> controls;
+		for (auto hWnd : GetProcessWindows(pid)) {
+			int length = 0;
+			UICacheRequest cache(*this);
+			UIAutoUniquePtr<IUIAutomationElement> owner;
+			if (FAILED(pAutomation->ElementFromHandleBuildCache(hWnd, cache, UI(owner)))) continue;
+			if (FAILED(owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements)))) continue;
+			if (!elements || FAILED(elements->get_Length(&length))) continue;
+			for (int i = 0; i < length; ++i) {
+				UIAutoUniquePtr<IUIAutomationElement> element;
+				if (FAILED(elements->GetElement(i, UI(element)))) continue;
+				auto json = info(element.get(), cache, false);
+				controls[(std::string)json["Id"]] = json;
+			}
+		}
+		JSON json;
+		for (auto& it : controls) {
+			json.push_back(it.second);
+		}
+		return json.dump();
+	}
+	else if (owner) {
+		owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements));
+		return info(elements.get(), cache).dump();
+	}
+	else {
+		JSON error = { {"error", "Process ID condition not found"} };
+		return error.dump();
+	}
 }
 
 #define ASSERT(hr) if ((HRESULT)(hr) < 0) return hr;

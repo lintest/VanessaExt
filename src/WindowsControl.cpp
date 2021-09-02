@@ -297,7 +297,7 @@ WindowsControl::WindowsControl() {
 		[&](VH id) { this->result = WinUIAuto().ElementById(id); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
-		[&](VH id, VH name, VH type) { this->result = FindElements(id, name, type); }, { {2, u""} }
+		[&](VH filter) { this->result = WinUIAuto().FindElements(filter); }
 	);
 	AddFunction(u"InvokeElement", u"ВызватьЭлемент",
 		[&](VH id) { this->result = WinUIAuto().InvokeElement(id); }
@@ -468,18 +468,6 @@ std::string WindowsControl::GetElements(const VH& id)
 	switch (id.type()) {
 	case VTYPE_PWSTR: return WinUIAuto().GetElements((std::string)id);
 	default: return WinUIAuto().GetElements((DWORD)(int64_t)id);
-	};
-}
-
-std::string WindowsControl::FindElements(const VH& id, const VH& name, const VH& type)
-{
-	std::unique_ptr<std::wstring> pName;
-	if (name.type() == VTYPE_PWSTR)
-		pName.reset(new std::wstring(name));
-
-	switch (id.type()) {
-	case VTYPE_PWSTR: return WinUIAuto().FindElements((std::string)id, pName.get(), type);
-	default: return WinUIAuto().FindElements((DWORD)(int64_t)id, pName.get(), type);
 	};
 }
 

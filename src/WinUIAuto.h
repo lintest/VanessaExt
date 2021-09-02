@@ -54,8 +54,7 @@ public:
 	std::string GetElements(DWORD pid);
 	std::string GetElements(const std::string &id);
 	std::string ElementById(const std::string& id);
-	std::string FindElements(DWORD pid, const std::wstring* name, const std::string& type);
-	std::string FindElements(const std::string& pid, const std::wstring* name, const std::string& type);
+	std::string FindElements(const std::string& arg);
 	std::string GetParentElement(const std::string& id);
 	std::string GetNextElement(const std::string& id);
 	std::string GetPreviousElement(const std::string& id);
