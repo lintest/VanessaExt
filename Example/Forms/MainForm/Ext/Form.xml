@@ -1777,11 +1777,57 @@
 									<ContextMenu name="НомерКартинкиКонтекстноеМеню" id="858"/>
 									<ExtendedTooltip name="НомерКартинкиРасширеннаяПодсказка" id="859"/>
 								</InputField>
-								<Button name="НайтиКнопку" id="850">
-									<Type>UsualButton</Type>
-									<CommandName>Form.Command.НайтиКнопку</CommandName>
-									<ExtendedTooltip name="НайтиКнопкуРасширеннаяПодсказка" id="851"/>
-								</Button>
+								<CommandBar name="ПанельПоискЭлементов" id="927">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Панель поиск элементов</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Панель поиск элементов</v8:content>
+										</v8:item>
+									</ToolTip>
+									<HorizontalStretch>false</HorizontalStretch>
+									<ExtendedTooltip name="ПанельПоискЭлементовРасширеннаяПодсказка" id="928"/>
+									<ChildItems>
+										<Button name="НайтиКнопку" id="850">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.НайтиКнопку</CommandName>
+											<ExtendedTooltip name="НайтиКнопкуРасширеннаяПодсказка" id="851"/>
+										</Button>
+										<ButtonGroup name="ГруппаНавигацияЭлементов" id="929">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа навигация элементов</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа навигация элементов</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>Compact</Representation>
+											<ExtendedTooltip name="ГруппаНавигацияЭлементовРасширеннаяПодсказка" id="930"/>
+											<ChildItems>
+												<Button name="ПолучитьПредыдущийЭлемент" id="923">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ПолучитьПредыдущийЭлемент</CommandName>
+													<ExtendedTooltip name="ПолучитьПредыдущийЭлементРасширеннаяПодсказка" id="924"/>
+												</Button>
+												<Button name="ПолучитьСледующийЭлемент" id="925">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ПолучитьСледующийЭлемент</CommandName>
+													<ExtendedTooltip name="ПолучитьСледующийЭлементРасширеннаяПодсказка" id="926"/>
+												</Button>
+											</ChildItems>
+										</ButtonGroup>
+									</ChildItems>
+								</CommandBar>
 							</ChildItems>
 						</UsualGroup>
 						<UsualGroup name="ГруппаУправлениеЭлементом" id="867">
@@ -6784,6 +6830,46 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ФигураПоказатьПодсказку</Action>
+		</Command>
+		<Command name="ПолучитьСледующийЭлемент" id="96">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить следующий элемент</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить следующий элемент</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Picture>
+				<xr:Ref>StdPicture.MoveRight</xr:Ref>
+				<xr:LoadTransparent>true</xr:LoadTransparent>
+			</Picture>
+			<Action>ПолучитьСледующийЭлемент</Action>
+			<Representation>Picture</Representation>
+		</Command>
+		<Command name="ПолучитьПредыдущийЭлемент" id="97">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить предыдущий элемент</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить предыдущий элемент</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Picture>
+				<xr:Ref>StdPicture.MoveLeft</xr:Ref>
+				<xr:LoadTransparent>true</xr:LoadTransparent>
+			</Picture>
+			<Action>ПолучитьПредыдущийЭлемент</Action>
+			<Representation>Picture</Representation>
 		</Command>
 	</Commands>
 </Form>
