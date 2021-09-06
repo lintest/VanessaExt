@@ -15,6 +15,7 @@
 #include "ClickEffect.h"
 #include "ClipboardManager.h"
 #include "DesktopManager.h"
+#include "EducationShow.h"
 #include "FileFinder.h"
 #include "ImageFinder.h"
 #include "ImageHelper.h"
@@ -249,6 +250,9 @@ WindowsControl::WindowsControl() {
 	);
 	AddProcedure(u"ShowHint", u"ПоказатьПодсказку",
 		[&](VH p, VH x, VH y, VH text) { (new SpeechRect(p, x, y, text))->run(); }, { {3, u""} }
+	);
+	AddProcedure(u"ShowEducation", u"ПоказатьОбучение",
+		[&](VH p, VH x, VH y, VH text) { (new EducationShow(p, x, y, text))->run(); }, { {3, u""} }
 	);
 	AddFunction(u"GetDesktopCount", u"ПолучитьКоличествоРабочихСтолов",
 		[&]() { this->result = DesktopManager::GetDesktopCount(); }

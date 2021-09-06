@@ -5,14 +5,14 @@
 #define ID_TIMER_REPAINT 1
 #define ID_TIMER_TIMEOUT 2
 
-void get(JSON& j, const std::string& name, Color& value)
+static void get(JSON& j, const std::string& name, Color& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
 		value.SetFromCOLORREF(*it);
 }
 
-void get(JSON& j, const std::string& name, std::wstring& value)
+static void get(JSON& j, const std::string& name, std::wstring& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
@@ -20,7 +20,7 @@ void get(JSON& j, const std::string& name, std::wstring& value)
 }
 
 template<typename T>
-void get(JSON& j, const std::string& name, T& value)
+static void get(JSON& j, const std::string& name, T& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
