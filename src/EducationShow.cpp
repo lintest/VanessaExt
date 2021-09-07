@@ -71,13 +71,16 @@ EducationShow::EducationShow(const std::string& p, const std::wstring& title, co
 	StringFormat format;
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
-	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), r;
-	graphics.MeasureString((WCHAR*)title.c_str(), (int)title.size(), &font, rect, &format, &r);
+	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), titleRect, buttonRect;
+	graphics.MeasureString((WCHAR*)title.c_str(), (int)title.size(), &font, rect, &format, &titleRect);
+	graphics.MeasureString((WCHAR*)button.c_str(), (int)button.size(), &font, rect, &format, &buttonRect);
+	titleWidth = (int)titleRect.Width + thick * 2;
+	buttonWidth = (int)buttonRect.Width + thick * 2;
 
-	this->x = (mr.left + mr.right - (LONG)r.Width) / 2 - thick;
+	this->x = (mr.left + mr.right - buttonWidth - titleWidth) / 2 - thick;
 	this->y = mr.top;
-	this->w = int(r.Width) + thick * 2;
-	this->h = int(r.Height) + thick * 2;
+	this->w = titleWidth + buttonWidth + thick * 2;
+	this->h = (int)max(titleRect.Height, buttonRect.Height) + thick * 2;
 }
 
 void EducationShow::draw(Graphics& graphics, bool hover)
@@ -86,11 +89,13 @@ void EducationShow::draw(Graphics& graphics, bool hover)
 		color = makeTransparent(color, 255);
 		fontColor = makeTransparent(fontColor, 255);
 		background = makeTransparent(background, 255);
+		buttonColor = makeTransparent(buttonColor, 255);
 	}
 	else {
 		color = makeTransparent(color, trans);
 		fontColor = makeTransparent(fontColor, trans);
 		background = makeTransparent(background, trans);
+		buttonColor = makeTransparent(buttonColor, trans);
 	}
 
 	SolidBrush brush(background);
@@ -98,14 +103,27 @@ void EducationShow::draw(Graphics& graphics, bool hover)
 	path.AddRectangle(Rect(0, 0, w, h));
 	graphics.FillPath(&brush, &path);
 
+	SolidBrush buttonBrush(buttonColor);
+	GraphicsPath buttonPath;
+	buttonPath.AddRectangle(Rect(w - buttonWidth, 0, buttonWidth, h));
+	graphics.FillPath(&buttonBrush, &buttonPath);
+
+	Pen pen(color, (REAL)thick);
+	graphics.DrawPath(&pen, &path);
+
 	SolidBrush textBrush(fontColor);
 	FontFamily fontFamily(fontName.c_str());
 	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
 	StringFormat format;
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
-	RectF rect((REAL)0, (REAL)0, (REAL)w, (REAL)h);
-	graphics.DrawString((WCHAR*)title.c_str(), (int)title.size(), &font, rect, &format, &textBrush);
+
+	RectF titleRect((REAL)0, (REAL)0, (REAL)titleWidth, (REAL)h);
+	graphics.DrawString((WCHAR*)title.c_str(), (int)title.size(), &font, titleRect, &format, &textBrush);
+
+	SolidBrush buttonTextBrush(Color::White);
+	RectF buttonRect((REAL)titleWidth, (REAL)0, (REAL)w - titleWidth, (REAL)h);
+	graphics.DrawString((WCHAR*)button.c_str(), (int)button.size(), &font, buttonRect, &format, &buttonTextBrush);
 }
 
 LRESULT EducationShow::repaint(HWND hWnd, bool hover)
@@ -199,11 +217,21 @@ LRESULT EducationShow::onMouseMove(HWND hWnd, LPARAM lParam)
 LRESULT EducationShow::onMouseUp(HWND hWnd, LPARAM lParam)
 
 {
-	POINT p;
-	::GetCursorPos(&p);
-	::SetWindowPos(hWnd, 0, p.x - mx, p.y - my, 0, 0, SWP_NOSIZE);
 	moving = false;
 	return 0;
+}
+
+LRESULT EducationShow::onHitTest(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+/*
+	POINT point{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	::ScreenToClient(hWnd, &point);
+	const LRESULT result = ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+	return (result == HTCLIENT && point.x < titleWidth) ? HTCAPTION : result;
+*/
+	const LRESULT result = ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+	return (result == HTCLIENT) ? HTCAPTION : result;
+
 }
 
 static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -218,17 +246,14 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		return TRUE;
 	}
 	case WM_NCHITTEST:
-	{
-		const LRESULT result = ::DefWindowProc(hWnd, uMsg, wParam, lParam);
-		return (result == HTCLIENT) ? HTCAPTION : result;
-	}
+		return win(hWnd).onHitTest(hWnd, uMsg, wParam, lParam);
 	case WM_CREATE:
-		return ((EducationShow*)((CREATESTRUCT*)lParam)->lpCreateParams)->repaint(hWnd, false);
+		return win(lParam).repaint(hWnd, false);
 	case WM_LBUTTONDOWN:
 		return win(hWnd).onMouseDown(hWnd, lParam);
 	case WM_LBUTTONUP:
 		return win(hWnd).onMouseUp(hWnd, lParam);
-	case WM_MOUSEMOVE:
+	case WM_NCMOUSEMOVE:
 		return win(hWnd).onMouseMove(hWnd, lParam);
 	case WM_NCMOUSEHOVER:
 		return win(hWnd).repaint(hWnd, true);

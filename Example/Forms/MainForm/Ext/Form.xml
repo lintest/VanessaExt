@@ -1583,6 +1583,28 @@
 												</UsualGroup>
 											</ChildItems>
 										</UsualGroup>
+										<CommandBar name="ПанельОбучения" id="935">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Панель обучения</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Панель обучения</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="ПанельОбученияРасширеннаяПодсказка" id="936"/>
+											<ChildItems>
+												<Button name="ОкноОбучения" id="937">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ОкноОбучения</CommandName>
+													<ExtendedTooltip name="ОкноОбученияРасширеннаяПодсказка" id="938"/>
+												</Button>
+											</ChildItems>
+										</CommandBar>
 									</ChildItems>
 								</UsualGroup>
 								<Table name="ТочкиФигуры" id="654">
@@ -1697,12 +1719,26 @@
 										</v8:item>
 									</Title>
 									<ContextMenu name="ИмяЭлементаКонтекстноеМеню" id="833"/>
-									<ExtendedTooltip name="ИмяЭлементаРасширеннаяПодсказка" id="834"/>
+									<ExtendedTooltip name="ИмяЭлементаРасширеннаяПодсказка" id="834">
+										<Title formatted="false">
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Имя элемента для поиска</v8:content>
+											</v8:item>
+										</Title>
+									</ExtendedTooltip>
 								</InputField>
 								<Button name="НайтиЭлементы" id="837">
 									<Type>UsualButton</Type>
 									<CommandName>Form.Command.НайтиЭлементы</CommandName>
-									<ExtendedTooltip name="НайтиЭлементыРасширеннаяПодсказка" id="838"/>
+									<ExtendedTooltip name="НайтиЭлементыРасширеннаяПодсказка" id="838">
+										<Title formatted="false">
+											<v8:item>
+												<v8:lang>ru</v8:lang>
+												<v8:content>Найти элементы по свойствам UI Automation</v8:content>
+											</v8:item>
+										</Title>
+									</ExtendedTooltip>
 								</Button>
 								<Button name="АктивныйЭлемент" id="863">
 									<Type>UsualButton</Type>
@@ -1893,6 +1929,16 @@
 											<Type>CommandBarButton</Type>
 											<CommandName>Form.Command.НажатьНаЭлемент</CommandName>
 											<ExtendedTooltip name="НажатьНаЭлементРасширеннаяПодсказка" id="866"/>
+										</Button>
+										<Button name="UI_Поиск1" id="931">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.UI_Поиск1</CommandName>
+											<ExtendedTooltip name="UI_Поиск1РасширеннаяПодсказка" id="932"/>
+										</Button>
+										<Button name="UI_Поиск2" id="933">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.UI_Поиск2</CommandName>
+											<ExtendedTooltip name="UI_Поиск2РасширеннаяПодсказка" id="934"/>
 										</Button>
 									</ChildItems>
 								</CommandBar>
@@ -6411,7 +6457,7 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Автотест</v8:content>
+					<v8:content>Автотест – F12</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
@@ -6420,6 +6466,7 @@
 					<v8:content>Автотест</v8:content>
 				</v8:item>
 			</ToolTip>
+			<Shortcut>F12</Shortcut>
 			<Action>Автотест</Action>
 		</Command>
 		<Command name="МедиаВоспроизвести" id="69">
@@ -6870,6 +6917,51 @@
 			</Picture>
 			<Action>ПолучитьПредыдущийЭлемент</Action>
 			<Representation>Picture</Representation>
+		</Command>
+		<Command name="UI_Поиск1" id="98">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>П1</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>U i поиск1</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>UI_Поиск1</Action>
+		</Command>
+		<Command name="UI_Поиск2" id="99">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>П2</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>U i поиск1</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>UI_Поиск2</Action>
+		</Command>
+		<Command name="ОкноОбучения" id="100">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Окно обучения</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Окно обучения</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ОкноОбучения</Action>
 		</Command>
 	</Commands>
 </Form>
