@@ -73,8 +73,19 @@ EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstr
 	this->h = int(r.Height) + thick * 2;
 }
 
-void EducationShow::draw(Graphics& graphics)
+void EducationShow::draw(Graphics& graphics, bool hover)
 {
+	if (hover) {
+		color = makeTransparent(color, 255);
+		fontColor = makeTransparent(fontColor, 255);
+		background = makeTransparent(background, 255);
+	}
+	else {
+		color = makeTransparent(color, trans);
+		fontColor = makeTransparent(fontColor, trans);
+		background = makeTransparent(background, trans);
+	}
+
 	SolidBrush brush(background);
 	GraphicsPath path;
 	path.AddRectangle(Rect(0, 0, w, h));
@@ -90,7 +101,7 @@ void EducationShow::draw(Graphics& graphics)
 	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &textBrush);
 }
 
-LRESULT EducationShow::repaint(HWND hWnd)
+LRESULT EducationShow::paint(HWND hWnd, bool hover)
 {
 	GgiPlusToken::Init();
 	Bitmap bitmap(w, h, PixelFormat32bppARGB);
@@ -99,7 +110,7 @@ LRESULT EducationShow::repaint(HWND hWnd)
 	graphics.SetCompositingQuality(CompositingQuality::CompositingQualityHighQuality);
 	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
 	graphics.SetTextRenderingHint(TextRenderingHint::TextRenderingHintAntiAlias);
-	draw(graphics);
+	draw(graphics, hover);
 
 	//Инициализируем составляющие временного DC, в который будет отрисована маска
 	auto hDC = GetDC(hWnd);
@@ -141,6 +152,12 @@ LRESULT EducationShow::repaint(HWND hWnd)
 	return 0;
 }
 
+LRESULT EducationShow::repaint(HWND hWnd, LPARAM lParam, bool hover)
+{
+	auto show = (EducationShow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	return show->paint(hWnd, hover);
+}
+
 static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
@@ -153,7 +170,11 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		return TRUE;
 	}
 	case WM_CREATE:
-		return ((EducationShow*)((CREATESTRUCT*)lParam)->lpCreateParams)->repaint(hWnd);
+		return ((EducationShow*)((CREATESTRUCT*)lParam)->lpCreateParams)->paint(hWnd, false);
+	case WM_LBUTTONDOWN:
+		return EducationShow::repaint(hWnd, lParam, true);
+	case WM_LBUTTONUP:
+		return EducationShow::repaint(hWnd, lParam, false);
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;

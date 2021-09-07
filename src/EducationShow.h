@@ -23,9 +23,10 @@ protected:
 	Color fontColor = { 200, 50, 50 };
 	std::wstring fontName = L"Calibri";
 public:
+	static LRESULT repaint(HWND hWnd, LPARAM lParam, bool hover);
 	EducationShow(const std::string& p, int x, int y, const std::wstring& t);
-	void draw(Gdiplus::Graphics& graphics);
-	LRESULT repaint(HWND hWnd);
+	void draw(Gdiplus::Graphics& graphics, bool hover);
+	LRESULT paint(HWND hWnd, bool hover);
 	void create();
 	void run();
 };
