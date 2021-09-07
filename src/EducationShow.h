@@ -17,6 +17,7 @@ protected:
 	int thick = 4;
 	int limit = 50;
 	int step = 10;
+	int padding = 4;
 	REAL fontSize = 12;
 	Color background = Color::White;
 	Color fontColor = { 200, 50, 50 };

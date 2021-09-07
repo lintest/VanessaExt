@@ -24,12 +24,16 @@ static void get(JSON& j, const std::string& name, T& value)
 		value = *it;
 }
 
+static Color makeTransparent(const Color &color, int trans) {
+	return Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
+}
+
 EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstring& t)
 	: text(t)
 {
-	int trans = 0;
 	JSON j = JSON::parse(p);
 	get(j, "color", color);
+	get(j, "padding", padding);
 	get(j, "duration", duration);
 	get(j, "frameCount", limit);
 	get(j, "frameDelay", delay);
@@ -37,8 +41,15 @@ EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstr
 	get(j, "transparency", trans);
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
+	get(j, "background", background);
+
 	if (text.empty()) get(j, "text", text);
-	if (trans) color = Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
+
+	if (trans) {
+		color = makeTransparent(color, trans);
+		fontColor = makeTransparent(fontColor, trans);
+		background = makeTransparent(background, trans);
+	}
 
 	MONITORINFO mi{ 0 };
 	mi.cbSize = sizeof(MONITORINFO);
@@ -56,10 +67,10 @@ EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstr
 	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), r;
 	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
 
-	this->x = (mr.left + mr.right + w) / 2 - thick;
+	this->x = (mr.left + mr.right - (LONG)r.Width) / 2 - thick;
 	this->y = mr.top;
-	this->w = int(r.Width);
-	this->h = int(r.Height);
+	this->w = int(r.Width) + thick * 2;
+	this->h = int(r.Height) + thick * 2;
 }
 
 void EducationShow::draw(Graphics& graphics)
@@ -75,8 +86,8 @@ void EducationShow::draw(Graphics& graphics)
 	StringFormat format;
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
-	RectF rect((REAL)0, (REAL)0, (REAL)w, (REAL)h), r;
-	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
+	RectF rect((REAL)0, (REAL)0, (REAL)w, (REAL)h);
+	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &textBrush);
 }
 
 LRESULT EducationShow::repaint(HWND hWnd)
@@ -151,7 +162,7 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	}
 }
 
-const LPCWSTR name = L"VanessaEducationShow";
+const LPCWSTR wsEducationClass = L"VanessaEducationShow";
 
 void EducationShow::create()
 {
@@ -160,11 +171,11 @@ void EducationShow::create()
 	wndClass.hInstance = hModule;
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wndClass.lpszClassName = name;
+	wndClass.lpszClassName = wsEducationClass;
 	RegisterClass(&wndClass);
 
 	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
-	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
+	HWND hWnd = CreateWindowEx(dwExStyle, wsEducationClass, NULL, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
@@ -184,6 +195,8 @@ static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 
 void EducationShow::run()
 {
+	HWND hWnd = ::FindWindow(wsEducationClass, NULL);
+	if (hWnd) ::SendMessage(hWnd, WM_DESTROY, 0, 0);
 	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
 }
 
