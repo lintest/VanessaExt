@@ -30,8 +30,8 @@ static Color makeTransparent(const Color& color, int trans) {
 	return Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
 }
 
-EducationShow::EducationShow(const std::string& p, const std::wstring& title, const std::wstring& button)
-	: title(title), button(button)
+EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button)
+	: addin(addin), title(title), button(button)
 {
 	JSON j = JSON::parse(p);
 	get(j, "color", color);
@@ -45,15 +45,12 @@ EducationShow::EducationShow(const std::string& p, const std::wstring& title, co
 	get(j, "fontSize", fontSize);
 	get(j, "fontColor", fontColor);
 	get(j, "background", background);
+	get(j, "buttonColor", buttonColor);
+	get(j, "iconColor", iconColor);
+	get(j, "identifier", identifier);
 
 	if (this->title.empty()) get(j, "title", this->title);
 	if (this->button.empty()) get(j, "button", this->button);
-
-	if (trans) {
-		color = makeTransparent(color, trans);
-		fontColor = makeTransparent(fontColor, trans);
-		background = makeTransparent(background, trans);
-	}
 
 	auto pid = GetCurrentProcessId();
 	HWND hMainWnd = (HWND)WindowsManager::GetMainProcessWindow(pid);
@@ -73,9 +70,13 @@ EducationShow::EducationShow(const std::string& p, const std::wstring& title, co
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
 	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), titleRect, buttonRect;
 	graphics.MeasureString((WCHAR*)title.c_str(), (int)title.size(), &font, rect, &format, &titleRect);
-	graphics.MeasureString((WCHAR*)button.c_str(), (int)button.size(), &font, rect, &format, &buttonRect);
+	std::wstring text = L"X" + button + L"X";
+	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &buttonRect);
 	titleWidth = (int)titleRect.Width + thick * 2;
-	buttonWidth = (int)buttonRect.Width + thick * 2;
+	buttonHeight = (int)titleRect.Height + thick * 2;
+	buttonIconWidth = (int)titleRect.Height + thick * 2;
+	buttonTextWidth = (int)buttonRect.Width + thick * 2;
+	buttonWidth = buttonIconWidth + buttonTextWidth;
 
 	this->x = (mr.left + mr.right - buttonWidth - titleWidth) / 2 - thick;
 	this->y = mr.top;
@@ -83,19 +84,23 @@ EducationShow::EducationShow(const std::string& p, const std::wstring& title, co
 	this->h = (int)max(titleRect.Height, buttonRect.Height) + thick * 2;
 }
 
-void EducationShow::draw(Graphics& graphics, bool hover)
+void EducationShow::draw(Graphics& graphics)
 {
-	if (hover || moving) {
+	if (hover) {
 		color = makeTransparent(color, 255);
 		fontColor = makeTransparent(fontColor, 255);
 		background = makeTransparent(background, 255);
 		buttonColor = makeTransparent(buttonColor, 255);
+		stopColor = makeTransparent(stopColor, 255);
+		iconColor = makeTransparent(iconColor, 255);
 	}
 	else {
 		color = makeTransparent(color, trans);
 		fontColor = makeTransparent(fontColor, trans);
 		background = makeTransparent(background, trans);
 		buttonColor = makeTransparent(buttonColor, trans);
+		stopColor = makeTransparent(stopColor, trans);
+		iconColor = makeTransparent(iconColor, trans);
 	}
 
 	SolidBrush brush(background);
@@ -103,10 +108,20 @@ void EducationShow::draw(Graphics& graphics, bool hover)
 	path.AddRectangle(Rect(0, 0, w, h));
 	graphics.FillPath(&brush, &path);
 
-	SolidBrush buttonBrush(buttonColor);
+	REAL z = buttonIconWidth / 4;
+	REAL dy = pressed ? max(buttonIconWidth / 12, 2) : 0;
+
+	Color btnColor = buttonColor;
+	if (pressed) btnColor = Color(color.GetAlpha(), color.GetRed() * 0.8, color.GetGreen() * 0.8, color.GetBlue() * 0.8);
+	SolidBrush buttonBrush(btnColor);
 	GraphicsPath buttonPath;
 	buttonPath.AddRectangle(Rect(w - buttonWidth, 0, buttonWidth, h));
 	graphics.FillPath(&buttonBrush, &buttonPath);
+
+	SolidBrush iconBrush(iconColor);
+	GraphicsPath iconPath;
+	iconPath.AddRectangle(Rect(w - buttonWidth + z * 2, z + dy, z * 2, z * 2));
+	graphics.FillPath(&iconBrush, &iconPath);
 
 	Pen pen(color, (REAL)thick);
 	graphics.DrawPath(&pen, &path);
@@ -121,12 +136,12 @@ void EducationShow::draw(Graphics& graphics, bool hover)
 	RectF titleRect((REAL)0, (REAL)0, (REAL)titleWidth, (REAL)h);
 	graphics.DrawString((WCHAR*)title.c_str(), (int)title.size(), &font, titleRect, &format, &textBrush);
 
-	SolidBrush buttonTextBrush(Color::White);
-	RectF buttonRect((REAL)titleWidth, (REAL)0, (REAL)w - titleWidth, (REAL)h);
-	graphics.DrawString((WCHAR*)button.c_str(), (int)button.size(), &font, buttonRect, &format, &buttonTextBrush);
+	SolidBrush stopBrush(stopColor);
+	RectF buttonRect((REAL)w - buttonTextWidth, (REAL)dy, (REAL)buttonTextWidth, (REAL)h);
+	graphics.DrawString((WCHAR*)button.c_str(), (int)button.size(), &font, buttonRect, &format, &stopBrush);
 }
 
-LRESULT EducationShow::repaint(HWND hWnd, bool hover)
+LRESULT EducationShow::repaint(HWND hWnd)
 {
 	GgiPlusToken::Init();
 	Bitmap bitmap(w, h, PixelFormat32bppARGB);
@@ -135,7 +150,7 @@ LRESULT EducationShow::repaint(HWND hWnd, bool hover)
 	graphics.SetCompositingQuality(CompositingQuality::CompositingQualityHighQuality);
 	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
 	graphics.SetTextRenderingHint(TextRenderingHint::TextRenderingHintAntiAlias);
-	draw(graphics, hover);
+	draw(graphics);
 
 	//Инициализируем составляющие временного DC, в который будет отрисована маска
 	auto hDC = GetDC(hWnd);
@@ -189,7 +204,7 @@ static EducationShow& win(LPARAM lParam)
 	return *((EducationShow*)((CREATESTRUCT*)lParam)->lpCreateParams);
 }
 
-static void TrackMouse(HWND hWnd) 
+static void TrackMouse(HWND hWnd)
 {
 	TRACKMOUSEEVENT csTME{ 0 };
 	csTME.cbSize = sizeof(csTME);
@@ -199,39 +214,55 @@ static void TrackMouse(HWND hWnd)
 	::TrackMouseEvent(&csTME);
 }
 
-LRESULT EducationShow::onMouseDown(HWND hWnd, LPARAM lParam)
+LRESULT EducationShow::onMouseDown(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	moving = true;
-	mx = GET_X_LPARAM(lParam);
-	my = GET_Y_LPARAM(lParam);
-	return 0;
+	POINT point{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	::ScreenToClient(hWnd, &point);
+	if (point.x > titleWidth) {
+		hover = true;
+		pressed = true;
+		win(hWnd).repaint(hWnd);
+		TrackMouse(hWnd);
+		return 0;
+	}
+	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT EducationShow::onMouseMove(HWND hWnd, LPARAM lParam)
+LRESULT EducationShow::onMouseMove(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	win(hWnd).repaint(hWnd, true);
 	TrackMouse(hWnd);
-	return 0;
+	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-LRESULT EducationShow::onMouseUp(HWND hWnd, LPARAM lParam)
-
+LRESULT EducationShow::onMouseUp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	moving = false;
-	return 0;
+	if (pressed) {
+		pressed = false;
+		win(hWnd).repaint(hWnd);
+		addin.ExternalEvent(u"PLAYING_STOPPED", (char16_t*)identifier.c_str());
+	}
+	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT EducationShow::onHitTest(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-/*
-	POINT point{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-	::ScreenToClient(hWnd, &point);
-	const LRESULT result = ::DefWindowProc(hWnd, uMsg, wParam, lParam);
-	return (result == HTCLIENT && point.x < titleWidth) ? HTCAPTION : result;
-*/
 	const LRESULT result = ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 	return (result == HTCLIENT) ? HTCAPTION : result;
+}
 
+LRESULT EducationShow::onMouseHover(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	hover = true;
+	win(hWnd).repaint(hWnd);
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+LRESULT EducationShow::onMouseLeave(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	hover = false;
+	pressed = false;
+	win(hWnd).repaint(hWnd);
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -245,20 +276,20 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		SetWindowLong(hWnd, GWL_STYLE, lpcp->style);
 		return TRUE;
 	}
+	case WM_CREATE:
+		return win(lParam).repaint(hWnd);
 	case WM_NCHITTEST:
 		return win(hWnd).onHitTest(hWnd, uMsg, wParam, lParam);
-	case WM_CREATE:
-		return win(lParam).repaint(hWnd, false);
-	case WM_LBUTTONDOWN:
-		return win(hWnd).onMouseDown(hWnd, lParam);
-	case WM_LBUTTONUP:
-		return win(hWnd).onMouseUp(hWnd, lParam);
+	case WM_NCLBUTTONDOWN:
+		return win(hWnd).onMouseDown(hWnd, uMsg, wParam, lParam);
+	case WM_NCLBUTTONUP:
+		return win(hWnd).onMouseUp(hWnd, uMsg, wParam, lParam);
 	case WM_NCMOUSEMOVE:
-		return win(hWnd).onMouseMove(hWnd, lParam);
+		return win(hWnd).onMouseMove(hWnd, uMsg, wParam, lParam);
 	case WM_NCMOUSEHOVER:
-		return win(hWnd).repaint(hWnd, true);
+		return win(hWnd).onMouseHover(hWnd, uMsg, wParam, lParam);
 	case WM_NCMOUSELEAVE:
-		return win(hWnd).repaint(hWnd, false);
+		return win(hWnd).onMouseLeave(hWnd, uMsg, wParam, lParam);
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
@@ -298,10 +329,15 @@ static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 	return 0;
 }
 
-void EducationShow::run()
+void EducationShow::close()
 {
 	HWND hWnd = ::FindWindow(wsEducationClass, NULL);
 	if (hWnd) ::SendMessage(hWnd, WM_DESTROY, 0, 0);
+}
+
+void EducationShow::run()
+{
+	close();
 	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
 }
 

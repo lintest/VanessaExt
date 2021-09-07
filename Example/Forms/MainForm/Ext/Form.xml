@@ -1197,6 +1197,35 @@
 												</InputField>
 											</ChildItems>
 										</UsualGroup>
+										<UsualGroup name="ГруппаШрифтЦвет" id="939">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа шрифт цвет</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Группа шрифт цвет</v8:content>
+												</v8:item>
+											</ToolTip>
+											<Representation>None</Representation>
+											<ShowTitle>false</ShowTitle>
+											<ExtendedTooltip name="ГруппаШрифтЦветРасширеннаяПодсказка" id="940"/>
+											<ChildItems>
+												<InputField name="ЦветКнопки" id="941">
+													<DataPath>ЦветКнопки</DataPath>
+													<ContextMenu name="ЦветКнопкиКонтекстноеМеню" id="942"/>
+													<ExtendedTooltip name="ЦветКнопкиРасширеннаяПодсказка" id="943"/>
+												</InputField>
+												<InputField name="ЦветНадписи" id="944">
+													<DataPath>ЦветНадписи</DataPath>
+													<ContextMenu name="ЦветНадписиКонтекстноеМеню" id="945"/>
+													<ExtendedTooltip name="ЦветНадписиРасширеннаяПодсказка" id="946"/>
+												</InputField>
+											</ChildItems>
+										</UsualGroup>
 										<InputField name="ШрифтПодсказки" id="920">
 											<DataPath>ШрифтПодсказки</DataPath>
 											<ContextMenu name="ШрифтПодсказкиContextMenu" id="921"/>
@@ -1600,8 +1629,13 @@
 											<ChildItems>
 												<Button name="ОкноОбучения" id="937">
 													<Type>CommandBarButton</Type>
-													<CommandName>Form.Command.ОкноОбучения</CommandName>
+													<CommandName>Form.Command.ПоказатьОкноПрерывания</CommandName>
 													<ExtendedTooltip name="ОкноОбученияРасширеннаяПодсказка" id="938"/>
+												</Button>
+												<Button name="ЗакрытьОкноПрерывания" id="947">
+													<Type>CommandBarButton</Type>
+													<CommandName>Form.Command.ЗакрытьОкноПрерывания</CommandName>
+													<ExtendedTooltip name="ЗакрытьОкноПрерыванияРасширеннаяПодсказка" id="948"/>
 												</Button>
 											</ChildItems>
 										</CommandBar>
@@ -5433,6 +5467,39 @@
 				<v8:Type>v8ui:Font</v8:Type>
 			</Type>
 		</Attribute>
+		<Attribute name="ЦветКнопки" id="80">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Цвет кнопки</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:Color</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ЦветНадписи" id="81">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Цвет надписи</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:Color</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ЦветИконки" id="82">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Цвет иконки</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>v8ui:Color</v8:Type>
+			</Type>
+		</Attribute>
 	</Attributes>
 	<Commands>
 		<Command name="ПолучитьСписокОкон" id="1">
@@ -6948,20 +7015,35 @@
 			</ToolTip>
 			<Action>UI_Поиск2</Action>
 		</Command>
-		<Command name="ОкноОбучения" id="100">
+		<Command name="ПоказатьОкноПрерывания" id="100">
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Окно обучения</v8:content>
+					<v8:content>Показать окно прерывания</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Окно обучения</v8:content>
+					<v8:content>Показать окно прерывания</v8:content>
 				</v8:item>
 			</ToolTip>
-			<Action>ОкноОбучения</Action>
+			<Action>ПоказатьОкноПрерывания</Action>
+		</Command>
+		<Command name="ЗакрытьОкноПрерывания" id="101">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Закрыть окно прерывания</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Закрыть окно прерывания</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ЗакрытьОкноПрерывания</Action>
 		</Command>
 	</Commands>
 </Form>

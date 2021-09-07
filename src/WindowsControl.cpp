@@ -251,8 +251,11 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"ShowHint", u"ПоказатьПодсказку",
 		[&](VH p, VH x, VH y, VH text) { (new SpeechRect(p, x, y, text))->run(); }, { {3, u""} }
 	);
-	AddProcedure(u"ShowEducation", u"ПоказатьОбучение",
-		[&](VH p, VH title, VH button) { (new EducationShow(p, title, button))->run(); }, { {0, u"{}"}, {1, u""}, {2, u""} }
+	AddProcedure(u"ShowStopWindow", u"ПоказатьОкноПрерывания",
+		[&](VH p, VH title, VH button) { (new EducationShow(*this, p, title, button))->run(); }, { {0, u"{}"}, {1, u"Playing"}, {2, u"Stop"} }
+	);
+	AddProcedure(u"CloseStopWindow", u"ЗакрытьОкноПрерывания",
+		[&]() { EducationShow::close(); }
 	);
 	AddFunction(u"GetDesktopCount", u"ПолучитьКоличествоРабочихСтолов",
 		[&]() { this->result = DesktopManager::GetDesktopCount(); }
