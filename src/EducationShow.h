@@ -8,7 +8,7 @@ using namespace Gdiplus;
 
 class EducationShow {
 protected:
-	std::wstring text;
+	std::wstring title, button;
 	Color color = { 200, 50, 50 };
 	int x = 0, y = 0, w = 0, h = 0;
 	int duration = 5000;
@@ -22,11 +22,17 @@ protected:
 	Color background = Color::White;
 	Color fontColor = { 200, 50, 50 };
 	std::wstring fontName = L"Calibri";
+	bool moving = false;
+	bool hover = false;
+	int mx = 0;
+	int my = 0;
 public:
-	static LRESULT repaint(HWND hWnd, LPARAM lParam, bool hover);
-	EducationShow(const std::string& p, int x, int y, const std::wstring& t);
+	EducationShow(const std::string& p, const std::wstring& title, const std::wstring& button);
 	void draw(Gdiplus::Graphics& graphics, bool hover);
-	LRESULT paint(HWND hWnd, bool hover);
+	LRESULT repaint(HWND hWnd, bool hover);
+	LRESULT onMouseDown(HWND hWnd, LPARAM lParam);
+	LRESULT onMouseMove(HWND hWnd, LPARAM lParam);
+	LRESULT onMouseUp(HWND hWnd, LPARAM lParam);
 	void create();
 	void run();
 };

@@ -252,7 +252,7 @@ WindowsControl::WindowsControl() {
 		[&](VH p, VH x, VH y, VH text) { (new SpeechRect(p, x, y, text))->run(); }, { {3, u""} }
 	);
 	AddProcedure(u"ShowEducation", u"ПоказатьОбучение",
-		[&](VH p, VH x, VH y, VH text) { (new EducationShow(p, x, y, text))->run(); }, { {3, u""} }
+		[&](VH p, VH title, VH button) { (new EducationShow(p, title, button))->run(); }, { {0, u"{}"}, {1, u""}, {2, u""} }
 	);
 	AddFunction(u"GetDesktopCount", u"ПолучитьКоличествоРабочихСтолов",
 		[&]() { this->result = DesktopManager::GetDesktopCount(); }

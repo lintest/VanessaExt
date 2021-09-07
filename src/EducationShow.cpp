@@ -1,6 +1,8 @@
 ﻿#ifdef _WINDOWS
 
 #include "EducationShow.h"
+#include "WindowsManager.h"
+#include "windowsx.h"
 
 static void get(JSON& j, const std::string& name, Color& value)
 {
@@ -24,12 +26,12 @@ static void get(JSON& j, const std::string& name, T& value)
 		value = *it;
 }
 
-static Color makeTransparent(const Color &color, int trans) {
+static Color makeTransparent(const Color& color, int trans) {
 	return Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
 }
 
-EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstring& t)
-	: text(t)
+EducationShow::EducationShow(const std::string& p, const std::wstring& title, const std::wstring& button)
+	: title(title), button(button)
 {
 	JSON j = JSON::parse(p);
 	get(j, "color", color);
@@ -41,9 +43,11 @@ EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstr
 	get(j, "transparency", trans);
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
+	get(j, "fontColor", fontColor);
 	get(j, "background", background);
 
-	if (text.empty()) get(j, "text", text);
+	if (this->title.empty()) get(j, "title", this->title);
+	if (this->button.empty()) get(j, "button", this->button);
 
 	if (trans) {
 		color = makeTransparent(color, trans);
@@ -51,9 +55,12 @@ EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstr
 		background = makeTransparent(background, trans);
 	}
 
+	auto pid = GetCurrentProcessId();
+	HWND hMainWnd = (HWND)WindowsManager::GetMainProcessWindow(pid);
+
 	MONITORINFO mi{ 0 };
 	mi.cbSize = sizeof(MONITORINFO);
-	auto hMonitor = MonitorFromPoint(POINT{ x, y }, MONITOR_DEFAULTTONEAREST);
+	auto hMonitor = MonitorFromWindow(hMainWnd, MONITOR_DEFAULTTONEAREST);
 	GetMonitorInfo(hMonitor, &mi);
 	RECT mr = mi.rcMonitor;
 
@@ -65,7 +72,7 @@ EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstr
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
 	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), r;
-	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+	graphics.MeasureString((WCHAR*)title.c_str(), (int)title.size(), &font, rect, &format, &r);
 
 	this->x = (mr.left + mr.right - (LONG)r.Width) / 2 - thick;
 	this->y = mr.top;
@@ -75,7 +82,7 @@ EducationShow::EducationShow(const std::string& p, int x, int y, const std::wstr
 
 void EducationShow::draw(Graphics& graphics, bool hover)
 {
-	if (hover) {
+	if (hover || moving) {
 		color = makeTransparent(color, 255);
 		fontColor = makeTransparent(fontColor, 255);
 		background = makeTransparent(background, 255);
@@ -98,10 +105,10 @@ void EducationShow::draw(Graphics& graphics, bool hover)
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
 	RectF rect((REAL)0, (REAL)0, (REAL)w, (REAL)h);
-	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &textBrush);
+	graphics.DrawString((WCHAR*)title.c_str(), (int)title.size(), &font, rect, &format, &textBrush);
 }
 
-LRESULT EducationShow::paint(HWND hWnd, bool hover)
+LRESULT EducationShow::repaint(HWND hWnd, bool hover)
 {
 	GgiPlusToken::Init();
 	Bitmap bitmap(w, h, PixelFormat32bppARGB);
@@ -141,8 +148,10 @@ LRESULT EducationShow::paint(HWND hWnd, bool hover)
 	bf.SourceConstantAlpha = 255;
 
 	//Применяем отрисованную маску с альфой к окну
+	RECT rect;
+	GetWindowRect(hWnd, &rect);
 	SIZE size = { w, h };
-	POINT ptDst = { x, y };
+	POINT ptDst = { rect.left, rect.top };
 	POINT ptSrc = { 0, 0 };
 	UpdateLayeredWindow(hWnd, hDC, &ptDst, &size, hCDC, &ptSrc, 0, &bf, ULW_ALPHA);
 
@@ -152,15 +161,54 @@ LRESULT EducationShow::paint(HWND hWnd, bool hover)
 	return 0;
 }
 
-LRESULT EducationShow::repaint(HWND hWnd, LPARAM lParam, bool hover)
+static EducationShow& win(HWND hWnd)
 {
-	auto show = (EducationShow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-	return show->paint(hWnd, hover);
+	return *(EducationShow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 }
 
-static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+static EducationShow& win(LPARAM lParam)
 {
-	switch (message)
+	return *((EducationShow*)((CREATESTRUCT*)lParam)->lpCreateParams);
+}
+
+static void TrackMouse(HWND hWnd) 
+{
+	TRACKMOUSEEVENT csTME{ 0 };
+	csTME.cbSize = sizeof(csTME);
+	csTME.dwFlags = TME_LEAVE | TME_HOVER | TME_NONCLIENT;
+	csTME.hwndTrack = hWnd;
+	csTME.dwHoverTime = 10;
+	::TrackMouseEvent(&csTME);
+}
+
+LRESULT EducationShow::onMouseDown(HWND hWnd, LPARAM lParam)
+{
+	moving = true;
+	mx = GET_X_LPARAM(lParam);
+	my = GET_Y_LPARAM(lParam);
+	return 0;
+}
+
+LRESULT EducationShow::onMouseMove(HWND hWnd, LPARAM lParam)
+{
+	win(hWnd).repaint(hWnd, true);
+	TrackMouse(hWnd);
+	return 0;
+}
+
+LRESULT EducationShow::onMouseUp(HWND hWnd, LPARAM lParam)
+
+{
+	POINT p;
+	::GetCursorPos(&p);
+	::SetWindowPos(hWnd, 0, p.x - mx, p.y - my, 0, 0, SWP_NOSIZE);
+	moving = false;
+	return 0;
+}
+
+static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
 	{
 	case WM_NCCREATE: {
 		LPCREATESTRUCT lpcp = (LPCREATESTRUCT)lParam;
@@ -169,17 +217,28 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		SetWindowLong(hWnd, GWL_STYLE, lpcp->style);
 		return TRUE;
 	}
+	case WM_NCHITTEST:
+	{
+		const LRESULT result = ::DefWindowProc(hWnd, uMsg, wParam, lParam);
+		return (result == HTCLIENT) ? HTCAPTION : result;
+	}
 	case WM_CREATE:
-		return ((EducationShow*)((CREATESTRUCT*)lParam)->lpCreateParams)->paint(hWnd, false);
+		return ((EducationShow*)((CREATESTRUCT*)lParam)->lpCreateParams)->repaint(hWnd, false);
 	case WM_LBUTTONDOWN:
-		return EducationShow::repaint(hWnd, lParam, true);
+		return win(hWnd).onMouseDown(hWnd, lParam);
 	case WM_LBUTTONUP:
-		return EducationShow::repaint(hWnd, lParam, false);
+		return win(hWnd).onMouseUp(hWnd, lParam);
+	case WM_MOUSEMOVE:
+		return win(hWnd).onMouseMove(hWnd, lParam);
+	case WM_NCMOUSEHOVER:
+		return win(hWnd).repaint(hWnd, true);
+	case WM_NCMOUSELEAVE:
+		return win(hWnd).repaint(hWnd, false);
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
 	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
 	}
 }
 
