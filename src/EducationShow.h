@@ -37,7 +37,6 @@ private:
 	AddInNative& addin;
 private:
 	void draw(Gdiplus::Graphics& graphics);
-	LRESULT repaint(HWND hWnd);
 public:
 	EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button);
 	LRESULT onHitTest(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -46,6 +45,7 @@ public:
 	LRESULT onMouseUp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT onMouseHover(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT onMouseLeave(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	LRESULT repaint(HWND hWnd);
 	static void close();
 	void create();
 	void run();
