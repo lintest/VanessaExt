@@ -37,6 +37,8 @@ EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std
 	get(j, "color", color);
 	get(j, "padding", padding);
 	get(j, "duration", duration);
+	get(j, "eventName", eventName);
+	get(j, "eventData", eventData);
 	get(j, "frameCount", limit);
 	get(j, "frameDelay", delay);
 	get(j, "thickness", thick);
@@ -239,7 +241,7 @@ LRESULT EducationShow::onMouseUp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	if (pressed) {
 		pressed = false;
 		win(hWnd).repaint(hWnd);
-		addin.ExternalEvent(u"PLAYING_STOPPED", (char16_t*)identifier.c_str());
+		addin.ExternalEvent((char16_t*)eventName.c_str(), (char16_t*)eventName.c_str());
 	}
 	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
@@ -298,7 +300,7 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	}
 }
 
-const LPCWSTR wsEducationClass = L"VanessaEducationShow";
+const LPCWSTR wsEducationClass = L"VanessaTerminator";
 
 void EducationShow::create()
 {
@@ -311,7 +313,7 @@ void EducationShow::create()
 	RegisterClass(&wndClass);
 
 	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
-	HWND hWnd = CreateWindowEx(dwExStyle, wsEducationClass, NULL, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
+	HWND hWnd = CreateWindowEx(dwExStyle, wsEducationClass, identifier.c_str(), WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
@@ -331,8 +333,9 @@ static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 
 void EducationShow::close()
 {
-	HWND hWnd = ::FindWindow(wsEducationClass, NULL);
-	if (hWnd) ::SendMessage(hWnd, WM_DESTROY, 0, 0);
+	while (HWND hWnd = ::FindWindow(wsEducationClass, NULL)) {
+		::SendMessage(hWnd, WM_DESTROY, 0, 0);
+	}
 }
 
 void EducationShow::run()
