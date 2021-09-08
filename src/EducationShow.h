@@ -9,6 +9,8 @@ using namespace Gdiplus;
 class EducationShow {
 private:
 	std::wstring title, button, identifier;
+	std::wstring eventName = L"STOP_VANESSA";
+	std::wstring eventData;
 	int titleWidth = 0;
 	int buttonWidth = 0;
 	int buttonHeight = 0;
