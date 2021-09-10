@@ -111,7 +111,7 @@ class SpeechRect
 	: public PainterBase {
 private:
 	int X, Y, W, H, R = 20;
-	int tx, ty, tw, th;
+	int tx, ty, tw, th, dx, dy;
 	REAL fontSize = 12;
 	Color background = Color::White;
 	Color fontColor = { 200, 50, 50 };

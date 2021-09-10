@@ -249,34 +249,39 @@ SpeechRect::SpeechRect(const std::string& p, int x, int y, const std::wstring& t
 	W = int(r.Width + padding * 2);
 	H = int(r.Height + padding * 2);
 
+	int delta = thick * 5;
 	int tailLength = int(fontSize * 6);
 	if (x * 2 < mr.left + mr.right) {
+		dx = delta;
 		tw = tailLength;
 		X = x;
 	}
 	else {
+		dx = -delta;
 		tw = - tailLength;
 		X = x - W;
 	}
 	if (y * 2 < mr.top + mr.bottom) {
+		dy = delta;
 		th = tailLength;
 		Y = y + tailLength;
 	}
 	else {
+		dy = -delta;
 		th = - tailLength;
 		Y = y - tailLength - H;
 	}
 
-	this->x = min(x, X) - fontSize;
-	this->y = min(y, Y) - fontSize;
-	this->w = max(x, X + W) + fontSize * 2;
-	this->h = max(y, Y + H) + fontSize * 2;
+	this->x = min(x, X) - delta * 2;
+	this->y = min(y, Y) - delta * 2;
+	this->w = max(x, X + W) + delta * 4;
+	this->h = max(y, Y + H) + delta * 4;
 }
 
 void SpeechRect::draw(Graphics& graphics)
 {
 	auto gstate = graphics.Save();
-	graphics.TranslateTransform(-x, -y);
+	graphics.TranslateTransform(dx - x, dy - y);
 	SolidBrush brush(background);
 	Pen pen(color, (REAL)thick * 2);
 	GraphicsPath path, tail;
