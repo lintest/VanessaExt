@@ -1,7 +1,23 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ConfigDumpInfo xmlns="http://v8.1c.ru/8.3/xcf/dumpinfo" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" format="Hierarchical" version="2.10">
 	<ConfigVersions>
-		<Metadata name="Configuration.Configuration" id="6c3057b5-adcc-440f-816c-c1e591ef7057" configVersion="2ddb89b14a418943bb53d4826f5a7d3b00000000"/>
-		<Metadata name="Language.Russian" id="3a7fd5e0-8d9c-4282-8e2e-df065e2f8f3e" configVersion="9fb63611fdb6cc4ea307a157d1c43d6400000000"/>
+		<Metadata name="Configuration.Configuration" id="6c3057b5-adcc-440f-816c-c1e591ef7057" configVersion="937ff420de53c941af96da3054c4c22700000000"/>
+		<Metadata name="Configuration.Configuration.MainSectionCommandInterface" id="07ea2431-62de-4d6a-a258-54f73be64fd6.9" configVersion="96aa54668b038445b204016bd811c7f500000000"/>
+		<Metadata name="Configuration.Configuration.ManagedApplicationModule" id="07ea2431-62de-4d6a-a258-54f73be64fd6.6" configVersion="12ee896e2de8244a99870ce12a60bb7800000000"/>
+		<Metadata name="Constant.ТестируемаяБиблиотека" id="5d55d23f-94cb-4d92-b614-35f099961eba" configVersion="bb6982fb87b04e4ebb0e0cdb668bf82000000000"/>
+		<Metadata name="Constant.ТестируемаяОбработка" id="c00b4fee-c2f0-4069-a203-c258eca92993" configVersion="d3556fb9dc7acc44b197cdeb9a557c3100000000"/>
+		<Metadata name="DataProcessor.ОткрытьТестируемуОбработку" id="bce335ad-7ac1-4621-839b-93e9049fc564" configVersion="2f4db4c8aeb6ea4193e2382d84fab19400000000">
+			<Metadata name="DataProcessor.ОткрытьТестируемуОбработку.Command.ОткрытьТестируемуОбработку" id="21a83f39-6016-4563-8f51-ecb8df7035f1"/>
+			<Metadata name="DataProcessor.ОткрытьТестируемуОбработку.Command.НастройкаЗапуска" id="61ba5192-cb50-421e-9e79-579d4660c579"/>
+		</Metadata>
+		<Metadata name="DataProcessor.ОткрытьТестируемуОбработку.Command.НастройкаЗапуска.CommandModule" id="61ba5192-cb50-421e-9e79-579d4660c579.2" configVersion="7374e9e528ba9e4bbd9a48601c6855d200000000"/>
+		<Metadata name="DataProcessor.ОткрытьТестируемуОбработку.Command.ОткрытьТестируемуОбработку.CommandModule" id="21a83f39-6016-4563-8f51-ecb8df7035f1.2" configVersion="2b620eec3b2d4945bbdc55574223597000000000"/>
+		<Metadata name="DataProcessor.ОткрытьТестируемуОбработку.Form.Настройка" id="0a67fac7-5bfa-47c2-b2f7-10413e04c6bb" configVersion="6892c04da49bfa45a0242f588f12fa3200000000"/>
+		<Metadata name="DataProcessor.ОткрытьТестируемуОбработку.Form.Настройка.Form" id="0a67fac7-5bfa-47c2-b2f7-10413e04c6bb.0" configVersion="e20ab66e6fc0094ea019f89da4b16ade00000000"/>
+		<Metadata name="DataProcessor.ОткрытьТестируемуОбработку.Form.Форма" id="3c983578-d1da-4db8-aa15-d10255c900ac" configVersion="2e08bf8df45996409d1e7a11433ea9a000000000"/>
+		<Metadata name="DataProcessor.ОткрытьТестируемуОбработку.Form.Форма.Form" id="3c983578-d1da-4db8-aa15-d10255c900ac.0" configVersion="51ff824233562d4891ff8289ac17369000000000"/>
+		<Metadata name="Language.Russian" id="3a7fd5e0-8d9c-4282-8e2e-df065e2f8f3e" configVersion="99d5d6df6d66b843bae18f9119a99cae00000000"/>
+		<Metadata name="Role.Administrator" id="1aaa550f-2182-42f3-97e9-8d580225218e" configVersion="024dd5154c70b540a898c99e15eca3c700000000"/>
+		<Metadata name="Role.Administrator.Rights" id="1aaa550f-2182-42f3-97e9-8d580225218e.0" configVersion="879957007b481d44a9ad4aa5cd59503100000000"/>
 	</ConfigVersions>
 </ConfigDumpInfo>

@@ -187,6 +187,10 @@
 		</Properties>
 		<ChildObjects>
 			<Language>Russian</Language>
+			<Role>Administrator</Role>
+			<Constant>ТестируемаяОбработка</Constant>
+			<Constant>ТестируемаяБиблиотека</Constant>
+			<DataProcessor>ОткрытьТестируемуОбработку</DataProcessor>
 		</ChildObjects>
 	</Configuration>
 </MetaDataObject>

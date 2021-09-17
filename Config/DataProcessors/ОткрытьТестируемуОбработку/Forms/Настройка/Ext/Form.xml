@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://v8.1c.ru/8.3/xcf/logform" xmlns:app="http://v8.1c.ru/8.2/managed-application/core" xmlns:cfg="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:dcscor="http://v8.1c.ru/8.1/data-composition-system/core" xmlns:dcsset="http://v8.1c.ru/8.1/data-composition-system/settings" xmlns:ent="http://v8.1c.ru/8.1/data/enterprise" xmlns:lf="http://v8.1c.ru/8.2/managed-application/logform" xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows" xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.10">
+	<WindowOpeningMode>LockOwnerWindow</WindowOpeningMode>
+	<AutoCommandBar name="ФормаКоманднаяПанель" id="-1"/>
+	<ChildItems>
+		<InputField name="ТестируемаяОбработка" id="1">
+			<DataPath>НаборКонстант.ТестируемаяОбработка</DataPath>
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Обработка</v8:content>
+				</v8:item>
+			</Title>
+			<EditMode>EnterOnInput</EditMode>
+			<Width>40</Width>
+			<ChoiceButton>true</ChoiceButton>
+			<ContextMenu name="ТестируемаяОбработкаКонтекстноеМеню" id="2"/>
+			<ExtendedTooltip name="ТестируемаяОбработкаРасширеннаяПодсказка" id="3"/>
+			<Events>
+				<Event name="StartChoice">ТестируемаяОбработкаНачалоВыбора</Event>
+			</Events>
+		</InputField>
+		<InputField name="ТестируемаяБиблиотека" id="4">
+			<DataPath>НаборКонстант.ТестируемаяБиблиотека</DataPath>
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Библиотека</v8:content>
+				</v8:item>
+			</Title>
+			<EditMode>EnterOnInput</EditMode>
+			<Width>40</Width>
+			<ChoiceButton>true</ChoiceButton>
+			<ContextMenu name="ТестируемаяБиблиотекаКонтекстноеМеню" id="5"/>
+			<ExtendedTooltip name="ТестируемаяБиблиотекаРасширеннаяПодсказка" id="6"/>
+			<Events>
+				<Event name="StartChoice">ТестируемаяБиблиотекаНачалоВыбора</Event>
+			</Events>
+		</InputField>
+	</ChildItems>
+	<Attributes>
+		<Attribute name="НаборКонстант" id="1">
+			<Type>
+				<v8:Type>cfg:ConstantsSet</v8:Type>
+			</Type>
+			<MainAttribute>true</MainAttribute>
+			<SavedData>true</SavedData>
+		</Attribute>
+	</Attributes>
+</Form>
