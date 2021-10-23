@@ -83,6 +83,8 @@ add_library(${TARGET} SHARED
 	src/ImageFinder.h
 	src/ImageHelper.cpp
 	src/ImageHelper.h
+	src/KeyboardHook.cpp
+	src/KeyboardHook.h
 	src/Magnifier.cpp
 	src/Magnifier.h
 	src/ProcessControl.cpp

@@ -968,6 +968,11 @@
 												</Button>
 											</ChildItems>
 										</ButtonGroup>
+										<Button name="НазначитьГорячиеКлавиши" id="949">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.НазначитьГорячиеКлавиши</CommandName>
+											<ExtendedTooltip name="НазначитьГорячиеКлавишиРасширеннаяПодсказка" id="950"/>
+										</Button>
 									</ChildItems>
 								</CommandBar>
 								<InputField name="ТекстКонсоли" id="733">
@@ -7044,6 +7049,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ЗакрытьОкноПрерывания</Action>
+		</Command>
+		<Command name="НазначитьГорячиеКлавиши" id="102">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Назначить горячие клавиши</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Назначить горячие клавиши</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>НазначитьГорячиеКлавиши</Action>
 		</Command>
 	</Commands>
 </Form>

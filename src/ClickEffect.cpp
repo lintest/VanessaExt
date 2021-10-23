@@ -214,7 +214,7 @@ DWORD WINAPI EffectThreadProc(LPVOID lpParam)
 }
 
 
-DWORD WINAPI HookerThreadProc(LPVOID lpParam)
+static DWORD WINAPI HookerThreadProc(LPVOID lpParam)
 {
 	auto hooker = ClickEffect::hooker(lpParam);
 	hooker->Create();

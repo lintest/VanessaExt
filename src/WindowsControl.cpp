@@ -19,6 +19,7 @@
 #include "FileFinder.h"
 #include "ImageFinder.h"
 #include "ImageHelper.h"
+#include "KeyboardHook.h"
 #include "ProcessManager.h"
 #include "ScreenManager.h"
 #include "SoundEffect.h"
@@ -205,6 +206,9 @@ WindowsControl::WindowsControl() {
 	);
 	AddProcedure(u"StopClickVisualization", u"ПрекратитьВизуализациюНажатияМыши",
 		[&]() { ClickEffect::Unhook(); }
+	);
+	AddProcedure(u"SetKeyboardHook", u"НазначитьГорячиеКлавиши",
+		[&](VH keys) { KeyboardHook::Hook(*this, keys); }
 	);
 	AddProcedure(u"PlaySound", u"ВоспроизвестиЗвук",
 		[&](VH filename, VH async) { SoundEffect::PlaySound(filename, async); }, { {0, u""}, {1, false} }
