@@ -3,14 +3,36 @@
 #include "stdafx.h"
 #include "KeyboardHook.h"
 
+KeyboardHook::KeyboardHook(AddInNative& addin, const std::string& text)
+	: addin(addin) 
+{
+	auto json = JSON::parse(text);
+	for (auto& j : json) {
+		HotKey hotkey;
+		DWORD key = (int)j["key"];
+		hotkey.shift = j["shift"];
+		hotkey.ctrl = j["ctrl"];
+		hotkey.alt = j["alt"];
+		hotkey.msg = MB2WC(j["msg"]);
+		hotkey.data = MB2WC(j["data"]);
+		map.insert(std::make_pair(key, hotkey));
+	}
+}
+
 void KeyboardHook::Notify(WPARAM wParam, LPARAM lParam)
 {
 	KBDLLHOOKSTRUCT key = *((KBDLLHOOKSTRUCT*)lParam);
-	if (key.vkCode == VK_PAUSE) {
-		addin.ExternalEvent(u"KEYBOARD_HOOK", u"PAUSE");
-		auto SHIFT_key = GetAsyncKeyState(VK_SHIFT);
-		auto CTRL_key = GetAsyncKeyState(VK_CONTROL);
-		auto ALT_key = GetAsyncKeyState(VK_MENU);
+	auto range = map.equal_range(key.vkCode);
+	if (range.first != range.second) {
+		auto shift = GetAsyncKeyState(VK_SHIFT) < 0;
+		auto ctrl = GetAsyncKeyState(VK_CONTROL) < 0;
+		auto alt = GetAsyncKeyState(VK_MENU) < 0;
+		for (auto& it = range.first; it != range.second; ++it) {
+			auto key = it->second;
+			if (shift == key.shift && ctrl == key.ctrl && alt == key.alt) {
+				addin.ExternalEvent((char16_t*)key.msg.c_str(), (char16_t*)key.data.c_str());
+			}
+		}
 	}
 }
 
@@ -97,24 +119,32 @@ static HMODULE LoadHookLibrary()
 	return GetLibraryFile(path) ? LoadLibrary(path.c_str()) : nullptr;
 }
 
-typedef void(__cdecl* StartHookProc)(AddInNative& addin, const std::string& json);
+typedef void(__cdecl* StartHookProc)();
 
 typedef void(__cdecl* StopHookProc)();
 
-void KeyboardHook::Hook(AddInNative& addin, const std::string& json)
+std::string KeyboardHook::Hook(AddInNative& addin, const std::string& json)
 {
+	try {
+		hooker.reset(new KeyboardHook(addin, json));
+	}
+	catch (nlohmann::json::parse_error&) {
+		return "JSON parse error";
+	}
 	if (auto h = LoadHookLibrary()) {
 		auto proc = (StartHookProc)GetProcAddress(h, "StartKeyboardHook");
-		if (proc) proc(addin, json);
+		if (proc) { proc(); return {}; }
 	}
+	return "Keyboard hook error";
 }
 
-void KeyboardHook::Unhook()
+std::string KeyboardHook::Unhook()
 {
 	if (auto h = LoadHookLibrary()) {
 		auto proc = (StopHookProc)GetProcAddress(h, "StopKeyboardHook");
-		if (proc) proc();
+		if (proc) { proc(); return {}; }
 	}
+	return "Keyboard hook error";
 }
 
 extern "C" {
@@ -128,10 +158,9 @@ extern "C" {
 
 		hKeyboardHookThread = NULL;
 	}
-	__declspec(dllexport) void __cdecl StartKeyboardHook(AddInNative& addin, const std::string& json)
+	__declspec(dllexport) void __cdecl StartKeyboardHook()
 	{
 		StopKeyboardHook();
-		hooker.reset(new KeyboardHook(addin, json));
 		hKeyboardHookThread = CreateThread(0, NULL, KeyboardHookThreadProc, NULL, NULL, NULL);
 	}
 }

@@ -968,11 +968,6 @@
 												</Button>
 											</ChildItems>
 										</ButtonGroup>
-										<Button name="НазначитьГорячиеКлавиши" id="949">
-											<Type>CommandBarButton</Type>
-											<CommandName>Form.Command.НазначитьГорячиеКлавиши</CommandName>
-											<ExtendedTooltip name="НазначитьГорячиеКлавишиРасширеннаяПодсказка" id="950"/>
-										</Button>
 									</ChildItems>
 								</CommandBar>
 								<InputField name="ТекстКонсоли" id="733">
@@ -984,6 +979,33 @@
 									<ContextMenu name="ТекстКонсолиКонтекстноеМеню" id="734"/>
 									<ExtendedTooltip name="ТекстКонсолиРасширеннаяПодсказка" id="735"/>
 								</InputField>
+								<CommandBar name="КомандыГорячиеКлавиши" id="953">
+									<Title>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Команды горячие клавиши</v8:content>
+										</v8:item>
+									</Title>
+									<ToolTip>
+										<v8:item>
+											<v8:lang>ru</v8:lang>
+											<v8:content>Команды горячие клавиши</v8:content>
+										</v8:item>
+									</ToolTip>
+									<ExtendedTooltip name="КомандыГорячиеКлавишиРасширеннаяПодсказка" id="954"/>
+									<ChildItems>
+										<Button name="НазначитьГорячиеКлавиши" id="949">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.НазначитьГорячиеКлавиши</CommandName>
+											<ExtendedTooltip name="НазначитьГорячиеКлавишиРасширеннаяПодсказка" id="950"/>
+										</Button>
+										<Button name="СброситьГорячиеКлавиши" id="951">
+											<Type>CommandBarButton</Type>
+											<CommandName>Form.Command.СброситьГорячиеКлавиши</CommandName>
+											<ExtendedTooltip name="СброситьГорячиеКлавишиРасширеннаяПодсказка" id="952"/>
+										</Button>
+									</ChildItems>
+								</CommandBar>
 							</ChildItems>
 						</UsualGroup>
 					</ChildItems>
@@ -7064,6 +7086,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>НазначитьГорячиеКлавиши</Action>
+		</Command>
+		<Command name="СброситьГорячиеКлавиши" id="103">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Сбросить горячие клавиши</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Сбросить горячие клавиши</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>СброситьГорячиеКлавиши</Action>
 		</Command>
 	</Commands>
 </Form>

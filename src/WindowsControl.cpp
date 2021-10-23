@@ -207,8 +207,11 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"StopClickVisualization", u"ПрекратитьВизуализациюНажатияМыши",
 		[&]() { ClickEffect::Unhook(); }
 	);
-	AddProcedure(u"SetKeyboardHook", u"НазначитьГорячиеКлавиши",
-		[&](VH keys) { KeyboardHook::Hook(*this, keys); }
+	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
+		[&](VH keys) { this->result = KeyboardHook::Hook(*this, keys); }
+	);
+	AddFunction(u"ClearHotKeys", u"СброситьГорячиеКлавиши",
+		[&]() { this->result = KeyboardHook::Unhook(); }
 	);
 	AddProcedure(u"PlaySound", u"ВоспроизвестиЗвук",
 		[&](VH filename, VH async) { SoundEffect::PlaySound(filename, async); }, { {0, u""}, {1, false} }
