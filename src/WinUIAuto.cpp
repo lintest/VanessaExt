@@ -684,6 +684,7 @@ bool WinUIAuto::FocusElement(const std::string& id)
 std::string WinUIAuto::GetParentElement(const std::string& id)
 {
 	UICacheRequest cache(*this);
+	cache->put_TreeScope(TreeScope_Parent);
 	UIAutoUniquePtr<IUIAutomationElement> child;
 	find(id, cache, UI(child));
 	if (child.get() == nullptr) return {};
@@ -693,7 +694,35 @@ std::string WinUIAuto::GetParentElement(const std::string& id)
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	walker->GetParentElementBuildCache(child.get(), cache, UI(parent));
 	if (parent.get() == nullptr) return {};
-	return info(parent.get(), cache).dump();
+	std::string result;
+	EnumChilds(child.get(), parent.get(), cache, result);
+	return result;
+}
+
+void WinUIAuto::EnumChilds(IUIAutomationElement* origin, IUIAutomationElement* parent, UICacheRequest& cache1, std::string &result)
+{
+	UICacheRequest cache(*this);
+	UIAutoUniquePtr<IUIAutomationElement> child;
+	UIAutoUniquePtr<IUIAutomationTreeWalker> walker1, walker2;
+
+	pAutomation->get_ControlViewWalker(UI(walker1));
+	walker1->GetFirstChildElementBuildCache(parent, cache, UI(child));
+	while (child) {
+		BOOL ok;
+		if (SUCCEEDED(pAutomation->CompareElements(origin, child.get(), &ok)) && ok) {
+			result = info(parent, cache).dump();
+			return;
+		}
+		walker1->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
+	}
+
+	pAutomation->get_ControlViewWalker(UI(walker2));
+	walker2->GetFirstChildElementBuildCache(parent, cache, UI(child));
+	while (child) {
+		EnumChilds(origin, child.get(), cache, result);
+		if (!result.empty()) return;
+		walker2->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
+	}
 }
 
 std::string WinUIAuto::GetNextElement(const std::string& id)
