@@ -316,6 +316,15 @@ std::string WinUIAuto::ElementById(const std::string& id)
 	return info(element.get(), cache).dump();
 }
 
+std::string WinUIAuto::ElementFromPoint(int x, int y)
+{
+	POINT p{ x, y };
+	UICacheRequest cache(*this);
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	if (FAILED(pAutomation->ElementFromPointBuildCache(p, cache, UI(element)))) return {};
+	return info(element.get(), cache).dump();
+}
+
 static bool empty(UIAutoUniquePtr<IUIAutomationElementArray>& elements)
 {
 	if (elements.get() == nullptr) return true;

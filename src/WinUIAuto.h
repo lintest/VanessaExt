@@ -54,6 +54,7 @@ public:
 	std::string GetElements(DWORD pid);
 	std::string GetElements(const std::string &id);
 	std::string ElementById(const std::string& id);
+	std::string ElementFromPoint(int x, int y);
 	std::string FindElements(const std::string& arg);
 	std::string GetParentElement(const std::string& id);
 	std::string GetNextElement(const std::string& id);

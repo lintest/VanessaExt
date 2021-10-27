@@ -310,6 +310,9 @@ WindowsControl::WindowsControl() {
 	AddFunction(u"GetElementById", u"ЭлементПоИдентификатору",
 		[&](VH id) { this->result = WinUIAuto().ElementById(id); }
 	);
+	AddFunction(u"GetElementFromPoint", u"ЭлементПоКоординатам",
+		[&](VH x, VH y) { this->result = WinUIAuto().ElementFromPoint(x, y); }
+	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
 		[&](VH filter) { this->result = WinUIAuto().FindElements(filter); }
 	);
