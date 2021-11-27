@@ -1349,12 +1349,23 @@
 														<Button name="ФигураТекст" id="893">
 															<Type>CommandBarButton</Type>
 															<CommandName>Form.Command.ФигураПоказатьТекст</CommandName>
+															<Title>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>Надпись</v8:content>
+																</v8:item>
+															</Title>
 															<ExtendedTooltip name="ФигураТекстExtendedTooltip" id="894"/>
 														</Button>
 														<Button name="ФигураПоказатьПодсказку" id="908">
 															<Type>CommandBarButton</Type>
 															<CommandName>Form.Command.ФигураПоказатьПодсказку</CommandName>
 															<ExtendedTooltip name="ФигураПоказатьПодсказкуExtendedTooltip" id="909"/>
+														</Button>
+														<Button name="ФигураSpeechBubble" id="955">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.ФигураSpeechBubble</CommandName>
+															<ExtendedTooltip name="ФигураSpeechBubbleРасширеннаяПодсказка" id="956"/>
 														</Button>
 													</ChildItems>
 												</ButtonGroup>
@@ -6961,7 +6972,7 @@
 			<Title>
 				<v8:item>
 					<v8:lang>ru</v8:lang>
-					<v8:content>Показать подсказку</v8:content>
+					<v8:content>Подсказка</v8:content>
 				</v8:item>
 			</Title>
 			<ToolTip>
@@ -7101,6 +7112,21 @@
 				</v8:item>
 			</ToolTip>
 			<Action>СброситьГорячиеКлавиши</Action>
+		</Command>
+		<Command name="ФигураSpeechBubble" id="104">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Speech bubble</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Фигура speech bubble</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ФигураSpeechBubble</Action>
 		</Command>
 	</Commands>
 </Form>

@@ -122,4 +122,16 @@ public:
 	virtual void draw(Graphics& graphics) override;
 };
 
+class TextLabel
+	: public PainterBase {
+private:
+	REAL fontSize = 12;
+	Color fontColor = { 200, 50, 50 };
+	std::wstring fontName = L"Calibri";
+	std::wstring text;
+public:
+	TextLabel(const std::string& p, int x, int y, const std::wstring& text);
+	virtual void draw(Graphics& graphics) override;
+};
+
 #endif //_WINDOWS

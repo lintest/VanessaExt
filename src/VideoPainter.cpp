@@ -383,6 +383,52 @@ void ArrowPainter::draw(Graphics& graphics)
 	graphics.DrawLine(&pen, X1, Y1, X2, Y2);
 }
 
+TextLabel::TextLabel(const std::string& p, int x, int y, const std::wstring& t)
+	: PainterBase(p), text(t)
+{
+	this->delay = 0;
+	JSON j = JSON::parse(p);
+	get(j, "fontColor", fontColor);
+	get(j, "fontName", fontName);
+	get(j, "fontSize", fontSize);
+	if (text.empty()) get(j, "text", text);
+
+	MONITORINFO mi{ 0 };
+	mi.cbSize = sizeof(MONITORINFO);
+	POINT pt{ x, y };
+	auto hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+	GetMonitorInfo(hMonitor, &mi);
+	RECT mr = mi.rcMonitor;
+
+	auto hDC = GetDC(NULL);
+	Graphics graphics(hDC);
+	FontFamily fontFamily(fontName.c_str());
+	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
+	StringFormat format;
+	format.SetAlignment(StringAlignment::StringAlignmentCenter);
+	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), r;
+	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+
+	this->w = int(r.Width + 2);
+	this->h = int(r.Height + 2);
+	this->x = x - w / 2;
+	this->y = y - h / 2;
+}
+
+void TextLabel::draw(Graphics& graphics)
+{
+	SolidBrush textBrush(fontColor);
+	FontFamily fontFamily(fontName.c_str());
+	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
+	StringFormat format;
+	format.SetAlignment(StringAlignment::StringAlignmentCenter);
+	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+	RectF rect((REAL)0, (REAL)0, (REAL)w, (REAL)h), r;
+	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
+}
+
 LRESULT PainterBase::repaint(HWND hWnd)
 {
 	GgiPlusToken::Init();

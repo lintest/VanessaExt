@@ -258,6 +258,9 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"ShowHint", u"ПоказатьПодсказку",
 		[&](VH p, VH x, VH y, VH text) { (new SpeechRect(p, x, y, text))->run(); }, { {3, u""} }
 	);
+	AddProcedure(u"DrawText", u"ПоказатьТекст",
+		[&](VH p, VH x, VH y, VH text) { (new TextLabel(p, x, y, text))->run(); }, { {3, u""} }
+	);
 	AddProcedure(u"ShowStopWindow", u"ПоказатьОкноПрерывания",
 		[&](VH p, VH title, VH button) { (new EducationShow(*this, p, title, button))->run(); }, { {0, u"{}"}, {1, u"Playing"}, {2, u"Stop"} }
 	);
