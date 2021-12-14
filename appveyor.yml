@@ -108,8 +108,6 @@ build_script:
   - cmake --build . --config Release
   - cd ..
 
-  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e
-
 for:
   - matrix:
       only:
