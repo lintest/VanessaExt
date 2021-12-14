@@ -681,6 +681,24 @@ bool WinUIAuto::FocusElement(const std::string& id)
 	return SUCCEEDED(element->SetFocus());
 }
 
+std::string WinUIAuto::getElementId(IUIAutomationElement* element)
+{
+	std::stringstream ss;
+	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> id;
+	if (SUCCEEDED(element->GetRuntimeId(UI(id)))) {
+		void* pVoid = 0;
+		::SafeArrayAccessData(id.get(), &pVoid);
+		const long* pLongs = reinterpret_cast<long*>(pVoid);
+		for (ULONG i = 0; i < id->rgsabound[0].cElements; ++i) {
+			const long val = pLongs[i];
+			if (i) ss << ".";
+			ss << std::hex << val;
+		}
+		::SafeArrayUnaccessData(id.get());
+	}
+	return ss.str();
+}
+
 std::string WinUIAuto::GetParentElement(const std::string& id)
 {
 	UICacheRequest cache(*this);
@@ -692,36 +710,40 @@ std::string WinUIAuto::GetParentElement(const std::string& id)
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
 	pAutomation->get_ControlViewWalker(UI(walker));
 	UIAutoUniquePtr<IUIAutomationElement> parent;
-	walker->GetParentElementBuildCache(child.get(), cache, UI(parent));
+	walker->GetParentElement(child.get(), UI(parent));
 	if (parent.get() == nullptr) return {};
+	auto ident = getElementId(parent.get());
 	std::string result;
-	EnumChilds(child.get(), parent.get(), cache, result);
+	EnumChilds(child.get(), parent.get(), result);
 	return result;
 }
 
-void WinUIAuto::EnumChilds(IUIAutomationElement* origin, IUIAutomationElement* parent, UICacheRequest& cache1, std::string &result)
+void WinUIAuto::EnumChilds(IUIAutomationElement* origin, IUIAutomationElement* parent, std::string &result)
 {
 	UICacheRequest cache(*this);
+	cache->put_TreeScope(TreeScope_Children);
 	UIAutoUniquePtr<IUIAutomationElement> child;
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker1, walker2;
 
 	pAutomation->get_ControlViewWalker(UI(walker1));
-	walker1->GetFirstChildElementBuildCache(parent, cache, UI(child));
+	walker1->GetFirstChildElement(parent, UI(child));
 	while (child) {
+		auto ident = getElementId(child.get());
 		BOOL ok;
 		if (SUCCEEDED(pAutomation->CompareElements(origin, child.get(), &ok)) && ok) {
 			result = info(parent, cache).dump();
 			return;
 		}
-		walker1->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
+		walker1->GetNextSiblingElement(child.get(), UI(child));
 	}
 
 	pAutomation->get_ControlViewWalker(UI(walker2));
-	walker2->GetFirstChildElementBuildCache(parent, cache, UI(child));
+	walker2->GetFirstChildElement(parent, UI(child));
 	while (child) {
-		EnumChilds(origin, child.get(), cache, result);
+		auto ident = getElementId(child.get());
+		EnumChilds(origin, child.get(), result);
 		if (!result.empty()) return;
-		walker2->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
+		walker2->GetNextSiblingElement(child.get(), UI(child));
 	}
 }
 

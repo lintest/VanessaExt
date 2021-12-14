@@ -40,7 +40,8 @@ private:
 		IUIAutomationCacheRequest* operator->() { return cache.get(); }
 	};
 private:
-	void EnumChilds(IUIAutomationElement* origin, IUIAutomationElement* parent, UICacheRequest& cache, std::string &result);
+	std::string getElementId(IUIAutomationElement* element);
+	void EnumChilds(IUIAutomationElement* origin, IUIAutomationElement* parent, std::string &result);
 	HRESULT find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element);
 	HRESULT find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element);
 	bool isWindow(IUIAutomationElement* element, JSON& json);
