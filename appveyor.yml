@@ -37,7 +37,7 @@ install:
       libxrandr-dev libxrandr-dev:i386
       libpng-dev libpng-dev:i386
       libssl-dev libssl-dev:i386
-      gcc-multilib g++-multilib
+      gcc-4.8-multilib g++-4.8-multilib
 
   - git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
   - cd libgit2-1.1.0
