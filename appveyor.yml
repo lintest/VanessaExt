@@ -11,6 +11,11 @@ skip_branch_with_pr: true
 skip_tags: true
 
 environment:
+  APPVEYOR_SSH_KEY:
+    secure: iw2F0rg+EGkQPs4YsnrXtFMTCSE1vdYr9zPvpLDJUZLTKAJ3WRt84Fz9yFBWRwuB/myuh/dKeoAwSwSYus5Qjed/ldv0ds2U85hB+gfqcKerX32kMQHXoxe2ziM9FR6sxNYVSzIvFg+S4lP52Fk1o0ZtmzWPc3n92+GRwNh14dRdobSB7DWTNFZzKJ1UejQKxf6fAx31UI98gJE2QKAHahnVZXZjIuL0SJ3/rxt9XPETCkLFRkBhmRM8dq7Xw2QLn/1GqwYLQW0JnF2jDGJzD4L5+wEsVUt0Vz3BcA2O9bEjRbluzb6503yyXcqZGpClzPISsNE30Ya1r6+udKqO18CwxtUZ6z8dslyh0gbG827imwil5jj4x/MLkIAGxrmrdF7+yuAcRR9KkKTLhooOYus2RWQDMv921/haxjIcE9GnzNU+o2uTY+AW4t0r1ZO+Ok5TIGEzlCyT27J3G8h2q1oa3HWa1MWtNLuq6rNO+d+dg2OLd+AY0oMwMaYNcGRaSzSaRSvL2zw0Ss+JLiVM5SFprGfUKLc/nPByIzc2FOQmf8vpnFGST/9k9R8sBhrCeLhP8jK0TnDKelLjx4iPWxg8M6sFUk4jYhQcnUJT9NuxGXv2zanjDBYLQdR9ttOBPZxnJBLmtJ6w6MjaogCY+kTukXqeQF9Unl+og0PTzjPSF9ffC5tlFAcgA2F2yJLy9QIEn0ze5UNFh9GQVgKoMynISf0LhKZeOMuYDGcOYYAmLaQu9yr/O6rPv8RcRag8WUUkXezqV6Sbpq/VPC9LQpUMnjgeqakGpSujwNGAli60WuuRtCxnI3PsoyWM4JOKFc+p53GCEnJB6FQMTKpY50ZcneCSS6M0rLV2PPzCQnVPPE2cRMAR4GXQfaMbspByNgnMhm9on1V6iSPu/TRhESNYiPuljuYDmTmGdJUODyVRHU9WY8Qjdw85a2O40fYG3o+WwoFaHd8O5ATR3axgsw==
+  APPVEYOR_SSH_BLOCK:
+    true
+    
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       job_name: Linux
@@ -57,6 +62,9 @@ install:
   - git clone -q --branch=master --depth=1 https://github.com/lintest/RE-flex.git RE-flex
   - cd RE-flex
   - git checkout -b version v3.0.1
+  
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e
+
   - sh: ./clean.sh
   - sh: ./build.sh
   - cd ..
