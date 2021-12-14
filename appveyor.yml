@@ -73,7 +73,7 @@ install:
   - appveyor DownloadFile https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.gz
   - tar xzf boost_1_76_0.tar.gz
   - cd boost_1_76_0
-  - sh: ./bootstrap.sh
+  - sh: ./bootstrap.sh --prefix=/usr/
   - cmd: bootstrap.bat
   - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem
   - cd ..
