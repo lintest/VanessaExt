@@ -42,7 +42,7 @@ install:
       libxrandr-dev libxrandr-dev:i386
       libpng-dev libpng-dev:i386
       libssl-dev libssl-dev:i386
-      gcc-4.8-multilib g++-4.8-multilib
+      gcc-multilib g++-multilib
 
   - git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
   - cd libgit2-1.1.0
@@ -63,8 +63,6 @@ install:
   - cd RE-flex
   - git checkout -b version v3.0.1
   
-  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e
-
   - sh: ./clean.sh
   - sh: ./build.sh
   - cd ..
@@ -79,6 +77,8 @@ install:
   - cmd: bootstrap.bat
   - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem
   - cd ..
+
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e
 
 init:
   - cmd: cmake --version
