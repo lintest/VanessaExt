@@ -28,6 +28,7 @@ install:
   - cmd: cd ..
 
   - sh: sudo dpkg --add-architecture i386
+  - sh: sudo apt remove gcc-9 g++-9 -y
   - sh: sudo apt -qq update
   - sh: sudo apt -qq -y install
       build-essential
@@ -37,10 +38,8 @@ install:
       libxrandr-dev libxrandr-dev:i386
       libpng-dev libpng-dev:i386
       libssl-dev libssl-dev:i386
-      gcc-multilib g++-multilib
-
-  - sh: sudo apt remove gcc-9 g++-9 -y
-  - sh: sudo apt install gcc-7 g++-7 -y
+      g++-7-multilib gcc-7-multilib
+      gcc-7 g++-7
 
   - git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
   - cd libgit2-1.1.0
