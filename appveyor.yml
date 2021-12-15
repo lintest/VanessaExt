@@ -61,11 +61,12 @@ install:
   - git clone -q --branch=master --depth=1 https://github.com/lintest/RE-flex.git RE-flex
   - cd RE-flex
   - git checkout -b version v3.0.1
+
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e
+
   - sh: ./clean.sh
   - sh: ./build.sh
   - cd ..
-
-  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e
 
   - cmd: Build.OpenCV.bat
   - sh: ./Build.OpenCV.sh
