@@ -38,6 +38,7 @@ install:
       libpng-dev libpng-dev:i386
       libssl-dev libssl-dev:i386
       g++-multilib gcc-multilib
+      g++-7-multilib gcc-7-multilib
       gcc-7 g++-7
 
   - sh: sudo update-alternatives --set gcc "/usr/bin/gcc-7"
