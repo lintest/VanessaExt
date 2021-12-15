@@ -39,6 +39,9 @@ install:
       libssl-dev libssl-dev:i386
       gcc-multilib g++-multilib
 
+  - sh: sudo apt remove gcc-9 g++-9 -y
+  - sh: sudo apt install gcc-7 g++-7 -y
+
   - git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
   - cd libgit2-1.1.0
   - git checkout -b version v1.1.0
