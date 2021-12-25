@@ -12,7 +12,7 @@ skip_tags: true
 
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       job_name: Linux
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       job_depends_on: Linux
@@ -32,16 +32,15 @@ install:
   - sh: sudo apt -qq -y install
       build-essential
       uuid-dev uuid-dev:i386
+      libpcre3-dev:i386
       libx11-dev libx11-dev:i386
       libxtst-dev libxtst-dev:i386
       libxrandr-dev libxrandr-dev:i386
       libpng-dev libpng-dev:i386
       libssl-dev libssl-dev:i386
       g++-7-multilib gcc-7-multilib
-      gcc-7 g++-7
 
   - sh: sudo update-alternatives --set gcc "/usr/bin/gcc-7"
-  - sh: gcc --version && g++ --version
 
   - git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
   - cd libgit2-1.1.0
