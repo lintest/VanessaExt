@@ -32,6 +32,7 @@ install:
   - sh: sudo apt -qq -y install
       build-essential
       uuid-dev uuid-dev:i386
+      libpcre3-dev:i386
       libx11-dev libx11-dev:i386
       libxtst-dev libxtst-dev:i386
       libxrandr-dev libxrandr-dev:i386
@@ -88,7 +89,7 @@ build_script:
   - sh: cd ..
   - mkdir build32
   - cd build32
-  - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=ON -DCMAKE_C_FLAGS=-L/usr/lib32 ..
+  - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=ON ..
   - cmd: cmake .. -A Win32 -DMySuffix2=32
   - cmake --build . --config Release
   - cd ..
