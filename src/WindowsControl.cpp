@@ -250,7 +250,7 @@ WindowsControl::WindowsControl() {
 		[&](VH p, VH x1, VH y1, VH x2, VH y2) { (new ArrowPainter(p, x1, y1, x2, y2))->run(); }
 	);
 	AddProcedure(u"DrawShadow", u"НарисоватьТень",
-		[&](VH p, VH x, VH y, VH w, VH h, VH text) { (new ShadowPainter(p, x, y, w, h, text))->run(); }, { {5, u""} }
+		[&](VH p, VH x, VH y, VH w, VH h, VH text) { (new ShadowPainter(*this, p, x, y, w, h, text))->run(); }, { {5, u""} }
 	);
 	AddProcedure(u"SpeechBubble", u"НарисоватьТекст",
 		[&](VH p, VH x, VH y, VH w, VH h, VH text) { (new SpeechBubble(p, x, y, w, h, text))->run(); }, { {5, u""} }

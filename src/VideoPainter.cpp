@@ -5,14 +5,14 @@
 #define ID_TIMER_REPAINT 1
 #define ID_TIMER_TIMEOUT 2
 
-static void get(JSON& j, const std::string& name, Color& value)
+static void get(const JSON& j, const std::string& name, Color& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
 		value.SetFromCOLORREF(*it);
 }
 
-static void get(JSON& j, const std::string& name, std::wstring& value)
+static void get(const JSON& j, const std::string& name, std::wstring& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
@@ -20,7 +20,7 @@ static void get(JSON& j, const std::string& name, std::wstring& value)
 }
 
 template<typename T>
-static void get(JSON& j, const std::string& name, T& value)
+static void get(const JSON& j, const std::string& name, T& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
@@ -43,7 +43,7 @@ PainterBase::PainterBase(const std::string& params, int x, int y, int w, int h)
 	if (delay == 0 || step > limit) step = limit;
 }
 
-void RecanglePainter::draw(Graphics& graphics)
+void RecanglePainter::draw(HWND hWnd, Graphics& graphics)
 {
 	int z = thick / 2;
 	Pen pen(color, (REAL)thick);
@@ -56,9 +56,271 @@ void RecanglePainter::draw(Graphics& graphics)
 	graphics.DrawPolygon(&pen, points, 4);
 }
 
-ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h, const std::wstring& t)
-	: PainterBase(p), X(x), Y(y), W(w), H(h), text(t)
+ShadowButton::ShadowButton(ShadowPainter& owner, const JSON& json, const JSON& j)
+	: m_owner(owner)
 {
+	get(json, "buttonBorderColor", borderColor);
+	get(json, "buttonBackColor", backColor);
+	get(json, "buttonMargin", margin);
+	get(json, "buttonPadding", padding);
+	get(json, "buttonThickness", thick);
+	get(json, "buttonTransparency", trans);
+	get(json, "buttonFontName", fontName);
+	get(json, "buttonFontSize", fontSize);
+	get(json, "buttonFontColor", fontColor);
+
+	get(j, "title", title);
+	get(j, "margin", margin);
+	get(j, "padding", padding);
+	get(j, "eventName", eventName);
+	get(j, "eventData", eventData);
+	get(j, "thickness", thick);
+	get(j, "transparency", trans);
+	get(j, "fontName", fontName);
+	get(j, "fontSize", fontSize);
+	get(j, "fontColor", fontColor);
+	get(j, "backColor", backColor);
+	get(j, "borderColor", borderColor);
+	eventData = title;
+}
+
+ShadowButton::~ShadowButton()
+{
+	SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)nullptr);
+	ShowWindow(m_hWnd, SW_HIDE);
+	DestroyWindow(m_hWnd);
+}
+
+RectF ShadowButton::calculate(Graphics& graphics, const RectF& rect)
+{
+	FontFamily fontFamily(fontName.c_str());
+	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
+	StringFormat format;
+	format.SetAlignment(StringAlignment::StringAlignmentCenter);
+	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+	Gdiplus::RectF result;
+	graphics.MeasureString((WCHAR*)title.c_str(), (int)title.size(), &font, rect, &format, &result);
+	REAL delta = REAL(margin + thick + padding) * 2;
+	result.Width += delta + 2;
+	result.Height += delta + 2;
+	return result;
+}
+
+void ShadowButton::resize(REAL x, REAL y, REAL w, REAL h)
+{
+	this->x = x;
+	this->y = y;
+	this->w = w;
+	this->h = h;
+}
+
+static Color makeTransparent(const Color& color, int trans) {
+	return Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
+}
+
+void ShadowButton::draw(Graphics& graphics)
+{
+	if (hover || pressed) {
+		borderColor = makeTransparent(borderColor, 255);
+		fontColor = makeTransparent(fontColor, 255);
+		backColor = makeTransparent(backColor, 255);
+	}
+	else {
+		borderColor = makeTransparent(borderColor, trans);
+		fontColor = makeTransparent(fontColor, trans);
+		backColor = makeTransparent(backColor, trans);
+	}
+
+	Color backColor = this->backColor;
+	if (pressed) backColor = Color(255, backColor.GetRed() * 0.8, backColor.GetGreen() * 0.8, backColor.GetBlue() * 0.8);
+	SolidBrush brush(backColor);
+	GraphicsPath path;
+	path.AddRectangle(Rect(margin, margin, w - margin * 2, h - margin * 2));
+	graphics.FillPath(&brush, &path);
+
+	Pen pen(borderColor, (REAL)thick);
+	graphics.DrawPath(&pen, &path);
+
+	SolidBrush textBrush(fontColor);
+	FontFamily fontFamily(fontName.c_str());
+	Font font(&fontFamily, fontSize, FontStyleRegular, UnitPoint);
+	StringFormat format;
+	format.SetAlignment(StringAlignment::StringAlignmentCenter);
+	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
+
+	REAL delta = REAL(margin + thick + padding);
+	RectF titleRect((REAL)delta, (REAL)delta, REAL(w - delta * 2), REAL(h - delta * 2));
+	graphics.DrawString((WCHAR*)title.c_str(), (int)title.size(), &font, titleRect, &format, &textBrush);
+}
+
+LRESULT ShadowButton::repaint(HWND hWnd)
+{
+	GgiPlusToken::Init();
+	Bitmap bitmap(w, h, PixelFormat32bppARGB);
+	Graphics graphics(&bitmap);
+	graphics.Clear(Color::Transparent);
+	graphics.SetCompositingQuality(CompositingQuality::CompositingQualityHighQuality);
+	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
+	graphics.SetTextRenderingHint(TextRenderingHint::TextRenderingHintAntiAlias);
+	draw(graphics);
+
+	//Инициализируем составляющие временного DC, в который будет отрисована маска
+	auto hDC = GetDC(hWnd);
+	auto hCDC = CreateCompatibleDC(hDC);
+
+	LPVOID bits;
+	BITMAPINFO bi = {};
+	bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bi.bmiHeader.biBitCount = 32;
+	bi.bmiHeader.biCompression = BI_RGB;
+	bi.bmiHeader.biWidth = w;
+	bi.bmiHeader.biHeight = h;
+	bi.bmiHeader.biPlanes = 1;
+	auto hBitmap = CreateDIBSection(hDC, &bi, DIB_RGB_COLORS, &bits, NULL, 0);
+	if (!hBitmap) return -1;
+
+	SelectObject(hCDC, hBitmap);
+	//Создаем объект Graphics на основе контекста окна
+	Graphics window(hCDC);
+	//Рисуем маску на окне
+	window.DrawImage(&bitmap, 0, 0, w, h);
+
+	//В параметрах ULW определяем, что в качестве значения полупрозрачности будет использоваться
+	//альфа-компонент пикселей исходного изображения
+	BLENDFUNCTION bf = {};
+	bf.AlphaFormat = AC_SRC_ALPHA;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.SourceConstantAlpha = 255;
+
+	//Применяем отрисованную маску с альфой к окну
+	RECT rect;
+	GetWindowRect(hWnd, &rect);
+	SIZE size = { w, h };
+	POINT ptDst = { rect.left, rect.top };
+	POINT ptSrc = { 0, 0 };
+	UpdateLayeredWindow(hWnd, hDC, &ptDst, &size, hCDC, &ptSrc, 0, &bf, ULW_ALPHA);
+
+	DeleteObject(hBitmap);
+	DeleteDC(hCDC);
+	ReleaseDC(hWnd, hDC);
+	return 0;
+}
+
+static void TrackMouse(HWND hWnd)
+{
+	TRACKMOUSEEVENT csTME{ 0 };
+	csTME.cbSize = sizeof(csTME);
+	csTME.dwFlags = TME_LEAVE | TME_HOVER;
+	csTME.hwndTrack = hWnd;
+	csTME.dwHoverTime = 10;
+	::TrackMouseEvent(&csTME);
+}
+
+void ShadowButton::onMouseDown(HWND hWnd)
+{
+	hover = true;
+	pressed = true;
+	repaint(hWnd);
+	TrackMouse(hWnd);
+}
+
+void ShadowButton::onMouseMove(HWND hWnd)
+{
+	TrackMouse(hWnd);
+}
+
+void ShadowButton::onMouseUp(HWND hWnd)
+{
+	if (pressed)
+		m_owner.hide(eventName, eventData);
+}
+
+void ShadowButton::onMouseHover(HWND hWnd)
+{
+	hover = true;
+	repaint(hWnd);
+}
+
+void ShadowButton::onMouseLeave(HWND hWnd)
+{
+	pressed = false;
+	hover = false;
+	repaint(hWnd);
+}
+
+static LRESULT CALLBACK ButtonWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	ShadowButton* btn = nullptr;
+	switch (uMsg)
+	{
+	case WM_NCCREATE: {
+		LPCREATESTRUCT lpcp = (LPCREATESTRUCT)lParam;
+		lpcp->style &= (~WS_CAPTION);
+		lpcp->style &= (~WS_BORDER);
+		SetWindowLong(hWnd, GWL_STYLE, lpcp->style);
+		return TRUE;
+	}
+	case WM_CREATE:
+		return ((ShadowButton*)((CREATESTRUCT*)lParam)->lpCreateParams)->repaint(hWnd);
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_MOUSEMOVE:
+	case WM_MOUSEHOVER:
+	case WM_MOUSELEAVE:
+		return ShadowButton::process(hWnd, uMsg, wParam, lParam);
+	default:
+		return DefWindowProc(hWnd, uMsg, wParam, lParam);
+	}
+}
+
+LRESULT ShadowButton::process(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	auto btn = (ShadowButton*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	if (btn) {
+		switch (uMsg) {
+		case WM_LBUTTONDOWN:
+			btn->onMouseDown(hWnd);
+			break;
+		case WM_LBUTTONUP:
+			btn->onMouseUp(hWnd);
+			break;
+		case WM_MOUSEMOVE:
+			btn->onMouseMove(hWnd);
+			break;
+		case WM_MOUSEHOVER:
+			btn->onMouseHover(hWnd);
+			break;
+		case WM_MOUSELEAVE:
+			btn->onMouseLeave(hWnd);
+			break;
+		}
+	}
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+void ShadowButton::create(HWND hParent)
+{
+	const LPCWSTR name = L"VanessaShadowButton";
+
+	WNDCLASS wndClass = {};
+	wndClass.lpfnWndProc = ButtonWndProc;
+	wndClass.hInstance = hModule;
+	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	wndClass.lpszClassName = name;
+	RegisterClass(&wndClass);
+
+	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
+	m_hWnd = CreateWindowEx(dwExStyle, name, NULL, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
+	SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
+	ShowWindow(m_hWnd, SW_SHOWNOACTIVATE);
+	UpdateWindow(m_hWnd);
+}
+
+ShadowPainter::ShadowPainter(AddInNative& addin, const std::string& p, int x, int y, int w, int h, const std::wstring& t)
+	: PainterBase(p), X(x), Y(y), W(w), H(h), text(t), addin(addin)
+{
+	delay = 0;
 	MONITORINFO mi{ 0 };
 	mi.cbSize = sizeof(MONITORINFO);
 	RECT rect{ x, y, x + w, y + h };
@@ -75,10 +337,31 @@ ShadowPainter::ShadowPainter(const std::string& p, int x, int y, int w, int h, c
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
 	if (text.empty()) get(j, "text", text);
+	eventData = text;
+
+	JSON btns = j["buttons"];
+	if (btns.is_array()) {
+		for (auto& b : btns) {
+			buttons.emplace_back(new ShadowButton(*this, j, b));
+		}
+	}
 }
 
-void ShadowPainter::draw(Graphics& graphics)
+void ShadowPainter::onClick()
 {
+	hide(eventName, eventData);
+}
+
+void ShadowPainter::hide(const std::wstring eventName, const std::wstring eventData)
+{
+	addin.ExternalEvent((char16_t*)eventName.c_str(), (char16_t*)eventData.c_str());
+	PostQuitMessage(0);
+}
+
+void ShadowPainter::draw(HWND hWnd, Graphics& graphics)
+{
+	m_hWnd = hWnd;
+
 	int xx, yy;
 	REAL x1, x2, x3, y1, y2, y3;
 	Region screen(Rect(0, 0, w, h));
@@ -113,9 +396,33 @@ void ShadowPainter::draw(Graphics& graphics)
 	StringFormat format;
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
-	RectF rect((REAL)xx, (REAL)yy, (REAL)ww, (REAL)hh), r;
-	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
-	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, r, &format, &textBrush);
+	RectF rect((REAL)xx, (REAL)yy, (REAL)ww, (REAL)hh), textRect;
+	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &textRect);
+
+	RectF r = textRect;
+	REAL btnWidth = 0, btnHeight = 0;
+	for (auto& btn : buttons) {
+		auto btnRect = btn->calculate(graphics, rect);
+		btnWidth = max(btnWidth, btnRect.Width);
+		btnHeight = max(btnHeight, btnRect.Height);
+	}
+
+	REAL fullWidth = btnWidth * buttons.size();
+	REAL btnLeft = textRect.X + (textRect.Width / 2) - (fullWidth / 2);
+	REAL btnTop = textRect.Y + textRect.Height - (btnHeight / 2);
+	for (auto& btn : buttons) {
+		btn->resize(btnLeft, btnTop, btnWidth, btnHeight);
+		btnLeft += btnWidth;
+		btn->create(hWnd);
+	}
+
+	r.X -= (fullWidth - textRect.Width) / 2;
+	r.Y -= btnHeight / 2;
+	r.Width = fullWidth;
+	r.Height += btnHeight;
+	textRect.Y = r.Y;
+
+	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, textRect, &format, &textBrush);
 
 	switch (pos) {
 	case AP::L: x3 = r.X; y3 = r.Y + r.Height / 2; x2 = x1; y2 = y3; break;
@@ -160,7 +467,7 @@ SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h, con
 	this->h += 2 * tailLength;
 }
 
-void SpeechBubble::draw(Graphics& graphics)
+void SpeechBubble::draw(HWND hWnd, Graphics& graphics)
 {
 	SolidBrush brush(background);
 	Pen pen(color, (REAL)thick * 2);
@@ -278,7 +585,7 @@ SpeechRect::SpeechRect(const std::string& p, int x, int y, const std::wstring& t
 	this->h = max(y, Y + H) + delta * 4;
 }
 
-void SpeechRect::draw(Graphics& graphics)
+void SpeechRect::draw(HWND hWnd, Graphics& graphics)
 {
 	auto gstate = graphics.Save();
 	graphics.TranslateTransform(dx - x, dy - y);
@@ -319,7 +626,7 @@ void SpeechRect::draw(Graphics& graphics)
 	graphics.Restore(gstate);
 }
 
-void EllipsePainter::draw(Graphics& graphics)
+void EllipsePainter::draw(HWND hWnd, Graphics& graphics)
 {
 	Pen pen(color, (REAL)thick);
 	graphics.DrawEllipse(&pen, thick, thick, w - 2 * thick, h - 2 * thick);
@@ -352,7 +659,7 @@ BezierPainter::BezierPainter(const std::string& params, const std::string& text)
 	}
 }
 
-void BezierPainter::draw(Graphics& graphics)
+void BezierPainter::draw(HWND hWnd, Graphics& graphics)
 {
 	REAL z = (REAL)thick;
 	Pen pen(color, z);
@@ -369,7 +676,7 @@ void BezierPainter::draw(Graphics& graphics)
 	graphics.DrawBeziers(&pen, p.data(), (INT)p.size());
 }
 
-void ArrowPainter::draw(Graphics& graphics)
+void ArrowPainter::draw(HWND hWnd, Graphics& graphics)
 {
 	REAL z = (REAL)thick;
 	Pen pen(color, z);
@@ -416,7 +723,7 @@ TextLabel::TextLabel(const std::string& p, int x, int y, const std::wstring& t)
 	this->y = y - h / 2;
 }
 
-void TextLabel::draw(Graphics& graphics)
+void TextLabel::draw(HWND hWnd, Graphics& graphics)
 {
 	SolidBrush textBrush(fontColor);
 	FontFamily fontFamily(fontName.c_str());
@@ -438,7 +745,7 @@ LRESULT PainterBase::repaint(HWND hWnd)
 	graphics.SetCompositingQuality(CompositingQuality::CompositingQualityHighQuality);
 	graphics.SetSmoothingMode(SmoothingMode::SmoothingModeAntiAlias);
 	graphics.SetTextRenderingHint(TextRenderingHint::TextRenderingHintAntiAlias);
-	draw(graphics);
+	draw(hWnd, graphics);
 
 	if (delay) {
 		if (step >= limit)
@@ -497,8 +804,11 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		SetWindowLong(hWnd, GWL_STYLE, lpcp->style);
 		return TRUE;
 	}
-	case WM_CREATE:
-		return ((PainterBase*)((CREATESTRUCT*)lParam)->lpCreateParams)->repaint(hWnd);
+	case WM_CREATE: {
+		auto painter = (PainterBase*)((CREATESTRUCT*)lParam)->lpCreateParams;
+		painter->init(hWnd);
+		return painter->repaint(hWnd);
+	}
 	case WM_TIMER:
 		switch (wParam) {
 		case ID_TIMER_REPAINT:
@@ -510,6 +820,11 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 			SendMessage(hWnd, WM_DESTROY, 0, 0);
 			break;
 		}
+		return 0;
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+		((PainterBase*)GetWindowLongPtr(hWnd, GWLP_USERDATA))->onClick();
 		return 0;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -531,6 +846,26 @@ void PainterBase::create()
 	RegisterClass(&wndClass);
 
 	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT;
+	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
+	if (delay) SetTimer(hWnd, ID_TIMER_REPAINT, delay, NULL);
+	SetTimer(hWnd, ID_TIMER_TIMEOUT, duration, NULL);
+	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
+	UpdateWindow(hWnd);
+}
+
+void ShadowPainter::create()
+{
+	LPCWSTR name = L"VanessaShadowEffect";
+	WNDCLASS wndClass = {};
+	wndClass.lpfnWndProc = PainterWndProc;
+	wndClass.hInstance = hModule;
+	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	wndClass.lpszClassName = name;
+	RegisterClass(&wndClass);
+
+	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
 	HWND hWnd = CreateWindowEx(dwExStyle, name, name, WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	if (delay) SetTimer(hWnd, ID_TIMER_REPAINT, delay, NULL);
