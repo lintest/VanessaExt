@@ -36,11 +36,8 @@ EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std
 	JSON j = JSON::parse(p);
 	get(j, "color", color);
 	get(j, "padding", padding);
-	get(j, "duration", duration);
 	get(j, "eventName", eventName);
 	get(j, "eventData", eventData);
-	get(j, "frameCount", limit);
-	get(j, "frameDelay", delay);
 	get(j, "thickness", thick);
 	get(j, "transparency", trans);
 	get(j, "fontName", fontName);
