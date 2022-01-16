@@ -18,12 +18,8 @@ private:
 	int buttonTextWidth = 0;
 	Color color = { 200, 50, 50 };
 	int x = 0, y = 0, w = 0, h = 0;
-	int duration = 5000;
 	int trans = 127;
-	int delay = 0;
 	int thick = 4;
-	int limit = 50;
-	int step = 10;
 	int padding = 4;
 	REAL fontSize = 12;
 	Color background = Color::White;
