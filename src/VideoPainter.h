@@ -137,7 +137,7 @@ public:
 	virtual void draw(HWND hWnd, Graphics& graphics) override;
 	virtual void create() override;
 	virtual void onClick() override;
-	void hide(const std::wstring eventName, const std::wstring eventData);
+	void hide(const std::wstring& eventName, const std::wstring& eventData);
 };
 
 class SpeechBubble

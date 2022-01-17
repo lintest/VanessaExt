@@ -149,7 +149,8 @@ void ShadowButton::draw(Graphics& graphics)
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
 
 	REAL delta = REAL(margin + thick + padding);
-	RectF titleRect((REAL)delta, (REAL)delta, REAL(w - delta * 2), REAL(h - delta * 2));
+	REAL offset = pressed ? REAL(h - delta * 2) / 12 : 0;
+	RectF titleRect(delta, delta + offset, REAL(w) - delta * 2, REAL(h) - delta * 2);
 	graphics.DrawString((WCHAR*)title.c_str(), (int)title.size(), &font, titleRect, &format, &textBrush);
 }
 
@@ -352,7 +353,7 @@ void ShadowPainter::onClick()
 	hide(eventName, eventData);
 }
 
-void ShadowPainter::hide(const std::wstring eventName, const std::wstring eventData)
+void ShadowPainter::hide(const std::wstring& eventName, const std::wstring& eventData)
 {
 	addin.ExternalEvent((char16_t*)eventName.c_str(), (char16_t*)eventData.c_str());
 	PostQuitMessage(0);
