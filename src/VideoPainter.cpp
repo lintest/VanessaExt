@@ -338,7 +338,13 @@ ShadowPainter::ShadowPainter(AddInNative& addin, const std::string& p, int x, in
 	get(j, "fontName", fontName);
 	get(j, "fontSize", fontSize);
 	if (text.empty()) get(j, "text", text);
+
 	eventData = text;
+	timeoutData = text;
+	get(j, "eventName", eventName);
+	get(j, "eventData", eventData);
+	get(j, "timeoutName", timeoutName);
+	get(j, "timeoutData", timeoutData);
 
 	JSON btns = j["buttons"];
 	if (btns.is_array()) {
@@ -351,6 +357,11 @@ ShadowPainter::ShadowPainter(AddInNative& addin, const std::string& p, int x, in
 void ShadowPainter::onClick()
 {
 	hide(eventName, eventData);
+}
+
+void ShadowPainter::onTimeout()
+{
+	hide(timeoutName, timeoutData);
 }
 
 void ShadowPainter::hide(const std::wstring& eventName, const std::wstring& eventData)
@@ -810,18 +821,21 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 		painter->init(hWnd);
 		return painter->repaint(hWnd);
 	}
-	case WM_TIMER:
+	case WM_TIMER: {
+		auto painter = (PainterBase*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 		switch (wParam) {
 		case ID_TIMER_REPAINT:
-			((PainterBase*)GetWindowLongPtr(hWnd, GWLP_USERDATA))->repaint(hWnd);
+			painter->repaint(hWnd);
 			break;
 		case ID_TIMER_TIMEOUT:
 			KillTimer(hWnd, ID_TIMER_REPAINT);
 			KillTimer(hWnd, ID_TIMER_TIMEOUT);
+			painter->onTimeout();
 			SendMessage(hWnd, WM_DESTROY, 0, 0);
 			break;
 		}
 		return 0;
+	}
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:

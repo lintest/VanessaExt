@@ -21,6 +21,7 @@ public:
 	virtual LRESULT repaint(HWND hWnd);
 	virtual void draw(HWND hWnd, Graphics& graphics) { }
 	virtual void init(HWND hWnd) { }
+	virtual void onTimeout() { }
 	virtual void onClick() { }
 	virtual void create();
 	void run();
@@ -125,6 +126,8 @@ private:
 	REAL fontSize = 24;
 	std::wstring eventName = L"SHADOW_EFFECT";
 	std::wstring eventData;
+	std::wstring timeoutName = L"SHADOW_TIMEOUT";
+	std::wstring timeoutData;
 	std::wstring fontName = L"Calibri";
 	std::wstring text;
 	AP pos = AP::T;
@@ -137,6 +140,7 @@ public:
 	virtual void draw(HWND hWnd, Graphics& graphics) override;
 	virtual void create() override;
 	virtual void onClick() override;
+	virtual void onTimeout() override;
 	void hide(const std::wstring& eventName, const std::wstring& eventData);
 };
 
