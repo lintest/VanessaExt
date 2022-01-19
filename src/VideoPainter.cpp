@@ -341,6 +341,7 @@ ShadowPainter::ShadowPainter(AddInNative& addin, const std::string& p, int x, in
 
 	eventData = text;
 	timeoutData = text;
+	get(j, "margin", margin);
 	get(j, "eventName", eventName);
 	get(j, "eventData", eventData);
 	get(j, "timeoutName", timeoutName);
@@ -412,22 +413,28 @@ void ShadowPainter::draw(HWND hWnd, Graphics& graphics)
 	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &textRect);
 
 	RectF r = textRect;
-	REAL btnWidth = 0, btnHeight = 0;
+	REAL btnWidth = 0;
+	REAL btnHeight = 0;
 	for (auto& btn : buttons) {
 		auto btnRect = btn->calculate(graphics, rect);
 		btnWidth = max(btnWidth, btnRect.Width);
 		btnHeight = max(btnHeight, btnRect.Height);
 	}
 
-	REAL fullWidth = btnWidth * buttons.size();
-	REAL btnLeft = textRect.X + (textRect.Width / 2) - (fullWidth / 2);
-	REAL btnTop = textRect.Y + textRect.Height - (btnHeight / 2);
+	REAL btnsWidth = btnWidth * buttons.size();
+	REAL btnLeft = textRect.X + (textRect.Width / 2) - (btnsWidth / 2);
+	REAL btnTop = textRect.Y + textRect.Height - (btnHeight / 2) + margin;
 	for (auto& btn : buttons) {
 		btn->resize(btnLeft, btnTop, btnWidth, btnHeight);
 		btnLeft += btnWidth;
 		btn->create(hWnd);
 	}
 
+	if (buttons.size())	{
+		btnHeight += margin;
+	}
+
+	REAL fullWidth = max(btnsWidth, textRect.Width);
 	r.X -= (fullWidth - textRect.Width) / 2;
 	r.Y -= btnHeight / 2;
 	r.Width = fullWidth;
@@ -437,8 +444,8 @@ void ShadowPainter::draw(HWND hWnd, Graphics& graphics)
 	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, textRect, &format, &textBrush);
 
 	switch (pos) {
-	case AP::L: x3 = r.X; y3 = r.Y + r.Height / 2; x2 = x1; y2 = y3; break;
-	case AP::R: x3 = r.X + r.Width; y3 = r.Y + r.Height / 2; x2 = x1; y2 = y3; break;
+	case AP::L: x3 = textRect.X; y3 = r.Y + textRect.Height / 2; x2 = x1; y2 = y3; break;
+	case AP::R: x3 = textRect.X + textRect.Width; y3 = r.Y + textRect.Height / 2; x2 = x1; y2 = y3; break;
 	case AP::T: x3 = r.X + r.Width / 2; y3 = r.Y; x2 = x3; y2 = y1; break;
 	case AP::B: x3 = r.X + r.Width / 2; y3 = r.Y + r.Height; x2 = x3; y2 = y1; break;
 	}
