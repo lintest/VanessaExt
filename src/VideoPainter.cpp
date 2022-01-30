@@ -68,6 +68,7 @@ ShadowButton::ShadowButton(ShadowPainter& owner, const JSON& json, const JSON& j
 	get(json, "buttonFontName", fontName);
 	get(json, "buttonFontSize", fontSize);
 	get(json, "buttonFontColor", fontColor);
+	get(json, "buttonRadius", radius);
 
 	get(j, "title", title);
 	get(j, "margin", margin);
@@ -81,6 +82,7 @@ ShadowButton::ShadowButton(ShadowPainter& owner, const JSON& json, const JSON& j
 	get(j, "fontColor", fontColor);
 	get(j, "backColor", backColor);
 	get(j, "borderColor", borderColor);
+	get(j, "radius", radius);
 	eventData = title;
 }
 
@@ -135,11 +137,33 @@ void ShadowButton::draw(Graphics& graphics)
 	if (pressed) backColor = Color(255, backColor.GetRed() * 0.8, backColor.GetGreen() * 0.8, backColor.GetBlue() * 0.8);
 	SolidBrush brush(backColor);
 	GraphicsPath path;
-	path.AddRectangle(Rect(margin, margin, w - margin * 2, h - margin * 2));
+
+	if (radius > -1 && radius < 1) {
+		path.AddRectangle(Rect(margin, margin, w - margin * 2, h - margin * 2));
+	}
+	else {
+		REAL R = (REAL)radius;
+		REAL X = REAL(margin);
+		REAL Y = REAL(margin);
+		REAL W = REAL(w - margin * 2);
+		REAL H = REAL(h - margin * 2);
+		if (R < 0 || R * 2 > min(W, H)) R = min(W, H) / 2;
+		path.AddLine(X + R, Y, X + W - R, Y);
+		path.AddArc(X + W - (R * 2), Y, R * 2, R * 2, 270, 90);
+		path.AddLine(X + W, Y + R, X + W, Y + H - R);
+		path.AddArc(X + W - (R * 2), Y + H - (R * 2), R * 2, R * 2, 0, 90);
+		path.AddLine(X + W - R, Y + H, X + R, Y + H);
+		path.AddArc(X, Y + H - (R * 2), R * 2, R * 2, 90, 90);
+		path.AddLine(X, Y + H - R, X, Y + R);
+		path.AddArc(X, Y, R * 2, R * 2, 180, 90);
+	}
+
 	graphics.FillPath(&brush, &path);
 
-	Pen pen(borderColor, (REAL)thick);
-	graphics.DrawPath(&pen, &path);
+	if (thick != 0) {
+		Pen pen(borderColor, (REAL)thick);
+		graphics.DrawPath(&pen, &path);
+	}
 
 	SolidBrush textBrush(fontColor);
 	FontFamily fontFamily(fontName.c_str());

@@ -87,6 +87,7 @@ private:
 	std::wstring eventData;
 	Color borderColor = { 200, 50, 50 };
 	int x = 0, y = 0, w = 0, h = 0;
+	int radius = -1;
 	int trans = 191;
 	int thick = 1;
 	int margin = 4;
