@@ -356,7 +356,7 @@ ShadowPainter::ShadowPainter(AddInNative& addin, const std::string& p, int x, in
 	Y -= rect.top;
 	this->x = rect.left;
 	this->y = rect.top;
-	this->w = rect.left + rect.right;
+	this->w = rect.right - rect.left;
 	this->h = rect.bottom - rect.top;
 	JSON j = JSON::parse(p);
 	get(j, "fontName", fontName);
@@ -406,8 +406,8 @@ void ShadowPainter::draw(HWND hWnd, Graphics& graphics)
 	SolidBrush brush(Color(color.GetAlpha(), 0, 0, 0));
 	graphics.FillRegion(&brush, &screen);
 
-	int ww = max(X, w - (X + W));
-	int hh = max(Y, h - (Y + H));
+	int ww = max(X - x, w - (X + W));
+	int hh = max(Y - y, h - (Y + H));
 	int d = 30;
 
 	if (ww * h < hh * w) {
