@@ -4608,6 +4608,16 @@ struct external_constructor<value_t::number_float>
         j.m_value = val;
         j.assert_invariant();
     }
+
+    template<typename BasicJsonType>
+    static void construct(BasicJsonType& j, const std::pair<double, std::string>& val) noexcept
+    {
+        j.m_value.destroy(j.m_type);
+        j.m_type = value_t::number_float;
+        j.m_value = val.first;
+        j.m_text = val.second;
+        j.assert_invariant();
+    }
 };
 
 template<>
@@ -4856,6 +4866,12 @@ template <
 void to_json(BasicJsonType& j, const T(&arr)[N]) // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 {
     external_constructor<value_t::array>::construct(j, arr);
+}
+
+template <typename BasicJsonType>
+void to_json(BasicJsonType& j, const std::pair<double, std::string>& p)
+{
+    external_constructor<value_t::number_float>::construct(j, p);
 }
 
 template < typename BasicJsonType, typename T1, typename T2, enable_if_t < std::is_constructible<BasicJsonType, T1>::value&& std::is_constructible<BasicJsonType, T2>::value, int > = 0 >
@@ -16386,7 +16402,10 @@ class serializer
 
             case value_t::number_float:
             {
-                dump_float(val.m_value.number_float);
+                if (val.m_text.empty())
+                    dump_float(val.m_value.number_float);
+                else 
+                    dump_escaped(val.m_text.c_str(), false);
                 return;
             }
 
@@ -18345,6 +18364,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
             case value_t::number_float:
             {
                 m_value = other.m_value.number_float;
+                m_text = other.m_text;
                 break;
             }
 
@@ -18396,6 +18416,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
         using std::swap;
         swap(m_type, other.m_type);
         swap(m_value, other.m_value);
+        m_text = other.m_text;
 
         set_parents();
         assert_invariant();
@@ -20991,6 +21012,9 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
 
     /// the value of the current element
     json_value m_value = {};
+
+    /// string for number types
+    std::string m_text;
 
 #if JSON_DIAGNOSTICS
     /// a pointer to a parent value (for debugging purposes)

@@ -780,26 +780,32 @@ namespace Gherkin {
 		return os;
 	}
 
-	static JSON str2dec(const std::string& text, double numb, double sign) {
+	static double str2dec(const std::string& text, double numb, double sign, std::stringstream& ss) {
 		double mult = 0.1;
 		for (auto it = text.begin(); it != text.end(); ++it) {
 			numb += (*it - '0') * mult;
 			mult *= 0.1;
+			ss << *it;
 		}
 		return numb * sign;
 	}
 
-	static JSON str2num(const std::string& text) {
+	static double str2num(const std::string& text, std::stringstream& ss) {
 		int64_t numb = 0, sign = 1;
 		for (auto it = text.begin(); it != text.end(); ++it) {
 			switch (*it) {
+			case '+':
+				break;
 			case '-':
+				ss << *it;
 				sign = -1;
 				break;
 			case ',':
 			case '.':
-				return str2dec(std::string(it + 1, text.end()), numb, sign);
+				ss << '.';
+				return str2dec(std::string(it + 1, text.end()), numb, sign, ss);
 			default:
+				ss << *it;
 				numb = numb * 10 + int64_t(*it - '0');
 			}
 		}
@@ -815,7 +821,10 @@ namespace Gherkin {
 
 		if (type == TokenType::Number) {
 			try {
-				json["text"] = str2num(text);
+				std::stringstream ss;
+				double number = str2num(text, ss);
+				std::pair<double, std::string> data(number, ss.str());
+				json["text"] = JSON(data);
 			}
 			catch (std::exception& e) {
 				json["error"] = e.what();
@@ -1432,7 +1441,7 @@ namespace Gherkin {
 	VariablesFile::operator JSON() const
 	{
 		JSON json;
-		set(json, "path", filepath);
+		set(json, "path", filepath.string());
 		set(json, "items", variables);
 		return json;
 	}
