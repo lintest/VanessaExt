@@ -791,6 +791,7 @@ namespace Gherkin {
 	}
 
 	static double str2num(const std::string& text, std::stringstream& ss) {
+		bool zeroPrefix = true;
 		int64_t numb = 0, sign = 1;
 		for (auto it = text.begin(); it != text.end(); ++it) {
 			switch (*it) {
@@ -802,10 +803,12 @@ namespace Gherkin {
 				break;
 			case ',':
 			case '.':
+				if (zeroPrefix) ss << '0';
 				ss << '.';
 				return str2dec(std::string(it + 1, text.end()), numb, sign, ss);
 			default:
 				ss << *it;
+				zeroPrefix = false;
 				numb = numb * 10 + int64_t(*it - '0');
 			}
 		}
