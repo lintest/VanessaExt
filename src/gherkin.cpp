@@ -900,8 +900,17 @@ namespace Gherkin {
 			switch (token.getType()) {
 				case TokenType::Operator: {
 					auto wstr = token.getWstr();
-					std::replace(wstr.begin(), wstr.end(), '-', '_');
-					ss << lower(wstr);
+					for (auto& ch : wstr) {
+						switch (ch) {
+							case L'.':
+								break;
+							case L'-':
+								ss << L'_';
+								break;
+							default:
+								ss << std::tolower(ch, locale_ru);
+						}
+					}
 				} break;
 				case TokenType::Symbol: {
 					if (token.getText() == "-") ss << L'_';

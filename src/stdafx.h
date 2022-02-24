@@ -47,3 +47,5 @@ std::string cp1251_to_utf8(const char* str);
 using JSON = nlohmann::json;
 
 constexpr auto PROCESS_FINISHED = u"PROCESS_FINISHED";
+
+extern std::locale locale_ru;
