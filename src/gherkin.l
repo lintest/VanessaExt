@@ -51,9 +51,9 @@ new_line      \r?\n
 language      #\s*(?i)(language)\s*:\s*
 encoding      #\s*(?i)(encoding)\s*:\s*
 asterisk      \*
-operator      \w[\w\d\.\-]*
 number        -?(\d*[\.\,])?\d+
 date          \d+\.\d+\.\d+|\d+\/\d+\/\d+
+operator      \w[\w\d\.\-]*
 param_d       \"([^\\\"\n\r]|\\.)*\"
 param_a       `([^\\`\n\r]|\\.)*`
 param_b       <([^\\>\n\r]|\\.)*>

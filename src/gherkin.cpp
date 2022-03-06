@@ -86,7 +86,7 @@ namespace Gherkin {
 		if (!value.empty()) {
 			JSON js;
 			for (const auto& [i, v] : value)
-				js.push_back(JSON({ {"key", WC2MB(i)}, {"value", v } }));
+				js.push_back(JSON({ {"key", i.text}, {"value", v } }));
 
 			json[key] = js;
 		}
@@ -151,6 +151,13 @@ namespace Gherkin {
 		Exclude,
 		Unknown
 	};
+
+	bool GherkinTokenComparator::operator()(const GherkinToken& a, const GherkinToken& b) const {
+		if (a.getType() == b.getType())
+			return lower(a.getWstr()) < lower(b.getWstr());
+		else
+			return a.getType() < b.getType();
+	}
 
 	class GherkinFilter {
 	private:
@@ -709,12 +716,23 @@ namespace Gherkin {
 	{
 	}
 
+	bool GherkinToken::isParam() const
+	{
+		switch (type) {
+		case TokenType::Param:
+		case TokenType::Number:
+		case TokenType::Date:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	bool GherkinToken::replace(const GherkinParams& params)
 	{
 		bool changed = false;
-		if (type == TokenType::Param) {
-			auto key = lower(getWstr());
-			auto it = params.find(key);
+		if (isParam()) {
+			auto it = params.find(*this);
 			if (it != params.end()) {
 				*this = it->second;
 				changed = true;
@@ -732,7 +750,8 @@ namespace Gherkin {
 						ss << std::wstring(start, match.first);
 					start = match.second;
 					auto key = std::wstring(match.begin() + 1, match.end() - 1);
-					auto it = params.find(lower(key));
+					auto par = GherkinToken(TokenType::Param, WC2MB(key), key);
+					auto it = params.find(par);
 					if (it == params.end())
 						ss << match;
 					else {
@@ -1161,12 +1180,11 @@ namespace Gherkin {
 		auto s = source.begin();
 		auto t = target.begin();
 		for (; s != source.end() && t != target.end(); ++s, ++t) {
-			if (t->getType() == TokenType::Param) {
-				auto key = lower(t->getWstr());
-				if (params.count(key) == 0)
-					params.emplace(key, *s);
-				else
-					throw GherkinException("Duplicate param keys");
+			if (t->isParam()) {
+				if (params.count(*t) == 0)
+						params.emplace(*t, *s);
+					else
+						throw GherkinException("Duplicate param keys");
 			}
 		}
 	}
@@ -1604,19 +1622,17 @@ namespace Gherkin {
 		auto i = head.tokens.begin();
 		auto j = row.tokens.begin();
 		for (; i != head.tokens.end() && j != row.tokens.end(); ++i, ++j) {
-			auto key = lower(i->getWstr());
-			if (params.count(key)) {
+			if (params.count(*i)) {
 				throw GherkinException("Duplicate param keys");
 			}
-			if (j->getType() == TokenType::Param) {
-				auto value = lower(j->getWstr());
-				if (src.count(value)) {
-					auto& token = src.at(value);
-					params.emplace(key, token);
+			if (j->isParam()) {
+				if (src.count(*j)) {
+					auto& token = src.at(*j);
+					params.emplace(*i, token);
 					continue;
 				}
 			}
-			params.emplace(key, *j);
+			params.emplace(*i, *j);
 		}
 		return params;
 	}

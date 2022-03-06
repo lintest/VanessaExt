@@ -64,6 +64,10 @@ namespace Gherkin {
 	class GherkinStep;
 	class StringLine;
 
+	struct GherkinTokenComparator {
+		bool operator()(const GherkinToken& a, const GherkinToken& b) const;
+	};
+
 	using GherkinSnippet = std::wstring;
 	using StringLines = std::vector<StringLine>;
 	using GherkinTokens = std::vector<GherkinToken>;
@@ -75,7 +79,7 @@ namespace Gherkin {
 	using GherkinMultilines = std::vector<GherkinMultiline>;
 	using ScenarioRef = std::pair<const GherkinDocument&, const GherkinDefinition&>;
 	using ScenarioMap = std::map<GherkinSnippet, ExportScenario>;
-	using GherkinParams = std::map<std::wstring, GherkinToken>;
+	using GherkinParams = std::map<GherkinToken, GherkinToken, GherkinTokenComparator>;
 	using BoostPath = boost::filesystem::path;
 	using BoostPaths = std::vector<BoostPath>;
 	using FileInfo = std::pair<size_t, time_t>;
@@ -166,6 +170,8 @@ namespace Gherkin {
 			: type(type), column(0), symbol(0) {}
 		GherkinToken(const GherkinToken& src)
 			: type(src.type), wstr(src.wstr), text(src.text), column(src.column), symbol(src.symbol) {}
+		GherkinToken(TokenType type, const std::string& text, const std::wstring& wstr)
+			: type(type), column(0), symbol(0), text(text), wstr(wstr) {}
 		GherkinToken(GherkinLexer& lexer, TokenType type, char ch);
 		GherkinToken(GherkinLexer& lexer, std::wstring wstr);
 		GherkinToken& operator=(const GherkinToken& src);
@@ -174,6 +180,7 @@ namespace Gherkin {
 		std::string getText() const { return text; }
 		std::wstring getWstr() const { return wstr; }
 		TokenType getType() const { return type; }
+		bool isParam() const;
 		operator JSON() const;
 	};
 
