@@ -308,10 +308,10 @@ WindowsControl::WindowsControl() {
 		[&](VH id) { this->result = GetScaleFactor(id); }, { {0, (int64_t)0} }
 	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
-		[&](VH id) { this->result = GetElements(id); }
+		[&](VH id, VH level) { this->result = GetElements(id, level); }, { {1, (int64_t)MAXINT} }
 	);
 	AddFunction(u"GetElementById", u"ЭлементПоИдентификатору",
-		[&](VH id) { this->result = WinUIAuto().ElementById(id); }
+		[&](VH id, VH level) { this->result = WinUIAuto().ElementById(id); }
 	);
 	AddFunction(u"GetElementFromPoint", u"ЭлементПоКоординатам",
 		[&](VH x, VH y) { this->result = WinUIAuto().ElementFromPoint(x, y); }
@@ -483,11 +483,11 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 	return pid;
 }
 
-std::string WindowsControl::GetElements(const VH& id)
+std::string WindowsControl::GetElements(const VH& id, int64_t level)
 {
 	switch (id.type()) {
-	case VTYPE_PWSTR: return WinUIAuto().GetElements((std::string)id);
-	default: return WinUIAuto().GetElements((DWORD)(int64_t)id);
+	case VTYPE_PWSTR: return WinUIAuto().GetElements((std::string)id, level);
+	default: return WinUIAuto().GetElements((DWORD)(int64_t)id, level);
 	};
 }
 

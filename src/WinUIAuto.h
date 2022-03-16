@@ -43,7 +43,7 @@ private:
 	HRESULT find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element);
 	HRESULT find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element);
 	bool isWindow(IUIAutomationElement* element, JSON& json);
-	JSON info(IUIAutomationElement* element, UICacheRequest& cache, bool subtree = false);
+	JSON info(IUIAutomationElement* element, UICacheRequest& cache, int64_t level = -1);
 	JSON info(IUIAutomationElementArray* elements, UICacheRequest& cache);
 	UIAutoUniquePtr<IUIAutomation> pAutomation;
 	HRESULT hInitialize;
@@ -51,8 +51,8 @@ public:
 	WinUIAuto();
 	virtual ~WinUIAuto();
 	std::string GetFocusedElement();
-	std::string GetElements(DWORD pid);
-	std::string GetElements(const std::string &id);
+	std::string GetElements(DWORD pid, int64_t level);
+	std::string GetElements(const std::string &id, int64_t level);
 	std::string ElementById(const std::string& id);
 	std::string ElementFromPoint(int x, int y);
 	std::string FindElements(const std::string& arg);

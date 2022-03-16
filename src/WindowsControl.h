@@ -12,7 +12,7 @@ class WindowsControl : public BaseHelper
 private:
 	HWND hProcessMonitor = NULL;
 	void StartProcessMonitoring();
-	std::string GetElements(const VH& id);
+	std::string GetElements(const VH& id, int64_t level);
 	int64_t GetScaleFactor(int64_t window);
 public:
 	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
