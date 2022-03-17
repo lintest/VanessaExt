@@ -394,7 +394,7 @@ JSON WinUIAuto::info(IUIAutomationElement* element, UICacheRequest& cache, int64
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
 	pAutomation->get_ControlViewWalker(UI(walker));
 	if (level > 0) {
-		int sublevel = level - 1;
+		int64_t sublevel = level - 1;
 		UIAutoUniquePtr<IUIAutomationElement> child;
 		walker->GetFirstChildElementBuildCache(element, cache, UI(child));
 		while (child) {
@@ -402,7 +402,7 @@ JSON WinUIAuto::info(IUIAutomationElement* element, UICacheRequest& cache, int64
 			walker->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
 		}
 	}
-	else {
+	else if (level < 0) {
 		if (!isWindow(element, json)) {
 			UIAutoUniquePtr<IUIAutomationElement> parent;
 			walker->GetParentElement(element, UI(parent));
