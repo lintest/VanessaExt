@@ -8,6 +8,7 @@
 /build
 /bind
 /bin64
+/bin32
 /bin
 /boost_*
 /libgit2-*
