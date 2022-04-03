@@ -240,9 +240,9 @@ namespace ClickEffect {
 
 	static HHOOK hMouseHook = NULL;
 
-	LRESULT CALLBACK HookProc(int code, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam)
 	{
-		if (code >= 0) {
+		if (nCode == HC_ACTION) {
 			switch (wParam) {
 			case WM_RBUTTONUP:
 			case WM_LBUTTONUP:
@@ -251,7 +251,7 @@ namespace ClickEffect {
 				break;
 			}
 		}
-		return CallNextHookEx(hMouseHook, code, wParam, lParam);
+		return CallNextHookEx(hMouseHook, nCode, wParam, lParam);
 	}
 
 	void Hooker::Create()

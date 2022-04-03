@@ -207,6 +207,12 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"StopClickVisualization", u"ПрекратитьВизуализациюНажатияМыши",
 		[&]() { ClickEffect::Unhook(); }
 	);
+	AddProcedure(u"StartEventMonitoring", u"НачатьМониторингСобытий",
+		[&]() { UserAutomation::Hook(this); }
+	);
+	AddProcedure(u"StopEventMonitoring", u"ПрекратитьМониторингСобытий",
+		[&]() { UserAutomation::Unhook(); }
+	);
 	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
 		[&](VH keys) { this->result = KeyboardHook::Hook(*this, keys); }
 	);
@@ -311,37 +317,37 @@ WindowsControl::WindowsControl() {
 		[&](VH id, VH level) { this->result = GetElements(id, level); }, { {1, (int64_t)MAXINT} }
 	);
 	AddFunction(u"GetElementById", u"ЭлементПоИдентификатору",
-		[&](VH id, VH level) { this->result = WinUIAuto().ElementById(id); }
+		[&](VH id, VH level) { this->result = getUIAuto().ElementById(id); }
 	);
 	AddFunction(u"GetElementFromPoint", u"ЭлементПоКоординатам",
-		[&](VH x, VH y) { this->result = WinUIAuto().ElementFromPoint(x, y); }
+		[&](VH x, VH y) { this->result = getUIAuto().ElementFromPoint(x, y); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
-		[&](VH filter) { this->result = WinUIAuto().FindElements(filter); }
+		[&](VH filter) { this->result = getUIAuto().FindElements(filter); }
 	);
 	AddFunction(u"InvokeElement", u"ВызватьЭлемент",
-		[&](VH id) { this->result = WinUIAuto().InvokeElement(id); }
+		[&](VH id) { this->result = getUIAuto().InvokeElement(id); }
 	);
 	AddFunction(u"FocusElement", u"АктивироватьЭлемент",
-		[&](VH id) { this->result = WinUIAuto().FocusElement(id); }
+		[&](VH id) { this->result = getUIAuto().FocusElement(id); }
 	);
 	AddFunction(u"GetParentElement", u"ПолучитьРодителяЭлемента",
-		[&](VH id) { this->result = WinUIAuto().GetParentElement(id); }
+		[&](VH id) { this->result = getUIAuto().GetParentElement(id); }
 	);
 	AddFunction(u"GetNextElement", u"ПолучитьСледующийЭлемент",
-		[&](VH id) { this->result = WinUIAuto().GetNextElement(id); }
+		[&](VH id) { this->result = getUIAuto().GetNextElement(id); }
 	);
 	AddFunction(u"GetPreviousElement", u"ПолучитьПредыдущийЭлемент",
-		[&](VH id) { this->result = WinUIAuto().GetPreviousElement(id); }
+		[&](VH id) { this->result = getUIAuto().GetPreviousElement(id); }
 	);
 	AddFunction(u"GetElementValue", u"ПолучитьЗначениеЭлемента",
-		[&](VH id) { this->result = WinUIAuto().GetElementValue(id); }
+		[&](VH id) { this->result = getUIAuto().GetElementValue(id); }
 	);
 	AddFunction(u"SetElementValue", u"УстановитьЗначениеЭлемента",
-		[&](VH id, VH value) { this->result = WinUIAuto().SetElementValue(id, value); }
+		[&](VH id, VH value) { this->result = getUIAuto().SetElementValue(id, value); }
 	);
 	AddProperty(u"ActiveElement", u"АктивныйЭлемент",
-		[&](VH var) { var = WinUIAuto().GetFocusedElement(); }
+		[&](VH var) { var = getUIAuto().GetFocusedElement(); }
 	);
 #endif//_WINDOWS
 
@@ -486,8 +492,8 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 std::string WindowsControl::GetElements(const VH& id, int64_t level)
 {
 	switch (id.type()) {
-	case VTYPE_PWSTR: return WinUIAuto().GetElements((std::string)id, level);
-	default: return WinUIAuto().GetElements((DWORD)(int64_t)id, level);
+	case VTYPE_PWSTR: return getUIAuto().GetElements((std::string)id, level);
+	default: return getUIAuto().GetElements((DWORD)(int64_t)id, level);
 	};
 }
 
@@ -517,6 +523,14 @@ int64_t WindowsControl::GetScaleFactor(int64_t window)
 void WindowsControl::ExitCurrentProcess(int64_t status)
 {
 	ExitProcess((UINT)status);
+}
+
+WinUIAuto& WindowsControl::getUIAuto()
+{
+	if (!m_automation)
+		m_automation.reset(new WinUIAuto());
+
+	return *m_automation.get();
 }
 
 #else//_WINDOWS

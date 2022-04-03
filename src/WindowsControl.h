@@ -4,6 +4,10 @@
 #include "VideoPainter.h"
 #include "WebSocket.h"
 
+#ifdef _WINDOWS
+class WinUIAuto;
+#endif//_WINDOWS
+
 ///////////////////////////////////////////////////////////////////////////////
 // class WindowsControl
 class WindowsControl : public BaseHelper
@@ -14,8 +18,10 @@ private:
 	void StartProcessMonitoring();
 	std::string GetElements(const VH& id, int64_t level);
 	int64_t GetScaleFactor(int64_t window);
+	std::unique_ptr<WinUIAuto> m_automation;
 public:
 	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
+	WinUIAuto& getUIAuto();
 #endif//_WINDOWS
 
 private:
