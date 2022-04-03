@@ -783,7 +783,7 @@ namespace UserAutomation {
 		WinUIAuto automation;
 	public:
 		Hooker(AddInNative* addin): addin(*addin) {}
-		LRESULT event(WPARAM wParam, LPARAM lParam);
+		LRESULT onMouseEvent(WPARAM wParam, LPARAM lParam);
 		void create();
 	};
 
@@ -797,7 +797,7 @@ namespace UserAutomation {
 		return (Hooker*)lpParam;
 	}
 
-	LRESULT Hooker::event(WPARAM wParam, LPARAM lParam) {
+	LRESULT Hooker::onMouseEvent(WPARAM wParam, LPARAM lParam) {
 		POINT pt{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 		JSON json = {
 			{ "event", msg2str(wParam) },
@@ -809,14 +809,14 @@ namespace UserAutomation {
 		return 0L;
 	}
 
-	const UINT WM_AUTO_HOOK = WM_USER + 50;
+	const UINT WM_MOUSE_HOOK = WM_USER + 10;
 
 	LRESULT CALLBACK HookerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		switch (message)
 		{
-		case WM_AUTO_HOOK:
-			return getHooker(hWnd)->event(wParam, lParam);
+		case WM_MOUSE_HOOK:
+			return getHooker(hWnd)->onMouseEvent(wParam, lParam);
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			return 0;
@@ -842,17 +842,17 @@ namespace UserAutomation {
 
 	static HHOOK hMouseHook = NULL;
 
-	void onEvent(WPARAM wParam, LPARAM lParam)
+	void onMouseEvent(WPARAM wParam, LPARAM lParam)
 	{
 		auto hWnd = FindWindow(wsHookerName, NULL);
 		if (hWnd == NULL) return;
 		auto pStruct = (PMOUSEHOOKSTRUCT)lParam;
 		POINT pt = pStruct->pt;
 		ClientToScreen(pStruct->hwnd, &pt);
-		SendMessage(hWnd, WM_AUTO_HOOK, wParam, MAKELPARAM(pt.x, pt.y));
+		SendMessage(hWnd, WM_MOUSE_HOOK, wParam, MAKELPARAM(pt.x, pt.y));
 	}
 
-	LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 	{
 		if (nCode == HC_ACTION) {
 			switch (wParam) {
@@ -860,7 +860,7 @@ namespace UserAutomation {
 			case WM_LBUTTONDBLCLK:
 			case WM_RBUTTONUP:
 			case WM_RBUTTONDBLCLK:
-				onEvent(wParam, lParam);
+				onMouseEvent(wParam, lParam);
 				break;
 			}
 		}
@@ -878,7 +878,7 @@ namespace UserAutomation {
 		HWND hWnd = CreateWindow(wsHookerName, NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hModule, 0);
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
-		hMouseHook = SetWindowsHookEx(WH_MOUSE, &HookProc, hModule, NULL);
+		hMouseHook = SetWindowsHookEx(WH_MOUSE, &MouseHookProc, hModule, NULL);
 	}
 
 	typedef void(__cdecl* StartHookProc)(void* addin);
