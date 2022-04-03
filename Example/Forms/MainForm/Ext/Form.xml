@@ -727,6 +727,45 @@
 														</LabelDecoration>
 													</ChildItems>
 												</UsualGroup>
+												<UsualGroup name="ГруппаМониторинг" id="959">
+													<Title>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Мониторинг событий</v8:content>
+														</v8:item>
+													</Title>
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа мониторинг</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>NormalSeparation</Representation>
+													<ExtendedTooltip name="ГруппаМониторингРасширеннаяПодсказка" id="960"/>
+													<ChildItems>
+														<CommandBar name="Группа4" id="965">
+															<ExtendedTooltip name="Группа4РасширеннаяПодсказка" id="966"/>
+															<ChildItems>
+																<ButtonGroup name="Группа5" id="967">
+																	<Representation>Compact</Representation>
+																	<ExtendedTooltip name="Группа5РасширеннаяПодсказка" id="968"/>
+																	<ChildItems>
+																		<Button name="МониторингСобытийНачать" id="961">
+																			<Type>CommandBarButton</Type>
+																			<CommandName>Form.Command.МониторингСобытийНачать</CommandName>
+																			<ExtendedTooltip name="МониторингСобытийНачатьРасширеннаяПодсказка" id="962"/>
+																		</Button>
+																		<Button name="МониторингСобытийЗавершить" id="963">
+																			<Type>CommandBarButton</Type>
+																			<CommandName>Form.Command.МониторингСобытийЗавершить</CommandName>
+																			<ExtendedTooltip name="МониторингСобытийЗавершитьРасширеннаяПодсказка" id="964"/>
+																		</Button>
+																	</ChildItems>
+																</ButtonGroup>
+															</ChildItems>
+														</CommandBar>
+													</ChildItems>
+												</UsualGroup>
 											</ChildItems>
 										</UsualGroup>
 										<CommandBar name="ПанельНажатиеКлавиш" id="501">
@@ -892,120 +931,139 @@
 								</UsualGroup>
 							</ChildItems>
 						</UsualGroup>
-						<UsualGroup name="ГруппаКонсоль" id="731">
+						<UsualGroup name="ГруппаМониторингСобытий" id="957">
 							<Title>
 								<v8:item>
 									<v8:lang>ru</v8:lang>
-									<v8:content>Группа консоль</v8:content>
+									<v8:content>Группа мониторинг событий</v8:content>
 								</v8:item>
 							</Title>
 							<ToolTip>
 								<v8:item>
 									<v8:lang>ru</v8:lang>
-									<v8:content>Группа консоль</v8:content>
+									<v8:content>Группа мониторинг событий</v8:content>
 								</v8:item>
 							</ToolTip>
-							<Group>Vertical</Group>
+							<Representation>None</Representation>
 							<ShowTitle>false</ShowTitle>
-							<ExtendedTooltip name="ГруппаКонсольРасширеннаяПодсказка" id="732"/>
+							<ExtendedTooltip name="ГруппаМониторингСобытийРасширеннаяПодсказка" id="958"/>
 							<ChildItems>
-								<CommandBar name="КомандыКонсоли" id="745">
+								<UsualGroup name="ГруппаКонсоль" id="731">
 									<Title>
 										<v8:item>
 											<v8:lang>ru</v8:lang>
-											<v8:content>Команды консоли</v8:content>
+											<v8:content>Группа консоль</v8:content>
 										</v8:item>
 									</Title>
 									<ToolTip>
 										<v8:item>
 											<v8:lang>ru</v8:lang>
-											<v8:content>Команды консоли</v8:content>
+											<v8:content>Группа консоль</v8:content>
 										</v8:item>
 									</ToolTip>
-									<ExtendedTooltip name="КомандыКонсолиРасширеннаяПодсказка" id="746"/>
+									<Group>Vertical</Group>
+									<ShowTitle>false</ShowTitle>
+									<ExtendedTooltip name="ГруппаКонсольРасширеннаяПодсказка" id="732"/>
 									<ChildItems>
-										<Button name="ВывестиВКонсоль" id="738">
-											<Type>CommandBarButton</Type>
-											<CommandName>Form.Command.ВывестиВКонсоль</CommandName>
-											<ExtendedTooltip name="ВывестиВКонсольРасширеннаяПодсказка" id="739"/>
-										</Button>
-										<ButtonGroup name="ГруппаГорячиеКлавиши" id="503">
+										<CommandBar name="КомандыКонсоли" id="745">
 											<Title>
 												<v8:item>
 													<v8:lang>ru</v8:lang>
-													<v8:content>Группа горячие клавиши</v8:content>
+													<v8:content>Команды консоли</v8:content>
 												</v8:item>
 											</Title>
 											<ToolTip>
 												<v8:item>
 													<v8:lang>ru</v8:lang>
-													<v8:content>Группа горячие клавиши</v8:content>
+													<v8:content>Команды консоли</v8:content>
 												</v8:item>
 											</ToolTip>
-											<Representation>Compact</Representation>
-											<ExtendedTooltip name="ГруппаГорячиеКлавишиРасширеннаяПодсказка" id="504"/>
+											<ExtendedTooltip name="КомандыКонсолиРасширеннаяПодсказка" id="746"/>
 											<ChildItems>
-												<Button name="КлавишаWindowsE" id="448">
+												<Button name="ВывестиВКонсоль" id="738">
 													<Type>CommandBarButton</Type>
-													<CommandName>Form.Command.НажатиеКлавишиWinE</CommandName>
+													<CommandName>Form.Command.ВывестиВКонсоль</CommandName>
+													<ExtendedTooltip name="ВывестиВКонсольРасширеннаяПодсказка" id="739"/>
+												</Button>
+												<ButtonGroup name="ГруппаГорячиеКлавиши" id="503">
 													<Title>
 														<v8:item>
 															<v8:lang>ru</v8:lang>
-															<v8:content>Win+E</v8:content>
+															<v8:content>Группа горячие клавиши</v8:content>
 														</v8:item>
 													</Title>
-													<ExtendedTooltip name="КлавишаWindowsEРасширеннаяПодсказка" id="449"/>
-												</Button>
-												<Button name="НажатиеГорячейКлавиши" id="425">
+													<ToolTip>
+														<v8:item>
+															<v8:lang>ru</v8:lang>
+															<v8:content>Группа горячие клавиши</v8:content>
+														</v8:item>
+													</ToolTip>
+													<Representation>Compact</Representation>
+													<ExtendedTooltip name="ГруппаГорячиеКлавишиРасширеннаяПодсказка" id="504"/>
+													<ChildItems>
+														<Button name="КлавишаWindowsE" id="448">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.НажатиеКлавишиWinE</CommandName>
+															<Title>
+																<v8:item>
+																	<v8:lang>ru</v8:lang>
+																	<v8:content>Win+E</v8:content>
+																</v8:item>
+															</Title>
+															<ExtendedTooltip name="КлавишаWindowsEРасширеннаяПодсказка" id="449"/>
+														</Button>
+														<Button name="НажатиеГорячейКлавиши" id="425">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.НажатиеКлавишиCtrlF2</CommandName>
+															<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
+														</Button>
+														<Button name="НажатиеКлавишиNumLock" id="450">
+															<Type>CommandBarButton</Type>
+															<CommandName>Form.Command.НажатиеКлавишиNumLock</CommandName>
+															<ExtendedTooltip name="НажатиеКлавишиNumLockРасширеннаяПодсказка" id="451"/>
+														</Button>
+													</ChildItems>
+												</ButtonGroup>
+											</ChildItems>
+										</CommandBar>
+										<InputField name="ТекстКонсоли" id="733">
+											<DataPath>ТекстКонсоли</DataPath>
+											<TitleLocation>None</TitleLocation>
+											<Height>3</Height>
+											<VerticalStretch>false</VerticalStretch>
+											<MultiLine>true</MultiLine>
+											<ContextMenu name="ТекстКонсолиКонтекстноеМеню" id="734"/>
+											<ExtendedTooltip name="ТекстКонсолиРасширеннаяПодсказка" id="735"/>
+										</InputField>
+										<CommandBar name="КомандыГорячиеКлавиши" id="953">
+											<Title>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Команды горячие клавиши</v8:content>
+												</v8:item>
+											</Title>
+											<ToolTip>
+												<v8:item>
+													<v8:lang>ru</v8:lang>
+													<v8:content>Команды горячие клавиши</v8:content>
+												</v8:item>
+											</ToolTip>
+											<ExtendedTooltip name="КомандыГорячиеКлавишиРасширеннаяПодсказка" id="954"/>
+											<ChildItems>
+												<Button name="НазначитьГорячиеКлавиши" id="949">
 													<Type>CommandBarButton</Type>
-													<CommandName>Form.Command.НажатиеКлавишиCtrlF2</CommandName>
-													<ExtendedTooltip name="НажатиеГорячейКлавишиРасширеннаяПодсказка" id="426"/>
+													<CommandName>Form.Command.НазначитьГорячиеКлавиши</CommandName>
+													<ExtendedTooltip name="НазначитьГорячиеКлавишиРасширеннаяПодсказка" id="950"/>
 												</Button>
-												<Button name="НажатиеКлавишиNumLock" id="450">
+												<Button name="СброситьГорячиеКлавиши" id="951">
 													<Type>CommandBarButton</Type>
-													<CommandName>Form.Command.НажатиеКлавишиNumLock</CommandName>
-													<ExtendedTooltip name="НажатиеКлавишиNumLockРасширеннаяПодсказка" id="451"/>
+													<CommandName>Form.Command.СброситьГорячиеКлавиши</CommandName>
+													<ExtendedTooltip name="СброситьГорячиеКлавишиРасширеннаяПодсказка" id="952"/>
 												</Button>
 											</ChildItems>
-										</ButtonGroup>
+										</CommandBar>
 									</ChildItems>
-								</CommandBar>
-								<InputField name="ТекстКонсоли" id="733">
-									<DataPath>ТекстКонсоли</DataPath>
-									<TitleLocation>None</TitleLocation>
-									<Height>3</Height>
-									<VerticalStretch>false</VerticalStretch>
-									<MultiLine>true</MultiLine>
-									<ContextMenu name="ТекстКонсолиКонтекстноеМеню" id="734"/>
-									<ExtendedTooltip name="ТекстКонсолиРасширеннаяПодсказка" id="735"/>
-								</InputField>
-								<CommandBar name="КомандыГорячиеКлавиши" id="953">
-									<Title>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>Команды горячие клавиши</v8:content>
-										</v8:item>
-									</Title>
-									<ToolTip>
-										<v8:item>
-											<v8:lang>ru</v8:lang>
-											<v8:content>Команды горячие клавиши</v8:content>
-										</v8:item>
-									</ToolTip>
-									<ExtendedTooltip name="КомандыГорячиеКлавишиРасширеннаяПодсказка" id="954"/>
-									<ChildItems>
-										<Button name="НазначитьГорячиеКлавиши" id="949">
-											<Type>CommandBarButton</Type>
-											<CommandName>Form.Command.НазначитьГорячиеКлавиши</CommandName>
-											<ExtendedTooltip name="НазначитьГорячиеКлавишиРасширеннаяПодсказка" id="950"/>
-										</Button>
-										<Button name="СброситьГорячиеКлавиши" id="951">
-											<Type>CommandBarButton</Type>
-											<CommandName>Form.Command.СброситьГорячиеКлавиши</CommandName>
-											<ExtendedTooltip name="СброситьГорячиеКлавишиРасширеннаяПодсказка" id="952"/>
-										</Button>
-									</ChildItems>
-								</CommandBar>
+								</UsualGroup>
 							</ChildItems>
 						</UsualGroup>
 					</ChildItems>
@@ -7127,6 +7185,36 @@
 				</v8:item>
 			</ToolTip>
 			<Action>ФигураSpeechBubble</Action>
+		</Command>
+		<Command name="МониторингСобытийНачать" id="105">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Начать</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мониторинг событий начать</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МониторингСобытийНачать</Action>
+		</Command>
+		<Command name="МониторингСобытийЗавершить" id="106">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Завершить</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Мониторинг событий начать</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>МониторингСобытийЗавершить</Action>
 		</Command>
 	</Commands>
 </Form>
