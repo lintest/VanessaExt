@@ -16,6 +16,7 @@
 #include "ClipboardManager.h"
 #include "DesktopManager.h"
 #include "EducationShow.h"
+#include "EventMonitor.h"
 #include "FileFinder.h"
 #include "ImageFinder.h"
 #include "ImageHelper.h"
@@ -208,10 +209,10 @@ WindowsControl::WindowsControl() {
 		[&]() { ClickEffect::Unhook(); }
 	);
 	AddProcedure(u"StartEventMonitoring", u"НачатьМониторингСобытий",
-		[&]() { UserAutomation::Hook(this); }
+		[&]() { EventMonitor::Hook(this); }
 	);
 	AddProcedure(u"StopEventMonitoring", u"ПрекратитьМониторингСобытий",
-		[&]() { UserAutomation::Unhook(); }
+		[&]() { EventMonitor::Hook(nullptr); }
 	);
 	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
 		[&](VH keys) { this->result = KeyboardHook::Hook(*this, keys); }

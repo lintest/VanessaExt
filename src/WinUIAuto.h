@@ -65,12 +65,4 @@ public:
 	bool FocusElement(const std::string& id);
 };
 
-namespace UserAutomation {
-	class Hooker;
-	Hooker* getHooker(HWND hWnd);
-	Hooker* getHooker(LPVOID lpParam);
-	void Hook(void* addin);
-	void Unhook();
-}
-
 #endif//_WINDOWS

@@ -75,6 +75,8 @@ add_library(${TARGET} SHARED
 	src/DesktopManager.h
 	src/EducationShow.cpp
 	src/EducationShow.h
+	src/EventMonitor.cpp
+	src/EventMonitor.h
 	src/FileFinder.cpp
 	src/FileFinder.h
 	src/GitManager.cpp
