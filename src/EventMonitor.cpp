@@ -27,6 +27,11 @@ namespace EventMonitor {
 		}
 	}
 
+	enum class EventDataType {
+		Mouse = 1,
+		Keyboard = 2,
+	};
+
 	class Hooker {
 	private:
 		AddInNative& addin;
@@ -47,24 +52,25 @@ namespace EventMonitor {
 	}
 
 	LRESULT Hooker::onMouseEvent(WPARAM wParam, LPARAM lParam) {
+		auto pcds = (PCOPYDATASTRUCT)lParam;
+		auto pStruct = (PMOUSEHOOKSTRUCT)pcds->lpData;
 		POINT pt{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 		JSON json = {
+			{ "window", (int64_t)pStruct->hwnd },
 			{ "event", msg2str(wParam) },
-			{ "x", GET_X_LPARAM(lParam) },
-			{ "y", GET_Y_LPARAM(lParam) },
+			{ "x", pStruct->pt.x },
+			{ "y", pStruct->pt.y },
 		};
 		std::u16string text = MB2WCHAR(json.dump());
 		addin.ExternalEvent(u"MOUSEHOOK", text);
 		return 0L;
 	}
 
-	const UINT WM_MOUSE_HOOK = WM_USER + 10;
-
 	LRESULT CALLBACK HookerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		switch (message)
 		{
-		case WM_MOUSE_HOOK:
+		case WM_COPYDATA:
 			return getHooker(hWnd)->onMouseEvent(wParam, lParam);
 		case WM_DESTROY:
 			PostQuitMessage(0);
@@ -95,10 +101,11 @@ namespace EventMonitor {
 	{
 		auto hWnd = FindWindow(wsHookerName, NULL);
 		if (hWnd == NULL) return;
-		auto pStruct = (PMOUSEHOOKSTRUCT)lParam;
-		POINT pt = pStruct->pt;
-		ClientToScreen(pStruct->hwnd, &pt);
-		SendMessage(hWnd, WM_MOUSE_HOOK, wParam, MAKELPARAM(pt.x, pt.y));
+		COPYDATASTRUCT cds{0};
+		cds.dwData = (ULONG_PTR)EventDataType::Mouse;
+		cds.cbData = sizeof(MOUSEHOOKSTRUCT);
+		cds.lpData = (LPVOID)lParam;
+		SendMessage(hWnd, WM_COPYDATA, wParam, (LPARAM)(LPVOID)&cds);
 	}
 
 	LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
