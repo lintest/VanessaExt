@@ -66,10 +66,13 @@ WindowsControl::WindowsControl() {
 	AddProperty(u"ScreenInfo", u"СвойстваЭкрана",
 		[&](VH var) { var = ScreenManager::GetScreenInfo(); }
 	);
+
+#ifdef _WINDOWS
 	AddProperty(u"AutomationMonitoring", u"МониторингАвтоматизации",
 		[&](VH var) { var = getUIAuto().getMonitoringStatus(); },
 		[&](VH var) { getUIAuto().setMonitoringStatus(bool(var) ? this : nullptr); }
 	);
+#endif
 
 	AddFunction(u"FindTestClient", u"НайтиКлиентТестирования",
 		[&](VH port) { this->result = ProcessManager::FindTestClient(port); }
