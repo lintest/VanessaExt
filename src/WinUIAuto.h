@@ -47,14 +47,14 @@ class UIAutoHandler
 	: public IUIAutomationFocusChangedEventHandler
 {
 private:
-	ULONG volatile m_cRef = 1;
+	ULONG volatile m_count = 1;
 	WinUIAuto& m_owner;
 	UICacheRequest m_cache;
 	AddInNative* m_addin = nullptr;
 	UIAutoHandler(WinUIAuto& owner, AddInNative* addin);
 public:
 	static UIAutoHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin);
-	void Reset() { m_addin = nullptr; }
+	void ResetHandler();
 public:
 	virtual HRESULT QueryInterface(REFIID riid, LPVOID* ppvObj) override;
 	virtual HRESULT HandleFocusChangedEvent(IUIAutomationElement* sender) override;
@@ -65,7 +65,7 @@ public:
 struct UIHandlerDeleter {
 	void operator()(UIAutoHandler* a) {
 		if (a) {
-			a->Reset();
+			a->ResetHandler();
 			a->Release();
 		}
 	}
@@ -73,9 +73,9 @@ struct UIHandlerDeleter {
 
 class WinUIAuto {
 private:
+	bool isWindow(IUIAutomationElement* element, JSON& json);
 	HRESULT find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element);
 	HRESULT find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element);
-	bool isWindow(IUIAutomationElement* element, JSON& json);
 	std::unique_ptr<UIAutoHandler, UIHandlerDeleter> pAutoHandler;
 	UIAutoUniquePtr<IUIAutomation> pAutomation;
 	HRESULT hInitialize;

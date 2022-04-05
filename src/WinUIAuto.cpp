@@ -779,7 +779,13 @@ UIAutoHandler* UIAutoHandler::CreateInstance(WinUIAuto& owner, AddInNative* addi
 UIAutoHandler::UIAutoHandler(WinUIAuto& owner, AddInNative* addin)
 	: m_owner(owner), m_cache(owner), m_addin(addin)
 {
-	m_owner.getAutomation()->AddFocusChangedEventHandler(NULL, this);
+	m_owner.getAutomation()->AddFocusChangedEventHandler(m_cache, this);
+}
+
+void UIAutoHandler::ResetHandler()
+{
+	m_owner.getAutomation()->RemoveFocusChangedEventHandler(this);
+	m_addin = nullptr;
 }
 
 HRESULT UIAutoHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
@@ -801,29 +807,29 @@ HRESULT UIAutoHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
 
 ULONG UIAutoHandler::AddRef()
 {
-	InterlockedIncrement(&m_cRef);
-	return m_cRef;
+	InterlockedIncrement(&m_count);
+	return m_count;
 }
 
 ULONG UIAutoHandler::Release()
 {
 	// Decrement the object's internal counter.
-	ULONG ulRefCount = InterlockedDecrement(&m_cRef);
-	if (0 == m_cRef)
+	ULONG ulRefCount = InterlockedDecrement(&m_count);
+	if (0 == m_count)
 	{
 		delete this;
 	}
 	return ulRefCount;
 }
 
-HRESULT UIAutoHandler::HandleFocusChangedEvent(IUIAutomationElement* sender)
+HRESULT UIAutoHandler::HandleFocusChangedEvent(IUIAutomationElement* element)
 {
-	if (m_addin && sender) {
-		auto json = m_owner.info(sender, m_cache);
+	if (m_addin && element) {
+		auto json = m_owner.info(element, m_cache);
 		std::u16string text = MB2WCHAR(json.dump());
 		m_addin->ExternalEvent(u"FOCUS_CHANGED", text);
 	}
-	return NOERROR;
+	return S_OK;
 }
 
 #endif//_WINDOWS
