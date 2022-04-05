@@ -1,7 +1,7 @@
 #ifdef _WINDOWS
 
 #include "WinUIAuto.h"
-#include "ClickEffect.h"
+#include "AddInNative.h"
 
 class UIString {
 private:
@@ -298,9 +298,9 @@ static std::string type2str(CONTROLTYPEID typeId) {
 	}
 }
 
-WinUIAuto::UICacheRequest::UICacheRequest(WinUIAuto& owner)
+UICacheRequest::UICacheRequest(WinUIAuto& owner)
 {
-	owner.pAutomation->CreateCacheRequest(UI(cache));
+	owner.getAutomation()->CreateCacheRequest(UI(cache));
 	cache->AddProperty(UIA_RuntimeIdPropertyId);
 	cache->AddProperty(UIA_BoundingRectanglePropertyId);
 	cache->AddProperty(UIA_ProcessIdPropertyId);
@@ -754,6 +754,76 @@ std::wstring WinUIAuto::GetElementValue(const std::string& id)
 			return std::wstring(value.bstrVal, length);
 
 	return {};
+}
+
+void WinUIAuto::setMonitoringStatus(AddInNative* addin)
+{
+	if (addin) {
+		pAutoHandler.reset(UIAutoHandler::CreateInstance(*this, addin));
+	}
+	else {
+		pAutoHandler.reset();
+	}
+}
+
+bool WinUIAuto::getMonitoringStatus()
+{
+	return pAutoHandler.get();
+}
+
+UIAutoHandler* UIAutoHandler::CreateInstance(WinUIAuto& owner, AddInNative* addin)
+{
+	return new UIAutoHandler(owner, addin);
+}
+
+UIAutoHandler::UIAutoHandler(WinUIAuto& owner, AddInNative* addin)
+	: m_owner(owner), m_cache(owner), m_addin(addin)
+{
+	m_owner.getAutomation()->AddFocusChangedEventHandler(NULL, this);
+}
+
+HRESULT UIAutoHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
+{
+	// Always set out parameter to NULL, validating it first.
+	if (!ppvObj)
+		return E_INVALIDARG;
+
+	*ppvObj = NULL;
+	if (riid == IID_IUnknown || riid == IID_IUIAutomationFocusChangedEventHandler)
+	{
+		// Increment the reference count and return the pointer.
+		*ppvObj = (LPVOID)this;
+		AddRef();
+		return NOERROR;
+	}
+	return E_NOINTERFACE;
+}
+
+ULONG UIAutoHandler::AddRef()
+{
+	InterlockedIncrement(&m_cRef);
+	return m_cRef;
+}
+
+ULONG UIAutoHandler::Release()
+{
+	// Decrement the object's internal counter.
+	ULONG ulRefCount = InterlockedDecrement(&m_cRef);
+	if (0 == m_cRef)
+	{
+		delete this;
+	}
+	return ulRefCount;
+}
+
+HRESULT UIAutoHandler::HandleFocusChangedEvent(IUIAutomationElement* sender)
+{
+	if (m_addin && sender) {
+		auto json = m_owner.info(sender, m_cache);
+		std::u16string text = MB2WCHAR(json.dump());
+		m_addin->ExternalEvent(u"FOCUS_CHANGED", text);
+	}
+	return NOERROR;
 }
 
 #endif//_WINDOWS
