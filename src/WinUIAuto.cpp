@@ -788,7 +788,7 @@ void UIAutoHandler::ResetHandler()
 	m_addin = nullptr;
 }
 
-HRESULT UIAutoHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
+HRESULT STDMETHODCALLTYPE UIAutoHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
@@ -805,13 +805,13 @@ HRESULT UIAutoHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
 	return E_NOINTERFACE;
 }
 
-ULONG UIAutoHandler::AddRef()
+ULONG STDMETHODCALLTYPE UIAutoHandler::AddRef()
 {
 	InterlockedIncrement(&m_count);
 	return m_count;
 }
 
-ULONG UIAutoHandler::Release()
+ULONG STDMETHODCALLTYPE UIAutoHandler::Release()
 {
 	// Decrement the object's internal counter.
 	ULONG ulRefCount = InterlockedDecrement(&m_count);
@@ -822,7 +822,7 @@ ULONG UIAutoHandler::Release()
 	return ulRefCount;
 }
 
-HRESULT UIAutoHandler::HandleFocusChangedEvent(IUIAutomationElement* element)
+HRESULT STDMETHODCALLTYPE UIAutoHandler::HandleFocusChangedEvent(IUIAutomationElement* element)
 {
 	if (m_addin && element) {
 		auto json = m_owner.info(element, m_cache);

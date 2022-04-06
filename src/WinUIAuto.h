@@ -56,10 +56,10 @@ public:
 	static UIAutoHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin);
 	void ResetHandler();
 public:
-	virtual HRESULT QueryInterface(REFIID riid, LPVOID* ppvObj) override;
-	virtual HRESULT HandleFocusChangedEvent(IUIAutomationElement* sender) override;
-	virtual ULONG AddRef() override;
-	virtual ULONG Release() override;
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
+	virtual HRESULT STDMETHODCALLTYPE HandleFocusChangedEvent(IUIAutomationElement* sender) override;
+	virtual ULONG STDMETHODCALLTYPE AddRef() override;
+	virtual ULONG STDMETHODCALLTYPE Release() override;
 };
 
 struct UIHandlerDeleter {

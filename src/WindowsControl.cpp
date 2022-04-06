@@ -68,7 +68,7 @@ WindowsControl::WindowsControl() {
 	);
 
 #ifdef _WINDOWS
-	AddProperty(u"AutomationMonitoring", u"МониторингАвтоматизации",
+	AddProperty(u"ActiveElementMonitoring", u"МониторингАктивногоЭлемента",
 		[&](VH var) { var = getUIAuto().getMonitoringStatus(); },
 		[&](VH var) { getUIAuto().setMonitoringStatus(bool(var) ? this : nullptr); }
 	);

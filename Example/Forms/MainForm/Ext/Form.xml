@@ -1029,8 +1029,9 @@
 										<InputField name="ТекстКонсоли" id="733">
 											<DataPath>ТекстКонсоли</DataPath>
 											<TitleLocation>None</TitleLocation>
+											<AutoMaxWidth>false</AutoMaxWidth>
 											<Height>3</Height>
-											<VerticalStretch>false</VerticalStretch>
+											<VerticalStretch>true</VerticalStretch>
 											<MultiLine>true</MultiLine>
 											<ContextMenu name="ТекстКонсолиКонтекстноеМеню" id="734"/>
 											<ExtendedTooltip name="ТекстКонсолиРасширеннаяПодсказка" id="735"/>
