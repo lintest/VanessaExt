@@ -165,6 +165,11 @@ namespace EventMonitor {
 			if (proc) proc(addin);
 		}
 	}
+
+	bool getStatus()
+	{
+		return FindWindow(wsHookerName, NULL) != 0;
+	}
 }
 
 extern "C" {

@@ -6,10 +6,10 @@
 
 namespace EventMonitor {
 	class Hooker;
+	bool getStatus();
 	Hooker* getHooker(HWND hWnd);
 	Hooker* getHooker(LPVOID lpParam);
 	void Hook(void* addin);
-	void Unhook();
 }
 
 #endif//_WINDOWS

@@ -72,6 +72,10 @@ WindowsControl::WindowsControl() {
 		[&](VH var) { var = getUIAuto().getMonitoringStatus(); },
 		[&](VH var) { getUIAuto().setMonitoringStatus(bool(var) ? this : nullptr); }
 	);
+	AddProperty(u"MouseEventMonitoring", u"МониторингСобытийМыши",
+		[&](VH var) { var = EventMonitor::getStatus(); },
+		[&](VH var) { EventMonitor::Hook(bool(var) ? this : nullptr); }
+	);
 #endif
 
 	AddFunction(u"FindTestClient", u"НайтиКлиентТестирования",
@@ -214,12 +218,6 @@ WindowsControl::WindowsControl() {
 	);
 	AddProcedure(u"StopClickVisualization", u"ПрекратитьВизуализациюНажатияМыши",
 		[&]() { ClickEffect::Unhook(); }
-	);
-	AddProcedure(u"StartEventMonitoring", u"НачатьМониторингСобытий",
-		[&]() { EventMonitor::Hook(this); }
-	);
-	AddProcedure(u"StopEventMonitoring", u"ПрекратитьМониторингСобытий",
-		[&]() { EventMonitor::Hook(nullptr); }
 	);
 	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
 		[&](VH keys) { this->result = KeyboardHook::Hook(*this, keys); }
