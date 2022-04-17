@@ -325,7 +325,7 @@ WindowsControl::WindowsControl() {
 		[&](VH id, VH level) { this->result = GetElements(id, level); }, { {1, (int64_t)MAXINT} }
 	);
 	AddFunction(u"GetElementById", u"ЭлементПоИдентификатору",
-		[&](VH id, VH level) { this->result = getUIAuto().ElementById(id); }
+		[&](VH id) { this->result = getUIAuto().ElementById(id); }
 	);
 	AddFunction(u"GetElementFromPoint", u"ЭлементПоКоординатам",
 		[&](VH x, VH y) { this->result = getUIAuto().ElementFromPoint(x, y); }
