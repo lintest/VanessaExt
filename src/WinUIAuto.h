@@ -43,7 +43,7 @@ public:
 	IUIAutomationCacheRequest* operator->() { return cache.get(); }
 };
 
-class UIAutoHandler
+class UIAutoFocusHandler
 	: public IUIAutomationFocusChangedEventHandler
 {
 private:
@@ -51,9 +51,10 @@ private:
 	WinUIAuto& m_owner;
 	UICacheRequest m_cache;
 	AddInNative* m_addin = nullptr;
-	UIAutoHandler(WinUIAuto& owner, AddInNative* addin);
+	IUIAutomationElement* m_sender = nullptr;
+	UIAutoFocusHandler(WinUIAuto& owner, AddInNative* addin);
 public:
-	static UIAutoHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin);
+	static UIAutoFocusHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin);
 	void ResetHandler();
 public:
 	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
@@ -62,8 +63,29 @@ public:
 	virtual ULONG STDMETHODCALLTYPE Release() override;
 };
 
+class UIAutoEventHandler
+	: public IUIAutomationEventHandler
+{
+private:
+	ULONG volatile m_count = 1;
+	WinUIAuto& m_owner;
+	UICacheRequest m_cache;
+	AddInNative* m_addin = nullptr;
+	IUIAutomationElement* m_sender = nullptr;
+	UIAutoEventHandler(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element);
+public:
+	static UIAutoEventHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element);
+	void ResetHandler();
+public:
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
+	virtual HRESULT STDMETHODCALLTYPE HandleAutomationEvent(IUIAutomationElement* sender, EVENTID eventId) override;
+	virtual ULONG STDMETHODCALLTYPE AddRef() override;
+	virtual ULONG STDMETHODCALLTYPE Release() override;
+};
+
+template<class T>
 struct UIHandlerDeleter {
-	void operator()(UIAutoHandler* a) {
+	void operator()(T* a) {
 		if (a) {
 			a->ResetHandler();
 			a->Release();
@@ -76,13 +98,13 @@ private:
 	bool isWindow(IUIAutomationElement* element, JSON& json);
 	HRESULT find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element);
 	HRESULT find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element);
-	std::unique_ptr<UIAutoHandler, UIHandlerDeleter> pAutoHandler;
-	UIAutoUniquePtr<IUIAutomation> pAutomation;
+	std::unique_ptr<UIAutoFocusHandler, UIHandlerDeleter<UIAutoFocusHandler>> m_focusHandler;
+	UIAutoUniquePtr<IUIAutomation> m_automation;
 	HRESULT hInitialize;
 public:
 	JSON info(IUIAutomationElement* element, UICacheRequest& cache, int64_t level = -1);
 	JSON info(IUIAutomationElementArray* elements, UICacheRequest& cache);
-	IUIAutomation* getAutomation() { return pAutomation.get(); }
+	IUIAutomation* getAutomation() { return m_automation.get(); }
 public:
 	WinUIAuto();
 	virtual ~WinUIAuto();

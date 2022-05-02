@@ -393,7 +393,7 @@ JSON WinUIAuto::info(IUIAutomationElement* element, UICacheRequest& cache, int64
 			json["Value"] = WC2MB(std::wstring(value.bstrVal, length));
 
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
-	pAutomation->get_ControlViewWalker(UI(walker));
+	m_automation->get_ControlViewWalker(UI(walker));
 	if (level > 0) {
 		int64_t sublevel = level - 1;
 		UIAutoUniquePtr<IUIAutomationElement> child;
@@ -439,7 +439,7 @@ WinUIAuto::WinUIAuto()
 
 	if (FAILED(CoCreateInstance(CLSID_CUIAutomation,
 		NULL, CLSCTX_INPROC_SERVER, IID_IUIAutomation,
-		reinterpret_cast<void**>(&UI(pAutomation)))))
+		reinterpret_cast<void**>(&UI(m_automation)))))
 		throw std::runtime_error("CoInitialize error");
 }
 
@@ -452,7 +452,7 @@ std::string WinUIAuto::GetFocusedElement()
 {
 	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> element;
-	if (FAILED(pAutomation->GetFocusedElementBuildCache(cache, UI(element)))) return {};
+	if (FAILED(m_automation->GetFocusedElementBuildCache(cache, UI(element)))) return {};
 	if (element.get() == nullptr) return {};
 	return info(element.get(), cache).dump();
 }
@@ -504,7 +504,7 @@ std::string WinUIAuto::ElementFromPoint(int x, int y)
 	POINT p{ x, y };
 	UICacheRequest cache(*this);
 	UIAutoUniquePtr<IUIAutomationElement> element;
-	if (FAILED(pAutomation->ElementFromPointBuildCache(p, cache, UI(element)))) return {};
+	if (FAILED(m_automation->ElementFromPointBuildCache(p, cache, UI(element)))) return {};
 	return info(element.get(), cache).dump();
 }
 
@@ -561,9 +561,9 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 		case UIA_NamePropertyId: {
 			std::wstring value = MB2WC(element.value());
 			UIAutoUniquePtr<IUIAutomationCondition> cond, name1, name2;
-			pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(name1));
-			pAutomation->CreatePropertyConditionEx(propertyId, CComVariant((value + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(name2));
-			pAutomation->CreateOrCondition(name1.get(), name2.get(), UI(cond));
+			m_automation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(name1));
+			m_automation->CreatePropertyConditionEx(propertyId, CComVariant((value + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(name2));
+			m_automation->CreateOrCondition(name1.get(), name2.get(), UI(cond));
 			conditions.push_back(cond.get());
 			deleter.emplace_back(cond.release());
 		} break;
@@ -571,7 +571,7 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 			std::string type = element.value();
 			if (auto iType = str2type(type)) {
 				UIAutoUniquePtr<IUIAutomationCondition> cond;
-				pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cond));
+				m_automation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cond));
 				conditions.push_back(cond.get());
 				deleter.emplace_back(cond.release());
 			}
@@ -580,15 +580,15 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 			UIAutoUniquePtr<IUIAutomationCondition> cond;
 			if (element.value().is_string()) {
 				std::wstring value = MB2WC(element.value());
-				pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(cond));
+				m_automation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(cond));
 			}
 			else if (element.value().is_number_integer()) {
 				auto value = (int)element.value();
-				pAutomation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
+				m_automation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
 			}
 			else if (element.value().is_boolean()) {
 				auto value = (bool)element.value();
-				pAutomation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
+				m_automation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
 			}
 			if (cond) {
 				conditions.push_back(cond.get());
@@ -599,7 +599,7 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
-	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
+	m_automation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
 
 	if (pid) {
 		std::map<std::string, JSON> controls;
@@ -607,7 +607,7 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 			int length = 0;
 			UICacheRequest cache(*this);
 			UIAutoUniquePtr<IUIAutomationElement> owner;
-			if (FAILED(pAutomation->ElementFromHandleBuildCache(hWnd, cache, UI(owner)))) continue;
+			if (FAILED(m_automation->ElementFromHandleBuildCache(hWnd, cache, UI(owner)))) continue;
 			if (FAILED(owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements)))) continue;
 			if (!elements || FAILED(elements->get_Length(&length))) continue;
 			for (int i = 0; i < length; ++i) {
@@ -638,13 +638,13 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 HRESULT WinUIAuto::find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element)
 {
 	if (pid == 0) {
-		ASSERT(pAutomation->ElementFromHandle(::GetActiveWindow(), element));
+		ASSERT(m_automation->ElementFromHandle(::GetActiveWindow(), element));
 	}
 	else {
 		UIAutoUniquePtr<IUIAutomationElement> root;
 		UIAutoUniquePtr<IUIAutomationCondition> cond;
-		ASSERT(pAutomation->GetRootElement(UI(root)));
-		ASSERT(pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)));
+		ASSERT(m_automation->GetRootElement(UI(root)));
+		ASSERT(m_automation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)));
 		ASSERT(root->FindFirst(TreeScope_Children, cond.get(), element));
 	}
 	return 0;
@@ -653,12 +653,12 @@ HRESULT WinUIAuto::find(DWORD pid, UICacheRequest& cache, IUIAutomationElement**
 HRESULT WinUIAuto::find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element)
 {
 	UIAutoUniquePtr<IUIAutomationElement> root;
-	ASSERT(pAutomation->GetRootElement(UI(root)));
+	ASSERT(m_automation->GetRootElement(UI(root)));
 	auto v = str2id(id);
 	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> sa;
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
-	ASSERT(pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), UI(sa)));
-	ASSERT(pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa.get()), UI(cond)));
+	ASSERT(m_automation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), UI(sa)));
+	ASSERT(m_automation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa.get()), UI(cond)));
 	ASSERT(root->FindFirstBuildCache(TreeScope_Subtree, cond.get(), cache, element));
 	return 0;
 }
@@ -692,7 +692,7 @@ std::string WinUIAuto::GetParentElement(const std::string& id)
 	if (child.get() == nullptr) return {};
 
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
-	pAutomation->get_ControlViewWalker(UI(walker));
+	m_automation->get_ControlViewWalker(UI(walker));
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	walker->GetParentElementBuildCache(child.get(), cache, UI(parent));
 	walker->NormalizeElementBuildCache(parent.get(), cache, UI(parent));
@@ -708,7 +708,7 @@ std::string WinUIAuto::GetNextElement(const std::string& id)
 	if (child.get() == nullptr) return {};
 
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
-	pAutomation->get_ControlViewWalker(UI(walker));
+	m_automation->get_ControlViewWalker(UI(walker));
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	walker->GetNextSiblingElementBuildCache(child.get(), cache, UI(parent));
 	if (parent.get() == nullptr) return {};
@@ -723,7 +723,7 @@ std::string WinUIAuto::GetPreviousElement(const std::string& id)
 	if (child.get() == nullptr) return {};
 
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
-	pAutomation->get_ControlViewWalker(UI(walker));
+	m_automation->get_ControlViewWalker(UI(walker));
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	walker->GetPreviousSiblingElementBuildCache(child.get(), cache, UI(parent));
 	if (parent.get() == nullptr) return {};
@@ -759,36 +759,36 @@ std::wstring WinUIAuto::GetElementValue(const std::string& id)
 void WinUIAuto::setMonitoringStatus(AddInNative* addin)
 {
 	if (addin) {
-		pAutoHandler.reset(UIAutoHandler::CreateInstance(*this, addin));
+		m_focusHandler.reset(UIAutoFocusHandler::CreateInstance(*this, addin));
 	}
 	else {
-		pAutoHandler.reset();
+		m_focusHandler.reset();
 	}
 }
 
 bool WinUIAuto::getMonitoringStatus()
 {
-	return pAutoHandler.get();
+	return m_focusHandler.get();
 }
 
-UIAutoHandler* UIAutoHandler::CreateInstance(WinUIAuto& owner, AddInNative* addin)
+UIAutoFocusHandler* UIAutoFocusHandler::CreateInstance(WinUIAuto& owner, AddInNative* addin)
 {
-	return new UIAutoHandler(owner, addin);
+	return new UIAutoFocusHandler(owner, addin);
 }
 
-UIAutoHandler::UIAutoHandler(WinUIAuto& owner, AddInNative* addin)
+UIAutoFocusHandler::UIAutoFocusHandler(WinUIAuto& owner, AddInNative* addin)
 	: m_owner(owner), m_cache(owner), m_addin(addin)
 {
 	m_owner.getAutomation()->AddFocusChangedEventHandler(m_cache, this);
 }
 
-void UIAutoHandler::ResetHandler()
+void UIAutoFocusHandler::ResetHandler()
 {
 	m_owner.getAutomation()->RemoveFocusChangedEventHandler(this);
 	m_addin = nullptr;
 }
 
-HRESULT STDMETHODCALLTYPE UIAutoHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
+HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
 {
 	// Always set out parameter to NULL, validating it first.
 	if (!ppvObj)
@@ -805,13 +805,13 @@ HRESULT STDMETHODCALLTYPE UIAutoHandler::QueryInterface(REFIID riid, LPVOID* ppv
 	return E_NOINTERFACE;
 }
 
-ULONG STDMETHODCALLTYPE UIAutoHandler::AddRef()
+ULONG STDMETHODCALLTYPE UIAutoFocusHandler::AddRef()
 {
 	InterlockedIncrement(&m_count);
 	return m_count;
 }
 
-ULONG STDMETHODCALLTYPE UIAutoHandler::Release()
+ULONG STDMETHODCALLTYPE UIAutoFocusHandler::Release()
 {
 	// Decrement the object's internal counter.
 	ULONG ulRefCount = InterlockedDecrement(&m_count);
@@ -822,12 +822,73 @@ ULONG STDMETHODCALLTYPE UIAutoHandler::Release()
 	return ulRefCount;
 }
 
-HRESULT STDMETHODCALLTYPE UIAutoHandler::HandleFocusChangedEvent(IUIAutomationElement* element)
+HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::HandleFocusChangedEvent(IUIAutomationElement* element)
 {
 	if (m_addin && element) {
 		auto json = m_owner.info(element, m_cache);
 		std::u16string text = MB2WCHAR(json.dump());
 		m_addin->ExternalEvent(u"FOCUS_CHANGED", text);
+	}
+	return S_OK;
+}
+
+UIAutoEventHandler* UIAutoEventHandler::CreateInstance(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element)
+{
+	return new UIAutoEventHandler(owner, addin, element);
+}
+
+UIAutoEventHandler::UIAutoEventHandler(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element)
+	: m_owner(owner), m_cache(owner), m_addin(addin), m_sender(element)
+{
+	m_owner.getAutomation()->AddAutomationEventHandler(UIA_Invoke_InvokedEventId, element, TreeScope_Element, m_cache, this);
+}
+
+void UIAutoEventHandler::ResetHandler()
+{
+	m_owner.getAutomation()->RemoveAutomationEventHandler(UIA_Invoke_InvokedEventId, m_sender, this);
+	m_addin = nullptr;
+}
+
+HRESULT STDMETHODCALLTYPE UIAutoEventHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
+{
+	// Always set out parameter to NULL, validating it first.
+	if (!ppvObj)
+		return E_INVALIDARG;
+
+	*ppvObj = NULL;
+	if (riid == IID_IUnknown || riid == IID_IUIAutomationEventHandler)
+	{
+		// Increment the reference count and return the pointer.
+		*ppvObj = (LPVOID)this;
+		AddRef();
+		return NOERROR;
+	}
+	return E_NOINTERFACE;
+}
+
+ULONG STDMETHODCALLTYPE UIAutoEventHandler::AddRef()
+{
+	InterlockedIncrement(&m_count);
+	return m_count;
+}
+
+ULONG STDMETHODCALLTYPE UIAutoEventHandler::Release()
+{
+	// Decrement the object's internal counter.
+	ULONG ulRefCount = InterlockedDecrement(&m_count);
+	if (0 == m_count)
+	{
+		delete this;
+	}
+	return ulRefCount;
+}
+
+HRESULT STDMETHODCALLTYPE UIAutoEventHandler::HandleAutomationEvent(IUIAutomationElement* sender, EVENTID eventId)
+{
+	if (m_addin) {
+		auto json = m_owner.info(sender, m_cache);
+		std::u16string text = MB2WCHAR(json.dump());
+		m_addin->ExternalEvent(u"UIAUTO", text);
 	}
 	return S_OK;
 }
