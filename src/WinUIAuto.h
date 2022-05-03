@@ -43,44 +43,61 @@ public:
 	IUIAutomationCacheRequest* operator->() { return cache.get(); }
 };
 
+#define UI_AUTO_HANDLER(IID_IHandler)                                                         \
+private:                                                                                      \
+	ULONG volatile m_count = 1;                                                               \
+	WinUIAuto& m_owner;                                                                       \
+	UICacheRequest m_cache;                                                                   \
+	AddInNative* m_addin = nullptr;                                                           \
+public:                                                                                       \
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override {  \
+		if (!ppvObj) {                                                                        \
+			return E_INVALIDARG;                                                              \
+		}                                                                                     \
+		*ppvObj = NULL;                                                                       \
+		if (riid == IID_IUnknown || riid == IID_IHandler) {                                   \
+			AddRef();                                                                         \
+			return NOERROR;                                                                   \
+		}                                                                                     \
+		return E_NOINTERFACE;                                                                 \
+	}                                                                                         \
+	virtual ULONG STDMETHODCALLTYPE AddRef() override {                                       \
+		InterlockedIncrement(&m_count);                                                       \
+		return m_count;                                                                       \
+	}                                                                                         \
+	virtual ULONG STDMETHODCALLTYPE Release() override {                                      \
+		ULONG ulRefCount = InterlockedDecrement(&m_count);                                    \
+		if (0 == m_count) {                                                                   \
+			delete this;                                                                      \
+		}                                                                                     \
+		return ulRefCount;                                                                    \
+	}
+
 class UIAutoFocusHandler
 	: public IUIAutomationFocusChangedEventHandler
 {
+	UI_AUTO_HANDLER(IID_IUIAutomationFocusChangedEventHandler)
 private:
-	ULONG volatile m_count = 1;
-	WinUIAuto& m_owner;
-	UICacheRequest m_cache;
-	AddInNative* m_addin = nullptr;
-	IUIAutomationElement* m_sender = nullptr;
 	UIAutoFocusHandler(WinUIAuto& owner, AddInNative* addin);
 public:
 	static UIAutoFocusHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin);
 	void ResetHandler();
 public:
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
 	virtual HRESULT STDMETHODCALLTYPE HandleFocusChangedEvent(IUIAutomationElement* sender) override;
-	virtual ULONG STDMETHODCALLTYPE AddRef() override;
-	virtual ULONG STDMETHODCALLTYPE Release() override;
 };
 
 class UIAutoEventHandler
 	: public IUIAutomationEventHandler
 {
+	UI_AUTO_HANDLER(IID_IUIAutomationFocusChangedEventHandler)
 private:
-	ULONG volatile m_count = 1;
-	WinUIAuto& m_owner;
-	UICacheRequest m_cache;
-	AddInNative* m_addin = nullptr;
 	IUIAutomationElement* m_sender = nullptr;
 	UIAutoEventHandler(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element);
 public:
-	static UIAutoEventHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element);
+	static UIAutoEventHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin);
 	void ResetHandler();
 public:
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
 	virtual HRESULT STDMETHODCALLTYPE HandleAutomationEvent(IUIAutomationElement* sender, EVENTID eventId) override;
-	virtual ULONG STDMETHODCALLTYPE AddRef() override;
-	virtual ULONG STDMETHODCALLTYPE Release() override;
 };
 
 template<class T>
@@ -98,7 +115,7 @@ private:
 	bool isWindow(IUIAutomationElement* element, JSON& json);
 	HRESULT find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element);
 	HRESULT find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element);
-	std::unique_ptr<UIAutoFocusHandler, UIHandlerDeleter<UIAutoFocusHandler>> m_focusHandler;
+	std::unique_ptr<UIAutoEventHandler, UIHandlerDeleter<UIAutoEventHandler>> m_focusHandler;
 	UIAutoUniquePtr<IUIAutomation> m_automation;
 	HRESULT hInitialize;
 public:

@@ -4,14 +4,14 @@
 #include "WindowsManager.h"
 #include "windowsx.h"
 
-static void get(JSON& j, const std::string& name, Color& value)
+void get(JSON& j, const std::string& name, Color& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
 		value.SetFromCOLORREF(*it);
 }
 
-static void get(JSON& j, const std::string& name, std::wstring& value)
+void get(JSON& j, const std::string& name, std::wstring& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
@@ -19,7 +19,7 @@ static void get(JSON& j, const std::string& name, std::wstring& value)
 }
 
 template<typename T>
-static void get(JSON& j, const std::string& name, T& value)
+void get(JSON& j, const std::string& name, T& value)
 {
 	auto it = j.find(name);
 	if (it != j.end())
@@ -297,7 +297,7 @@ static LRESULT CALLBACK PainterWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	}
 }
 
-const LPCWSTR wsEducationClass = L"VanessaTerminator";
+const LPCWSTR wsSelectorClass = L"VanessaTerminator";
 
 void EducationShow::create()
 {
@@ -306,11 +306,11 @@ void EducationShow::create()
 	wndClass.hInstance = hModule;
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wndClass.lpszClassName = wsEducationClass;
+	wndClass.lpszClassName = wsSelectorClass;
 	RegisterClass(&wndClass);
 
 	DWORD dwExStyle = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
-	HWND hWnd = CreateWindowEx(dwExStyle, wsEducationClass, identifier.c_str(), WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
+	HWND hWnd = CreateWindowEx(dwExStyle, wsSelectorClass, identifier.c_str(), WS_POPUP, x, y, w, h, NULL, NULL, hModule, this);
 	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
 	ShowWindow(hWnd, SW_SHOWNOACTIVATE);
 	UpdateWindow(hWnd);
@@ -330,7 +330,7 @@ static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 
 void EducationShow::close()
 {
-	while (HWND hWnd = ::FindWindow(wsEducationClass, NULL)) {
+	while (HWND hWnd = ::FindWindow(wsSelectorClass, NULL)) {
 		::SendMessage(hWnd, WM_DESTROY, 0, 0);
 	}
 }

@@ -759,7 +759,7 @@ std::wstring WinUIAuto::GetElementValue(const std::string& id)
 void WinUIAuto::setMonitoringStatus(AddInNative* addin)
 {
 	if (addin) {
-		m_focusHandler.reset(UIAutoFocusHandler::CreateInstance(*this, addin));
+		m_focusHandler.reset(UIAutoEventHandler::CreateInstance(*this, addin));
 	}
 	else {
 		m_focusHandler.reset();
@@ -788,40 +788,6 @@ void UIAutoFocusHandler::ResetHandler()
 	m_addin = nullptr;
 }
 
-HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
-{
-	// Always set out parameter to NULL, validating it first.
-	if (!ppvObj)
-		return E_INVALIDARG;
-
-	*ppvObj = NULL;
-	if (riid == IID_IUnknown || riid == IID_IUIAutomationFocusChangedEventHandler)
-	{
-		// Increment the reference count and return the pointer.
-		*ppvObj = (LPVOID)this;
-		AddRef();
-		return NOERROR;
-	}
-	return E_NOINTERFACE;
-}
-
-ULONG STDMETHODCALLTYPE UIAutoFocusHandler::AddRef()
-{
-	InterlockedIncrement(&m_count);
-	return m_count;
-}
-
-ULONG STDMETHODCALLTYPE UIAutoFocusHandler::Release()
-{
-	// Decrement the object's internal counter.
-	ULONG ulRefCount = InterlockedDecrement(&m_count);
-	if (0 == m_count)
-	{
-		delete this;
-	}
-	return ulRefCount;
-}
-
 HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::HandleFocusChangedEvent(IUIAutomationElement* element)
 {
 	if (m_addin && element) {
@@ -832,63 +798,29 @@ HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::HandleFocusChangedEvent(IUIAutomat
 	return S_OK;
 }
 
-UIAutoEventHandler* UIAutoEventHandler::CreateInstance(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element)
+UIAutoEventHandler* UIAutoEventHandler::CreateInstance(WinUIAuto& owner, AddInNative* addin)
 {
-	return new UIAutoEventHandler(owner, addin, element);
+	UIAutoUniquePtr<IUIAutomationElement> root;
+	owner.getAutomation()->GetRootElement(UI(root));
+	return new UIAutoEventHandler(owner, addin, root.get());
 }
 
 UIAutoEventHandler::UIAutoEventHandler(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element)
 	: m_owner(owner), m_cache(owner), m_addin(addin), m_sender(element)
 {
-	m_owner.getAutomation()->AddAutomationEventHandler(UIA_Invoke_InvokedEventId, element, TreeScope_Element, m_cache, this);
+	m_owner.getAutomation()->AddAutomationEventHandler(UIA_MenuOpenedEventId, element, TreeScope_Children, m_cache, this);
 }
 
 void UIAutoEventHandler::ResetHandler()
 {
-	m_owner.getAutomation()->RemoveAutomationEventHandler(UIA_Invoke_InvokedEventId, m_sender, this);
+	m_owner.getAutomation()->RemoveAutomationEventHandler(UIA_MenuOpenedEventId, m_sender, this);
 	m_addin = nullptr;
-}
-
-HRESULT STDMETHODCALLTYPE UIAutoEventHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
-{
-	// Always set out parameter to NULL, validating it first.
-	if (!ppvObj)
-		return E_INVALIDARG;
-
-	*ppvObj = NULL;
-	if (riid == IID_IUnknown || riid == IID_IUIAutomationEventHandler)
-	{
-		// Increment the reference count and return the pointer.
-		*ppvObj = (LPVOID)this;
-		AddRef();
-		return NOERROR;
-	}
-	return E_NOINTERFACE;
-}
-
-ULONG STDMETHODCALLTYPE UIAutoEventHandler::AddRef()
-{
-	InterlockedIncrement(&m_count);
-	return m_count;
-}
-
-ULONG STDMETHODCALLTYPE UIAutoEventHandler::Release()
-{
-	// Decrement the object's internal counter.
-	ULONG ulRefCount = InterlockedDecrement(&m_count);
-	if (0 == m_count)
-	{
-		delete this;
-	}
-	return ulRefCount;
 }
 
 HRESULT STDMETHODCALLTYPE UIAutoEventHandler::HandleAutomationEvent(IUIAutomationElement* sender, EVENTID eventId)
 {
 	if (m_addin) {
-		auto json = m_owner.info(sender, m_cache);
-		std::u16string text = MB2WCHAR(json.dump());
-		m_addin->ExternalEvent(u"UIAUTO", text);
+		m_addin->ExternalEvent(u"UIAUTO", u"");
 	}
 	return S_OK;
 }
