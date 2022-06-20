@@ -446,8 +446,8 @@ void ShadowPainter::draw(HWND hWnd, Graphics& graphics)
 	}
 
 	REAL btnsWidth = btnWidth * buttons.size();
-	REAL btnLeft = textRect.X + (textRect.Width / 2) - (btnsWidth / 2);
-	REAL btnTop = textRect.Y + textRect.Height - (btnHeight / 2) + margin;
+	REAL btnLeft = x + textRect.X + (textRect.Width / 2) - (btnsWidth / 2);
+	REAL btnTop = y + textRect.Y + textRect.Height - (btnHeight / 2) + margin;
 	for (auto& btn : buttons) {
 		btn->resize(btnLeft, btnTop, btnWidth, btnHeight);
 		btnLeft += btnWidth;
