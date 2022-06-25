@@ -103,6 +103,7 @@ namespace Gherkin {
 			std::vector<std::wstring> words;
 			friend class GherkinProvider;
 			friend class GherkinKeyword;
+			bool isTopLevel() const;
 		public:
 			Keyword(KeywordType type, const std::string& name, const std::string& text);
 			GherkinKeyword* match(GherkinTokens& tokens) const;
