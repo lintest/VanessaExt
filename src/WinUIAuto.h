@@ -44,7 +44,7 @@ public:
 };
 
 class UIAutoFocusHandler
-	: public IUIAutomationFocusChangedEventHandler
+	: public IUIAutomationFocusChangedEventHandler, IUIAutomationEventHandler
 {
 private:
 	ULONG volatile m_count = 1;
@@ -55,32 +55,15 @@ private:
 	UIAutoFocusHandler(WinUIAuto& owner, AddInNative* addin);
 public:
 	static UIAutoFocusHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin);
+	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
+	virtual ULONG STDMETHODCALLTYPE AddRef() override;
+	virtual ULONG STDMETHODCALLTYPE Release() override;
+	void InitFocusChangedHandler();
+	void InitWindowOpenedHandler();
 	void ResetHandler();
 public:
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
 	virtual HRESULT STDMETHODCALLTYPE HandleFocusChangedEvent(IUIAutomationElement* sender) override;
-	virtual ULONG STDMETHODCALLTYPE AddRef() override;
-	virtual ULONG STDMETHODCALLTYPE Release() override;
-};
-
-class UIAutoEventHandler
-	: public IUIAutomationEventHandler
-{
-private:
-	ULONG volatile m_count = 1;
-	WinUIAuto& m_owner;
-	UICacheRequest m_cache;
-	AddInNative* m_addin = nullptr;
-	IUIAutomationElement* m_sender = nullptr;
-	UIAutoEventHandler(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element);
-public:
-	static UIAutoEventHandler* CreateInstance(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element);
-	void ResetHandler();
-public:
-	virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID* ppvObj) override;
 	virtual HRESULT STDMETHODCALLTYPE HandleAutomationEvent(IUIAutomationElement* sender, EVENTID eventId) override;
-	virtual ULONG STDMETHODCALLTYPE AddRef() override;
-	virtual ULONG STDMETHODCALLTYPE Release() override;
 };
 
 template<class T>

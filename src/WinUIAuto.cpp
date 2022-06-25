@@ -760,6 +760,7 @@ void WinUIAuto::setMonitoringStatus(AddInNative* addin)
 {
 	if (addin) {
 		m_focusHandler.reset(UIAutoFocusHandler::CreateInstance(*this, addin));
+		m_focusHandler->InitFocusChangedHandler();
 	}
 	else {
 		m_focusHandler.reset();
@@ -779,7 +780,21 @@ UIAutoFocusHandler* UIAutoFocusHandler::CreateInstance(WinUIAuto& owner, AddInNa
 UIAutoFocusHandler::UIAutoFocusHandler(WinUIAuto& owner, AddInNative* addin)
 	: m_owner(owner), m_cache(owner), m_addin(addin)
 {
-	m_owner.getAutomation()->AddFocusChangedEventHandler(m_cache, this);
+}
+
+void UIAutoFocusHandler::InitFocusChangedHandler()
+{
+	auto automation = m_owner.getAutomation();
+	automation->AddFocusChangedEventHandler(m_cache, this);
+}
+
+void UIAutoFocusHandler::InitWindowOpenedHandler()
+{
+	auto automation = m_owner.getAutomation();
+	IUIAutomationElement* root;
+	if (SUCCEEDED(automation->GetRootElement(&root))) {
+		automation->AddAutomationEventHandler(UIA_Window_WindowOpenedEventId, root, TreeScope_Subtree, NULL, this);
+	}
 }
 
 void UIAutoFocusHandler::ResetHandler()
@@ -795,7 +810,9 @@ HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::QueryInterface(REFIID riid, LPVOID
 		return E_INVALIDARG;
 
 	*ppvObj = NULL;
-	if (riid == IID_IUnknown || riid == IID_IUIAutomationFocusChangedEventHandler)
+	if (riid == IID_IUnknown 
+		|| riid == IID_IUIAutomationEventHandler
+		|| riid == IID_IUIAutomationFocusChangedEventHandler)
 	{
 		// Increment the reference count and return the pointer.
 		*ppvObj = (LPVOID)this;
@@ -832,58 +849,7 @@ HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::HandleFocusChangedEvent(IUIAutomat
 	return S_OK;
 }
 
-UIAutoEventHandler* UIAutoEventHandler::CreateInstance(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element)
-{
-	return new UIAutoEventHandler(owner, addin, element);
-}
-
-UIAutoEventHandler::UIAutoEventHandler(WinUIAuto& owner, AddInNative* addin, IUIAutomationElement* element)
-	: m_owner(owner), m_cache(owner), m_addin(addin), m_sender(element)
-{
-	m_owner.getAutomation()->AddAutomationEventHandler(UIA_Invoke_InvokedEventId, element, TreeScope_Element, m_cache, this);
-}
-
-void UIAutoEventHandler::ResetHandler()
-{
-	m_owner.getAutomation()->RemoveAutomationEventHandler(UIA_Invoke_InvokedEventId, m_sender, this);
-	m_addin = nullptr;
-}
-
-HRESULT STDMETHODCALLTYPE UIAutoEventHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
-{
-	// Always set out parameter to NULL, validating it first.
-	if (!ppvObj)
-		return E_INVALIDARG;
-
-	*ppvObj = NULL;
-	if (riid == IID_IUnknown || riid == IID_IUIAutomationEventHandler)
-	{
-		// Increment the reference count and return the pointer.
-		*ppvObj = (LPVOID)this;
-		AddRef();
-		return NOERROR;
-	}
-	return E_NOINTERFACE;
-}
-
-ULONG STDMETHODCALLTYPE UIAutoEventHandler::AddRef()
-{
-	InterlockedIncrement(&m_count);
-	return m_count;
-}
-
-ULONG STDMETHODCALLTYPE UIAutoEventHandler::Release()
-{
-	// Decrement the object's internal counter.
-	ULONG ulRefCount = InterlockedDecrement(&m_count);
-	if (0 == m_count)
-	{
-		delete this;
-	}
-	return ulRefCount;
-}
-
-HRESULT STDMETHODCALLTYPE UIAutoEventHandler::HandleAutomationEvent(IUIAutomationElement* sender, EVENTID eventId)
+HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::HandleAutomationEvent(IUIAutomationElement* sender, EVENTID eventId)
 {
 	if (m_addin) {
 		auto json = m_owner.info(sender, m_cache);
