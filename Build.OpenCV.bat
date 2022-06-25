@@ -120,7 +120,7 @@ SET OPENCV_OPTIONS=^
 
 SET ROOTPATH=%CD%
 
-cd opencv-4.5.2
+cd opencv-4.5.5
 mkdir build32w
 cd build32w
 SET INSTALL_PATH=%ROOTPATH%/opencv-x32
@@ -133,7 +133,7 @@ cmake --build . --config Release
 cmake --build . --target install --config Release
 cd %ROOTPATH%
 
-cd opencv-4.5.2
+cd opencv-4.5.5
 mkdir build64w
 cd build64w
 SET INSTALL_PATH=%ROOTPATH%/opencv-x64
