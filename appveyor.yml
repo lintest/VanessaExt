@@ -47,9 +47,9 @@ install:
   - git checkout -b version v1.4.3
   - cd ..
 
-  - git clone -q --branch=master https://github.com/libssh2/libssh2.git libssh2-1.10.0
-  - cd libssh2-1.10.0
-  - git checkout -b version libssh2-1.10.0
+  - git clone -q --branch=master https://github.com/libssh2/libssh2.git libssh2-1.9.0
+  - cd libssh2-1.9.0
+  - git checkout -b version libssh2-1.9.0
   - cd ..
 
   - git clone -q --branch=master https://github.com/opencv/opencv.git opencv-4.5.2
