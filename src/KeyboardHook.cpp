@@ -12,9 +12,12 @@ LRESULT CALLBACK KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 	WORD vkCode = LOWORD(wParam);
 	WORD keyFlags = HIWORD(lParam);
 	if (nCode == HC_ACTION) {
-		if (vkCode == 0x48 && (keyFlags & KF_ALTDOWN)) {
-			if (hooker)
-				hooker->ExternalEvent(u"HOTKEY", u"ALT+H");
+		if (hooker && vkCode == 0x48
+			&& (keyFlags & KF_ALTDOWN)
+			&& !(keyFlags & KF_REPEAT)
+			&& !(keyFlags & KF_UP))
+		{
+			hooker->ExternalEvent(u"HOTKEY", u"ALT+H");
 		}
 	}
 	return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
