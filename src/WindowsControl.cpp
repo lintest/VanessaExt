@@ -220,10 +220,10 @@ WindowsControl::WindowsControl() {
 		[&]() { ClickEffect::Unhook(); }
 	);
 	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
-		[&](VH keys) { this->result = KeyboardHook::Hook(*this, keys); }
+		[&](VH keys) { this->result = KeyboardHook::Hook(this); }, { {0, u""} }
 	);
 	AddFunction(u"ClearHotKeys", u"СброситьГорячиеКлавиши",
-		[&]() { this->result = KeyboardHook::Unhook(); }
+		[&]() { this->result = KeyboardHook::Hook(nullptr); }
 	);
 	AddProcedure(u"PlaySound", u"ВоспроизвестиЗвук",
 		[&](VH filename, VH async) { SoundEffect::PlaySound(filename, async); }, { {0, u""}, {1, false} }
@@ -396,6 +396,8 @@ WindowsControl::~WindowsControl()
 	if (hProcessMonitor)
 		DestroyWindow(hProcessMonitor);
 	ClickEffect::Unhook();
+	EventMonitor::Hook(nullptr);
+	KeyboardHook::Hook(nullptr);
 	Magnifier::Hide();
 #endif//_WINDOWS
 }
