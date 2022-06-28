@@ -47,20 +47,12 @@ typedef void(__cdecl* StopHookProc)();
 std::string KeyboardHook::Hook(AddInNative* addin)
 {
 	hooker = addin;
-
-	if (addin) {
-		if (auto h = LoadHookLibrary()) {
-			auto proc = (StartHookProc)GetProcAddress(h, "StartKeyboardHook");
-			if (proc) { proc(); return {}; }
-		}
+	auto hLibrary = LoadHookLibrary();
+	if (hLibrary) {
+		auto proc = (StartHookProc)GetProcAddress(hLibrary, 
+			addin ? "StartKeyboardHook" : "StopKeyboardHook");
+		if (proc) { proc(); return {}; }
 	}
-	else {
-		if (auto h = LoadHookLibrary()) {
-			auto proc = (StopHookProc)GetProcAddress(h, "StopKeyboardHook");
-			if (proc) { proc(); return {}; }
-		}
-	}
-
 	return "Keyboard hook error";
 }
 
