@@ -1,4 +1,4 @@
-rem SET libgit2v="1.4.3"
+rem SET libgit2v="1.0.1"
 rem SET libssh2v="1.9.0"
 
 rem if NOT EXIST "%CD%\libgit2-%libgit2v%" bitsadmin /transfer mydownloadjob /download /priority FOREGROUND "https://github.com/libgit2/libgit2/archive/v%libgit2v%.zip" "%CD%\libgit2-%libgit2v%.zip"
