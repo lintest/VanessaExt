@@ -220,7 +220,7 @@ WindowsControl::WindowsControl() {
 		[&]() { ClickEffect::Unhook(); }
 	);
 	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
-		[&](VH keys) { this->result = KeyboardHook::Hook(this); }, { {0, u""} }
+		[&](VH key) { this->result = KeyboardHook::Hook(this, key); }, { {0, u""} }
 	);
 	AddFunction(u"ClearHotKeys", u"СброситьГорячиеКлавиши",
 		[&]() { this->result = KeyboardHook::Hook(nullptr); }

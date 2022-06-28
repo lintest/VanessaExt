@@ -3,7 +3,9 @@
 #include "stdafx.h"
 #include "KeyboardHook.h"
 
-static AddInNative* hooker = nullptr;
+static AddInNative* s_addin = nullptr;
+
+static std::u16string s_message = u"HOTKEY";
 
 static HHOOK hKeyboardHook = NULL;
 
@@ -12,12 +14,12 @@ LRESULT CALLBACK KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 	WORD vkCode = LOWORD(wParam);
 	WORD keyFlags = HIWORD(lParam);
 	if (nCode == HC_ACTION) {
-		if (hooker && vkCode == 0x48
+		if (s_addin && vkCode == 0x48
 			&& (keyFlags & KF_ALTDOWN)
 			&& !(keyFlags & KF_REPEAT)
 			&& !(keyFlags & KF_UP))
 		{
-			hooker->ExternalEvent(u"HOTKEY", u"ALT+H");
+			s_addin->ExternalEvent(s_message.c_str(), u"ALT+H");
 		}
 	}
 	return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
@@ -40,34 +42,31 @@ static HMODULE LoadHookLibrary()
 	return GetLibraryFile(path) ? LoadLibrary(path.c_str()) : nullptr;
 }
 
-typedef void(__cdecl* StartHookProc)();
+typedef void(__cdecl* SetKeyboardHookProc)(void* addin);
 
-typedef void(__cdecl* StopHookProc)();
-
-std::string KeyboardHook::Hook(AddInNative* addin)
+std::string KeyboardHook::Hook(AddInNative* addin, const std::u16string& msg)
 {
-	hooker = addin;
 	auto hLibrary = LoadHookLibrary();
 	if (hLibrary) {
-		auto proc = (StartHookProc)GetProcAddress(hLibrary, 
-			addin ? "StartKeyboardHook" : "StopKeyboardHook");
-		if (proc) { proc(); return {}; }
+		auto proc = (SetKeyboardHookProc)GetProcAddress(hLibrary, "SetKeyboardHook");
+		if (addin) s_message = msg.empty() ? u"HOTKEY" : msg;
+		if (proc) { proc(addin); return {}; }
 	}
 	return "Keyboard hook error";
 }
 
 extern "C" {
-	__declspec(dllexport) void __cdecl StopKeyboardHook()
+	__declspec(dllexport) void __cdecl SetKeyboardHook(void* addin)
 	{
+		s_addin = (AddInNative*)addin;
+
 		if (hKeyboardHook)
 			UnhookWindowsHookEx(hKeyboardHook);
 
 		hKeyboardHook = NULL;
-	}
-	__declspec(dllexport) void __cdecl StartKeyboardHook()
-	{
-		StopKeyboardHook();
-		hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD, &KeyboardHookProc, hModule, NULL);
+
+		if (addin)
+			hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD, &KeyboardHookProc, hModule, NULL);
 	}
 }
 
