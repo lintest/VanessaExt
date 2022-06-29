@@ -11,9 +11,9 @@ static HHOOK hKeyboardHook = NULL;
 
 LRESULT CALLBACK KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-	WORD vkCode = LOWORD(wParam);
-	WORD keyFlags = HIWORD(lParam);
 	if (nCode == HC_ACTION) {
+		WORD vkCode = LOWORD(wParam);
+		WORD keyFlags = HIWORD(lParam);
 		if (s_addin && vkCode == 0x48
 			&& (keyFlags & KF_ALTDOWN)
 			&& !(keyFlags & KF_REPEAT)
