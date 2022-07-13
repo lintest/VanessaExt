@@ -472,7 +472,7 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, Window window)
 	if (display == nullptr) return false;
 	if (window == 0) window = DefaultRootWindow(display);
 	XWindowAttributes gwa;
-	XGetWindowAttributes(display, window, &gwa);
+	if (XGetWindowAttributes(display, window, &gwa) == 0) return false;
 	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
 	auto success = image && Save(image, variant, gwa.width, gwa.height);
 	XDestroyImage(image);
