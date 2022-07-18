@@ -154,6 +154,13 @@ protected:
         return result;
     }
 
+    std::string GetVisibleName(Window window) {
+        unsigned long size;
+        char *buffer = NULL;
+        if (GetProperty(window, XInternAtom(display, "UTF8_STRING", False), "_NET_WM_VISIBLE_NAME", VXX(&buffer), &size)) return S(buffer);
+        return {};
+    }
+
     std::string GetWindowTitle(Window window) {
         unsigned long size;
         char *buffer = NULL;
@@ -184,6 +191,35 @@ protected:
         return max_horz && max_vert;
     }
 
+	JSON GetWindowStates(Window window) {
+        std::vector<std::string> names = {
+            "MODAL",
+            "STICKY",
+            "MAXIMIZED_VERT",
+            "MAXIMIZED_HORZ",
+            "SHADED",
+            "SKIP_TASKBAR",
+            "SKIP_PAGER",
+            "HIDDEN",
+            "FULLSCREEN",
+            "ABOVE",
+            "BELOW",
+            "DEMANDS_ATTENTION",
+        };
+        JSON result;
+		Atom xa_vert = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", False);        
+		unsigned long size, *states = NULL;
+        if (!GetProperty(window, XA_ATOM, "_NET_WM_STATE", VXX(&states), &size)) return false;
+        for (auto& name : names)
+        {
+            std::string atom_name = "_NET_WM_STATE_" + name;
+            Atom atom = XInternAtom(display, atom_name.c_str(), False);
+            for (unsigned long i = 0; i < size; i++) {
+                if (states[i] == atom) result.push_back(name);
+            }
+        }
+        return result;
+    }
 
 public:
     Window GetActiveWindow() {

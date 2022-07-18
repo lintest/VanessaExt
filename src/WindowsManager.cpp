@@ -309,6 +309,8 @@ protected:
 			j["Owner"] = GetWindowOwner(window);
 			j["Class"] = GetWindowClass(window);
 			j["Title"] = GetWindowTitle(window);
+			j["States"] = GetWindowStates(window);
+			j["VisibleName"] = GetVisibleName(window);
 			j["ProcessId"] = pid;
 			json.push_back(j);
 		}
