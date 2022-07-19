@@ -309,6 +309,7 @@ protected:
 			j["Owner"] = GetWindowOwner(window);
 			j["Class"] = GetWindowClass(window);
 			j["Title"] = GetWindowTitle(window);
+			j["Types"] = GetWindowTypes(window);
 			j["States"] = GetWindowStates(window);
 			j["VisibleName"] = GetVisibleName(window);
 			j["ProcessId"] = pid;
