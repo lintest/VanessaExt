@@ -386,6 +386,9 @@ public:
 		json["Title"] = GetWindowTitle(window);
 		json["Maximized"] = IsMaximized(window);
 		json["ProcessId"] = GetWindowPid(window);
+		json["Types"] = GetWindowTypes(window);
+		json["States"] = GetWindowStates(window);
+		json["VisibleName"] = GetVisibleName(window);
 	}
 };
 
