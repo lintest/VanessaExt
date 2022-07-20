@@ -182,8 +182,8 @@ protected:
         bool max_horz = false, max_vert = false;
         Atom xa_horz = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
 		Atom xa_vert = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", False);        
-		unsigned long size, *type = NULL;
-        if (!GetProperty(window, XA_ATOM, "_NET_WM_STATE", VXX(&type), &size)) return false;
+	    unsigned long size, *states = NULL;
+        if (!GetProperty(window, XA_ATOM, "_NET_WM_STATE", VXX(&states), &size)) return false;
         for (unsigned long i = 0; i < size; i++) {
             if (states[i] == xa_horz) max_horz = true;
             if (states[i] == xa_vert) max_vert = true;
@@ -191,7 +191,23 @@ protected:
         return max_horz && max_vert;
     }
 
-	JSON GetWindowStates(Window window) {
+    JSON GetPropertyValues(Window window, const std::string& prop, const std::vector<std::string> &names) {
+        JSON result;
+        unsigned long size, *values = NULL;
+        if (GetProperty(window, XA_ATOM, prop.c_str(), VXX(&values), &size)) {
+            for (auto& name : names)
+            {
+                std::string atom_name = prop + "_" + name;
+                Atom atom = XInternAtom(display, atom_name.c_str(), False);
+                for (unsigned long i = 0; i < size; i++) {
+                    if (values[i] == atom) result.push_back(name);
+                }
+            }
+        }
+        return result;
+    }
+
+    JSON GetWindowStates(Window window) {
         std::vector<std::string> names = {
             "MODAL",
             "STICKY",
@@ -206,19 +222,7 @@ protected:
             "BELOW",
             "DEMANDS_ATTENTION",
         };
-        JSON result;
-		unsigned long size, *states = NULL;
-        const char* prop = "_NET_WM_STATE";
-        if (!GetProperty(window, XA_ATOM, prop, VXX(&states), &size)) return false;
-        for (auto& name : names)
-        {
-            std::string atom_name = prop + "_" + name;
-            Atom atom = XInternAtom(display, atom_name.c_str(), False);
-            for (unsigned long i = 0; i < size; i++) {
-                if (states[i] == atom) result.push_back(name);
-            }
-        }
-        return result;
+        return GetPropertyValues(window, "_NET_WM_STATE", names);
     }
 
     JSON GetWindowTypes(Window window) {
@@ -232,19 +236,7 @@ protected:
             "DIALOG",
             "NORMAL",
         };
-        JSON result;
-        unsigned long size, * states = NULL;
-        const char* prop = "_NET_WM_WINDOW_TYPE";
-        if (!GetProperty(window, XA_ATOM, prop, VXX(&states), &size)) return false;
-        for (auto& name : names)
-        {
-            std::string atom_name = prop + "_" + name;
-            Atom atom = XInternAtom(display, atom_name.c_str(), False);
-            for (unsigned long i = 0; i < size; i++) {
-                if (states[i] == atom) result.push_back(name);
-            }
-        }
-        return result;
+        return GetPropertyValues(window, "_NET_WM_WINDOW_TYPE", names);
     }
 
 public:
