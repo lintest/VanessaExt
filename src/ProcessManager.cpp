@@ -190,7 +190,8 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 				&& ::GetWindowThreadProcessId(hWnd, &pid)
 				&& pid == pParams->first
 				&& ::GetClassName(hWnd, buffer, 256)
-				&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+				&& (wcscmp(L"V8TopLevelFrameSDI", buffer) == 0 
+					|| (wcscmp(L"V8TopLevelFrame", buffer) == 0))
 				) {
 				// Stop enumerating
 				SetLastError(-1);
