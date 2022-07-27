@@ -315,6 +315,7 @@ namespace Gherkin {
 		GeneratedScript(const GherkinStep& owner, const ExportScenario& definition);
 		GeneratedScript(const GherkinDefinition& definition, const GherkinParams& params);
 		GeneratedScript(const GherkinSteps& src, const GherkinParams& params);
+		void generate(const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack);
 		void replace(GherkinTables& tabs, GherkinMultilines& mlns);
 		const std::string filename;
 		const GherkinSnippet snippet;

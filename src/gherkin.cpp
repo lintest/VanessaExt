@@ -1128,40 +1128,6 @@ namespace Gherkin {
 		return json;
 	}
 
-	GeneratedScript* GeneratedScript::generate(const GherkinStep& owner, const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
-	{
-		auto snippet = owner.getSnippet();
-		if (snippet.empty()) return nullptr;
-		if (stack.count(snippet)) return nullptr;
-
-		std::unique_ptr<GeneratedScript> result;
-		std::unique_ptr<ExportScenario> definition(doc.find(snippet, owner));
-		if (definition)
-			result.reset(new GeneratedScript(*definition, {}));
-		else {
-			auto it = map.find(snippet);
-			if (it == map.end()) return nullptr;
-			definition.reset(new ExportScenario(it->second));
-			result.reset(new GeneratedScript(owner, *definition));
-		}
-		SnippetStack next = stack;
-		next.insert(snippet);
-		for (auto& step : result->steps)
-			step->generate(doc, map, next);
-
-		return result.release();
-	}
-
-	ExportScenario* GherkinDocument::find(const GherkinSnippet& snippet, const GherkinStep& owner) const
-	{
-		for (auto& def : scenarios) {
-			if (def->getSnippet() == snippet) {
-				return new ExportScenario({ *this, *def });
-			}
-		}
-		return nullptr;
-	}
-
 	static void fill(GherkinParams& params, const GherkinTokens& owner, const GherkinTokens& definition)
 	{
 		GherkinTokens source, target;
@@ -1188,11 +1154,47 @@ namespace Gherkin {
 		for (; s != source.end() && t != target.end(); ++s, ++t) {
 			if (t->isParam()) {
 				if (params.count(*t) == 0)
-						params.emplace(*t, *s);
-					else
-						throw GherkinException("Duplicate param keys");
+					params.emplace(*t, *s);
+				else
+					throw GherkinException("Duplicate param keys");
 			}
 		}
+	}
+
+	GeneratedScript* GeneratedScript::generate(const GherkinStep& owner, const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
+	{
+		auto snippet = owner.getSnippet();
+		if (snippet.empty()) return nullptr;
+		if (stack.count(snippet)) return nullptr;
+
+		std::unique_ptr<GeneratedScript> result;
+		std::unique_ptr<ExportScenario> definition(doc.find(snippet, owner));
+		if (definition) {
+			GherkinParams params;
+			fill(params, owner.getTokens(), definition->getTokens());
+			result.reset(new GeneratedScript(*definition, params));
+		} else {
+			auto it = map.find(snippet);
+			if (it == map.end()) return nullptr;
+			definition.reset(new ExportScenario(it->second));
+			result.reset(new GeneratedScript(owner, *definition));
+		}
+		SnippetStack next = stack;
+		next.insert(snippet);
+		for (auto& step : result->steps)
+			step->generate(doc, map, next);
+
+		return result.release();
+	}
+
+	ExportScenario* GherkinDocument::find(const GherkinSnippet& snippet, const GherkinStep& owner) const
+	{
+		for (auto& def : scenarios) {
+			if (def->getSnippet() == snippet) {
+				return new ExportScenario({ *this, *def });
+			}
+		}
+		return nullptr;
 	}
 
 	GeneratedScript::GeneratedScript(const GherkinStep& owner, const ExportScenario& definition)
@@ -1219,6 +1221,13 @@ namespace Gherkin {
 	{
 		for (auto& step : src) {
 			steps.emplace_back(step->copy(params));
+		}
+	}
+
+	void GeneratedScript::generate(const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
+	{
+		for (auto& step : steps) {
+			step->generate(doc, map, stack);
 		}
 	}
 
@@ -1655,6 +1664,7 @@ namespace Gherkin {
 			for (auto& row : table.body) {
 				auto params = table.params({}, row);
 				row.script.reset(new GeneratedScript(*this, params));
+				row.script->generate(doc, map, stack);
 			}
 		}
 	}
