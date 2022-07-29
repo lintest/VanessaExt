@@ -3756,6 +3756,13 @@
 											<ContextMenu name="ИгнорироватьРегистрКонтекстноеМеню" id="485"/>
 											<ExtendedTooltip name="ИгнорироватьРегистрРасширеннаяПодсказка" id="486"/>
 										</CheckBoxField>
+										<CheckBoxField name="ИскатьПапки" id="969">
+											<DataPath>ИскатьПапки</DataPath>
+											<TitleLocation>Right</TitleLocation>
+											<CheckBoxType>Auto</CheckBoxType>
+											<ContextMenu name="ИскатьПапкиКонтекстноеМеню" id="970"/>
+											<ExtendedTooltip name="ИскатьПапкиРасширеннаяПодсказка" id="971"/>
+										</CheckBoxField>
 										<Button name="НайтиФайлы" id="487">
 											<Type>UsualButton</Type>
 											<CommandName>Form.Command.НайтиФайлы</CommandName>
@@ -3806,6 +3813,13 @@
 								<ExtendedTooltip name="СписокФайловУправлениеПоискомРасширеннаяПодсказка" id="466"/>
 							</SearchControlAddition>
 							<ChildItems>
+								<CheckBoxField name="СписокФайловdir" id="972">
+									<DataPath>СписокФайлов.dir</DataPath>
+									<EditMode>EnterOnInput</EditMode>
+									<CheckBoxType>Auto</CheckBoxType>
+									<ContextMenu name="СписокФайловdirКонтекстноеМеню" id="973"/>
+									<ExtendedTooltip name="СписокФайловdirРасширеннаяПодсказка" id="974"/>
+								</CheckBoxField>
 								<InputField name="СписокФайловname" id="467">
 									<DataPath>СписокФайлов.name</DataPath>
 									<EditMode>EnterOnInput</EditMode>
@@ -4624,6 +4638,17 @@
 						<v8:DateQualifiers>
 							<v8:DateFractions>DateTime</v8:DateFractions>
 						</v8:DateQualifiers>
+					</Type>
+				</Column>
+				<Column name="dir" id="5">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Папка</v8:content>
+						</v8:item>
+					</Title>
+					<Type>
+						<v8:Type>xs:boolean</v8:Type>
 					</Type>
 				</Column>
 			</Columns>
@@ -5595,6 +5620,17 @@
 			</Title>
 			<Type>
 				<v8:Type>v8ui:Color</v8:Type>
+			</Type>
+		</Attribute>
+		<Attribute name="ИскатьПапки" id="83">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Искать папки</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
 			</Type>
 		</Attribute>
 	</Attributes>

@@ -76,6 +76,8 @@ void FileFinder::files(const std::wstring& root, const std::wstring& mask)
 	do {
 		std::wstring path = root + L"\\" + std::wstring(file.cFileName);
 		if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+			if (lstrcmpW(file.cFileName, L".") == 0) continue;
+			if (lstrcmpW(file.cFileName, L"..") == 0) continue;
 			if (m_includeDirs) {
 				nlohmann::json j;
 				j["path"] = WC2MB(path);
