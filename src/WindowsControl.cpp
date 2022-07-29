@@ -190,7 +190,9 @@ WindowsControl::WindowsControl() {
 		[&](VH text, VH pause) { ScreenManager::EmulateText(text, pause); }, { {1, (int64_t)0} }
 	);
 	AddFunction(u"FindFiles", u"НайтиФайлы",
-		[&](VH path, VH mask, VH text, VH ignore) {	this->result = FileFinder(text, ignore).find(path, mask); }, { {1, u"*.*"}, {2, u""}, {3, true} }
+		[&](VH path, VH mask, VH text, VH ignore, VH dirs) { 
+			this->result = FileFinder(text, ignore, dirs).find(path, mask); 
+		}, { {1, u"*.*"}, {2, u""}, {3, true}, {4, false} }
 	);
 	AddFunction(u"OutputToConsole", u"ВывестиВКонсоль",
 		[&](VH text, VH encoding) { this->result = ProcessManager::ConsoleOut(text, encoding); }, { {1, (int64_t)866} }

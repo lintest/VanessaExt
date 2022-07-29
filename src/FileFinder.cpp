@@ -12,8 +12,8 @@ static void wstr_tolower(std::wstring& text)
 	std::use_facet<std::ctype<wchar_t> >(std::locale()).tolower(&text[0], &text[0] + text.size());
 }
 
-FileFinder::FileFinder(const std::wstring& text, bool ignoreCase)
-	: m_text(text), m_ignoreCase(ignoreCase)
+FileFinder::FileFinder(const std::wstring& text, bool ignoreCase, bool includeDirs)
+	: m_text(text), m_ignoreCase(ignoreCase), m_includeDirs(includeDirs)
 {
 	if (ignoreCase) wstr_tolower(m_text);
 }
@@ -74,15 +74,26 @@ void FileFinder::files(const std::wstring& root, const std::wstring& mask)
 	HANDLE hFind = FindFirstFileEx(tmp.c_str(), FindExInfoStandard, &file, FindExSearchNameMatch, NULL, 0);
 	if (hFind == INVALID_HANDLE_VALUE) return;
 	do {
-		if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
 		std::wstring path = root + L"\\" + std::wstring(file.cFileName);
-		if (m_text.empty() || search(path)) {
-			nlohmann::json j;
-			j["path"] = WC2MB(path);
-			j["name"] = WC2MB(file.cFileName);
-			j["size"] = (static_cast<ULONGLONG>(file.nFileSizeHigh) << sizeof(file.nFileSizeLow) * 8) | file.nFileSizeLow;
-			j["date"] = time2str(file.ftLastWriteTime);
-			m_json.push_back(j);
+		if (file.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+			if (m_includeDirs) {
+				nlohmann::json j;
+				j["path"] = WC2MB(path);
+				j["name"] = WC2MB(file.cFileName);
+				j["date"] = time2str(file.ftLastWriteTime);
+				j["dir"] = true;
+				m_json.push_back(j);
+			}
+		}
+		else {
+			if (m_text.empty() || search(path)) {
+				nlohmann::json j;
+				j["path"] = WC2MB(path);
+				j["name"] = WC2MB(file.cFileName);
+				j["size"] = (static_cast<ULONGLONG>(file.nFileSizeHigh) << sizeof(file.nFileSizeLow) * 8) | file.nFileSizeLow;
+				j["date"] = time2str(file.ftLastWriteTime);
+				m_json.push_back(j);
+			}
 		}
 	} while (FindNextFileW(hFind, &file));
 	FindClose(hFind);
@@ -174,6 +185,18 @@ void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
 				j["date"] = time2str(boost::filesystem::last_write_time(filepath));
 				m_json.push_back(j);
 			}
+		}
+		else if (m_includeDirs && boost::filesystem::is_directory(i->status())) {
+			boost::wsmatch what;
+			std::wstring filepath = i->path().wstring();
+			std::wstring filename = i->path().filename().wstring();
+			if (!boost::regex_match(filename, what, pattern)) continue;
+			nlohmann::json j;
+			j["path"] = WC2MB(filepath);
+			j["name"] = WC2MB(filename);
+			j["date"] = time2str(boost::filesystem::last_write_time(filepath));
+			j["dir"] = true;
+			m_json.push_back(j);
 		}
 	}
 }

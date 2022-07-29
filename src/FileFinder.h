@@ -6,9 +6,10 @@ class FileFinder {
 private:
 	std::wstring m_text;
 	bool m_ignoreCase;
+	bool m_includeDirs;
 	nlohmann::json m_json;
 public:
-	FileFinder(const std::wstring& text, bool ignoreCase);
+	FileFinder(const std::wstring& text, bool ignoreCase, bool includeDirs);
 	std::wstring find(const std::wstring& path, const std::wstring& mask);
 private:
 	void dirs(const std::wstring& root, const std::wstring& mask);
