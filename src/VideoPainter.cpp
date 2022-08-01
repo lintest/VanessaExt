@@ -343,7 +343,7 @@ void ShadowButton::create(HWND hParent)
 }
 
 ShadowPainter::ShadowPainter(AddInNative& addin, const std::string& p, int x, int y, int w, int h, const std::wstring& t)
-	: PainterBase(p), X(x), Y(y), W(w), H(h), text(t), addin(addin)
+	: PainterBase(p), X(x), Y(y), W(w), H(h), text(t), addin(addin), ignoreClick(false)
 {
 	delay = 0;
 	MONITORINFO mi{ 0 };
@@ -368,6 +368,7 @@ ShadowPainter::ShadowPainter(AddInNative& addin, const std::string& p, int x, in
 	get(j, "margin", margin);
 	get(j, "eventName", eventName);
 	get(j, "eventData", eventData);
+	get(j, "ignoreClick", ignoreClick);
 	get(j, "timeoutName", timeoutName);
 	get(j, "timeoutData", timeoutData);
 
@@ -381,7 +382,9 @@ ShadowPainter::ShadowPainter(AddInNative& addin, const std::string& p, int x, in
 
 void ShadowPainter::onClick()
 {
-	hide(eventName, eventData);
+	if (!ignoreClick) {
+		hide(eventName, eventData);
+	}
 }
 
 void ShadowPainter::onTimeout()

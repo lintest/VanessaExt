@@ -131,6 +131,7 @@ private:
 	std::wstring timeoutData;
 	std::wstring fontName = L"Calibri";
 	std::wstring text;
+	bool ignoreClick;
 	int margin = 4;
 	AP pos = AP::T;
 private:
