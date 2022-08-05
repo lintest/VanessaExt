@@ -12,14 +12,19 @@ static void wstr_tolower(std::wstring& text)
 	std::use_facet<std::ctype<wchar_t> >(std::locale()).tolower(&text[0], &text[0] + text.size());
 }
 
-FileFinder::FileFinder(const std::wstring& text, bool ignoreCase, bool includeDirs)
-	: m_text(text), m_ignoreCase(ignoreCase), m_includeDirs(includeDirs)
+FileFinder::FileFinder(const std::wstring& text, bool ignoreCase, bool recurseDirs, bool includeDirs)
+	: m_text(text), m_ignoreCase(ignoreCase), m_recurseDirs(recurseDirs), m_includeDirs(includeDirs)
 {
-	if (ignoreCase) wstr_tolower(m_text);
+	if (ignoreCase) {
+		wstr_tolower(m_text);
+	}
 }
 
 bool FileFinder::search(const std::wstring& path)
 {
+	if (m_text.empty()) {
+		return true;
+	}
 #ifdef _WINDOWS
 	std::wifstream wif(path);
 #else
@@ -88,7 +93,7 @@ void FileFinder::files(const std::wstring& root, const std::wstring& mask)
 			}
 		}
 		else {
-			if (m_text.empty() || search(path)) {
+			if (search(path)) {
 				nlohmann::json j;
 				j["path"] = WC2MB(path);
 				j["name"] = WC2MB(file.cFileName);
@@ -113,7 +118,9 @@ void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
 			if (lstrcmpW(file.cFileName, L".") == 0) continue;
 			if (lstrcmpW(file.cFileName, L"..") == 0) continue;
 			std::wstring path = root + L"\\" + std::wstring(file.cFileName);
-			dirs(path, mask);
+			if (m_recurseDirs) {
+				dirs(path, mask);
+			}
 		}
 	} while (FindNextFileW(hFind, &file));
 	FindClose(hFind);
@@ -147,7 +154,6 @@ static void EscapeRegex(std::wstring& regex)
 	boost::replace_all(regex, "{", "\\}");
 	boost::replace_all(regex, "[", "\\[");
 	boost::replace_all(regex, "]", "\\]");
-	boost::replace_all(regex, "*", "\\*");
 	boost::replace_all(regex, "+", "\\+");
 	boost::replace_all(regex, "?", "\\?");
 	boost::replace_all(regex, "/", "\\/");
@@ -169,37 +175,56 @@ static std::string time2str(time_t t)
 	return buffer;
 }
 
-void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
-{
-	boost::wregex pattern(mask, m_ignoreCase ? boost::regex::icase : boost::regex::normal);
-	boost::filesystem::recursive_directory_iterator end_itr; // Default ctor yields past-the-end
-	for (boost::filesystem::recursive_directory_iterator i(root); i != end_itr; ++i) {
-		if (boost::filesystem::is_regular_file(i->status())) {
-			boost::wsmatch what;
-			std::wstring filepath = i->path().wstring();
-			std::wstring filename = i->path().filename().wstring();
-			if (!boost::regex_match(filename, what, pattern)) continue;
-			if (m_text.empty() || search(i->path().wstring())) {
+template<typename T>
+class FileIterator {
+private:
+	FileFinder& m_owner;
+	JSON& m_json;
+	bool m_includeDirs;
+public:
+	FileIterator(FileFinder& owner, JSON& json, bool includeDirs)
+		: m_owner(owner), m_json(json), m_includeDirs(includeDirs) {}
+	void find(const std::wstring& root, boost::wregex& pattern) {
+		T end_itr; // Default ctor yields past-the-end
+		for (T i(root); i != end_itr; ++i) {
+			if (boost::filesystem::is_regular_file(i->status())) {
+				boost::wsmatch what;
+				std::wstring filepath = i->path().wstring();
+				std::wstring filename = i->path().filename().wstring();
+				if (!boost::regex_match(filename, what, pattern)) continue;
+				if (m_owner.search(i->path().wstring())) {
+					nlohmann::json j;
+					j["path"] = WC2MB(filepath);
+					j["name"] = WC2MB(filename);
+					j["size"] = (int32_t)boost::filesystem::file_size(filepath);
+					j["date"] = time2str(boost::filesystem::last_write_time(filepath));
+					m_json.push_back(j);
+				}
+			}
+			else if (m_includeDirs && boost::filesystem::is_directory(i->status())) {
+				boost::wsmatch what;
+				std::wstring filepath = i->path().wstring();
+				std::wstring filename = i->path().filename().wstring();
+				if (!boost::regex_match(filename, what, pattern)) continue;
 				nlohmann::json j;
 				j["path"] = WC2MB(filepath);
 				j["name"] = WC2MB(filename);
-				j["size"] = (int32_t)boost::filesystem::file_size(filepath);
 				j["date"] = time2str(boost::filesystem::last_write_time(filepath));
+				j["dir"] = true;
 				m_json.push_back(j);
 			}
 		}
-		else if (m_includeDirs && boost::filesystem::is_directory(i->status())) {
-			boost::wsmatch what;
-			std::wstring filepath = i->path().wstring();
-			std::wstring filename = i->path().filename().wstring();
-			if (!boost::regex_match(filename, what, pattern)) continue;
-			nlohmann::json j;
-			j["path"] = WC2MB(filepath);
-			j["name"] = WC2MB(filename);
-			j["date"] = time2str(boost::filesystem::last_write_time(filepath));
-			j["dir"] = true;
-			m_json.push_back(j);
-		}
+	}
+};
+
+void FileFinder::dirs(const std::wstring& root, const std::wstring& mask)
+{
+	boost::wregex pattern(mask, m_ignoreCase ? boost::regex::icase : boost::regex::normal);
+	if (m_recurseDirs) {
+		FileIterator<boost::filesystem::recursive_directory_iterator>(*this, m_json, m_includeDirs).find(root, pattern);
+	}
+	else {
+		FileIterator<boost::filesystem::directory_iterator>(*this, m_json, m_includeDirs).find(root, pattern);
 	}
 }
 
