@@ -58,7 +58,7 @@ bool FileFinder::search(const std::wstring& path)
 std::string time2str(FILETIME& time) {
 	SYSTEMTIME st;
 	FileTimeToSystemTime(&time, &st);
-	char* format = "%d-%02d-%02dT%02d:%02d:%02d.%03dZ";
+	char* format = "%d-%02d-%02dT%02d:%02d:%02dZ";
 	char buffer[255];
 	wsprintfA(buffer,
 		format,
@@ -67,8 +67,7 @@ std::string time2str(FILETIME& time) {
 		st.wDay,
 		st.wHour,
 		st.wMinute,
-		st.wSecond,
-		st.wMilliseconds);
+		st.wSecond);
 	return buffer;
 }
 
