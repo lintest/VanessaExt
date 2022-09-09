@@ -26,8 +26,8 @@ public:
 	void push(TokenType tt, char ch = 0) {
 		document->push(*this, tt, ch);
 	}
-	void tail(TokenType type) {
-		current_token = type;
+	void tail(TokenType tt) {
+		current_token = tt;
 		start(TAIL);
 	}
 	bool escaped(wchar_t ch) const {
@@ -50,7 +50,7 @@ public:
 new_line      \r?\n
 language      #\s*(?i)(language)\s*:\s*
 encoding      #\s*(?i)(encoding)\s*:\s*
-asterisk      \*
+asterisk      \*[^\n\r]*
 number        -?(\d*[\.\,])?\d+
 date          \d+\.\d+\.\d+|\d+\/\d+\/\d+
 operator      \w[\w\d\.\-]*
@@ -73,7 +73,7 @@ tag           @
 
 <INITIAL>{new_line}   { next(); start(INITIAL); }
 <INITIAL>{space}      // ignore
-<INITIAL>{asterisk}   { tail(TokenType::Asterisk); }
+<INITIAL>{asterisk}   { push(TokenType::Asterisk); }
 <INITIAL>{language}   { tail(TokenType::Language); }
 <INITIAL>{encoding}   { tail(TokenType::Encoding); }
 <INITIAL>{comment}    { tail(TokenType::Comment); }

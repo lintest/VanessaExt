@@ -1807,6 +1807,9 @@ namespace Gherkin {
 	GherkinGroup::GherkinGroup(GherkinLexer& lexer, const GherkinLine& line)
 		: GherkinElement(lexer, line), name(trim(line.text))
 	{
+		if (line.getType() == TokenType::Asterisk) {
+			name = trim(name.substr(1));
+		}
 	}
 
 	GherkinElement* GherkinGroup::copy(const GherkinParams& params) const
