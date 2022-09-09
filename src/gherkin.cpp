@@ -1438,7 +1438,7 @@ namespace Gherkin {
 		auto& tokens = line.getTokens();
 		switch (line.getType()) {
 		case TokenType::Asterisk:
-			name = tokens[0].getText();
+			name = trim(tokens[0].getText().substr(1));
 			break;
 		case TokenType::Keyword:
 		case TokenType::Operator:
@@ -1549,8 +1549,8 @@ namespace Gherkin {
 				imports.emplace_back(line);
 				return nullptr;
 			}
-		case TokenType::Operator:
 			[[fallthrough]];
+		case TokenType::Operator:
 			if (tokens.size() == 2) {
 				current.reset(new GherkinVariable(line));
 				return nullptr;
