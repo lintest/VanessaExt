@@ -437,7 +437,11 @@ void ShadowPainter::draw(HWND hWnd, Graphics& graphics)
 	format.SetAlignment(StringAlignment::StringAlignmentCenter);
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
 	RectF rect((REAL)xx, (REAL)yy, (REAL)ww, (REAL)hh), textRect;
-	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &textRect);
+
+	if (!text.empty())
+		graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &textRect);
+	else
+		textRect = RectF(rect.X + rect.Width / 2, rect.Y + rect.Height / 2, 0, 0);
 
 	RectF r = textRect;
 	REAL btnWidth = 0;
@@ -468,7 +472,8 @@ void ShadowPainter::draw(HWND hWnd, Graphics& graphics)
 	r.Height += btnHeight;
 	textRect.Y = r.Y;
 
-	graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, textRect, &format, &textBrush);
+	if (!text.empty())
+		graphics.DrawString((WCHAR*)text.c_str(), (int)text.size(), &font, textRect, &format, &textBrush);
 
 	switch (pos) {
 	case AP::L: x3 = textRect.X; y3 = r.Y + textRect.Height / 2; x2 = x1; y2 = y3; break;

@@ -631,12 +631,16 @@ namespace Gherkin {
 	}
 
 	StringLine::StringLine(const GherkinLexer& lexer)
-		: lineNumber(lexer.lineno()), text(lexer.text()), wstr(lexer.wstr())
+		: lineNumber(lexer.lineno())
+		, text(trim(lexer.text()))
+		, wstr(MB2WC(text))
 	{
 	}
 
 	StringLine::StringLine(const GherkinLine& line)
-		: lineNumber(line.lineNumber), text(trim(line.text)), wstr(MB2WC(text))
+		: lineNumber(line.lineNumber)
+		, text(trim(line.text))
+		, wstr(MB2WC(text))
 	{
 	}
 
