@@ -42,15 +42,15 @@ install:
 
   - sh: sudo update-alternatives --set gcc "/usr/bin/gcc-7"
 
-  - git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
-  - cd libgit2-1.1.0
-  - git checkout -b version v1.1.0
-  - cd ..
+  - cmd: git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
+  - cmd: cd libgit2-1.1.0
+  - cmd: git checkout -b version v1.1.0
+  - cmd: cd ..
 
-  - git clone -q --branch=master https://github.com/libssh2/libssh2.git libssh2-1.9.0
-  - cd libssh2-1.9.0
-  - git checkout -b version libssh2-1.9.0
-  - cd ..
+  - cmd: git clone -q --branch=master https://github.com/libssh2/libssh2.git libssh2-1.9.0
+  - cmd: cd libssh2-1.9.0
+  - cmd: git checkout -b version libssh2-1.9.0
+  - cmd: cd ..
 
   - git clone -q --branch=master https://github.com/opencv/opencv.git opencv-4.5.2
   - cd opencv-4.5.2
