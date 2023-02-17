@@ -276,7 +276,9 @@ WindowsControl::WindowsControl() {
 		[&](VH p, VH x, VH y, VH text) { (new TextLabel(p, x, y, text))->run(); }, { {3, u""} }
 	);
 	AddProcedure(u"ShowStopWindow", u"ПоказатьОкноПрерывания",
-		[&](VH p, VH title, VH button) { (new EducationShow(*this, p, title, button))->run(); }, { {0, u"{}"}, {1, u"Playing"}, {2, u"Stop"} }
+		[&](VH p, VH title, VH button, VH filename) { 
+			(new EducationShow(*this, p, title, button, filename))->run(); 
+		}, { {0, u"{}"}, {1, u"Playing"}, {2, u"Stop"}, {3, u""} }
 	);
 	AddProcedure(u"CloseStopWindow", u"ЗакрытьОкноПрерывания",
 		[&]() { EducationShow::close(); }

@@ -8,7 +8,7 @@ using namespace Gdiplus;
 
 class EducationShow {
 private:
-	std::wstring title, button, identifier;
+	std::wstring title, button, identifier, filename;
 	std::wstring eventName = L"STOP_VANESSA";
 	std::wstring eventData;
 	int titleWidth = 0;
@@ -36,7 +36,7 @@ private:
 private:
 	void draw(Gdiplus::Graphics& graphics);
 public:
-	EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button);
+	EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button, const std::wstring& filename);
 	LRESULT onHitTest(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT onMouseDown(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT onMouseMove(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

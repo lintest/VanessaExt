@@ -30,8 +30,8 @@ static Color makeTransparent(const Color& color, int trans) {
 	return Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
 }
 
-EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button)
-	: addin(addin), title(title), button(button)
+EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button, const std::wstring& filename)
+	: addin(addin), title(title), button(button), filename(filename)
 {
 	JSON j = JSON::parse(p);
 	get(j, "color", color);
@@ -239,6 +239,19 @@ LRESULT EducationShow::onMouseUp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		pressed = false;
 		win(hWnd).repaint(hWnd);
 		addin.ExternalEvent((char16_t*)eventName.c_str(), (char16_t*)eventData.c_str());
+		if (!filename.empty())
+		{
+			auto hFile = CreateFileW(filename.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hFile != INVALID_HANDLE_VALUE)
+			{
+				WCHAR buf[32];
+				SYSTEMTIME st;
+				GetLocalTime(&st);
+				wsprintfW(buf, L"%.4u-%.2u-%.2uT%.2u:%.2u:%.2u", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+				WriteFile(hFile, buf, wcslen(buf) * sizeof(WCHAR), NULL, NULL);
+				CloseHandle(hFile);
+			}
+		}
 	}
 	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
