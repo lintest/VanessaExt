@@ -380,9 +380,17 @@ namespace Gherkin {
 		JSON json;
 	};
 
+	struct sort_functor
+	{
+		bool operator ()(const BoostPath& a, const BoostPath& b)
+		{
+			return a < b;// or some custom code
+		}
+	};	
+
 	BoostPaths GherkinProvider::GetDirFiles(size_t id, const BoostPath& root) const
 	{
-		BoostPaths files;
+		std::vector<std::wstring> files;
 		const std::wstring mask = L"^.+\\.feature$";
 		boost::wregex pattern(mask, boost::regex::icase);
 		boost::filesystem::recursive_directory_iterator end_itr;
@@ -396,7 +404,12 @@ namespace Gherkin {
 					files.push_back(path);
 			}
 		}
-		return files;
+		std::sort(files.begin(), files.end());
+		BoostPaths result;
+		for (auto &file : files) {  
+			result.push_back(file);
+		}		
+		return result;
 	}
 
 #ifdef _WINDOWS
