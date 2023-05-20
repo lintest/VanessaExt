@@ -209,7 +209,6 @@ namespace Gherkin {
 	private:
 		class TableRow {
 		private:
-			std::string text;
 			size_t lineNumber;
 			GherkinTokens tokens;
 			std::unique_ptr<GeneratedScript> script = nullptr;
@@ -218,6 +217,8 @@ namespace Gherkin {
 			friend class GeneratedScript;
 			friend class GherkinDefinition;
 		public:
+			std::string text;
+			std::wstring wstr;
 			TableRow(const GherkinLine& line);
 			TableRow(const TableRow& src);
 			TableRow(const TableRow& src, const GherkinParams& params);
@@ -255,8 +256,10 @@ namespace Gherkin {
 	public:
 		GherkinMultiline(const GherkinLine& line);
 		GherkinMultiline(const GherkinMultiline& src);
+		GherkinMultiline(const GherkinMultiline& src, const GherkinParams& params);
 		GherkinMultiline& operator=(const GherkinMultiline& src);
 		bool empty() const { return lines.empty(); }
+		bool replace(const GherkinParams& params);
 		void push(const GherkinLine& line);
 		void close(const GherkinLine& line);
 		operator JSON() const;
@@ -482,8 +485,9 @@ namespace Gherkin {
 		StringLine(const StringLine& src);
 		StringLine(size_t lineNumber);
 		const size_t lineNumber;
-		const std::string text;
-		const std::wstring wstr;
+		std::string text;
+		std::wstring wstr;
+		bool replace(const GherkinParams& params);
 		operator JSON() const;
 	};
 
