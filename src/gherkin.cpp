@@ -146,6 +146,39 @@ namespace Gherkin {
 		return INT_MAX;
 	}
 
+	template <typename T>
+	bool replace(T& obj, const GherkinParams& params)
+	{
+		bool changed = false;
+		std::wstringstream ss;
+		static const boost::wregex expression(L"\\[[^\\]]+\\]");
+		std::wstring::const_iterator start = obj.wstr.begin();
+		std::wstring::const_iterator end = obj.wstr.end();
+		boost::match_results<std::wstring::const_iterator> what;
+		boost::match_flag_type flags = boost::match_default;
+		while (regex_search(start, end, what, expression, flags)) {
+			auto& match = what[0];
+			if (match.first > start)
+				ss << std::wstring(start, match.first);
+			start = match.second;
+			auto key = std::wstring(match.begin() + 1, match.end() - 1);
+			auto par = GherkinToken(TokenType::Param, WC2MB(key), key);
+			auto it = params.find(par);
+			if (it == params.end())
+				ss << match;
+			else {
+				ss << it->second.getWstr();
+				changed = true;
+			}
+		}
+		if (changed) {
+			ss << std::wstring(start, end);
+			obj.wstr = ss.str();
+			obj.text = WC2MB(obj.wstr);
+		}
+		return changed;
+	}
+
 	enum class MatchType {
 		Include,
 		Exclude,
@@ -380,17 +413,9 @@ namespace Gherkin {
 		JSON json;
 	};
 
-	struct sort_functor
-	{
-		bool operator ()(const BoostPath& a, const BoostPath& b)
-		{
-			return a < b;// or some custom code
-		}
-	};	
-
 	BoostPaths GherkinProvider::GetDirFiles(size_t id, const BoostPath& root) const
 	{
-		std::vector<std::wstring> files;
+		BoostPaths files;
 		const std::wstring mask = L"^.+\\.feature$";
 		boost::wregex pattern(mask, boost::regex::icase);
 		boost::filesystem::recursive_directory_iterator end_itr;
@@ -404,12 +429,7 @@ namespace Gherkin {
 					files.push_back(path);
 			}
 		}
-		std::sort(files.begin(), files.end());
-		BoostPaths result;
-		for (auto &file : files) {  
-			result.push_back(file);
-		}		
-		return result;
+		return files;
 	}
 
 #ifdef _WINDOWS
@@ -667,6 +687,11 @@ namespace Gherkin {
 	{
 	}
 
+	bool StringLine::replace(const GherkinParams& params)
+	{
+		return ::replace(*this, params);
+	}
+
 	StringLine::operator JSON() const
 	{
 		JSON json;
@@ -762,32 +787,7 @@ namespace Gherkin {
 				changed = true;
 			}
 			else {
-				std::wstringstream ss;
-				static const boost::wregex expression(L"\\[[^\\]]+\\]");
-				std::wstring::const_iterator start = wstr.begin();
-				std::wstring::const_iterator end = wstr.end();
-				boost::match_results<std::wstring::const_iterator> what;
-				boost::match_flag_type flags = boost::match_default;
-				while (regex_search(start, end, what, expression, flags)) {
-					auto& match = what[0];
-					if (match.first > start)
-						ss << std::wstring(start, match.first);
-					start = match.second;
-					auto key = std::wstring(match.begin() + 1, match.end() - 1);
-					auto par = GherkinToken(TokenType::Param, WC2MB(key), key);
-					auto it = params.find(par);
-					if (it == params.end())
-						ss << match;
-					else {
-						ss << it->second.getWstr();
-						changed = true;
-					}
-				}
-				if (changed) {
-					ss << std::wstring(start, end);
-					wstr = ss.str();
-					text = WC2MB(wstr);
-				}
+				changed = ::replace(*this, params);
 			}
 		}
 		return changed;
@@ -835,7 +835,7 @@ namespace Gherkin {
 
 	static double str2num(const std::string& text, std::stringstream& ss) {
 		bool zeroPrefix = true;
-		int64_t numb = 0, sign = 1;
+		double numb = 0, sign = 1;
 		for (auto it = text.begin(); it != text.end(); ++it) {
 			switch (*it) {
 			case '+':
@@ -978,7 +978,7 @@ namespace Gherkin {
 	}
 
 	GherkinTable::TableRow::TableRow(const GherkinLine& line)
-		: lineNumber(line.lineNumber), text(line.text)
+		: lineNumber(line.lineNumber), text(line.text), wstr(line.wstr)
 	{
 		bool first = true;
 		GherkinToken current = TokenType::None;
@@ -997,7 +997,7 @@ namespace Gherkin {
 	}
 
 	GherkinTable::TableRow::TableRow(const TableRow& src)
-		: lineNumber(src.lineNumber), text(src.text)
+		: lineNumber(src.lineNumber), text(src.text), wstr(src.wstr)
 	{
 		for (auto& token : src.tokens) {
 			tokens.emplace_back(token);
@@ -1005,12 +1005,13 @@ namespace Gherkin {
 	}
 
 	GherkinTable::TableRow::TableRow(const TableRow& src, const GherkinParams& params)
-		: lineNumber(src.lineNumber), text(src.text)
+		: lineNumber(src.lineNumber), text(src.text), wstr(src.wstr)
 	{
 		for (auto& token : src.tokens) {
 			tokens.emplace_back(token);
 			tokens.back().replace(params);
 		}
+		::replace(*this, params);
 	}
 
 	void GherkinTable::TableRow::push(const GherkinToken& token, const GherkinParams& params)
@@ -1106,6 +1107,17 @@ namespace Gherkin {
 	{
 	}
 
+	GherkinMultiline::GherkinMultiline(const GherkinMultiline& src, const GherkinParams& params)
+		: lineNumber(src.lineNumber)
+		, lastNumber(src.lastNumber)
+		, endNumber(src.endNumber)
+		, header(src.header)
+		, footer(src.footer)
+		, lines(src.lines)
+	{
+		replace(params);
+	}
+
 	GherkinMultiline& GherkinMultiline::operator=(const GherkinMultiline& src)
 	{
 		if (std::addressof(*this) == std::addressof(src))
@@ -1134,6 +1146,15 @@ namespace Gherkin {
 		}
 		endNumber = line.lineNumber;
 		footer = trim(line.text);
+	}
+
+	bool GherkinMultiline::replace(const GherkinParams& params)
+	{
+		bool changed = false;
+		for (auto& line : lines) {
+			changed |= line.replace(params);
+		}
+		return changed;
 	}
 
 	GherkinMultiline::operator JSON() const
@@ -1303,7 +1324,7 @@ namespace Gherkin {
 			tables.emplace_back(table, params);
 		}
 		for (auto& lines : src.multilines) {
-			multilines.emplace_back(lines);
+			multilines.emplace_back(lines, params);
 		}
 	}
 
