@@ -36,6 +36,7 @@ private:
 private:
 	void draw(Gdiplus::Graphics& graphics);
 public:
+	static bool sm_stop;
 	EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button, const std::wstring& filename);
 	LRESULT onHitTest(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT onMouseDown(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

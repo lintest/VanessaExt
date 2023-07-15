@@ -30,6 +30,8 @@ static Color makeTransparent(const Color& color, int trans) {
 	return Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
 }
 
+EducationShow::sm_stop = false;
+
 EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button, const std::wstring& filename)
 	: addin(addin), title(title), button(button), filename(filename)
 {
@@ -238,6 +240,7 @@ LRESULT EducationShow::onMouseUp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	if (pressed) {
 		pressed = false;
 		win(hWnd).repaint(hWnd);
+		EducationShow::sm_stop = true;
 		addin.ExternalEvent((char16_t*)eventName.c_str(), (char16_t*)eventData.c_str());
 		if (!filename.empty())
 		{
@@ -351,6 +354,7 @@ void EducationShow::close()
 void EducationShow::run()
 {
 	close();
+	sm_stop = false;
 	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
 }
 
