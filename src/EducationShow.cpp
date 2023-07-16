@@ -30,7 +30,7 @@ static Color makeTransparent(const Color& color, int trans) {
 	return Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
 }
 
-EducationShow::sm_stop = false;
+bool EducationShow::sm_stop = false;
 
 EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button, const std::wstring& filename)
 	: addin(addin), title(title), button(button), filename(filename)
