@@ -182,6 +182,8 @@ public:
 	operator IComponentBase* () { return (IComponentBase*)this; };
 	// LocaleBase
 	virtual void ADDIN_API SetLocale(const WCHAR_T* loc) override final;
+	// UserLanguageBase
+	virtual void ADDIN_API SetUserInterfaceLanguageCode(const WCHAR_T* lang) override final {}
 protected:
 	IAddInDefBase* connection() { return m_iConnect; };
 private:

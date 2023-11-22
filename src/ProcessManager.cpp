@@ -190,7 +190,8 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 				&& ::GetWindowThreadProcessId(hWnd, &pid)
 				&& pid == pParams->first
 				&& ::GetClassName(hWnd, buffer, 256)
-				&& wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
+				&& (wcscmp(L"V8TopLevelFrameSDI", buffer) == 0 
+					|| (wcscmp(L"V8TopLevelFrame", buffer) == 0))
 				) {
 				// Stop enumerating
 				SetLastError(-1);
@@ -325,7 +326,6 @@ protected:
 		json["Window"] = (uint64_t)window;
 		json["Title"] = GetWindowTitle(window);
 		json["CommandLine"] = GetCommandLine(pid);
-		json["CreationDate"] = GetCreationDate(pid);
 		json["ProcessId"] = pid;
 		return false;
 	}
@@ -368,7 +368,6 @@ protected:
 		j["Window"] = (uint64_t)window;
 		j["Title"] = GetWindowTitle(window);
 		j["CommandLine"] = GetCommandLine(pid);
-		j["CreationDate"] = GetCreationDate(pid);
 		j["ProcessId"] = pid;
 		json.push_back(j);
 		return true;
@@ -385,7 +384,6 @@ public:
 	ProcessInfo(unsigned long pid) {
 		json["Name"] = GetProcessName(pid);
 		json["CommandLine"] = GetCommandLine(pid);
-		json["CreationDate"] = GetCreationDate(pid);
 		json["ProcessId"] = pid;
 	}
 };

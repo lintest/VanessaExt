@@ -30,17 +30,16 @@ static Color makeTransparent(const Color& color, int trans) {
 	return Color(trans & 0xFF, color.GetRed(), color.GetGreen(), color.GetBlue());
 }
 
-EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button)
-	: addin(addin), title(title), button(button)
+bool EducationShow::sm_stop = false;
+
+EducationShow::EducationShow(AddInNative& addin, const std::string& p, const std::wstring& title, const std::wstring& button, const std::wstring& filename)
+	: addin(addin), title(title), button(button), filename(filename)
 {
 	JSON j = JSON::parse(p);
 	get(j, "color", color);
 	get(j, "padding", padding);
-	get(j, "duration", duration);
 	get(j, "eventName", eventName);
 	get(j, "eventData", eventData);
-	get(j, "frameCount", limit);
-	get(j, "frameDelay", delay);
 	get(j, "thickness", thick);
 	get(j, "transparency", trans);
 	get(j, "fontName", fontName);
@@ -241,7 +240,21 @@ LRESULT EducationShow::onMouseUp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	if (pressed) {
 		pressed = false;
 		win(hWnd).repaint(hWnd);
+		EducationShow::sm_stop = true;
 		addin.ExternalEvent((char16_t*)eventName.c_str(), (char16_t*)eventData.c_str());
+		if (!filename.empty())
+		{
+			auto hFile = CreateFileW(filename.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hFile != INVALID_HANDLE_VALUE)
+			{
+				WCHAR buf[32];
+				SYSTEMTIME st;
+				GetLocalTime(&st);
+				wsprintfW(buf, L"%.4u-%.2u-%.2uT%.2u:%.2u:%.2u", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+				WriteFile(hFile, buf, wcslen(buf) * sizeof(WCHAR), NULL, NULL);
+				CloseHandle(hFile);
+			}
+		}
 	}
 	return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
@@ -341,6 +354,7 @@ void EducationShow::close()
 void EducationShow::run()
 {
 	close();
+	sm_stop = false;
 	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
 }
 

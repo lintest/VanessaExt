@@ -16,6 +16,7 @@
 #include "ClipboardManager.h"
 #include "DesktopManager.h"
 #include "EducationShow.h"
+#include "EventMonitor.h"
 #include "FileFinder.h"
 #include "ImageFinder.h"
 #include "ImageHelper.h"
@@ -65,6 +66,17 @@ WindowsControl::WindowsControl() {
 	AddProperty(u"ScreenInfo", u"СвойстваЭкрана",
 		[&](VH var) { var = ScreenManager::GetScreenInfo(); }
 	);
+
+#ifdef _WINDOWS
+	AddProperty(u"ActiveElementMonitoring", u"МониторингАктивногоЭлемента",
+		[&](VH var) { var = getUIAuto().getMonitoringStatus(); },
+		[&](VH var) { getUIAuto().setMonitoringStatus(bool(var) ? this : nullptr); }
+	);
+	AddProperty(u"MouseEventMonitoring", u"МониторингСобытийМыши",
+		[&](VH var) { var = EventMonitor::getStatus(); },
+		[&](VH var) { EventMonitor::Hook(bool(var) ? this : nullptr); }
+	);
+#endif
 
 	AddFunction(u"FindTestClient", u"НайтиКлиентТестирования",
 		[&](VH port) { this->result = ProcessManager::FindTestClient(port); }
@@ -178,7 +190,9 @@ WindowsControl::WindowsControl() {
 		[&](VH text, VH pause) { ScreenManager::EmulateText(text, pause); }, { {1, (int64_t)0} }
 	);
 	AddFunction(u"FindFiles", u"НайтиФайлы",
-		[&](VH path, VH mask, VH text, VH ignore) {	this->result = FileFinder(text, ignore).find(path, mask); }, { {1, u"*.*"}, {2, u""}, {3, true} }
+		[&](VH path, VH mask, VH text, VH ignore, VH recurse, VH dirs) {
+			this->result = FileFinder(text, ignore, recurse, dirs).find(path, mask);
+		}, { {1, u"*.*"}, {2, u""}, {3, true}, {4, true}, {5, false} }
 	);
 	AddFunction(u"OutputToConsole", u"ВывестиВКонсоль",
 		[&](VH text, VH encoding) { this->result = ProcessManager::ConsoleOut(text, encoding); }, { {1, (int64_t)866} }
@@ -208,10 +222,10 @@ WindowsControl::WindowsControl() {
 		[&]() { ClickEffect::Unhook(); }
 	);
 	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
-		[&](VH keys) { this->result = KeyboardHook::Hook(*this, keys); }
+		[&](VH key) { this->result = KeyboardHook::Hook(this, key); }, { {0, u""} }
 	);
 	AddFunction(u"ClearHotKeys", u"СброситьГорячиеКлавиши",
-		[&]() { this->result = KeyboardHook::Unhook(); }
+		[&]() { this->result = KeyboardHook::Hook(nullptr); }
 	);
 	AddProcedure(u"PlaySound", u"ВоспроизвестиЗвук",
 		[&](VH filename, VH async) { SoundEffect::PlaySound(filename, async); }, { {0, u""}, {1, false} }
@@ -250,7 +264,7 @@ WindowsControl::WindowsControl() {
 		[&](VH p, VH x1, VH y1, VH x2, VH y2) { (new ArrowPainter(p, x1, y1, x2, y2))->run(); }
 	);
 	AddProcedure(u"DrawShadow", u"НарисоватьТень",
-		[&](VH p, VH x, VH y, VH w, VH h, VH text) { (new ShadowPainter(p, x, y, w, h, text))->run(); }, { {5, u""} }
+		[&](VH p, VH x, VH y, VH w, VH h, VH text) { (new ShadowPainter(*this, p, x, y, w, h, text))->run(); }, { {5, u""} }
 	);
 	AddProcedure(u"SpeechBubble", u"НарисоватьТекст",
 		[&](VH p, VH x, VH y, VH w, VH h, VH text) { (new SpeechBubble(p, x, y, w, h, text))->run(); }, { {5, u""} }
@@ -262,7 +276,9 @@ WindowsControl::WindowsControl() {
 		[&](VH p, VH x, VH y, VH text) { (new TextLabel(p, x, y, text))->run(); }, { {3, u""} }
 	);
 	AddProcedure(u"ShowStopWindow", u"ПоказатьОкноПрерывания",
-		[&](VH p, VH title, VH button) { (new EducationShow(*this, p, title, button))->run(); }, { {0, u"{}"}, {1, u"Playing"}, {2, u"Stop"} }
+		[&](VH p, VH title, VH button, VH filename) { 
+			(new EducationShow(*this, p, title, button, filename))->run(); 
+		}, { {0, u"{}"}, {1, u"Playing"}, {2, u"Stop"}, {3, u""} }
 	);
 	AddProcedure(u"CloseStopWindow", u"ЗакрытьОкноПрерывания",
 		[&]() { EducationShow::close(); }
@@ -308,40 +324,40 @@ WindowsControl::WindowsControl() {
 		[&](VH id) { this->result = GetScaleFactor(id); }, { {0, (int64_t)0} }
 	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
-		[&](VH id) { this->result = GetElements(id); }
+		[&](VH id, VH level) { this->result = GetElements(id, level); }, { {1, (int64_t)MAXINT} }
 	);
 	AddFunction(u"GetElementById", u"ЭлементПоИдентификатору",
-		[&](VH id) { this->result = WinUIAuto().ElementById(id); }
+		[&](VH id) { this->result = getUIAuto().ElementById(id); }
 	);
 	AddFunction(u"GetElementFromPoint", u"ЭлементПоКоординатам",
-		[&](VH x, VH y) { this->result = WinUIAuto().ElementFromPoint(x, y); }
+		[&](VH x, VH y) { this->result = getUIAuto().ElementFromPoint(x, y); }
 	);
 	AddFunction(u"FindElements", u"НайтиЭлементы",
-		[&](VH filter) { this->result = WinUIAuto().FindElements(filter); }
+		[&](VH filter) { this->result = getUIAuto().FindElements(filter); }
 	);
 	AddFunction(u"InvokeElement", u"ВызватьЭлемент",
-		[&](VH id) { this->result = WinUIAuto().InvokeElement(id); }
+		[&](VH id) { this->result = getUIAuto().InvokeElement(id); }
 	);
 	AddFunction(u"FocusElement", u"АктивироватьЭлемент",
-		[&](VH id) { this->result = WinUIAuto().FocusElement(id); }
+		[&](VH id) { this->result = getUIAuto().FocusElement(id); }
 	);
 	AddFunction(u"GetParentElement", u"ПолучитьРодителяЭлемента",
-		[&](VH id) { this->result = WinUIAuto().GetParentElement(id); }
+		[&](VH id) { this->result = getUIAuto().GetParentElement(id); }
 	);
 	AddFunction(u"GetNextElement", u"ПолучитьСледующийЭлемент",
-		[&](VH id) { this->result = WinUIAuto().GetNextElement(id); }
+		[&](VH id) { this->result = getUIAuto().GetNextElement(id); }
 	);
 	AddFunction(u"GetPreviousElement", u"ПолучитьПредыдущийЭлемент",
-		[&](VH id) { this->result = WinUIAuto().GetPreviousElement(id); }
+		[&](VH id) { this->result = getUIAuto().GetPreviousElement(id); }
 	);
 	AddFunction(u"GetElementValue", u"ПолучитьЗначениеЭлемента",
-		[&](VH id) { this->result = WinUIAuto().GetElementValue(id); }
+		[&](VH id) { this->result = getUIAuto().GetElementValue(id); }
 	);
 	AddFunction(u"SetElementValue", u"УстановитьЗначениеЭлемента",
-		[&](VH id, VH value) { this->result = WinUIAuto().SetElementValue(id, value); }
+		[&](VH id, VH value) { this->result = getUIAuto().SetElementValue(id, value); }
 	);
 	AddProperty(u"ActiveElement", u"АктивныйЭлемент",
-		[&](VH var) { var = WinUIAuto().GetFocusedElement(); }
+		[&](VH var) { var = getUIAuto().GetFocusedElement(); }
 	);
 #endif//_WINDOWS
 
@@ -384,6 +400,8 @@ WindowsControl::~WindowsControl()
 	if (hProcessMonitor)
 		DestroyWindow(hProcessMonitor);
 	ClickEffect::Unhook();
+	EventMonitor::Hook(nullptr);
+	KeyboardHook::Hook(nullptr);
 	Magnifier::Hide();
 #endif//_WINDOWS
 }
@@ -483,11 +501,11 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 	return pid;
 }
 
-std::string WindowsControl::GetElements(const VH& id)
+std::string WindowsControl::GetElements(const VH& id, int64_t level)
 {
 	switch (id.type()) {
-	case VTYPE_PWSTR: return WinUIAuto().GetElements((std::string)id);
-	default: return WinUIAuto().GetElements((DWORD)(int64_t)id);
+	case VTYPE_PWSTR: return getUIAuto().GetElements((std::string)id, level);
+	default: return getUIAuto().GetElements((DWORD)(int64_t)id, level);
 	};
 }
 
@@ -517,6 +535,14 @@ int64_t WindowsControl::GetScaleFactor(int64_t window)
 void WindowsControl::ExitCurrentProcess(int64_t status)
 {
 	ExitProcess((UINT)status);
+}
+
+WinUIAuto& WindowsControl::getUIAuto()
+{
+	if (!m_automation)
+		m_automation.reset(new WinUIAuto());
+
+	return *m_automation.get();
 }
 
 #else//_WINDOWS

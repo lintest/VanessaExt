@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "EducationShow.h"
 #include "ScreenManager.h"
 #include "WindowsManager.h"
 #include <math.h>
@@ -328,6 +329,9 @@ BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pa
 {
 	Sleep(100);
 	for (auto ch : text) {
+		if (EducationShow::sm_stop)
+			break;
+
 		INPUT ip;
 		::ZeroMemory(&ip, sizeof(ip));
 		ip.type = INPUT_KEYBOARD;
@@ -336,7 +340,9 @@ BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pa
 		SendInput(1, &ip, sizeof(INPUT));
 		ip.ki.dwFlags |= KEYEVENTF_KEYUP;
 		SendInput(1, &ip, sizeof(INPUT));
-		if (pause) Sleep((WORD)pause);
+
+		if (pause) 
+			Sleep((WORD)pause);
 	}
 	return true;
 }
@@ -472,7 +478,7 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, Window window)
 	if (display == nullptr) return false;
 	if (window == 0) window = DefaultRootWindow(display);
 	XWindowAttributes gwa;
-	XGetWindowAttributes(display, window, &gwa);
+	if (XGetWindowAttributes(display, window, &gwa) == 0) return false;
 	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
 	auto success = image && Save(image, variant, gwa.width, gwa.height);
 	XDestroyImage(image);

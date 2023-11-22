@@ -86,7 +86,7 @@ namespace Gherkin {
 		if (!value.empty()) {
 			JSON js;
 			for (const auto& [i, v] : value)
-				js.push_back(JSON({ {"key", WC2MB(i)}, {"value", v } }));
+				js.push_back(JSON({ {"key", i.text}, {"value", v } }));
 
 			json[key] = js;
 		}
@@ -146,11 +146,51 @@ namespace Gherkin {
 		return INT_MAX;
 	}
 
+	template <typename T>
+	bool replace(T& obj, const GherkinParams& params)
+	{
+		bool changed = false;
+		std::wstringstream ss;
+		static const boost::wregex expression(L"\\[[^\\]]+\\]");
+		std::wstring::const_iterator start = obj.wstr.begin();
+		std::wstring::const_iterator end = obj.wstr.end();
+		boost::match_results<std::wstring::const_iterator> what;
+		boost::match_flag_type flags = boost::match_default;
+		while (regex_search(start, end, what, expression, flags)) {
+			auto& match = what[0];
+			if (match.first > start)
+				ss << std::wstring(start, match.first);
+			start = match.second;
+			auto key = std::wstring(match.begin() + 1, match.end() - 1);
+			auto par = GherkinToken(TokenType::Param, WC2MB(key), key);
+			auto it = params.find(par);
+			if (it == params.end())
+				ss << match;
+			else {
+				ss << it->second.getWstr();
+				changed = true;
+			}
+		}
+		if (changed) {
+			ss << std::wstring(start, end);
+			obj.wstr = ss.str();
+			obj.text = WC2MB(obj.wstr);
+		}
+		return changed;
+	}
+
 	enum class MatchType {
 		Include,
 		Exclude,
 		Unknown
 	};
+
+	bool GherkinTokenComparator::operator()(const GherkinToken& a, const GherkinToken& b) const {
+		if (a.getType() == b.getType())
+			return lower(a.getWstr()) < lower(b.getWstr());
+		else
+			return a.getType() < b.getType();
+	}
 
 	class GherkinFilter {
 	private:
@@ -207,12 +247,29 @@ namespace Gherkin {
 		}
 	}
 
+	bool GherkinProvider::Keyword::isTopLevel() const
+	{
+		switch (type) {
+		case KeywordType::Import:
+		case KeywordType::Step:
+		case KeywordType::None:
+			return false;
+		default:
+			return true;
+		}
+	}
+
 	GherkinKeyword* GherkinProvider::Keyword::match(GherkinTokens& tokens) const
 	{
-		if (words.size() > tokens.size())
+		bool toplevel = isTopLevel();
+		size_t count = words.size();
+		if (tokens.size() < count + (toplevel ? 1 : 0))
 			return nullptr;
 
-		for (size_t i = 0; i < words.size(); ++i) {
+		if (toplevel && tokens[count].type != TokenType::Colon)
+			return nullptr;
+
+		for (size_t i = 0; i < count; ++i) {
 			if (tokens[i].type != TokenType::Operator)
 				return nullptr;
 
@@ -220,18 +277,8 @@ namespace Gherkin {
 				return nullptr;
 		}
 
-		bool toplevel = false;
-		size_t keynum = words.end() - words.begin();
-		for (auto& t : tokens) {
-			if (keynum > 0) {
-				t.type = TokenType::Keyword;
-				keynum--;
-			}
-			else {
-				if (t.type == TokenType::Colon)
-					toplevel = true;
-				break;
-			}
+		for (size_t i = 0; i < count; ++i) {
+			tokens[i].type = TokenType::Keyword;
 		}
 
 		return new GherkinKeyword(*this, toplevel);
@@ -366,9 +413,17 @@ namespace Gherkin {
 		JSON json;
 	};
 
+	struct sort_functor
+	{
+		bool operator ()(const BoostPath& a, const BoostPath& b)
+		{
+			return a < b;// or some custom code
+		}
+	};	
+
 	BoostPaths GherkinProvider::GetDirFiles(size_t id, const BoostPath& root) const
 	{
-		BoostPaths files;
+		std::vector<std::wstring> files;
 		const std::wstring mask = L"^.+\\.feature$";
 		boost::wregex pattern(mask, boost::regex::icase);
 		boost::filesystem::recursive_directory_iterator end_itr;
@@ -382,7 +437,12 @@ namespace Gherkin {
 					files.push_back(path);
 			}
 		}
-		return files;
+		std::sort(files.begin(), files.end());
+		BoostPaths result;
+		for (auto &file : files) {  
+			result.push_back(file);
+		}		
+		return result;
 	}
 
 #ifdef _WINDOWS
@@ -617,12 +677,16 @@ namespace Gherkin {
 	}
 
 	StringLine::StringLine(const GherkinLexer& lexer)
-		: lineNumber(lexer.lineno()), text(lexer.text()), wstr(lexer.wstr())
+		: lineNumber(lexer.lineno())
+		, text(trim(lexer.text()))
+		, wstr(MB2WC(text))
 	{
 	}
 
 	StringLine::StringLine(const GherkinLine& line)
-		: lineNumber(line.lineNumber), text(trim(line.text)), wstr(MB2WC(text))
+		: lineNumber(line.lineNumber)
+		, text(trim(line.text))
+		, wstr(MB2WC(text))
 	{
 	}
 
@@ -634,6 +698,11 @@ namespace Gherkin {
 	StringLine::StringLine(size_t lineNumber)
 		: lineNumber(lineNumber)
 	{
+	}
+
+	bool StringLine::replace(const GherkinParams& params)
+	{
+		return ::replace(*this, params);
 	}
 
 	StringLine::operator JSON() const
@@ -709,42 +778,29 @@ namespace Gherkin {
 	{
 	}
 
+	bool GherkinToken::isParam() const
+	{
+		switch (type) {
+		case TokenType::Param:
+		case TokenType::Number:
+		case TokenType::Date:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	bool GherkinToken::replace(const GherkinParams& params)
 	{
 		bool changed = false;
-		if (type == TokenType::Param) {
-			auto key = lower(getWstr());
-			auto it = params.find(key);
+		if (isParam()) {
+			auto it = params.find(*this);
 			if (it != params.end()) {
 				*this = it->second;
 				changed = true;
 			}
 			else {
-				std::wstringstream ss;
-				static const boost::wregex expression(L"\\[[^\\]]+\\]");
-				std::wstring::const_iterator start = wstr.begin();
-				std::wstring::const_iterator end = wstr.end();
-				boost::match_results<std::wstring::const_iterator> what;
-				boost::match_flag_type flags = boost::match_default;
-				while (regex_search(start, end, what, expression, flags)) {
-					auto& match = what[0];
-					if (match.first > start)
-						ss << std::wstring(start, match.first);
-					start = match.second;
-					auto key = std::wstring(match.begin() + 1, match.end() - 1);
-					auto it = params.find(lower(key));
-					if (it == params.end())
-						ss << match;
-					else {
-						ss << it->second.getWstr();
-						changed = true;
-					}
-				}
-				if (changed) {
-					ss << std::wstring(start, end);
-					wstr = ss.str();
-					text = WC2MB(wstr);
-				}
+				changed = ::replace(*this, params);
 			}
 		}
 		return changed;
@@ -780,26 +836,35 @@ namespace Gherkin {
 		return os;
 	}
 
-	static JSON str2dec(const std::string& text, double numb, double sign) {
+	static double str2dec(const std::string& text, double numb, double sign, std::stringstream& ss) {
 		double mult = 0.1;
 		for (auto it = text.begin(); it != text.end(); ++it) {
 			numb += (*it - '0') * mult;
 			mult *= 0.1;
+			ss << *it;
 		}
 		return numb * sign;
 	}
 
-	static JSON str2num(const std::string& text) {
-		int64_t numb = 0, sign = 1;
+	static double str2num(const std::string& text, std::stringstream& ss) {
+		bool zeroPrefix = true;
+		double numb = 0, sign = 1;
 		for (auto it = text.begin(); it != text.end(); ++it) {
 			switch (*it) {
+			case '+':
+				break;
 			case '-':
+				ss << *it;
 				sign = -1;
 				break;
 			case ',':
 			case '.':
-				return str2dec(std::string(it + 1, text.end()), numb, sign);
+				if (zeroPrefix) ss << '0';
+				ss << '.';
+				return str2dec(std::string(it + 1, text.end()), numb, sign, ss);
 			default:
+				ss << *it;
+				zeroPrefix = false;
 				numb = numb * 10 + int64_t(*it - '0');
 			}
 		}
@@ -815,7 +880,10 @@ namespace Gherkin {
 
 		if (type == TokenType::Number) {
 			try {
-				json["text"] = str2num(text);
+				std::stringstream ss;
+				double number = str2num(text, ss);
+				std::pair<double, std::string> data(number, ss.str());
+				json["text"] = JSON(data);
 			}
 			catch (std::exception& e) {
 				json["error"] = e.what();
@@ -877,7 +945,6 @@ namespace Gherkin {
 		if (tokens.size() == 0) return nullptr;
 		if (tokens.begin()->type != TokenType::Operator) return nullptr;
 		keyword.reset(document.matchKeyword(tokens));
-		//TODO: check does colon exists for top level keywords: Feature, Background, Scenario...
 		return keyword.get();
 	}
 
@@ -886,12 +953,23 @@ namespace Gherkin {
 		std::wstringstream ss;
 		for (auto& token : tokens) {
 			switch (token.getType()) {
-			case TokenType::Operator:
-				ss << lower(token.getWstr());
-				break;
-			case TokenType::Symbol:
-				if (token.getText() == "-") ss << L'_';
-				break;
+				case TokenType::Operator: {
+					auto wstr = token.getWstr();
+					for (auto& ch : wstr) {
+						switch (ch) {
+							case L'.':
+								break;
+							case L'-':
+								ss << L'_';
+								break;
+							default:
+								ss << std::tolower(ch, locale_ru);
+						}
+					}
+				} break;
+				case TokenType::Symbol: {
+					if (token.getText() == "-") ss << L'_';
+				} break;
 			}
 		}
 		return ss.str();
@@ -913,7 +991,7 @@ namespace Gherkin {
 	}
 
 	GherkinTable::TableRow::TableRow(const GherkinLine& line)
-		: lineNumber(line.lineNumber), text(line.text)
+		: lineNumber(line.lineNumber), text(line.text), wstr(line.wstr)
 	{
 		bool first = true;
 		GherkinToken current = TokenType::None;
@@ -932,7 +1010,7 @@ namespace Gherkin {
 	}
 
 	GherkinTable::TableRow::TableRow(const TableRow& src)
-		: lineNumber(src.lineNumber), text(src.text)
+		: lineNumber(src.lineNumber), text(src.text), wstr(src.wstr)
 	{
 		for (auto& token : src.tokens) {
 			tokens.emplace_back(token);
@@ -940,12 +1018,13 @@ namespace Gherkin {
 	}
 
 	GherkinTable::TableRow::TableRow(const TableRow& src, const GherkinParams& params)
-		: lineNumber(src.lineNumber), text(src.text)
+		: lineNumber(src.lineNumber), text(src.text), wstr(src.wstr)
 	{
 		for (auto& token : src.tokens) {
 			tokens.emplace_back(token);
 			tokens.back().replace(params);
 		}
+		::replace(*this, params);
 	}
 
 	void GherkinTable::TableRow::push(const GherkinToken& token, const GherkinParams& params)
@@ -1041,6 +1120,17 @@ namespace Gherkin {
 	{
 	}
 
+	GherkinMultiline::GherkinMultiline(const GherkinMultiline& src, const GherkinParams& params)
+		: lineNumber(src.lineNumber)
+		, lastNumber(src.lastNumber)
+		, endNumber(src.endNumber)
+		, header(src.header)
+		, footer(src.footer)
+		, lines(src.lines)
+	{
+		replace(params);
+	}
+
 	GherkinMultiline& GherkinMultiline::operator=(const GherkinMultiline& src)
 	{
 		if (std::addressof(*this) == std::addressof(src))
@@ -1071,6 +1161,15 @@ namespace Gherkin {
 		footer = trim(line.text);
 	}
 
+	bool GherkinMultiline::replace(const GherkinParams& params)
+	{
+		bool changed = false;
+		for (auto& line : lines) {
+			changed |= line.replace(params);
+		}
+		return changed;
+	}
+
 	GherkinMultiline::operator JSON() const
 	{
 		JSON json;
@@ -1078,40 +1177,6 @@ namespace Gherkin {
 		json["footer"] = { {"line", endNumber}, {"text", footer} };
 		set(json, "lines", lines);
 		return json;
-	}
-
-	GeneratedScript* GeneratedScript::generate(const GherkinStep& owner, const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
-	{
-		auto snippet = owner.getSnippet();
-		if (snippet.empty()) return nullptr;
-		if (stack.count(snippet)) return nullptr;
-
-		std::unique_ptr<GeneratedScript> result;
-		std::unique_ptr<ExportScenario> definition(doc.find(snippet, owner));
-		if (definition)
-			result.reset(new GeneratedScript(*definition, {}));
-		else {
-			auto it = map.find(snippet);
-			if (it == map.end()) return nullptr;
-			definition.reset(new ExportScenario(it->second));
-			result.reset(new GeneratedScript(owner, *definition));
-		}
-		SnippetStack next = stack;
-		next.insert(snippet);
-		for (auto& step : result->steps)
-			step->generate(doc, map, next);
-
-		return result.release();
-	}
-
-	ExportScenario* GherkinDocument::find(const GherkinSnippet& snippet, const GherkinStep& owner) const
-	{
-		for (auto& def : scenarios) {
-			if (def->getSnippet() == snippet) {
-				return new ExportScenario({ *this, *def });
-			}
-		}
-		return nullptr;
 	}
 
 	static void fill(GherkinParams& params, const GherkinTokens& owner, const GherkinTokens& definition)
@@ -1138,14 +1203,49 @@ namespace Gherkin {
 		auto s = source.begin();
 		auto t = target.begin();
 		for (; s != source.end() && t != target.end(); ++s, ++t) {
-			if (t->getType() == TokenType::Param) {
-				auto key = lower(t->getWstr());
-				if (params.count(key) == 0)
-					params.emplace(key, *s);
+			if (t->isParam()) {
+				if (params.count(*t) == 0)
+					params.emplace(*t, *s);
 				else
 					throw GherkinException("Duplicate param keys");
 			}
 		}
+	}
+
+	GeneratedScript* GeneratedScript::generate(const GherkinStep& owner, const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
+	{
+		auto snippet = owner.getSnippet();
+		if (snippet.empty()) return nullptr;
+		if (stack.count(snippet)) return nullptr;
+
+		std::unique_ptr<GeneratedScript> result;
+		std::unique_ptr<ExportScenario> definition(doc.find(snippet, owner));
+		if (definition) {
+			GherkinParams params;
+			fill(params, owner.getTokens(), definition->getTokens());
+			result.reset(new GeneratedScript(*definition, params));
+		} else {
+			auto it = map.find(snippet);
+			if (it == map.end()) return nullptr;
+			definition.reset(new ExportScenario(it->second));
+			result.reset(new GeneratedScript(owner, *definition));
+		}
+		SnippetStack next = stack;
+		next.insert(snippet);
+		for (auto& step : result->steps)
+			step->generate(doc, map, next);
+
+		return result.release();
+	}
+
+	ExportScenario* GherkinDocument::find(const GherkinSnippet& snippet, const GherkinStep& owner) const
+	{
+		for (auto& def : scenarios) {
+			if (def->getSnippet() == snippet) {
+				return new ExportScenario({ *this, *def });
+			}
+		}
+		return nullptr;
 	}
 
 	GeneratedScript::GeneratedScript(const GherkinStep& owner, const ExportScenario& definition)
@@ -1172,6 +1272,13 @@ namespace Gherkin {
 	{
 		for (auto& step : src) {
 			steps.emplace_back(step->copy(params));
+		}
+	}
+
+	void GeneratedScript::generate(const GherkinDocument& doc, const ScenarioMap& map, const SnippetStack& stack)
+	{
+		for (auto& step : steps) {
+			step->generate(doc, map, stack);
 		}
 	}
 
@@ -1221,7 +1328,7 @@ namespace Gherkin {
 	}
 
 	GherkinElement::GherkinElement(const GherkinElement& src, const GherkinParams& params)
-		: wstr(src.wstr), text(src.text), lineNumber(src.lineNumber)
+		: wstr(src.wstr), text(src.text), lineNumber(src.lineNumber), tags(src.tags)
 	{
 		for (auto& step : src.steps) {
 			steps.emplace_back(step->copy(params));
@@ -1230,7 +1337,7 @@ namespace Gherkin {
 			tables.emplace_back(table, params);
 		}
 		for (auto& lines : src.multilines) {
-			multilines.emplace_back(lines);
+			multilines.emplace_back(lines, params);
 		}
 	}
 
@@ -1382,7 +1489,7 @@ namespace Gherkin {
 		auto& tokens = line.getTokens();
 		switch (line.getType()) {
 		case TokenType::Asterisk:
-			name = tokens[0].getText();
+			name = trim(tokens[0].getText().substr(1));
 			break;
 		case TokenType::Keyword:
 		case TokenType::Operator:
@@ -1432,7 +1539,7 @@ namespace Gherkin {
 	VariablesFile::operator JSON() const
 	{
 		JSON json;
-		set(json, "path", filepath);
+		set(json, "path", filepath.string());
 		set(json, "items", variables);
 		return json;
 	}
@@ -1493,8 +1600,8 @@ namespace Gherkin {
 				imports.emplace_back(line);
 				return nullptr;
 			}
-		case TokenType::Operator:
 			[[fallthrough]];
+		case TokenType::Operator:
 			if (tokens.size() == 2) {
 				current.reset(new GherkinVariable(line));
 				return nullptr;
@@ -1581,19 +1688,17 @@ namespace Gherkin {
 		auto i = head.tokens.begin();
 		auto j = row.tokens.begin();
 		for (; i != head.tokens.end() && j != row.tokens.end(); ++i, ++j) {
-			auto key = lower(i->getWstr());
-			if (params.count(key)) {
+			if (params.count(*i)) {
 				throw GherkinException("Duplicate param keys");
 			}
-			if (j->getType() == TokenType::Param) {
-				auto value = lower(j->getWstr());
-				if (src.count(value)) {
-					auto& token = src.at(value);
-					params.emplace(key, token);
+			if (j->isParam()) {
+				if (src.count(*j)) {
+					auto& token = src.at(*j);
+					params.emplace(*i, token);
 					continue;
 				}
 			}
-			params.emplace(key, *j);
+			params.emplace(*i, *j);
 		}
 		return params;
 	}
@@ -1610,6 +1715,7 @@ namespace Gherkin {
 			for (auto& row : table.body) {
 				auto params = table.params({}, row);
 				row.script.reset(new GeneratedScript(*this, params));
+				row.script->generate(doc, map, stack);
 			}
 		}
 	}
@@ -1752,6 +1858,9 @@ namespace Gherkin {
 	GherkinGroup::GherkinGroup(GherkinLexer& lexer, const GherkinLine& line)
 		: GherkinElement(lexer, line), name(trim(line.text))
 	{
+		if (line.getType() == TokenType::Asterisk) {
+			name = trim(name.substr(1));
+		}
 	}
 
 	GherkinElement* GherkinGroup::copy(const GherkinParams& params) const

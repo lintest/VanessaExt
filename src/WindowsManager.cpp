@@ -309,6 +309,9 @@ protected:
 			j["Owner"] = GetWindowOwner(window);
 			j["Class"] = GetWindowClass(window);
 			j["Title"] = GetWindowTitle(window);
+			j["Types"] = GetWindowTypes(window);
+			j["States"] = GetWindowStates(window);
+			j["VisibleName"] = GetVisibleName(window);
 			j["ProcessId"] = pid;
 			json.push_back(j);
 		}
@@ -383,6 +386,9 @@ public:
 		json["Title"] = GetWindowTitle(window);
 		json["Maximized"] = IsMaximized(window);
 		json["ProcessId"] = GetWindowPid(window);
+		json["Types"] = GetWindowTypes(window);
+		json["States"] = GetWindowStates(window);
+		json["VisibleName"] = GetVisibleName(window);
 	}
 };
 

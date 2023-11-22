@@ -18,7 +18,7 @@ if (WITH_GHERKIN)
 		set(REFLEX_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/RE-flex/bin/reflex" CACHE PATH "Reflex executable")
 	else(UNIX)
 		set(REFLEX_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/RE-flex/bin/win64/reflex.exe" CACHE PATH "Reflex executable")
-	endif(WIN32)
+	endif(UNIX)
 
 	add_custom_command(TARGET GherkinLexer
 		COMMAND ${REFLEX_EXECUTABLE} 
@@ -75,6 +75,8 @@ add_library(${TARGET} SHARED
 	src/DesktopManager.h
 	src/EducationShow.cpp
 	src/EducationShow.h
+	src/EventMonitor.cpp
+	src/EventMonitor.h
 	src/FileFinder.cpp
 	src/FileFinder.h
 	src/GitManager.cpp
@@ -205,7 +207,7 @@ if (WITH_BOOST)
 	set(Boost_USE_MULTITHREADED ON)  
 	set(Boost_USE_STATIC_RUNTIME ON) 
 	set(Boost_NO_SYSTEM_PATHS TRUE) 
-	set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/boost_1_76_0")
+	set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/boost_1_79_0")
 	set(BOOST_INCLUDE_DIRS "${BOOST_ROOT}/include")
 	set(BOOST_LIBRARY_DIRS "${BOOST_ROOT}/stage/lib")
 	find_package(Boost REQUIRED regex date_time filesystem)
@@ -213,14 +215,14 @@ if (WITH_BOOST)
 	target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 endif (WITH_BOOST)
 
-if (WITH_LIBGIT2)
+if (NOT UNIX AND WITH_LIBGIT2)
 	MESSAGE(STATUS "WITH_LIBGIT2")
 	add_definitions(-DUSE_LIBGIT2)
 	target_include_directories(${TARGET} PRIVATE libgit2-1.1.0/include)
 	set(EMBED_SSH_PATH "${CMAKE_SOURCE_DIR}/libssh2-1.9.0" CACHE PATH "" FORCE)
 	add_subdirectory(./libgit2-1.1.0)
 	target_link_libraries(${TARGET} git2)
-endif (WITH_LIBGIT2)
+endif (NOT UNIX AND WITH_LIBGIT2)
 
 if (WITH_GHERKIN)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)

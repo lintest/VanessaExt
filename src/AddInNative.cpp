@@ -46,6 +46,19 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD  ul_reason_for_call, LPVOID lpReserv
 }
 #endif
 
+AppCapabilities g_capabilities = eAppCapabilitiesInvalid;
+
+AppCapabilities SetPlatformCapabilities(const AppCapabilities capabilities)
+{
+	g_capabilities = capabilities;
+	return eAppCapabilitiesLast;
+}
+
+AttachType GetAttachType()
+{
+	return eCanAttachNotIsolated;
+}
+
 const WCHAR_T* GetClassNames()
 {
 	static const std::u16string names(AddInNative::getComponentNames());

@@ -1,6 +1,7 @@
 #ifdef _WINDOWS
 
 #include "WinUIAuto.h"
+#include "AddInNative.h"
 
 class UIString {
 private:
@@ -17,339 +18,6 @@ public:
 #include <sstream>
 #include <atlcomcli.h>
 #include <UIAutomationClient.h>
-
-static CONTROLTYPEID str2type(const std::string& type) {
-	if (type.empty()) return 0;
-	static const std::map<std::string, CONTROLTYPEID> map{
-		{"button", UIA_ButtonControlTypeId},
-		{"calendar", UIA_CalendarControlTypeId},
-		{"checkbox", UIA_CheckBoxControlTypeId},
-		{"combobox", UIA_ComboBoxControlTypeId},
-		{"edit", UIA_EditControlTypeId},
-		{"hyperlink", UIA_HyperlinkControlTypeId},
-		{"image", UIA_ImageControlTypeId},
-		{"listitem", UIA_ListItemControlTypeId},
-		{"list", UIA_ListControlTypeId},
-		{"menu", UIA_MenuControlTypeId},
-		{"menubar", UIA_MenuBarControlTypeId},
-		{"menuitem", UIA_MenuItemControlTypeId},
-		{"progressbar", UIA_ProgressBarControlTypeId},
-		{"radiobutton", UIA_RadioButtonControlTypeId},
-		{"scrollbar", UIA_ScrollBarControlTypeId},
-		{"slider", UIA_SliderControlTypeId},
-		{"spinner", UIA_SpinnerControlTypeId},
-		{"statusbar", UIA_StatusBarControlTypeId},
-		{"tab", UIA_TabControlTypeId},
-		{"tabitem", UIA_TabItemControlTypeId},
-		{"text", UIA_TextControlTypeId},
-		{"toolbar", UIA_ToolBarControlTypeId},
-		{"tooltip", UIA_ToolTipControlTypeId},
-		{"tree", UIA_TreeControlTypeId},
-		{"treeitem", UIA_TreeItemControlTypeId},
-		{"custom", UIA_CustomControlTypeId},
-		{"group", UIA_GroupControlTypeId},
-		{"thumb", UIA_ThumbControlTypeId},
-		{"datagrid", UIA_DataGridControlTypeId},
-		{"dataitem", UIA_DataItemControlTypeId},
-		{"document", UIA_DocumentControlTypeId},
-		{"splitbutton", UIA_SplitButtonControlTypeId},
-		{"window", UIA_WindowControlTypeId},
-		{"pane", UIA_PaneControlTypeId},
-		{"header", UIA_HeaderControlTypeId},
-		{"headeritem", UIA_HeaderItemControlTypeId},
-		{"table", UIA_TableControlTypeId},
-		{"titlebar", UIA_TitleBarControlTypeId},
-		{"separator", UIA_SeparatorControlTypeId},
-		{"semanticzoom", UIA_SemanticZoomControlTypeId},
-		{"appbar", UIA_AppBarControlTypeId},
-	};
-	std::string text = type;
-	std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c) { return std::tolower(c); });
-	auto it = map.find(text);
-	return it == map.end() ? 0 : it->second;
-}
-
-static std::string type2str(CONTROLTYPEID typeId) {
-	switch (typeId) {
-	case UIA_ButtonControlTypeId: return "Button";
-	case UIA_CalendarControlTypeId: return "Calendar";
-	case UIA_CheckBoxControlTypeId: return "CheckBox";
-	case UIA_ComboBoxControlTypeId: return "ComboBox";
-	case UIA_EditControlTypeId: return "Edit";
-	case UIA_HyperlinkControlTypeId: return "Hyperlink";
-	case UIA_ImageControlTypeId: return "Image";
-	case UIA_ListItemControlTypeId: return "ListItem";
-	case UIA_ListControlTypeId: return "List";
-	case UIA_MenuControlTypeId: return "Menu";
-	case UIA_MenuBarControlTypeId: return "MenuBar";
-	case UIA_MenuItemControlTypeId: return "MenuItem";
-	case UIA_ProgressBarControlTypeId: return "ProgressBar";
-	case UIA_RadioButtonControlTypeId: return "RadioButton";
-	case UIA_ScrollBarControlTypeId: return "ScrollBar";
-	case UIA_SliderControlTypeId: return "Slider";
-	case UIA_SpinnerControlTypeId: return "Spinner";
-	case UIA_StatusBarControlTypeId: return "StatusBar";
-	case UIA_TabControlTypeId: return "Tab";
-	case UIA_TabItemControlTypeId: return "TabItem";
-	case UIA_TextControlTypeId: return "Text";
-	case UIA_ToolBarControlTypeId: return "ToolBar";
-	case UIA_ToolTipControlTypeId: return "ToolTip";
-	case UIA_TreeControlTypeId: return "Tree";
-	case UIA_TreeItemControlTypeId: return "TreeItem";
-	case UIA_CustomControlTypeId: return "Custom";
-	case UIA_GroupControlTypeId: return "Group";
-	case UIA_ThumbControlTypeId: return "Thumb";
-	case UIA_DataGridControlTypeId: return "DataGrid";
-	case UIA_DataItemControlTypeId: return "DataItem";
-	case UIA_DocumentControlTypeId: return "Document";
-	case UIA_SplitButtonControlTypeId: return "SplitButton";
-	case UIA_WindowControlTypeId: return "Window";
-	case UIA_PaneControlTypeId: return "Pane";
-	case UIA_HeaderControlTypeId: return "Header";
-	case UIA_HeaderItemControlTypeId: return "HeaderItem";
-	case UIA_TableControlTypeId: return "Table";
-	case UIA_TitleBarControlTypeId: return "TitleBar";
-	case UIA_SeparatorControlTypeId: return "Separator";
-	case UIA_SemanticZoomControlTypeId: return "SemanticZoom";
-	case UIA_AppBarControlTypeId: return "AppBar";
-	default: return {};
-	}
-}
-
-WinUIAuto::UICacheRequest::UICacheRequest(WinUIAuto& owner)
-{
-	owner.pAutomation->CreateCacheRequest(UI(cache));
-	cache->AddProperty(UIA_RuntimeIdPropertyId);
-	cache->AddProperty(UIA_BoundingRectanglePropertyId);
-	cache->AddProperty(UIA_ProcessIdPropertyId);
-	cache->AddProperty(UIA_ControlTypePropertyId);
-	cache->AddProperty(UIA_HasKeyboardFocusPropertyId);
-	cache->AddProperty(UIA_LocalizedControlTypePropertyId);
-	cache->AddProperty(UIA_NamePropertyId);
-	cache->AddProperty(UIA_AutomationIdPropertyId);
-	cache->AddProperty(UIA_HelpTextPropertyId);
-	cache->AddProperty(UIA_ClickablePointPropertyId);
-	cache->AddProperty(UIA_ValueValuePropertyId);
-	cache->put_TreeScope(TreeScope_Subtree);
-}
-
-bool WinUIAuto::isWindow(IUIAutomationElement* element, JSON& json)
-{
-	CONTROLTYPEID typeId;
-	if (SUCCEEDED(element->get_CurrentControlType(&typeId))) {
-		if (typeId == UIA_WindowControlTypeId) {
-			UIString name;
-			if (SUCCEEDED(element->get_CurrentName(&name))) {
-				json["Window"] = WC2MB(name);
-			}
-			UIA_HWND hWnd;
-			if (SUCCEEDED(element->get_CurrentNativeWindowHandle(&hWnd))) {
-				json["Handle"] = (int64_t)hWnd;
-			}
-			return true;
-		}
-	}
-	return false;
-}
-
-#define SET_JSON(key, method) { UIString name; if (SUCCEEDED(element->method(&name))) json[key] = WC2MB(name); }
-
-JSON WinUIAuto::info(IUIAutomationElement* element, UICacheRequest& cache, bool subtree)
-{
-	if (element == nullptr) return {};
-	JSON json;
-
-	CONTROLTYPEID typeId;
-	if (SUCCEEDED(element->get_CachedControlType(&typeId))) {
-		json["Type"] = type2str(typeId);
-	}
-
-	SET_JSON("Name", get_CachedName);
-	SET_JSON("HelpText", get_CachedHelpText);
-	SET_JSON("AutomationId", get_CachedAutomationId);
-	SET_JSON("LocalizedControlType", get_CachedLocalizedControlType);
-
-	BOOL focus;
-	if (SUCCEEDED(element->get_CachedHasKeyboardFocus(&focus))) {
-		json["Focus"] = (bool)focus;
-	}
-
-	std::stringstream ss;
-	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> id;
-	if (SUCCEEDED(element->GetRuntimeId(UI(id)))) {
-		void* pVoid = 0;
-		::SafeArrayAccessData(id.get(), &pVoid);
-		const long* pLongs = reinterpret_cast<long*>(pVoid);
-		for (ULONG i = 0; i < id->rgsabound[0].cElements; ++i) {
-			const long val = pLongs[i];
-			if (i) ss << ".";
-			ss << std::hex << val;
-		}
-		::SafeArrayUnaccessData(id.get());
-	}
-	json["Id"] = ss.str();
-
-	RECT rect;
-	if (SUCCEEDED(element->get_CurrentBoundingRectangle(&rect))) {
-		json["Size"] = {
-			{"Left", rect.left },
-			{"Top", rect.top },
-			{"Right", rect.right },
-			{"Bottom", rect.bottom },
-			{"Width", rect.right - rect.left },
-			{"Height", rect.bottom - rect.top },
-		};
-	}
-
-	POINT point = { 0, 0 }; BOOL gotClickable = false;
-	if (SUCCEEDED(element->GetClickablePoint(&point, &gotClickable)))
-		if (gotClickable) { json["x"] = point.x; json["y"] = point.y; }
-
-	CComVariant value;
-	if (SUCCEEDED(element->GetCachedPropertyValue(UIA_ValueValuePropertyId, &value)))
-		if (auto length = SysStringLen(value.bstrVal))
-			json["Value"] = WC2MB(std::wstring(value.bstrVal, length));
-
-	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
-	pAutomation->get_ControlViewWalker(UI(walker));
-	if (subtree) {
-		UIAutoUniquePtr<IUIAutomationElement> child;
-		walker->GetFirstChildElementBuildCache(element, cache, UI(child));
-		while (child) {
-			json["Tree"].push_back(info(child.get(), cache, true));
-			walker->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
-		}
-	}
-	else {
-		if (!isWindow(element, json)) {
-			UIAutoUniquePtr<IUIAutomationElement> parent;
-			walker->GetParentElement(element, UI(parent));
-			while (parent) {
-				if (isWindow(parent.get(), json)) break;
-				walker->GetParentElement(parent.get(), UI(parent));
-			}
-		}
-	}
-
-	return json;
-}
-
-JSON WinUIAuto::info(IUIAutomationElementArray* elements, UICacheRequest& cache) {
-	JSON json;
-	int count = 0;
-	if (elements == nullptr) return json;
-	elements->get_Length(&count);
-	for (int i = 0; i < count; ++i) {
-		UIAutoUniquePtr<IUIAutomationElement> element;
-		elements->GetElement(i, UI(element));
-		json.push_back(info(element.get(), cache, false));
-	}
-	return json;
-}
-
-WinUIAuto::WinUIAuto()
-{
-	hInitialize = CoInitializeEx(0, COINIT_APARTMENTTHREADED);
-
-	if (FAILED(hInitialize))
-		throw std::runtime_error("CoInitialize error");
-
-	if (FAILED(CoCreateInstance(CLSID_CUIAutomation,
-		NULL, CLSCTX_INPROC_SERVER, IID_IUIAutomation,
-		reinterpret_cast<void**>(&UI(pAutomation)))))
-		throw std::runtime_error("CoInitialize error");
-}
-
-WinUIAuto::~WinUIAuto()
-{
-	if (SUCCEEDED(hInitialize)) CoUninitialize();
-}
-
-std::string WinUIAuto::GetFocusedElement()
-{
-	UICacheRequest cache(*this);
-	UIAutoUniquePtr<IUIAutomationElement> element;
-	if (FAILED(pAutomation->GetFocusedElementBuildCache(cache, UI(element)))) return {};
-	if (element.get() == nullptr) return {};
-	return info(element.get(), cache).dump();
-}
-
-static std::vector<int> str2id(const std::string& text) {
-	std::vector<int> result;
-	std::stringstream ss(text);
-	while (ss.good()) {
-		std::string sub;
-		std::getline(ss, sub, '.');
-		int i = std::stoul(sub, 0, 16);
-		result.push_back(i);
-	}
-	return result;
-}
-
-std::string WinUIAuto::GetElements(DWORD pid)
-{
-	UICacheRequest cache(*this);
-	cache->put_TreeScope(TreeScope_Subtree);
-	UIAutoUniquePtr<IUIAutomationElement> owner;
-	find(pid, cache, UI(owner));
-	if (owner.get() == nullptr) return {};
-	return info(owner.get(), cache, true).dump();
-}
-
-std::string WinUIAuto::GetElements(const std::string& id)
-{
-	UICacheRequest cache(*this);
-	cache->put_TreeScope(TreeScope_Subtree);
-	UIAutoUniquePtr<IUIAutomationElement> owner;
-	find(id, cache, UI(owner));
-	if (owner.get() == nullptr) return {};
-	return info(owner.get(), cache, true).dump();
-}
-
-std::string WinUIAuto::ElementById(const std::string& id)
-{
-	UICacheRequest cache(*this);
-	cache->put_TreeScope(TreeScope_Element);
-	UIAutoUniquePtr<IUIAutomationElement> element;
-	find(id, cache, UI(element));
-	if (element.get() == nullptr) return {};
-	return info(element.get(), cache).dump();
-}
-
-std::string WinUIAuto::ElementFromPoint(int x, int y)
-{
-	POINT p{ x, y };
-	UICacheRequest cache(*this);
-	UIAutoUniquePtr<IUIAutomationElement> element;
-	if (FAILED(pAutomation->ElementFromPointBuildCache(p, cache, UI(element)))) return {};
-	return info(element.get(), cache).dump();
-}
-
-static bool empty(UIAutoUniquePtr<IUIAutomationElementArray>& elements)
-{
-	if (elements.get() == nullptr) return true;
-	int count = 0;
-	elements->get_Length(&count);
-	return count == 0;
-}
-
-std::vector<HWND> GetProcessWindows(DWORD pid)
-{
-	using EnumParam = std::pair<DWORD, std::vector<HWND>>;
-	EnumParam param{ (DWORD)pid, {} };
-	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
-		{
-			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
-				DWORD dwProcessId;
-				auto p = (EnumParam*)lParam;
-				::GetWindowThreadProcessId(hWnd, &dwProcessId);
-				if (p->first == dwProcessId)
-					p->second.push_back(hWnd);
-			}
-			return TRUE;
-		}, (LPARAM)&param);
-	return param.second;
-}
 
 const long UIA_ParentPropertyId = UIA_RuntimeIdPropertyId - 1;
 
@@ -532,6 +200,340 @@ std::map<std::string, int> properties = {
 	{ std::string("IsDialog"), UIA_IsDialogPropertyId },
 };
 
+static CONTROLTYPEID str2type(const std::string& type) {
+	if (type.empty()) return 0;
+	static const std::map<std::string, CONTROLTYPEID> map{
+		{"button", UIA_ButtonControlTypeId},
+		{"calendar", UIA_CalendarControlTypeId},
+		{"checkbox", UIA_CheckBoxControlTypeId},
+		{"combobox", UIA_ComboBoxControlTypeId},
+		{"edit", UIA_EditControlTypeId},
+		{"hyperlink", UIA_HyperlinkControlTypeId},
+		{"image", UIA_ImageControlTypeId},
+		{"listitem", UIA_ListItemControlTypeId},
+		{"list", UIA_ListControlTypeId},
+		{"menu", UIA_MenuControlTypeId},
+		{"menubar", UIA_MenuBarControlTypeId},
+		{"menuitem", UIA_MenuItemControlTypeId},
+		{"progressbar", UIA_ProgressBarControlTypeId},
+		{"radiobutton", UIA_RadioButtonControlTypeId},
+		{"scrollbar", UIA_ScrollBarControlTypeId},
+		{"slider", UIA_SliderControlTypeId},
+		{"spinner", UIA_SpinnerControlTypeId},
+		{"statusbar", UIA_StatusBarControlTypeId},
+		{"tab", UIA_TabControlTypeId},
+		{"tabitem", UIA_TabItemControlTypeId},
+		{"text", UIA_TextControlTypeId},
+		{"toolbar", UIA_ToolBarControlTypeId},
+		{"tooltip", UIA_ToolTipControlTypeId},
+		{"tree", UIA_TreeControlTypeId},
+		{"treeitem", UIA_TreeItemControlTypeId},
+		{"custom", UIA_CustomControlTypeId},
+		{"group", UIA_GroupControlTypeId},
+		{"thumb", UIA_ThumbControlTypeId},
+		{"datagrid", UIA_DataGridControlTypeId},
+		{"dataitem", UIA_DataItemControlTypeId},
+		{"document", UIA_DocumentControlTypeId},
+		{"splitbutton", UIA_SplitButtonControlTypeId},
+		{"window", UIA_WindowControlTypeId},
+		{"pane", UIA_PaneControlTypeId},
+		{"header", UIA_HeaderControlTypeId},
+		{"headeritem", UIA_HeaderItemControlTypeId},
+		{"table", UIA_TableControlTypeId},
+		{"titlebar", UIA_TitleBarControlTypeId},
+		{"separator", UIA_SeparatorControlTypeId},
+		{"semanticzoom", UIA_SemanticZoomControlTypeId},
+		{"appbar", UIA_AppBarControlTypeId},
+	};
+	std::string text = type;
+	std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c) { return std::tolower(c); });
+	auto it = map.find(text);
+	return it == map.end() ? 0 : it->second;
+}
+
+static std::string type2str(CONTROLTYPEID typeId) {
+	switch (typeId) {
+	case UIA_ButtonControlTypeId: return "Button";
+	case UIA_CalendarControlTypeId: return "Calendar";
+	case UIA_CheckBoxControlTypeId: return "CheckBox";
+	case UIA_ComboBoxControlTypeId: return "ComboBox";
+	case UIA_EditControlTypeId: return "Edit";
+	case UIA_HyperlinkControlTypeId: return "Hyperlink";
+	case UIA_ImageControlTypeId: return "Image";
+	case UIA_ListItemControlTypeId: return "ListItem";
+	case UIA_ListControlTypeId: return "List";
+	case UIA_MenuControlTypeId: return "Menu";
+	case UIA_MenuBarControlTypeId: return "MenuBar";
+	case UIA_MenuItemControlTypeId: return "MenuItem";
+	case UIA_ProgressBarControlTypeId: return "ProgressBar";
+	case UIA_RadioButtonControlTypeId: return "RadioButton";
+	case UIA_ScrollBarControlTypeId: return "ScrollBar";
+	case UIA_SliderControlTypeId: return "Slider";
+	case UIA_SpinnerControlTypeId: return "Spinner";
+	case UIA_StatusBarControlTypeId: return "StatusBar";
+	case UIA_TabControlTypeId: return "Tab";
+	case UIA_TabItemControlTypeId: return "TabItem";
+	case UIA_TextControlTypeId: return "Text";
+	case UIA_ToolBarControlTypeId: return "ToolBar";
+	case UIA_ToolTipControlTypeId: return "ToolTip";
+	case UIA_TreeControlTypeId: return "Tree";
+	case UIA_TreeItemControlTypeId: return "TreeItem";
+	case UIA_CustomControlTypeId: return "Custom";
+	case UIA_GroupControlTypeId: return "Group";
+	case UIA_ThumbControlTypeId: return "Thumb";
+	case UIA_DataGridControlTypeId: return "DataGrid";
+	case UIA_DataItemControlTypeId: return "DataItem";
+	case UIA_DocumentControlTypeId: return "Document";
+	case UIA_SplitButtonControlTypeId: return "SplitButton";
+	case UIA_WindowControlTypeId: return "Window";
+	case UIA_PaneControlTypeId: return "Pane";
+	case UIA_HeaderControlTypeId: return "Header";
+	case UIA_HeaderItemControlTypeId: return "HeaderItem";
+	case UIA_TableControlTypeId: return "Table";
+	case UIA_TitleBarControlTypeId: return "TitleBar";
+	case UIA_SeparatorControlTypeId: return "Separator";
+	case UIA_SemanticZoomControlTypeId: return "SemanticZoom";
+	case UIA_AppBarControlTypeId: return "AppBar";
+	default: return {};
+	}
+}
+
+UICacheRequest::UICacheRequest(WinUIAuto& owner)
+{
+	owner.getAutomation()->CreateCacheRequest(UI(cache));
+	cache->AddProperty(UIA_RuntimeIdPropertyId);
+	cache->AddProperty(UIA_BoundingRectanglePropertyId);
+	cache->AddProperty(UIA_ProcessIdPropertyId);
+	cache->AddProperty(UIA_ControlTypePropertyId);
+	cache->AddProperty(UIA_HasKeyboardFocusPropertyId);
+	cache->AddProperty(UIA_LocalizedControlTypePropertyId);
+	cache->AddProperty(UIA_NamePropertyId);
+	cache->AddProperty(UIA_AutomationIdPropertyId);
+	cache->AddProperty(UIA_HelpTextPropertyId);
+	cache->AddProperty(UIA_ClickablePointPropertyId);
+	cache->AddProperty(UIA_ValueValuePropertyId);
+	cache->put_TreeScope(TreeScope_Subtree);
+}
+
+bool WinUIAuto::isWindow(IUIAutomationElement* element, JSON& json)
+{
+	CONTROLTYPEID typeId;
+	if (SUCCEEDED(element->get_CurrentControlType(&typeId))) {
+		if (typeId == UIA_WindowControlTypeId) {
+			UIString name;
+			if (SUCCEEDED(element->get_CurrentName(&name))) {
+				json["Window"] = WC2MB(name);
+			}
+			UIA_HWND hWnd;
+			if (SUCCEEDED(element->get_CurrentNativeWindowHandle(&hWnd))) {
+				json["Handle"] = (int64_t)hWnd;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+#define SET_JSON(key, method) { UIString name; if (SUCCEEDED(element->method(&name))) json[key] = WC2MB(name); }
+
+JSON WinUIAuto::info(IUIAutomationElement* element, UICacheRequest& cache, int64_t level)
+{
+	if (element == nullptr) return {};
+	JSON json;
+
+	CONTROLTYPEID typeId;
+	if (SUCCEEDED(element->get_CachedControlType(&typeId))) {
+		json["Type"] = type2str(typeId);
+	}
+
+	SET_JSON("Name", get_CachedName);
+	SET_JSON("HelpText", get_CachedHelpText);
+	SET_JSON("AutomationId", get_CachedAutomationId);
+	SET_JSON("LocalizedControlType", get_CachedLocalizedControlType);
+
+	BOOL focus;
+	if (SUCCEEDED(element->get_CachedHasKeyboardFocus(&focus))) {
+		json["Focus"] = (bool)focus;
+	}
+
+	std::stringstream ss;
+	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> id;
+	if (SUCCEEDED(element->GetRuntimeId(UI(id)))) {
+		void* pVoid = 0;
+		::SafeArrayAccessData(id.get(), &pVoid);
+		const long* pLongs = reinterpret_cast<long*>(pVoid);
+		for (ULONG i = 0; i < id->rgsabound[0].cElements; ++i) {
+			const long val = pLongs[i];
+			if (i) ss << ".";
+			ss << std::hex << val;
+		}
+		::SafeArrayUnaccessData(id.get());
+	}
+	json["Id"] = ss.str();
+
+	RECT rect;
+	if (SUCCEEDED(element->get_CurrentBoundingRectangle(&rect))) {
+		json["Size"] = {
+			{"Left", rect.left },
+			{"Top", rect.top },
+			{"Right", rect.right },
+			{"Bottom", rect.bottom },
+			{"Width", rect.right - rect.left },
+			{"Height", rect.bottom - rect.top },
+		};
+	}
+
+	POINT point = { 0, 0 }; BOOL gotClickable = false;
+	if (SUCCEEDED(element->GetClickablePoint(&point, &gotClickable)))
+		if (gotClickable) { json["x"] = point.x; json["y"] = point.y; }
+
+	CComVariant value;
+	if (SUCCEEDED(element->GetCachedPropertyValue(UIA_ValueValuePropertyId, &value)))
+		if (auto length = SysStringLen(value.bstrVal))
+			json["Value"] = WC2MB(std::wstring(value.bstrVal, length));
+
+	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
+	m_automation->get_ControlViewWalker(UI(walker));
+	if (level > 0) {
+		int64_t sublevel = level - 1;
+		UIAutoUniquePtr<IUIAutomationElement> child;
+		walker->GetFirstChildElementBuildCache(element, cache, UI(child));
+		while (child) {
+			json["Tree"].push_back(info(child.get(), cache, sublevel));
+			walker->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
+		}
+	}
+	else if (level < 0) {
+		if (!isWindow(element, json)) {
+			UIAutoUniquePtr<IUIAutomationElement> parent;
+			walker->GetParentElement(element, UI(parent));
+			while (parent) {
+				if (isWindow(parent.get(), json)) break;
+				walker->GetParentElement(parent.get(), UI(parent));
+			}
+		}
+	}
+
+	return json;
+}
+
+JSON WinUIAuto::info(IUIAutomationElementArray* elements, UICacheRequest& cache) {
+	JSON json;
+	int count = 0;
+	if (elements == nullptr) return json;
+	elements->get_Length(&count);
+	for (int i = 0; i < count; ++i) {
+		UIAutoUniquePtr<IUIAutomationElement> element;
+		elements->GetElement(i, UI(element));
+		json.push_back(info(element.get(), cache));
+	}
+	return json;
+}
+
+WinUIAuto::WinUIAuto()
+{
+	hInitialize = CoInitializeEx(0, COINIT_APARTMENTTHREADED);
+
+	if (FAILED(hInitialize))
+		throw std::runtime_error("CoInitialize error");
+
+	if (FAILED(CoCreateInstance(CLSID_CUIAutomation,
+		NULL, CLSCTX_INPROC_SERVER, IID_IUIAutomation,
+		reinterpret_cast<void**>(&UI(m_automation)))))
+		throw std::runtime_error("CoInitialize error");
+}
+
+WinUIAuto::~WinUIAuto()
+{
+	if (SUCCEEDED(hInitialize)) CoUninitialize();
+}
+
+std::string WinUIAuto::GetFocusedElement()
+{
+	UICacheRequest cache(*this);
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	if (FAILED(m_automation->GetFocusedElementBuildCache(cache, UI(element)))) return {};
+	if (element.get() == nullptr) return {};
+	return info(element.get(), cache).dump();
+}
+
+static std::vector<int> str2id(const std::string& text) {
+	std::vector<int> result;
+	std::stringstream ss(text);
+	while (ss.good()) {
+		std::string sub;
+		std::getline(ss, sub, '.');
+		int i = std::stoul(sub, 0, 16);
+		result.push_back(i);
+	}
+	return result;
+}
+
+std::string WinUIAuto::GetElements(DWORD pid, int64_t level)
+{
+	UICacheRequest cache(*this);
+	cache->put_TreeScope(TreeScope_Subtree);
+	UIAutoUniquePtr<IUIAutomationElement> owner;
+	find(pid, cache, UI(owner));
+	if (owner.get() == nullptr) return {};
+	return info(owner.get(), cache, level).dump();
+}
+
+std::string WinUIAuto::GetElements(const std::string& id, int64_t level)
+{
+	UICacheRequest cache(*this);
+	cache->put_TreeScope(TreeScope_Subtree);
+	UIAutoUniquePtr<IUIAutomationElement> owner;
+	find(id, cache, UI(owner));
+	if (owner.get() == nullptr) return {};
+	return info(owner.get(), cache, level).dump();
+}
+
+std::string WinUIAuto::ElementById(const std::string& id)
+{
+	UICacheRequest cache(*this);
+	cache->put_TreeScope(TreeScope_Element);
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	find(id, cache, UI(element));
+	if (element.get() == nullptr) return {};
+	return info(element.get(), cache).dump();
+}
+
+std::string WinUIAuto::ElementFromPoint(int x, int y)
+{
+	POINT p{ x, y };
+	UICacheRequest cache(*this);
+	UIAutoUniquePtr<IUIAutomationElement> element;
+	if (FAILED(m_automation->ElementFromPointBuildCache(p, cache, UI(element)))) return {};
+	return info(element.get(), cache).dump();
+}
+
+static bool empty(UIAutoUniquePtr<IUIAutomationElementArray>& elements)
+{
+	if (elements.get() == nullptr) return true;
+	int count = 0;
+	elements->get_Length(&count);
+	return count == 0;
+}
+
+std::vector<HWND> GetProcessWindows(DWORD pid)
+{
+	using EnumParam = std::pair<DWORD, std::vector<HWND>>;
+	EnumParam param{ (DWORD)pid, {} };
+	bool bResult = ::EnumWindows([](HWND hWnd, LPARAM lParam) -> BOOL
+		{
+			if (::IsWindow(hWnd) && ::IsWindowVisible(hWnd)) {
+				DWORD dwProcessId;
+				auto p = (EnumParam*)lParam;
+				::GetWindowThreadProcessId(hWnd, &dwProcessId);
+				if (p->first == dwProcessId)
+					p->second.push_back(hWnd);
+			}
+			return TRUE;
+		}, (LPARAM)&param);
+	return param.second;
+}
+
 std::string WinUIAuto::FindElements(const std::string& arg)
 {
 	DWORD pid = 0;
@@ -559,9 +561,9 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 		case UIA_NamePropertyId: {
 			std::wstring value = MB2WC(element.value());
 			UIAutoUniquePtr<IUIAutomationCondition> cond, name1, name2;
-			pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(name1));
-			pAutomation->CreatePropertyConditionEx(propertyId, CComVariant((value + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(name2));
-			pAutomation->CreateOrCondition(name1.get(), name2.get(), UI(cond));
+			m_automation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(name1));
+			m_automation->CreatePropertyConditionEx(propertyId, CComVariant((value + L":").c_str()), PropertyConditionFlags_IgnoreCase, UI(name2));
+			m_automation->CreateOrCondition(name1.get(), name2.get(), UI(cond));
 			conditions.push_back(cond.get());
 			deleter.emplace_back(cond.release());
 		} break;
@@ -569,7 +571,7 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 			std::string type = element.value();
 			if (auto iType = str2type(type)) {
 				UIAutoUniquePtr<IUIAutomationCondition> cond;
-				pAutomation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cond));
+				m_automation->CreatePropertyCondition(UIA_ControlTypePropertyId, CComVariant((int)iType, VT_INT), UI(cond));
 				conditions.push_back(cond.get());
 				deleter.emplace_back(cond.release());
 			}
@@ -578,15 +580,15 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 			UIAutoUniquePtr<IUIAutomationCondition> cond;
 			if (element.value().is_string()) {
 				std::wstring value = MB2WC(element.value());
-				pAutomation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(cond));
+				m_automation->CreatePropertyConditionEx(propertyId, CComVariant(value.c_str()), PropertyConditionFlags_IgnoreCase, UI(cond));
 			}
 			else if (element.value().is_number_integer()) {
 				auto value = (int)element.value();
-				pAutomation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
+				m_automation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
 			}
 			else if (element.value().is_boolean()) {
 				auto value = (bool)element.value();
-				pAutomation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
+				m_automation->CreatePropertyCondition(propertyId, CComVariant(value), UI(cond));
 			}
 			if (cond) {
 				conditions.push_back(cond.get());
@@ -597,7 +599,7 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
 	UIAutoUniquePtr<IUIAutomationElementArray> elements;
-	pAutomation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
+	m_automation->CreateAndConditionFromNativeArray(conditions.data(), (int)conditions.size(), UI(cond));
 
 	if (pid) {
 		std::map<std::string, JSON> controls;
@@ -605,13 +607,13 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 			int length = 0;
 			UICacheRequest cache(*this);
 			UIAutoUniquePtr<IUIAutomationElement> owner;
-			if (FAILED(pAutomation->ElementFromHandleBuildCache(hWnd, cache, UI(owner)))) continue;
+			if (FAILED(m_automation->ElementFromHandleBuildCache(hWnd, cache, UI(owner)))) continue;
 			if (FAILED(owner->FindAllBuildCache(TreeScope_Subtree, cond.get(), cache, UI(elements)))) continue;
 			if (!elements || FAILED(elements->get_Length(&length))) continue;
 			for (int i = 0; i < length; ++i) {
 				UIAutoUniquePtr<IUIAutomationElement> element;
 				if (FAILED(elements->GetElement(i, UI(element)))) continue;
-				auto json = info(element.get(), cache, false);
+				auto json = info(element.get(), cache);
 				controls[(std::string)json["Id"]] = json;
 			}
 		}
@@ -636,13 +638,13 @@ std::string WinUIAuto::FindElements(const std::string& arg)
 HRESULT WinUIAuto::find(DWORD pid, UICacheRequest& cache, IUIAutomationElement** element)
 {
 	if (pid == 0) {
-		ASSERT(pAutomation->ElementFromHandle(::GetActiveWindow(), element));
+		ASSERT(m_automation->ElementFromHandle(::GetActiveWindow(), element));
 	}
 	else {
 		UIAutoUniquePtr<IUIAutomationElement> root;
 		UIAutoUniquePtr<IUIAutomationCondition> cond;
-		ASSERT(pAutomation->GetRootElement(UI(root)));
-		ASSERT(pAutomation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)));
+		ASSERT(m_automation->GetRootElement(UI(root)));
+		ASSERT(m_automation->CreatePropertyCondition(UIA_ProcessIdPropertyId, CComVariant((int)pid, VT_INT), UI(cond)));
 		ASSERT(root->FindFirst(TreeScope_Children, cond.get(), element));
 	}
 	return 0;
@@ -651,12 +653,12 @@ HRESULT WinUIAuto::find(DWORD pid, UICacheRequest& cache, IUIAutomationElement**
 HRESULT WinUIAuto::find(const std::string& id, UICacheRequest& cache, IUIAutomationElement** element)
 {
 	UIAutoUniquePtr<IUIAutomationElement> root;
-	ASSERT(pAutomation->GetRootElement(UI(root)));
+	ASSERT(m_automation->GetRootElement(UI(root)));
 	auto v = str2id(id);
 	std::unique_ptr<SAFEARRAY, SafeArrayDeleter> sa;
 	UIAutoUniquePtr<IUIAutomationCondition> cond;
-	ASSERT(pAutomation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), UI(sa)));
-	ASSERT(pAutomation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa.get()), UI(cond)));
+	ASSERT(m_automation->IntNativeArrayToSafeArray(v.data(), (int)v.size(), UI(sa)));
+	ASSERT(m_automation->CreatePropertyCondition(UIA_RuntimeIdPropertyId, CComVariant(sa.get()), UI(cond)));
 	ASSERT(root->FindFirstBuildCache(TreeScope_Subtree, cond.get(), cache, element));
 	return 0;
 }
@@ -690,39 +692,12 @@ std::string WinUIAuto::GetParentElement(const std::string& id)
 	if (child.get() == nullptr) return {};
 
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
-	pAutomation->get_ControlViewWalker(UI(walker));
+	m_automation->get_ControlViewWalker(UI(walker));
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	walker->GetParentElementBuildCache(child.get(), cache, UI(parent));
+	walker->NormalizeElementBuildCache(parent.get(), cache, UI(parent));
 	if (parent.get() == nullptr) return {};
-	std::string result;
-	EnumChilds(child.get(), parent.get(), cache, result);
-	return result;
-}
-
-void WinUIAuto::EnumChilds(IUIAutomationElement* origin, IUIAutomationElement* parent, UICacheRequest& cache1, std::string &result)
-{
-	UICacheRequest cache(*this);
-	UIAutoUniquePtr<IUIAutomationElement> child;
-	UIAutoUniquePtr<IUIAutomationTreeWalker> walker1, walker2;
-
-	pAutomation->get_ControlViewWalker(UI(walker1));
-	walker1->GetFirstChildElementBuildCache(parent, cache, UI(child));
-	while (child) {
-		BOOL ok;
-		if (SUCCEEDED(pAutomation->CompareElements(origin, child.get(), &ok)) && ok) {
-			result = info(parent, cache).dump();
-			return;
-		}
-		walker1->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
-	}
-
-	pAutomation->get_ControlViewWalker(UI(walker2));
-	walker2->GetFirstChildElementBuildCache(parent, cache, UI(child));
-	while (child) {
-		EnumChilds(origin, child.get(), cache, result);
-		if (!result.empty()) return;
-		walker2->GetNextSiblingElementBuildCache(child.get(), cache, UI(child));
-	}
+	return info(parent.get(), cache).dump();;
 }
 
 std::string WinUIAuto::GetNextElement(const std::string& id)
@@ -733,7 +708,7 @@ std::string WinUIAuto::GetNextElement(const std::string& id)
 	if (child.get() == nullptr) return {};
 
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
-	pAutomation->get_ControlViewWalker(UI(walker));
+	m_automation->get_ControlViewWalker(UI(walker));
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	walker->GetNextSiblingElementBuildCache(child.get(), cache, UI(parent));
 	if (parent.get() == nullptr) return {};
@@ -748,7 +723,7 @@ std::string WinUIAuto::GetPreviousElement(const std::string& id)
 	if (child.get() == nullptr) return {};
 
 	UIAutoUniquePtr<IUIAutomationTreeWalker> walker;
-	pAutomation->get_ControlViewWalker(UI(walker));
+	m_automation->get_ControlViewWalker(UI(walker));
 	UIAutoUniquePtr<IUIAutomationElement> parent;
 	walker->GetPreviousSiblingElementBuildCache(child.get(), cache, UI(parent));
 	if (parent.get() == nullptr) return {};
@@ -779,6 +754,109 @@ std::wstring WinUIAuto::GetElementValue(const std::string& id)
 			return std::wstring(value.bstrVal, length);
 
 	return {};
+}
+
+void WinUIAuto::setMonitoringStatus(AddInNative* addin)
+{
+	if (addin) {
+		m_focusHandler.reset(UIAutoFocusHandler::CreateInstance(*this, addin));
+		m_focusHandler->InitFocusChangedHandler();
+	}
+	else {
+		m_focusHandler.reset();
+	}
+}
+
+bool WinUIAuto::getMonitoringStatus()
+{
+	return m_focusHandler.get();
+}
+
+UIAutoFocusHandler* UIAutoFocusHandler::CreateInstance(WinUIAuto& owner, AddInNative* addin)
+{
+	return new UIAutoFocusHandler(owner, addin);
+}
+
+UIAutoFocusHandler::UIAutoFocusHandler(WinUIAuto& owner, AddInNative* addin)
+	: m_owner(owner), m_cache(owner), m_addin(addin)
+{
+}
+
+void UIAutoFocusHandler::InitFocusChangedHandler()
+{
+	auto automation = m_owner.getAutomation();
+	automation->AddFocusChangedEventHandler(m_cache, this);
+}
+
+void UIAutoFocusHandler::InitWindowOpenedHandler()
+{
+	auto automation = m_owner.getAutomation();
+	IUIAutomationElement* root;
+	if (SUCCEEDED(automation->GetRootElement(&root))) {
+		automation->AddAutomationEventHandler(UIA_Window_WindowOpenedEventId, root, TreeScope_Subtree, NULL, this);
+	}
+}
+
+void UIAutoFocusHandler::ResetHandler()
+{
+	m_owner.getAutomation()->RemoveFocusChangedEventHandler(this);
+	m_addin = nullptr;
+}
+
+HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::QueryInterface(REFIID riid, LPVOID* ppvObj)
+{
+	// Always set out parameter to NULL, validating it first.
+	if (!ppvObj)
+		return E_INVALIDARG;
+
+	*ppvObj = NULL;
+	if (riid == IID_IUnknown 
+		|| riid == IID_IUIAutomationEventHandler
+		|| riid == IID_IUIAutomationFocusChangedEventHandler)
+	{
+		// Increment the reference count and return the pointer.
+		*ppvObj = (LPVOID)this;
+		AddRef();
+		return NOERROR;
+	}
+	return E_NOINTERFACE;
+}
+
+ULONG STDMETHODCALLTYPE UIAutoFocusHandler::AddRef()
+{
+	InterlockedIncrement(&m_count);
+	return m_count;
+}
+
+ULONG STDMETHODCALLTYPE UIAutoFocusHandler::Release()
+{
+	// Decrement the object's internal counter.
+	ULONG ulRefCount = InterlockedDecrement(&m_count);
+	if (0 == m_count)
+	{
+		delete this;
+	}
+	return ulRefCount;
+}
+
+HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::HandleFocusChangedEvent(IUIAutomationElement* element)
+{
+	if (m_addin && element) {
+		auto json = m_owner.info(element, m_cache);
+		std::u16string text = MB2WCHAR(json.dump());
+		m_addin->ExternalEvent(u"FOCUS_CHANGED", text);
+	}
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE UIAutoFocusHandler::HandleAutomationEvent(IUIAutomationElement* sender, EVENTID eventId)
+{
+	if (m_addin) {
+		auto json = m_owner.info(sender, m_cache);
+		std::u16string text = MB2WCHAR(json.dump());
+		m_addin->ExternalEvent(u"UIAUTO", text);
+	}
+	return S_OK;
 }
 
 #endif//_WINDOWS

@@ -50,9 +50,11 @@ GitManager::GitManager()
 	AddFunction(u"IsBinary", u"IsBinary", [&](VH blob, VH encoding) { this->result = this->isBinary(blob, encoding); }, { {1, (int64_t)0} });
 	AddFunction(u"GetEncoding", u"GetEncoding", [&](VH path) { this->result = this->getEncoding(path); });
 
-	AddFunction(u"FindFiles", u"НайтиФайлы", [&](VH path, VH mask, VH text, VH ignore) {
-		this->result = FileFinder(text, ignore).find(path, mask);
-		}, { {4, true} });
+	AddFunction(u"FindFiles", u"НайтиФайлы",
+		[&](VH path, VH mask, VH text, VH ignore, VH recurse, VH dirs) {
+			this->result = FileFinder(text, ignore, recurse, dirs).find(path, mask);
+		}, { {1, u"*.*"}, {2, u""}, {3, true}, {4, true}, {5, false} }
+	);
 }
 
 #include <stdexcept>

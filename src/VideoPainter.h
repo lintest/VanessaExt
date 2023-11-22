@@ -19,8 +19,11 @@ public:
 	PainterBase(const std::string& p, int x = 0, int y = 0, int w = 0, int h = 0);
 	virtual ~PainterBase() {}
 	virtual LRESULT repaint(HWND hWnd);
-	virtual void draw(Graphics& graphics) { };
-	void create();
+	virtual void draw(HWND hWnd, Graphics& graphics) { }
+	virtual void init(HWND hWnd) { }
+	virtual void onTimeout() { }
+	virtual void onClick() { }
+	virtual void create();
 	void run();
 };
 
@@ -32,7 +35,7 @@ public:
 	{
 		delay = 0;
 	}
-	virtual void draw(Graphics& graphics) override;
+	virtual void draw(HWND hWnd, Graphics& graphics) override;
 };
 
 class EllipsePainter
@@ -47,7 +50,7 @@ public:
 		this->w += 2 * thick;
 		this->h += 2 * thick;
 	}
-	virtual void draw(Graphics& graphics) override;
+	virtual void draw(HWND hWnd, Graphics& graphics) override;
 };
 
 class BezierPainter
@@ -56,7 +59,7 @@ private:
 	std::vector<Point> points;
 public:
 	BezierPainter(const std::string& params, const std::string& points);
-	virtual void draw(Graphics& graphics) override;
+	virtual void draw(HWND hWnd, Graphics& graphics) override;
 };
 
 class ArrowPainter
@@ -72,7 +75,48 @@ public:
 		w = abs(x1 - x2) + 4 * thick;
 		h = abs(y1 - y2) + 4 * thick;
 	}
-	virtual void draw(Graphics& graphics) override;
+	virtual void draw(HWND hWnd, Graphics& graphics) override;
+};
+
+class ShadowPainter;
+
+class ShadowButton {
+private:
+	std::wstring title;
+	std::wstring eventName = L"SHADOW_BUTTON";
+	std::wstring eventData;
+	Color borderColor = { 200, 50, 50 };
+	int x = 0, y = 0, w = 0, h = 0;
+	int radius = -1;
+	int trans = 191;
+	int thick = 1;
+	int margin = 4;
+	int padding = 4;
+	REAL fontSize = 12;
+	Color backColor = Color::White;
+	Color fontColor = { 200, 50, 50 };
+	std::wstring fontName = L"Calibri";
+	bool pressed = false;
+	bool hover = false;
+	int mx = 0;
+	int my = 0;
+private:
+	HWND m_hWnd = NULL;
+	ShadowPainter& m_owner;
+	void draw(Gdiplus::Graphics& graphics);
+public:
+	static LRESULT process(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	ShadowButton(ShadowPainter& owner, const JSON& json, const JSON& j);
+	~ShadowButton();
+	RectF calculate(Graphics& graphics, const RectF& rect);
+	void resize(REAL x, REAL y, REAL w, REAL h);
+	void onMouseDown(HWND hWnd);
+	void onMouseMove(HWND hWnd);
+	void onMouseUp(HWND hWnd);
+	void onMouseHover(HWND hWnd);
+	void onMouseLeave(HWND hWnd);
+	LRESULT repaint(HWND hWnd);
+	void create(HWND hParent);
 };
 
 class ShadowPainter
@@ -81,12 +125,26 @@ private:
 	enum class AP { L, R, T, B };
 	int X, Y, W, H;
 	REAL fontSize = 24;
+	std::wstring eventName = L"SHADOW_EFFECT";
+	std::wstring eventData;
+	std::wstring timeoutName = L"SHADOW_TIMEOUT";
+	std::wstring timeoutData;
 	std::wstring fontName = L"Calibri";
 	std::wstring text;
+	bool ignoreClick;
+	int margin = 4;
 	AP pos = AP::T;
+private:
+	AddInNative& addin;
+	HWND m_hWnd = NULL;
+	std::vector<std::unique_ptr<ShadowButton>> buttons;
 public:
-	ShadowPainter(const std::string& p, int x, int y, int w, int h, const std::wstring& text);
-	virtual void draw(Graphics& graphics) override;
+	ShadowPainter(AddInNative& addin, const std::string& p, int x, int y, int w, int h, const std::wstring& text);
+	virtual void draw(HWND hWnd, Graphics& graphics) override;
+	virtual void create() override;
+	virtual void onClick() override;
+	virtual void onTimeout() override;
+	void hide(const std::wstring& eventName, const std::wstring& eventData);
 };
 
 class SpeechBubble
@@ -104,7 +162,7 @@ private:
 	std::wstring text;
 public:
 	SpeechBubble(const std::string& p, int x, int y, int w, int h, const std::wstring& text);
-	virtual void draw(Graphics& graphics) override;
+	virtual void draw(HWND hWnd, Graphics& graphics) override;
 };
 
 class SpeechRect
@@ -119,7 +177,7 @@ private:
 	std::wstring text;
 public:
 	SpeechRect(const std::string& p, int x, int y, const std::wstring& text);
-	virtual void draw(Graphics& graphics) override;
+	virtual void draw(HWND hWnd, Graphics& graphics) override;
 };
 
 class TextLabel
@@ -131,7 +189,7 @@ private:
 	std::wstring text;
 public:
 	TextLabel(const std::string& p, int x, int y, const std::wstring& text);
-	virtual void draw(Graphics& graphics) override;
+	virtual void draw(HWND hWnd, Graphics& graphics) override;
 };
 
 #endif //_WINDOWS
