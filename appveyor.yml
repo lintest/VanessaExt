@@ -27,6 +27,7 @@ install:
   - cmd: 7z x tools1c.part01.rar -p%KEY_1CV8T%
   - cmd: cd ..
 
+  - sh: sudo add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
   - sh: sudo dpkg --add-architecture i386
   - sh: sudo apt -qq update
   - sh: sudo apt -qq -y install
