@@ -391,7 +391,7 @@ class DisplayEnumerator : public WindowHelper
 {
 public:
 	std::string Enumerate(Window window) {
-#ifdef FOUND_XRANDR
+#ifdef XRANDR_FOUND
 		int	count;
 		Rect rect = Rect(display, window);
 		Window root = DefaultRootWindow(display);
@@ -407,7 +407,7 @@ public:
 			json.push_back(j);
 		}
 		XFree(monitors);
-#endif // FOUND_XRANDR
+#endif // XRANDR_FOUND
 		return json.dump();
 	}
 };
@@ -416,7 +416,7 @@ class DisplayFinder : public WindowHelper
 {
 public:
 	std::string FindDisplay(Window window) {
-#ifdef FOUND_XRANDR
+#ifdef XRANDR_FOUND
 		Rect rect = Rect(display, window);
 		if (window == 0) window = GetActiveWindow();
 		int	count = -1, result = -1; int sq = 0;
@@ -431,7 +431,7 @@ public:
 			Assign(json, display, monitors + result);
 		}
 		XFree(monitors);
-#endif // FOUND_XRANDR
+#endif // XRANDR_FOUND
 		return json.dump();
 	}
 };

@@ -228,7 +228,13 @@ IF (UNIX)
 	include (${CMAKE_ROOT}/Modules/FindX11.cmake)
 	message("X11_FOUND: ${X11_FOUND}")
 	include_directories(${X11_INCLUDE_DIR})
-	target_link_libraries(${TARGET} ${X11_LIBRARIES})	
+	target_link_libraries(${TARGET} ${X11_LIBRARIES})
+
+	include (${CMAKE_ROOT}/Modules/FindXrandr.cmake)
+	message("XRANDR_FOUND: ${XRANDR_FOUND}")
+	include_directories(${XRANDR_INCLUDE_DIR})
+	target_link_libraries(${TARGET} ${XRANDR_LIBRARIES})
+
     set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-Wl,--no-undefined -Xlinker --version-script -Xlinker ${CMAKE_CURRENT_SOURCE_DIR}/src/version.script" )
 ENDIF()
 
