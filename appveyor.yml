@@ -32,8 +32,9 @@ install:
   - cmd: 7z x tools1c.part01.rar -p%KEY_1CV8T%
   - cmd: cd ..
 
+  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
   - sh: sudo dpkg --add-architecture i386
-  - sh: sudo apt -qq update
+#  - sh: sudo apt -qq update
   - sh: sudo apt -qq -y install
       build-essential
       uuid-dev uuid-dev:i386
