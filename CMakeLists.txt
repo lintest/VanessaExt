@@ -224,6 +224,10 @@ if (NOT UNIX AND WITH_LIBGIT2)
 	target_link_libraries(${TARGET} git2)
 endif (NOT UNIX AND WITH_LIBGIT2)
 
+IF (UNIX AND NOT APPLE)
+    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-Wl,--no-undefined -Xlinker --version-script -Xlinker ${CMAKE_CURRENT_SOURCE_DIR}/src/version.script" )
+ENDIF()
+
 if (WITH_GHERKIN)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 	include_directories(${VanessaExt_BINARY_DIR})
