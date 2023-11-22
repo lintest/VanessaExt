@@ -144,9 +144,6 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"SetWindowSize", u"УстановитьРазмерОкна",
 		[&](VH window, VH w, VH h) { WindowsManager::SetWindowSize(window, w, h); }
 	);
-	AddProcedure(u"SetWindowState", u"УстановитьСтатусОкна",
-		[&](VH window, VH state, VH activate) { WindowsManager::SetWindowState(window, state, activate); }
-	);
 	AddProcedure(u"ActivateWindow", u"АктивироватьОкно",
 		[&](VH window) { WindowsManager::Activate(window); }
 	);
@@ -204,6 +201,9 @@ WindowsControl::WindowsControl() {
 		[&](VH msec) { ProcessManager::Sleep(msec); }
 	);
 #ifdef _WINDOWS
+	AddProcedure(u"SetWindowState", u"УстановитьСтатусОкна",
+		[&](VH window, VH state, VH activate) { WindowsManager::SetWindowState(window, state, activate); }
+	);
 	AddFunction(u"FindProcess", u"НайтиПроцесс",
 		[&](VH query) { this->result = ProcessManager::FindProcess(query); }
 	);

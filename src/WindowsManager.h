@@ -13,7 +13,6 @@ public:
 	static bool EnableResizing(int64_t window, bool enable);
 	static bool SetWindowPos(int64_t window, int64_t x, int64_t y, int64_t w, int64_t h);
 	static bool SetWindowSize(int64_t window, int64_t w, int64_t h);
-	static bool SetWindowState(int64_t window, int64_t mode, bool activate);
 	static bool Restore(int64_t window);
 	static bool Maximize(int64_t window);
 	static bool Minimize(int64_t window);
@@ -22,6 +21,7 @@ public:
 #ifdef _WINDOWS
 	static int64_t FindWindow(const std::wstring& name, const std::wstring& title);
 	static bool PostMessage(int64_t hWnd, int64_t Msg, int64_t wParam, int64_t lParam);
+	static bool SetWindowState(int64_t window, int64_t mode, bool activate);
 	static bool SetWindowState(HWND hWnd, int iMode, bool bActivate);
 	static bool IsMaximized(HWND hWnd);
 #else	

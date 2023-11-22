@@ -30,9 +30,11 @@ ProcessControl::ProcessControl()
 		{ {1, false} }
 	);
 
+#ifdef _WINDOWS
 	AddFunction(u"Wait", u"Ждать", 
 		[&](VH msec) { this->result = this->Wait(msec); }
 	);
+#endif //_WINDOWS
 
 	AddFunction(u"InputData", u"ВвестиДанные",
 		[&](VH text) { this->result = this->Input(text); },
