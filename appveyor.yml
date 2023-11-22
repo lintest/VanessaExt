@@ -12,7 +12,7 @@ skip_tags: true
 
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       job_name: Linux
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       job_depends_on: Linux
