@@ -233,7 +233,7 @@ IF (UNIX)
 	include_directories(${XRANDR_INCLUDE_DIR})
 	target_link_libraries(${TARGET} ${XRANDR_LIBRARIES})
 
-    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-Wl,--no-undefined -Xlinker --version-script -Xlinker ${CMAKE_CURRENT_SOURCE_DIR}/src/version.script" )
+    set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-Xlinker --version-script -Xlinker ${CMAKE_CURRENT_SOURCE_DIR}/src/version.script" )
 ENDIF()
 
 if (WITH_GHERKIN)
