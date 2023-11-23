@@ -229,7 +229,7 @@ IF (UNIX)
 	include_directories(${X11_INCLUDE_DIR})
 	target_link_libraries(${TARGET} ${X11_LIBRARIES})
 
-	add_definitions(-DXRANDR_FOUND)
+	include (${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules/FindXRandR.cmake)
 	include_directories(${XRANDR_INCLUDE_DIR})
 	target_link_libraries(${TARGET} ${XRANDR_LIBRARIES})
 
