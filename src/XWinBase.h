@@ -7,9 +7,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
-#ifdef XRANDR_FOUND
 #include <X11/extensions/Xrandr.h>
-#endif //XRANDR_FOUND
 
 #define p_verbose(...) if (envir_verbose) { \
     fprintf(stderr, __VA_ARGS__); \
