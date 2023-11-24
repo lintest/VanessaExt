@@ -32,6 +32,7 @@ install:
   - sh: sudo apt -qq update
   - sh: sudo apt -qq -y install
       build-essential
+      elfutils
       uuid-dev uuid-dev:i386
       libpcre3-dev:i386
       libx11-dev libx11-dev:i386
