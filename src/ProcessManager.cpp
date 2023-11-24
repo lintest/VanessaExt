@@ -386,6 +386,9 @@ public:
 		json["CommandLine"] = GetCommandLine(pid);
 		json["ProcessId"] = pid;
 	}
+	bool empty() {
+		return pi.json["Name"].empty();
+	}
 };
 
 int64_t ProcessManager::ProcessId()
@@ -406,10 +409,7 @@ std::wstring ProcessManager::GetProcessList(bool only1c)
 std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 {
 	ProcessInfo pi{(unsigned long)pid};
-	if (pi.json["Name"].empty())
-		return {};
-
-	return pi;
+	return pi.empty() ? {} : pi;
 }
 
 std::wstring ProcessManager::FindProcess(const std::wstring& name)
