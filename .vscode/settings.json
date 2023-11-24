@@ -86,7 +86,8 @@
         "typeindex": "cpp",
         "variant": "cpp",
         "*.ipp": "cpp",
-        "csetjmp": "cpp"
+        "csetjmp": "cpp",
+        "numbers": "cpp"
     },
     "cmake.configureOnOpen": false
 }
