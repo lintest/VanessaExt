@@ -240,7 +240,7 @@ if(UNIX AND NOT APPLE)
     if (NOT STRIP)
         message(WARNING "eu-strip not found!")
     endif(NOT STRIP)
-ENDIF()
+endif(UNIX AND NOT APPLE)
 
 if (WITH_GHERKIN)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -261,4 +261,4 @@ if(UNIX AND NOT APPLE)
             COMMENT "Copy ${PROJECT_NAME}"
             MAIN_DEPENDENCY ${PROJECT_NAME}
 		)
-elseif(APPLE)
+endif(UNIX AND NOT APPLE)
