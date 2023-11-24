@@ -406,10 +406,10 @@ std::wstring ProcessManager::GetProcessList(bool only1c)
 std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 {
 	ProcessInfo pi{(unsigned long)pid};
-	if (json["Name"].empty())
+	if (pi.json["Name"].empty())
 		return {};
 
-	return pi.json.dump();
+	return pi;
 }
 
 std::wstring ProcessManager::FindProcess(const std::wstring& name)
