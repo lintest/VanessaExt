@@ -387,7 +387,7 @@ public:
 		json["ProcessId"] = pid;
 	}
 	bool empty() {
-		return pi.json["Name"].empty();
+		return json["Name"].empty();
 	}
 };
 
