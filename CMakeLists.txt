@@ -224,7 +224,7 @@ if (NOT UNIX AND WITH_LIBGIT2)
 	target_link_libraries(${TARGET} git2)
 endif (NOT UNIX AND WITH_LIBGIT2)
 
-IF (UNIX)
+if(UNIX AND NOT APPLE)
 	include (${CMAKE_ROOT}/Modules/FindX11.cmake)
 	include_directories(${X11_INCLUDE_DIR})
 	target_link_libraries(${TARGET} ${X11_LIBRARIES})
@@ -234,6 +234,12 @@ IF (UNIX)
 	target_link_libraries(${TARGET} ${XRANDR_LIBRARIES})
 
     set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "-Wl,--no-undefined -Xlinker --version-script -Xlinker ${CMAKE_CURRENT_SOURCE_DIR}/src/version.script" )
+
+    SET(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH ON)
+    find_program(STRIP NAME eu-strip HINTS ENV PATH DOC "eu-strip executable" )
+    if (NOT STRIP)
+        message(WARNING "eu-strip not found!")
+    endif(NOT STRIP)
 ENDIF()
 
 if (WITH_GHERKIN)
@@ -241,3 +247,18 @@ if (WITH_GHERKIN)
 	include_directories(${VanessaExt_BINARY_DIR})
 	add_dependencies(${TARGET} GherkinLexer)
 endif (WITH_GHERKIN)
+
+if(UNIX AND NOT APPLE)
+    SET(STRIP_CMD)
+    if (STRIP)
+        SET(STRIP_CMD ${STRIP} $<TARGET_FILE:${PROJECT_NAME}> -f ${PDB_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}>.debug)
+    endif()
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
+            COMMAND ${STRIP_CMD}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${TMP_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${TMP_DIR}/
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${PKG_OUTPUT_DIR}/
+            COMMENT "Copy ${PROJECT_NAME}"
+            MAIN_DEPENDENCY ${PROJECT_NAME}
+		)
+elseif(APPLE)
