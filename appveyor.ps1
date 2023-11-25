@@ -20,10 +20,18 @@ Rename-Item "$path\${name}Win32.dll" "${name}Win32$postfix.dll"
 Rename-Item "$path\${name}Win64.dll" "${name}Win64$postfix.dll"
 Rename-Item "$path\${name}Lin32.so" "${name}Lin32$postfix.so"
 Rename-Item "$path\${name}Lin64.so" "${name}Lin64$postfix.so"
+Rename-Item "$path\${name}Lin32.so.debug" "${name}Lin32$postfix.so.debug"
+Rename-Item "$path\${name}Lin64.so.debug" "${name}Lin64$postfix.so.debug"
 
 $compress = @{
   Path            = "$path\$name*.dll", "$path\$name*.so", "$path\manifest.xml"
   DestinationPath = "$path\AddIn.zip"
+}
+Compress-Archive @compress
+
+$compress = @{
+  Path            = "$path\$name*.debug"
+  DestinationPath = "$path\Debug.zip"
 }
 Compress-Archive @compress
 

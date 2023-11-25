@@ -91,9 +91,9 @@ build_script:
   - sh: cd ..
   - mkdir build32
   - cd build32
-  - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=ON ..
+  - sh: cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=ON ..
   - cmd: cmake .. -A Win32 -DMySuffix2=32
-  - cmake --build . --config Release
+  - cmake --build . --config RelWithDebInfo
   - cd ..
 
   - sh: cd boost_1_79_0
@@ -101,9 +101,9 @@ build_script:
   - sh: cd ..
   - mkdir build64
   - cd build64
-  - sh: cmake -D CMAKE_BUILD_TYPE:STRING=Release -D TARGET_PLATFORM_32:BOOL=OFF ..
+  - sh: cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=OFF ..
   - cmd: cmake .. -A x64 -DMySuffix2=64
-  - cmake --build . --config Release
+  - cmake --build . --config RelWithDebInfo
   - cd ..
 
 for:
@@ -114,6 +114,8 @@ for:
     after_build:
       - 7z a AddIn.zip ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so
       - 7z a AddIn.zip ./bin64/${APPVEYOR_PROJECT_NAME}Lin64.so
+      - 7z a AddIn.zip ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so.debug
+      - 7z a AddIn.zip ./bin64/${APPVEYOR_PROJECT_NAME}Lin64.so.debug
 
     artifacts:
       - path: AddIn.zip
@@ -146,6 +148,7 @@ for:
     artifacts:
       - path: ${APPVEYOR_PROJECT_NAME}.epf
       - path: AddIn.zip
+      - path: Debug.zip
       - path: autotest.log
       - path: example.log
 
@@ -154,7 +157,7 @@ for:
         auth_token:
           secure: v7P89NQ2I5+WGNNdhpFrZEt6OCTPf8A8VSC5rttZMXh3DJ2fTChNEjZ1Wvm3kfBt
         repository: lintest/VanessaExt
-        artifact: AddIn.zip, VanessaExt.epf
+        artifact: AddIn.zip, Debug.zip, VanessaExt.epf
         draft: true
         prerelease: true
         force_update: true

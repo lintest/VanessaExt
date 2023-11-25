@@ -8,13 +8,13 @@ option(WITH_GHERKIN "Gherkin language parser" ON)
 option(WITH_LIBGIT2 "Use library libgit2" ON)
 option(WITH_OPENCV "Use OpenCV library" ON)
 
-if (WITH_GHERKIN)
+if(WITH_GHERKIN)
 	add_definitions(-DUSE_GHERKIN)
 
 	ADD_CUSTOM_TARGET(GherkinLexer echo Creating GherkinLexer)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/RE-flex/include)
 
-	if (UNIX)
+	if(UNIX)
 		set(REFLEX_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/RE-flex/bin/reflex" CACHE PATH "Reflex executable")
 	else(UNIX)
 		set(REFLEX_EXECUTABLE "${CMAKE_CURRENT_SOURCE_DIR}/RE-flex/bin/win64/reflex.exe" CACHE PATH "Reflex executable")
@@ -56,7 +56,7 @@ if (WITH_GHERKIN)
 		gherkin.lex.h
 		GENERATED
 	)
-endif (WITH_GHERKIN)
+endif(WITH_GHERKIN)
 
 add_library(${TARGET} SHARED
 	version.h
@@ -118,20 +118,20 @@ add_library(${TARGET} SHARED
 target_compile_definitions(${TARGET} PRIVATE UNICODE _UNICODE)
 target_include_directories(${TARGET} PRIVATE include)
 
-if (UNIX)
+if(UNIX)
 	set(MyPrefix "")
-	if (APPLE)
+	if(APPLE)
 		set(MySuffix1 "Mac")
 	else(APPLE)
 		set(MySuffix1 "Lin")
 	endif(APPLE)
-	if (TARGET_PLATFORM_32)
+	if(TARGET_PLATFORM_32)
 		set(MySuffix2 "32")
 	else()
 		set(MySuffix2 "64")
 	endif()
 else(UNIX)
-	if (NOT MSVC)
+	if(NOT MSVC)
 		message(FATAL_ERROR "Must be compiled with MSVC on Windows")
 	endif(NOT MSVC)
 	set(MyPrefix "lib")
@@ -155,8 +155,8 @@ set(BUILD_CLAR OFF CACHE BOOL "" FORCE)
 set(STATIC_CRT ON CACHE BOOL "" FORCE)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if (UNIX)
-	if (TARGET_PLATFORM_32)
+if(UNIX)
+	if(TARGET_PLATFORM_32)
 		set(CMAKE_LIBRARY_PATH "/usr/lib/i386-linux-gnu" CACHE PATH "<desc>")
 		SET(ARCH_FLAG "-m32")
 	else()
@@ -179,17 +179,17 @@ if (UNIX)
 else(UNIX)
 	add_definitions(/MT)
 	set(CMAKE_SUPPRESS_REGENERATION 1)
-	set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+	set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)
 	target_compile_definitions(${TARGET} PRIVATE _WINDOWS
 			_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
 	target_compile_options(${TARGET} PRIVATE /utf-8)
 endif(UNIX)
 
-if (WITH_OPENCV)
+if(WITH_OPENCV)
 	MESSAGE(STATUS "WITH_OPENCV")
 	add_definitions(-DUSE_OPENCV)
 	target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
-	if (UNIX)
+	if(UNIX)
 		target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-4.5.2/3rdparty/libpng")
 		target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-4.5.2/3rdparty/zlib")	
 		find_package(OpenCV REQUIRED PATHS "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}" NO_DEFAULT_PATH)
@@ -198,9 +198,9 @@ if (WITH_OPENCV)
 		target_link_libraries(${TARGET} opencv_core452.lib opencv_imgcodecs452.lib opencv_imgproc452.lib libpng.lib zlib.lib)
 		target_link_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
 	endif(UNIX)
-endif (WITH_OPENCV)
+endif(WITH_OPENCV)
 
-if (WITH_BOOST)
+if(WITH_BOOST)
 	MESSAGE(STATUS "WITH_BOOST")
 	add_definitions(-DUSE_BOOST)
 	set(Boost_USE_STATIC_LIBS ON) 
@@ -213,16 +213,16 @@ if (WITH_BOOST)
 	find_package(Boost REQUIRED regex date_time filesystem)
 	include_directories(${Boost_INCLUDE_DIRS})
 	target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
-endif (WITH_BOOST)
+endif(WITH_BOOST)
 
-if (NOT UNIX AND WITH_LIBGIT2)
+if(NOT UNIX AND WITH_LIBGIT2)
 	MESSAGE(STATUS "WITH_LIBGIT2")
 	add_definitions(-DUSE_LIBGIT2)
 	target_include_directories(${TARGET} PRIVATE libgit2-1.1.0/include)
 	set(EMBED_SSH_PATH "${CMAKE_SOURCE_DIR}/libssh2-1.9.0" CACHE PATH "" FORCE)
 	add_subdirectory(./libgit2-1.1.0)
 	target_link_libraries(${TARGET} git2)
-endif (NOT UNIX AND WITH_LIBGIT2)
+endif(NOT UNIX AND WITH_LIBGIT2)
 
 if(UNIX AND NOT APPLE)
 	include (${CMAKE_ROOT}/Modules/FindX11.cmake)
@@ -237,33 +237,20 @@ if(UNIX AND NOT APPLE)
 
     SET(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH ON)
     find_program(STRIP NAME eu-strip HINTS ENV PATH DOC "eu-strip executable" )
-    if (NOT STRIP)
+    if(STRIP)
+        SET(STRIP_CMD ${STRIP} $<TARGET_FILE:${PROJECT_NAME}> -f ${LIBRARY_OUTPUT_PATH}/$<TARGET_FILE_NAME:${PROJECT_NAME}>.debug)
+		add_custom_command(TARGET ${PROJECT_NAME} 
+			POST_BUILD COMMAND ${STRIP_CMD} 
+			COMMENT "Strip ${PROJECT_NAME}" 
+			MAIN_DEPENDENCY ${PROJECT_NAME}
+		)
+	else(STRIP)
         message(WARNING "eu-strip not found!")
-    endif(NOT STRIP)
+    endif(STRIP)
 endif(UNIX AND NOT APPLE)
 
-if (WITH_GHERKIN)
+if(WITH_GHERKIN)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 	include_directories(${VanessaExt_BINARY_DIR})
 	add_dependencies(${TARGET} GherkinLexer)
-endif (WITH_GHERKIN)
-
-if(UNIX AND NOT APPLE)
-	set(PDB_DIR ${LIBRARY_OUTPUT_PATH}/debug_info)
-	set(PKG_OUTPUT_DIR ${LIBRARY_OUTPUT_PATH}/pkg)
-	file(MAKE_DIRECTORY ${PDB_DIR})
-	file(MAKE_DIRECTORY ${PKG_OUTPUT_DIR})
-
-    SET(STRIP_CMD)
-    if (STRIP)
-        SET(STRIP_CMD ${STRIP} $<TARGET_FILE:${PROJECT_NAME}> -f ${PDB_DIR}/$<TARGET_FILE_NAME:${PROJECT_NAME}>.debug)
-    endif()
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD 
-            COMMAND ${STRIP_CMD}
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${TMP_DIR}
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${TMP_DIR}/
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${PKG_OUTPUT_DIR}/
-            COMMENT "Copy ${PROJECT_NAME}"
-            MAIN_DEPENDENCY ${PROJECT_NAME}
-		)
-endif(UNIX AND NOT APPLE)
+endif(WITH_GHERKIN)
