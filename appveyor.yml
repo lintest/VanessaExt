@@ -92,8 +92,9 @@ build_script:
   - mkdir build32
   - cd build32
   - sh: cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=ON ..
+  - sh: cmake --build . --config RelWithDebInfo
   - cmd: cmake .. -A Win32 -DMySuffix2=32
-  - cmake --build . --config RelWithDebInfo
+  - cmd: cmake --build . --config Release
   - cd ..
 
   - sh: cd boost_1_79_0
@@ -102,8 +103,9 @@ build_script:
   - mkdir build64
   - cd build64
   - sh: cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL=OFF ..
+  - sh: cmake --build . --config RelWithDebInfo
   - cmd: cmake .. -A x64 -DMySuffix2=64
-  - cmake --build . --config RelWithDebInfo
+  - cmd: cmake --build . --config Release
   - cd ..
 
 for:
