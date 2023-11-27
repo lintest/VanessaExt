@@ -382,12 +382,15 @@ protected:
 	virtual bool EnumWindow(Window window) { return false; }
 public:
 	ProcessInfo(unsigned long pid) {
-		json["Name"] = GetProcessName(pid);
-		json["CommandLine"] = GetCommandLine(pid);
-		json["ProcessId"] = pid;
+		auto name = GetProcessName(pid);
+		if (!name.empty()) {
+			json["Name"] = name;
+			json["ProcessId"] = pid;
+			json["CommandLine"] = GetCommandLine(pid);;
+		}
 	}
 	bool empty() {
-		return json["Name"].empty();
+		return json.empty();
 	}
 };
 
