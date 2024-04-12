@@ -7,8 +7,10 @@
 #include <iostream>
 #include <sstream>
 #include <comdef.h>
+#include <psapi.h>
 #include <wbemidl.h>
 
+#pragma comment(lib, "psapi.lib")
 #pragma comment(lib, "wbemuuid.lib")
 #pragma comment(lib, "winmm.lib")
 
@@ -156,7 +158,20 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	query.append(std::to_wstring(pid));
 	JSON json = ProcessEnumerator(query.c_str()).json();
 	if (json.is_array() && json.size() == 1) {
-		return MB2WC(json[0].dump());
+		PROCESS_MEMORY_COUNTERS_EX memInfo;
+		GetProcessMemoryInfo((HANDLE)pid, &memInfo, sizeof(memInfo));
+		json = json[0];
+		json["PageFaultCount"] = memInfo.PageFaultCount;
+		json["PeakWorkingSetSize"] = memInfo.PeakWorkingSetSize;
+		json["WorkingSetSize"] = memInfo.WorkingSetSize;
+		json["QuotaPeakPagedPoolUsage"] = memInfo.QuotaPeakPagedPoolUsage;
+		json["QuotaPagedPoolUsage"] = memInfo.QuotaPagedPoolUsage;
+		json["QuotaPeakNonPagedPoolUsage"] = memInfo.QuotaPeakNonPagedPoolUsage;
+		json["QuotaNonPagedPoolUsage"] = memInfo.QuotaNonPagedPoolUsage;
+		json["PagefileUsage"] = memInfo.PagefileUsage;
+		json["PeakPagefileUsage"] = memInfo.PeakPagefileUsage;
+		json["PrivateUsage"] = memInfo.PrivateUsage;
+		return MB2WC(json.dump());
 	}
 	return {};
 }
