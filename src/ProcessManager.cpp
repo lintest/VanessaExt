@@ -158,7 +158,7 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	query.append(std::to_wstring(pid));
 	JSON json = ProcessEnumerator(query.c_str()).json();
 	if (json.is_array() && json.size() == 1) {
-		PROCESS_MEMORY_COUNTERS_EX memInfo;
+		PROCESS_MEMORY_COUNTERS memInfo;
 		GetProcessMemoryInfo((HANDLE)pid, &memInfo, sizeof(memInfo));
 		json = json[0];
 		json["PageFaultCount"] = memInfo.PageFaultCount;
@@ -170,7 +170,6 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 		json["QuotaNonPagedPoolUsage"] = memInfo.QuotaNonPagedPoolUsage;
 		json["PagefileUsage"] = memInfo.PagefileUsage;
 		json["PeakPagefileUsage"] = memInfo.PeakPagefileUsage;
-		json["PrivateUsage"] = memInfo.PrivateUsage;
 		return MB2WC(json.dump());
 	}
 	return {};
