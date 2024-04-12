@@ -158,18 +158,22 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	query.append(std::to_wstring(pid));
 	JSON json = ProcessEnumerator(query.c_str()).json();
 	if (json.is_array() && json.size() == 1) {
-		PROCESS_MEMORY_COUNTERS memInfo;
-		GetProcessMemoryInfo((HANDLE)pid, &memInfo, sizeof(memInfo));
 		json = json[0];
-		json["PageFaultCount"] = memInfo.PageFaultCount;
-		json["PeakWorkingSetSize"] = memInfo.PeakWorkingSetSize;
-		json["WorkingSetSize"] = memInfo.WorkingSetSize;
-		json["QuotaPeakPagedPoolUsage"] = memInfo.QuotaPeakPagedPoolUsage;
-		json["QuotaPagedPoolUsage"] = memInfo.QuotaPagedPoolUsage;
-		json["QuotaPeakNonPagedPoolUsage"] = memInfo.QuotaPeakNonPagedPoolUsage;
-		json["QuotaNonPagedPoolUsage"] = memInfo.QuotaNonPagedPoolUsage;
-		json["PagefileUsage"] = memInfo.PagefileUsage;
-		json["PeakPagefileUsage"] = memInfo.PeakPagefileUsage;
+		PROCESS_MEMORY_COUNTERS_EX pmc;
+		ZeroMemory(&pmc, sizeof(pmc));
+		BOOL ok = GetProcessMemoryInfo((HANDLE)pid, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+		if (ok) {
+			json["PageFaultCount"] = pmc.PageFaultCount;
+			json["PeakWorkingSetSize"] = pmc.PeakWorkingSetSize;
+			json["WorkingSetSize"] = pmc.WorkingSetSize;
+			json["QuotaPeakPagedPoolUsage"] = pmc.QuotaPeakPagedPoolUsage;
+			json["QuotaPagedPoolUsage"] = pmc.QuotaPagedPoolUsage;
+			json["QuotaPeakNonPagedPoolUsage"] = pmc.QuotaPeakNonPagedPoolUsage;
+			json["QuotaNonPagedPoolUsage"] = pmc.QuotaNonPagedPoolUsage;
+			json["PagefileUsage"] = pmc.PagefileUsage;
+			json["PeakPagefileUsage"] = pmc.PeakPagefileUsage;
+			json["PrivateUsage"] = pmc.PrivateUsage;
+		}
 		return MB2WC(json.dump());
 	}
 	return {};
