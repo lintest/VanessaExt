@@ -168,7 +168,7 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 		static HMODULE libKernel32 = nullptr;
 		static GetProcessMemoryInfoType GetProcessMemoryInfoFunc = nullptr;
 		if (!libKernel32 && !GetProcessMemoryInfoFunc) {
-			libKernel32 = LoadLibrary(L"kernel32.dll")
+			libKernel32 = LoadLibrary(L"kernel32.dll");
 			if (libKernel32) {
 				GetProcessMemoryInfoFunc = reinterpret_cast<GetProcessMemoryInfoType>(
 					GetProcAddress(libKernel32, "K32GetProcessMemoryInfo"));
