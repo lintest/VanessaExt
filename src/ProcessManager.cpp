@@ -153,7 +153,7 @@ std::wstring ProcessManager::GetProcessList(bool only1c)
 	return ProcessEnumerator(query.c_str());
 }
 
-typedef BOOL (STDAPICALLTYPE* GetProcessMemoryInfoType)(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
+typedef BOOL (STDAPICALLTYPE* PGetProcessMemoryInfo)(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
 
 std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 {
@@ -165,18 +165,18 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 		json = json[0];
 		PROCESS_MEMORY_COUNTERS_EX pmc;
 		ZeroMemory(&pmc, sizeof(pmc));
-		static HMODULE libKernel32 = nullptr;
-		static GetProcessMemoryInfoType GetProcessMemoryInfoFunc = nullptr;
-		if (!libKernel32 && !GetProcessMemoryInfoFunc) {
-			libKernel32 = LoadLibrary(L"kernel32.dll");
-			if (libKernel32) {
-				GetProcessMemoryInfoFunc = reinterpret_cast<GetProcessMemoryInfoType>(
-					GetProcAddress(libKernel32, "K32GetProcessMemoryInfo"));
+		static HMODULE hLibKernel32 = nullptr;
+		static PGetProcessMemoryInfo pGetProcessMemoryInfo = &GetProcessMemoryInfo;
+		if (!hLibKernel32) {
+			hLibKernel32 = LoadLibrary(L"kernel32.dll");
+			if (hLibKernel32) {
+				pGetProcessMemoryInfo = reinterpret_cast<PGetProcessMemoryInfo>(
+					GetProcAddress(hLibKernel32, "K32GetProcessMemoryInfo"));
 			}
 		}
-		BOOL ok = GetProcessMemoryInfoFunc ? 
-			GetProcessMemoryInfoFunc((HANDLE)pid, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc)) :
-			GetProcessMemoryInfo((HANDLE)pid, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+		HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, (DWORD)pid);
+		BOOL ok = pGetProcessMemoryInfo(hProcess, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+		CloseHandle(hProcess);
 		if (ok) {
 			json["PageFaultCount"] = pmc.PageFaultCount;
 			json["PeakWorkingSetSize"] = pmc.PeakWorkingSetSize;
