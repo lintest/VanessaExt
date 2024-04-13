@@ -4,6 +4,8 @@
 #ifdef _WINDOWS
 
 #define _WIN32_DCOM
+#define DPSAPI_VERSION 1
+
 #include <iostream>
 #include <sstream>
 #include <comdef.h>
