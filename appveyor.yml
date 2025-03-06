@@ -28,6 +28,7 @@ install:
   - cmd: cd ..
 
   - sh: sudo add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+  - sh: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
   - sh: sudo dpkg --add-architecture i386
   - sh: sudo apt -qq update
   - sh: sudo apt -qq -y install
@@ -69,7 +70,7 @@ install:
   - cmd: Build.OpenCV.bat
   - sh: ./Build.OpenCV.sh
 
-  - appveyor DownloadFile https://boostorg.jfrog.io/artifactory/main/release/1.84.0/source/boost_1_84_0.tar.gz
+  - appveyor DownloadFile https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
   - tar xzf boost_1_84_0.tar.gz
   - cd boost_1_84_0
   - sh: ./bootstrap.sh
