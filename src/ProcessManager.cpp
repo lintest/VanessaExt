@@ -207,8 +207,8 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 	query.append(L" FROM Win32_Process ");
 	query.append(L" WHERE Name LIKE '1cv8%' ");
 	query.append(L" AND CommandLine LIKE '% /TESTCLIENT %'");
-	query.append(L" AND CommandLine LIKE '% -TPort ");
-	query.append(std::to_wstring(port)).append(L" %'");
+	query.append(L" AND CommandLine LIKE '% -TPort%");
+	query.append(std::to_wstring(port)).append(L"%'");
 	JSON json = ProcessEnumerator(query.c_str()).json();
 	if (!json.is_array() || json.empty()) return {};
 
