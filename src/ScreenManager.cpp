@@ -145,6 +145,10 @@ BOOL BaseHelper::ScreenManager::CaptureWindow(VH variant, int64_t window)
 	return Capture(variant, (HWND)window);
 }
 
+#ifndef PW_RENDERFULLCONTENT
+#define PW_RENDERFULLCONTENT 0x00000002
+#endif
+
 BOOL BaseHelper::ScreenManager::Capture(VH variant, HWND window)
 {
 	HWND hWnd = (HWND)window;
@@ -157,7 +161,7 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, HWND window)
 	HDC hDC = CreateCompatibleDC(hdcScreen);
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
 	SelectObject(hDC, hBitmap);
-	::PrintWindow(hWnd, hDC, PW_CLIENTONLY);
+	::PrintWindow(hWnd, hDC, PW_CLIENTONLY | PW_RENDERFULLCONTENT);
 	ImageHelper(hBitmap).Save(variant);
 	ReleaseDC(NULL, hdcScreen);
 	DeleteDC(hDC);
