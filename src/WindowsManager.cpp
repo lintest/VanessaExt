@@ -104,7 +104,8 @@ int64_t WindowsManager::GetTopProcessWindow(int64_t pid)
 					&& ::GetClassName(hWnd, buffer, 256)
 					&& (wcscmp(L"V8TopLevelFrameSDIsec", buffer) == 0
 						|| wcscmp(L"V8TopLevelFrameSDI", buffer) == 0
-						|| wcscmp(L"V8TopLevelFrame", buffer) == 0)
+						|| wcscmp(L"V8TopLevelFrame", buffer) == 0
+						|| (std::wstring(buffer).substr(0, 8) == L"V8Window"))
 					) {
 					auto& map = p->second;
 					if (map.find(hWnd) == map.end()) map[hWnd] = true;
