@@ -155,6 +155,9 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, HWND window)
 	if (hWnd == 0) hWnd = ::GetForegroundWindow();
 	if (!IsWindow(hWnd)) return true;
 
+	// Force the window to repaint before capture — critical after modal dialog closure
+	::RedrawWindow(hWnd, NULL, NULL, RDW_UPDATENOW | RDW_ALLCHILDREN);
+
 	RECT rc;
 	GetClientRect(hWnd, &rc);
 	HDC hdcScreen = GetDC(NULL);
