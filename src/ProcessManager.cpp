@@ -225,7 +225,7 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 				&& ::GetClassName(hWnd, buffer, 256)
 				&& (wcscmp(L"V8TopLevelFrameSDI", buffer) == 0 
 					|| (wcscmp(L"V8TopLevelFrame", buffer) == 0)
-					|| (std::wstring(buffer).substr(0, 8) == L"V8Window"))
+					|| (GetWindowTextLength(hWnd) && wcsncmp(buffer, L"V8Window", 8) == 0))
 				) {
 				// Stop enumerating
 				SetLastError(-1);
