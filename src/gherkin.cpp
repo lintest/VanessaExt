@@ -1586,6 +1586,20 @@ namespace Gherkin {
 	GherkinVariables::GherkinVariables(GherkinLexer& lexer, const GherkinLine& line)
 		: AbsractDefinition(lexer, line)
 	{
+		// Блок "Переменные:" — служебный (хранит конфигурацию переменных и таблиц
+		// для подстановки в сценариях). Семантика тегов для него не определена:
+		// поле variables.tags нигде в коде не используется, фильтрация по тегам
+		// его не учитывает.
+		//
+		// Однако родительский конструктор GherkinElement делает tags = std::move(
+		// lexer.tagStack) — забирает в this->tags все накопленные теги из стека.
+		// В результате теги, написанные перед блоком "Переменные:" (например
+		// для последующего Функционала), уезжают в Variables и теряются для
+		// Feature/Scenario.
+		//
+		// Возвращаем теги обратно в стек, чтобы их забрал следующий
+		// элемент верхнего уровня (Функционал/Сценарий/Background).
+		lexer.tagStack = std::move(this->tags);
 	}
 
 	GherkinElement* GherkinVariables::push(GherkinLexer& lexer, const GherkinLine& line)
