@@ -126,8 +126,10 @@ static LRESULT CALLBACK MonitorWndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	{
 	case WM_PARSING_PROGRESS:
 	case WM_PARSING_FINISHED: {
+		// Sender allocates std::string with `new`; take ownership here to avoid leak.
+		std::unique_ptr<std::string> data((std::string*)lParam);
 		auto component = (GherkinParser*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-		if (component) component->OnProgress(message, *(std::string*)lParam);
+		if (component) component->OnProgress(message, *data);
 		return 0;
 	}
 	default:
@@ -171,7 +173,9 @@ void GherkinParser::OnProgress(UINT id, const std::string& data)
 void GherkinParser::ScanFolder(const std::string& dirs, const std::string& libs, const std::string& filter)
 {
 	auto progress = new GherkinProgress(*provider, dirs, libs, filter, hWndMonitor);
-	CreateThread(0, NULL, ParserThreadProc, (LPVOID)progress, NULL, NULL);
+	HANDLE hThread = CreateThread(0, NULL, ParserThreadProc, (LPVOID)progress, NULL, NULL);
+	if (hThread) CloseHandle(hThread);
+	else delete progress;
 }
 
 void GherkinParser::AbortScan()
