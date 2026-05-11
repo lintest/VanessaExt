@@ -942,7 +942,9 @@ static DWORD WINAPI PainterThreadProc(LPVOID lpParam)
 
 void PainterBase::run()
 {
-	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
+	HANDLE h = CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
+	if (h) CloseHandle(h);
+	else delete this;
 }
 
 #endif //_WINDOWS
