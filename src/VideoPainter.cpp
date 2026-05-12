@@ -204,7 +204,7 @@ LRESULT ShadowButton::repaint(HWND hWnd)
 	auto hBitmap = CreateDIBSection(hDC, &bi, DIB_RGB_COLORS, &bits, NULL, 0);
 	if (!hBitmap) return -1;
 
-	SelectObject(hCDC, hBitmap);
+	HGDIOBJ old = SelectObject(hCDC, hBitmap);
 	//Создаем объект Graphics на основе контекста окна
 	Graphics window(hCDC);
 	//Рисуем маску на окне
@@ -225,6 +225,7 @@ LRESULT ShadowButton::repaint(HWND hWnd)
 	POINT ptSrc = { 0, 0 };
 	UpdateLayeredWindow(hWnd, hDC, &ptDst, &size, hCDC, &ptSrc, 0, &bf, ULW_ALPHA);
 
+	SelectObject(hCDC, old);
 	DeleteObject(hBitmap);
 	DeleteDC(hCDC);
 	ReleaseDC(hWnd, hDC);
@@ -603,6 +604,7 @@ SpeechRect::SpeechRect(const std::string& p, int x, int y, const std::wstring& t
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
 	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), r;
 	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+	ReleaseDC(NULL, hDC);
 	REAL padding = fontSize + (REAL)thick;
 	W = int(r.Width + padding * 2);
 	H = int(r.Height + padding * 2);
@@ -767,6 +769,7 @@ TextLabel::TextLabel(const std::string& p, int x, int y, const std::wstring& t)
 	format.SetLineAlignment(StringAlignment::StringAlignmentCenter);
 	Gdiplus::RectF rect((REAL)mr.left, (REAL)mr.top, (REAL)(mr.right - mr.left), (REAL)(mr.bottom - mr.top)), r;
 	graphics.MeasureString((WCHAR*)text.c_str(), (int)text.size(), &font, rect, &format, &r);
+	ReleaseDC(NULL, hDC);
 
 	this->w = int(r.Width + 2);
 	this->h = int(r.Height + 2);
@@ -819,7 +822,7 @@ LRESULT PainterBase::repaint(HWND hWnd)
 	auto hBitmap = CreateDIBSection(hDC, &bi, DIB_RGB_COLORS, &bits, NULL, 0);
 	if (!hBitmap) return -1;
 
-	SelectObject(hCDC, hBitmap);
+	HGDIOBJ old = SelectObject(hCDC, hBitmap);
 	//Создаем объект Graphics на основе контекста окна
 	Graphics window(hCDC);
 	//Рисуем маску на окне
@@ -838,6 +841,7 @@ LRESULT PainterBase::repaint(HWND hWnd)
 	POINT ptSrc = { 0, 0 };
 	UpdateLayeredWindow(hWnd, hDC, &ptDst, &size, hCDC, &ptSrc, 0, &bf, ULW_ALPHA);
 
+	SelectObject(hCDC, old);
 	DeleteObject(hBitmap);
 	DeleteDC(hCDC);
 	ReleaseDC(hWnd, hDC);
