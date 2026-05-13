@@ -232,7 +232,9 @@ namespace ClickEffect {
 	LRESULT Hooker::Show()
 	{
 		auto painter = new Painter(*this);
-		CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
+		HANDLE h = CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
+		if (h) CloseHandle(h);
+		else delete painter;
 		return 0L;
 	}
 
@@ -271,7 +273,9 @@ namespace ClickEffect {
 	void Show(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans, int64_t echo)
 	{
 		auto painter = new Painter(Hooker(color, radius, width, delay, trans, echo));
-		CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
+		HANDLE h = CreateThread(0, NULL, EffectThreadProc, (LPVOID)painter, NULL, NULL);
+		if (h) CloseHandle(h);
+		else delete painter;
 	}
 
 	typedef void(__cdecl* StartHookProc)(int64_t color, int64_t radius, int64_t width, int64_t delay, int64_t trans, int64_t echo);
@@ -332,7 +336,9 @@ extern "C" {
 	{
 		StopClickEffect();
 		Hooker* settings = new Hooker(color, radius, width, delay, trans, echo);
-		CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
+		HANDLE h = CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
+		if (h) CloseHandle(h);
+		else delete settings;
 	}
 }
 

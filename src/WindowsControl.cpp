@@ -493,7 +493,15 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 	auto ok = CreateProcess(NULL, (LPWSTR)command.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, pi);
 	if (ok) {
 		pid = (int64_t)pi->dwProcessId;
-		CreateThread(0, NULL, ProcessThreadProc, (LPVOID)pi, NULL, NULL);
+		HANDLE h = CreateThread(0, NULL, ProcessThreadProc, (LPVOID)pi, NULL, NULL);
+		if (h) {
+			CloseHandle(h);
+		}
+		else {
+			CloseHandle(pi->hProcess);
+			CloseHandle(pi->hThread);
+			delete pi;
+		}
 	}
 	else {
 		delete pi;

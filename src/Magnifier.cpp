@@ -132,7 +132,9 @@ void Magnifier::Show(int x, int y, int w, int h, double z, int f)
 {
 	Hide();
 	auto data = new MagnifierData(x, y, w, h, (float)z, f);
-	CreateThread(0, NULL, MagnifierThreadProc, (LPVOID)data, NULL, NULL);
+	HANDLE h = CreateThread(0, NULL, MagnifierThreadProc, (LPVOID)data, NULL, NULL);
+	if (h) CloseHandle(h);
+	else delete data;
 }
 
 void Magnifier::Hide()

@@ -182,7 +182,9 @@ extern "C" {
 		if (hMouseHook) UnhookWindowsHookEx(hMouseHook);
 		if (addin) {
 			Hooker* settings = new Hooker((AddInNative*)addin);
-			CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
+			HANDLE h = CreateThread(0, NULL, HookerThreadProc, (LPVOID)settings, NULL, NULL);
+			if (h) CloseHandle(h);
+			else delete settings;
 		}
 	}
 }
