@@ -355,7 +355,9 @@ void EducationShow::run()
 {
 	close();
 	sm_stop = false;
-	CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
+	HANDLE h = CreateThread(0, NULL, PainterThreadProc, (LPVOID)this, NULL, NULL);
+	if (h) CloseHandle(h);
+	else delete this;
 }
 
 #endif //_WINDOWS

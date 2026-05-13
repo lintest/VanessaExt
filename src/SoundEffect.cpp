@@ -134,7 +134,9 @@ void SoundEffect::PlayMedia(AddInNative& addin, const std::wstring& filename, co
 {
 	if (!uuid.empty()) StopMedia(uuid);
 	auto params = new SoundHandler(addin, uuid, filename);
-	CreateThread(0, NULL, EffectThreadProc, (LPVOID)params, NULL, NULL);
+	HANDLE h = CreateThread(0, NULL, EffectThreadProc, (LPVOID)params, NULL, NULL);
+	if (h) CloseHandle(h);
+	else delete params;
 }
 
 void SoundEffect::StopMedia(const std::wstring& uuid)
