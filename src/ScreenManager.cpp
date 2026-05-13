@@ -163,11 +163,15 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, HWND window)
 	HDC hdcScreen = GetDC(NULL);
 	HDC hDC = CreateCompatibleDC(hdcScreen);
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdcScreen, rc.right - rc.left, rc.bottom - rc.top);
-	SelectObject(hDC, hBitmap);
+	// Save the default object so we can restore it before DeleteDC; otherwise
+	// DeleteObject(hBitmap) silently fails because the bitmap is still selected
+	// into hDC, leaking the HBITMAP (1 GDI handle per call).
+	HGDIOBJ object = SelectObject(hDC, hBitmap);
 	::PrintWindow(hWnd, hDC, PW_CLIENTONLY | PW_RENDERFULLCONTENT);
 	ImageHelper(hBitmap).Save(variant);
-	ReleaseDC(NULL, hdcScreen);
+	SelectObject(hDC, object);
 	DeleteDC(hDC);
+	ReleaseDC(NULL, hdcScreen);
 	DeleteObject(hBitmap);
 	return true;
 }
