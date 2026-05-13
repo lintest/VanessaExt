@@ -121,14 +121,18 @@ bool BaseHelper::ClipboardManager::SetText(const std::wstring& text, bool bEmpty
 	if (!m_isOpened) return false;
 	if (bEmpty) EmptyClipboard();
 	size_t size = (text.size() + 1) * sizeof(wchar_t);
-	if (HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, size)) {
-		memcpy(GlobalLock(hGlobal), text.c_str(), size);
-		GlobalUnlock(hGlobal);
-		SetClipboardData(CF_UNICODETEXT, hGlobal);
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, size);
+	if (!hGlobal) return false;
+	memcpy(GlobalLock(hGlobal), text.c_str(), size);
+	GlobalUnlock(hGlobal);
+	// After a successful SetClipboardData the system owns hGlobal and will
+	// GlobalFree it itself; freeing here would cause a double-free. Free
+	// only on failure, when ownership was not transferred.
+	if (SetClipboardData(CF_UNICODETEXT, hGlobal) == NULL) {
 		GlobalFree(hGlobal);
-		return true;
+		return false;
 	}
-	else return false;
+	return true;
 }
 
 #include <shlobj.h> // DROPFILES
@@ -203,14 +207,15 @@ bool BaseHelper::ClipboardManager::SetImage(VH& variant, bool bEmpty)
 	std::vector<BYTE> vec;
 	if (image.Save(vec)) {
 		static UINT CF_PNG = RegisterClipboardFormat(L"PNG");
-		if (auto hGlobal = GlobalAlloc(GMEM_MOVEABLE, vec.size())) {
-			auto buffer = (BYTE*)GlobalLock(hGlobal);
-			memcpy(buffer, vec.data(), vec.size());
-			SetClipboardData(CF_PNG, hGlobal);
-			GlobalUnlock(hGlobal);
+		auto hGlobal = GlobalAlloc(GMEM_MOVEABLE, vec.size());
+		if (!hGlobal) return false;
+		auto buffer = (BYTE*)GlobalLock(hGlobal);
+		memcpy(buffer, vec.data(), vec.size());
+		GlobalUnlock(hGlobal);
+		if (SetClipboardData(CF_PNG, hGlobal) == NULL) {
 			GlobalFree(hGlobal);
+			return false;
 		}
-		else return false;
 	}
 	else return false;
 
@@ -225,15 +230,17 @@ bool BaseHelper::ClipboardManager::SetImage(VH& variant, bool bEmpty)
 		ReleaseDC(NULL, hDC);
 		DeleteObject(hBitmap);
 
-		if (auto hGlobal = GlobalAlloc(GMEM_MOVEABLE, sizeof bi + vec.size())) {
-			auto buffer = (BYTE*)GlobalLock(hGlobal);
-			memcpy(buffer, &bi, sizeof bi);
-			memcpy(buffer + sizeof bi, vec.data(), vec.size());
-			SetClipboardData(CF_DIB, hGlobal);
-			GlobalUnlock(hGlobal);
+		auto hGlobal = GlobalAlloc(GMEM_MOVEABLE, sizeof bi + vec.size());
+		if (!hGlobal) return false;
+		auto buffer = (BYTE*)GlobalLock(hGlobal);
+		memcpy(buffer, &bi, sizeof bi);
+		memcpy(buffer + sizeof bi, vec.data(), vec.size());
+		GlobalUnlock(hGlobal);
+		if (SetClipboardData(CF_DIB, hGlobal) == NULL) {
 			GlobalFree(hGlobal);
-			return true;
+			return false;
 		}
+		return true;
 	}
 	return false;
 }
