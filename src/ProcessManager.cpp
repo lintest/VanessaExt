@@ -111,13 +111,17 @@ public:
 							break;
 						default:
 							VARIANTARG vtDest;
+							VariantInit(&vtDest);
 							hr = VariantChangeType(&vtDest, &vtProp, VARIANT_ALPHABOOL, VT_BSTR);
 							if SUCCEEDED(hr) json[WC2MB(name)] = WC2MB(vtDest.bstrVal);
+							VariantClear(&vtDest);
 						}
 					}
 				}
 				VariantClear(&vtProp);
+				SysFreeString(name);
 			}
+			SafeArrayDestroy(pNames);
 			result.push_back(json);
 			pclsObj->Release();
 			pclsObj = NULL;
