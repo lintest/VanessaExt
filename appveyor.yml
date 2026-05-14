@@ -12,7 +12,7 @@ skip_tags: true
 
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       job_name: Linux
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       job_depends_on: Linux
@@ -27,7 +27,7 @@ install:
   - cmd: 7z x tools1c.part01.rar -p%KEY_1CV8T%
   - cmd: cd ..
 
-  - sh: sudo add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
+  - sh: sudo add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ focal-pgdg main"
   - sh: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
   - sh: sudo dpkg --add-architecture i386
   - sh: sudo apt -qq update
