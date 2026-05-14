@@ -29,6 +29,7 @@ install:
 
   - sh: sudo add-apt-repository --remove "deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main"
   - sh: wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+  - sh: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 62D54FD4003F6525
   - sh: sudo dpkg --add-architecture i386
   - sh: sudo apt -qq update
   - sh: sudo apt -qq -y install
