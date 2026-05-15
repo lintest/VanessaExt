@@ -35,6 +35,7 @@ install:
   - sh: sudo apt -qq -y install
       build-essential
       elfutils
+      gcc-7 g++-7
       uuid-dev uuid-dev:i386
       libpcre3-dev:i386
       libx11-dev libx11-dev:i386
@@ -44,7 +45,6 @@ install:
       libssl-dev libssl-dev:i386
       g++-7-multilib gcc-7-multilib
 
-  - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70
   - sh: sudo update-alternatives --set gcc "/usr/bin/gcc-7"
 
   - cmd: git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
