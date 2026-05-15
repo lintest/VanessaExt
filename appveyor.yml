@@ -45,7 +45,7 @@ install:
       libssl-dev libssl-dev:i386
       g++-7-multilib gcc-7-multilib
 
-  - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100
+  - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 --slave /usr/bin/g++ g++ /usr/bin/g++-7
   - sh: sudo update-alternatives --set gcc "/usr/bin/gcc-7"
   - sh: gcc --version
 
