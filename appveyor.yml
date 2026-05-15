@@ -45,7 +45,9 @@ install:
       libssl-dev libssl-dev:i386
       g++-7-multilib gcc-7-multilib
 
+  - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100
   - sh: sudo update-alternatives --set gcc "/usr/bin/gcc-7"
+  - sh: gcc --version
 
   - cmd: git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
   - cmd: cd libgit2-1.1.0
