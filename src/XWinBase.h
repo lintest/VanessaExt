@@ -4,6 +4,7 @@
 #ifndef _WINDOWS
 
 #include <fstream>
+#include <vector>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
@@ -284,6 +285,7 @@ class WindowEnumerator : public WindowHelper
 private:
     Window* m_windows = NULL;
     unsigned long m_count = 0;
+    std::vector<Window> m_fallback_windows;
 
 protected:
     virtual bool EnumWindow(Window window) = 0;
@@ -291,16 +293,35 @@ protected:
 public:
     WindowEnumerator() {
         Window root = DefaultRootWindow(display);
-        if (GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
-        if (GetProperty(root, XA_WINDOW, "_WIN_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
-        m_count = 0; // Cannot get client list properties.
-	    std::wcout << std::endl << "DefaultRootWindow: " << root << std::endl << std::endl;
-	    std::wcout << std::endl << "Window count: " << m_count << std::endl << std::endl;
+        if (GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count) && m_count) return;
+        XFree(m_windows);
+        m_windows = NULL;
+        if (GetProperty(root, XA_WINDOW, "_WIN_CLIENT_LIST", VXX(&m_windows), &m_count) && m_count) return;
+        XFree(m_windows);
+        m_windows = NULL;
+
+        Window parent;
+        Window* children = NULL;
+        unsigned int child_count = 0;
+        if (XQueryTree(display, root, &root, &parent, &children, &child_count) && children) {
+            m_fallback_windows.reserve(child_count);
+            for (unsigned int i = 0; i < child_count; i++) {
+                m_fallback_windows.push_back(children[i]);
+            }
+            XFree(children);
+        }
+        m_count = m_fallback_windows.size();
     }
 
     std::string Enumerate() {
-        for (int i = 0; i < m_count; i++) {
-            if (!EnumWindow(m_windows[i])) break;
+        if (m_windows) {
+            for (int i = 0; i < m_count; i++) {
+                if (!EnumWindow(m_windows[i])) break;
+            }
+        } else {
+            for (Window window : m_fallback_windows) {
+                if (!EnumWindow(window)) break;
+            }
         }
         return json.dump();
     }
