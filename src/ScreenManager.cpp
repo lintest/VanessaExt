@@ -364,6 +364,56 @@ BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pa
 #include <X11/extensions/XTest.h>
 #include <unistd.h>
 
+static bool HasWindowManager(Display* display)
+{
+	if (!display) return false;
+
+	Window root = DefaultRootWindow(display);
+	Atom property = XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", False);
+	Atom actual_type = None;
+	int actual_format = 0;
+	unsigned long item_count = 0;
+	unsigned long bytes_after = 0;
+	unsigned char* data = NULL;
+
+	int result = XGetWindowProperty(
+		display,
+		root,
+		property,
+		0,
+		1,
+		False,
+		XA_WINDOW,
+		&actual_type,
+		&actual_format,
+		&item_count,
+		&bytes_after,
+		&data);
+
+	if (data) XFree(data);
+	return result == Success && actual_type == XA_WINDOW && actual_format == 32 && item_count > 0;
+}
+
+static void PrepareWindowForCapture(Display* display, Window window, XWindowAttributes& attributes)
+{
+	if (!display || !window || window == DefaultRootWindow(display)) return;
+
+	if (HasWindowManager(display)) return;
+
+	unsigned int width = attributes.width > 0 ? (unsigned int)attributes.width : 1200;
+	unsigned int height = attributes.height > 0 ? (unsigned int)attributes.height : 800;
+
+	if (width > 1200) width = 1200;
+	if (height > 800) height = 800;
+
+	XMapRaised(display, window);
+	XMoveResizeWindow(display, window, 0, 0, width, height);
+
+	XFlush(display);
+	usleep(200000);
+	XGetWindowAttributes(display, window, &attributes);
+}
+
 class ScreenEnumerator : public WindowHelper
 {
 public:
@@ -489,10 +539,14 @@ BOOL BaseHelper::ScreenManager::Capture(VH variant, Window window)
 	if (display == nullptr) return false;
 	if (window == 0) window = DefaultRootWindow(display);
 	XWindowAttributes gwa;
-	if (XGetWindowAttributes(display, window, &gwa) == 0) return false;
+	if (XGetWindowAttributes(display, window, &gwa) == 0) {
+		XCloseDisplay(display);
+		return false;
+	}
+	PrepareWindowForCapture(display, window, gwa);
 	XImage* image = XGetImage(display, window, 0, 0, gwa.width, gwa.height, AllPlanes, ZPixmap);
 	auto success = image && Save(image, variant, gwa.width, gwa.height);
-	XDestroyImage(image);
+	if (image) XDestroyImage(image);
 	XCloseDisplay(display);
 	return success;
 }

@@ -134,6 +134,33 @@ protected:
         }
     }
 
+    bool HasWindowManager() {
+        Window root = DefaultRootWindow(display);
+        Atom property = XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", False);
+        Atom actual_type = None;
+        int actual_format = 0;
+        unsigned long item_count = 0;
+        unsigned long bytes_after = 0;
+        unsigned char* data = NULL;
+
+        int result = XGetWindowProperty(
+            display,
+            root,
+            property,
+            0,
+            1,
+            False,
+            XA_WINDOW,
+            &actual_type,
+            &actual_format,
+            &item_count,
+            &bytes_after,
+            &data);
+
+        if (data) XFree(data);
+        return result == Success && actual_type == XA_WINDOW && actual_format == 32 && item_count > 0;
+    }
+
     unsigned long GetWindowPid(Window window) {
 		unsigned long size, *pid = NULL;
 		GetProperty(window, XA_CARDINAL, "_NET_WM_PID", VXX(&pid), &size);
@@ -146,6 +173,21 @@ protected:
         Window parent = 0;
         Status status = XGetTransientForHint(display, window, &parent);
         return status ? parent : 0;
+    }
+
+    std::string GetMapState(Window window) {
+        XWindowAttributes attributes;
+        if (!XGetWindowAttributes(display, window, &attributes)) return {};
+        switch (attributes.map_state) {
+            case IsUnmapped:
+                return "IsUnMapped";
+            case IsUnviewable:
+                return "IsUnviewable";
+            case IsViewable:
+                return "IsViewable";
+            default:
+                return {};
+        }
     }
 
     std::string S(char *buffer) {
@@ -284,6 +326,22 @@ class WindowEnumerator : public WindowHelper
 private:
     Window* m_windows = NULL;
     unsigned long m_count = 0;
+    std::vector<Window> m_fallback_windows;
+
+    void CollectTreeWindows(Window parent) {
+        Window root = 0, parent_return = 0;
+        Window* children = NULL;
+        unsigned int count = 0;
+
+        if (!XQueryTree(display, parent, &root, &parent_return, &children, &count)) return;
+
+        for (unsigned int i = 0; i < count; i++) {
+            m_fallback_windows.push_back(children[i]);
+            CollectTreeWindows(children[i]);
+        }
+
+        if (children) XFree(children);
+    }
 
 protected:
     virtual bool EnumWindow(Window window) = 0;
@@ -294,19 +352,29 @@ public:
         if (GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
         if (GetProperty(root, XA_WINDOW, "_WIN_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
         m_count = 0; // Cannot get client list properties.
+        if (!HasWindowManager()) {
+            CollectTreeWindows(root);
+        }
 	    std::wcout << std::endl << "DefaultRootWindow: " << root << std::endl << std::endl;
-	    std::wcout << std::endl << "Window count: " << m_count << std::endl << std::endl;
+	    std::wcout << std::endl << "Window count: " << (m_count > 0 ? m_count : m_fallback_windows.size()) << std::endl << std::endl;
     }
 
     std::string Enumerate() {
-        for (int i = 0; i < m_count; i++) {
-            if (!EnumWindow(m_windows[i])) break;
+        if (m_count > 0) {
+            for (unsigned long i = 0; i < m_count; i++) {
+                if (!EnumWindow(m_windows[i])) break;
+            }
+        }
+        else {
+            for (auto window : m_fallback_windows) {
+                if (!EnumWindow(window)) break;
+            }
         }
         return json.dump();
     }
 
 	virtual ~WindowEnumerator() {
-        XFree(m_windows);
+        if (m_windows) XFree(m_windows);
 	}
 };
 
