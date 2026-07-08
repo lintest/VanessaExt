@@ -313,6 +313,7 @@ protected:
 			j["Types"] = GetWindowTypes(window);
 			j["States"] = GetWindowStates(window);
 			j["VisibleName"] = GetVisibleName(window);
+			if (!HasWindowManager()) j["MapState"] = GetMapState(window);
 			j["ProcessId"] = pid;
 			json.push_back(j);
 		}
