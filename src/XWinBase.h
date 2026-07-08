@@ -4,6 +4,7 @@
 #ifndef _WINDOWS
 
 #include <fstream>
+#include <vector>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
@@ -349,8 +350,12 @@ protected:
 public:
     WindowEnumerator() {
         Window root = DefaultRootWindow(display);
-        if (GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
-        if (GetProperty(root, XA_WINDOW, "_WIN_CLIENT_LIST", VXX(&m_windows), &m_count)) return;
+        if (GetProperty(root, XA_WINDOW, "_NET_CLIENT_LIST", VXX(&m_windows), &m_count) && m_count) return;
+        XFree(m_windows);
+        m_windows = NULL;
+        if (GetProperty(root, XA_WINDOW, "_WIN_CLIENT_LIST", VXX(&m_windows), &m_count) && m_count) return;
+        XFree(m_windows);
+        m_windows = NULL;
         m_count = 0; // Cannot get client list properties.
         if (!HasWindowManager()) {
             CollectTreeWindows(root);
@@ -360,7 +365,7 @@ public:
     }
 
     std::string Enumerate() {
-        if (m_count > 0) {
+        if (m_windows) {
             for (unsigned long i = 0; i < m_count; i++) {
                 if (!EnumWindow(m_windows[i])) break;
             }
