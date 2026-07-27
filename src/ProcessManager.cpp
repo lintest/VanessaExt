@@ -372,19 +372,34 @@ public:
 	ClientFinder(int port) : m_port(port) {}
 
 private:
-	bool NotFound(unsigned long pid) {
-		std::string line = GetCommandLine(pid, true);
-		std::string port = to_string(m_port);
-		char* first = NULL;
-		char* second = &line[0];
-		for (int i = 0; i < line.size() - 1; i++) {
-			if (line[i] != 0) continue;
-			first = second;
-			second = &line[0] + i + 1;
-			if (strcmp(first, "-TPort") == 0
-				&& strcmp(port.c_str(), second) == 0)
-				return false;
+
+	std::vector<std::string> getCommandLineArguments(int pid) {
+		std::vector<std::string> arguments;
+		std::string path = "/proc/" + std::to_string(pid) + "/cmdline";
+		std::ifstream file(path, std::ios::binary);
+		if (file.is_open()) {
+			std::string arg;
+			while (std::getline(file, arg, '\0')) {
+				if (!arg.empty()) {
+					arguments.push_back(arg);
+				}
+			}
 		}
+		return arguments;
+	}
+
+	bool NotFound(unsigned long pid) {
+		auto arguments = getCommandLineArguments(pid);
+		std::string portParam = "-TPort";
+		std::string portValue = to_string(m_port);
+		bool portNotFound = true;
+		for (const auto& arg : arguments) {
+			if (portNotFound) {
+				portNotFound = (arg != portParam);
+			} else {
+				return (arg != portValue);
+			}
+		}		
 		return true;
 	}
 };
