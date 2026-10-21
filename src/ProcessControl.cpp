@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
+#include <pthread.h>
+#include <sys/wait.h>
+#include <time.h>
+#include <chrono>
+#include <thread>
 #define PIPE_READ 0
 #define PIPE_WRITE 1
 #endif
@@ -30,11 +36,9 @@ ProcessControl::ProcessControl()
 		{ {1, false} }
 	);
 
-#ifdef _WINDOWS
 	AddFunction(u"Wait", u"Ждать", 
 		[&](VH msec) { this->result = this->Wait(msec); }
 	);
-#endif //_WINDOWS
 
 	AddFunction(u"InputData", u"ВвестиДанные",
 		[&](VH text) { this->result = this->Input(text); },
@@ -130,62 +134,259 @@ bool ProcessControl::IsActive()
 
 #else //_WINDOWS
 
+void ProcessControl::ClosePipe()
+{
+	if (m_pipe[PIPE_READ] >= 0) {
+		close(m_pipe[PIPE_READ]);
+		m_pipe[PIPE_READ] = -1;
+	}
+	if (m_pipe[PIPE_WRITE] >= 0) {
+		close(m_pipe[PIPE_WRITE]);
+		m_pipe[PIPE_WRITE] = -1;
+	}
+}
+
 ProcessControl::~ProcessControl()
 {
-	close(m_pipe[PIPE_READ]);
-	close(m_pipe[PIPE_WRITE]);
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (m_pid > 0 && !m_exited) {
+			if (m_processGroupId == m_pid) kill(-m_pid, SIGKILL);
+			else kill(m_pid, SIGKILL);
+			for (int attempt = 0; attempt < 100; ++attempt) {
+				if (PollStateLocked() == 1) break;
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			}
+		}
+	}
+	ClosePipe();
+}
+
+int ProcessControl::PollStateLocked()
+{
+	if (m_pid <= 0) return -1;
+	if (m_exited) return 1;
+
+	int status = 0;
+	pid_t result = 0;
+	do {
+		result = waitpid(m_pid, &status, WNOHANG);
+	} while (result == -1 && errno == EINTR);
+
+	if (result == 0) return 0;
+	if (result == m_pid) {
+		m_exited = true;
+		m_hasExitCode = false;
+		if (WIFEXITED(status)) {
+			m_hasExitCode = true;
+			m_exitCode = WEXITSTATUS(status);
+		}
+		else if (WIFSIGNALED(status)) {
+			m_hasExitCode = true;
+			m_exitCode = 128 + WTERMSIG(status);
+		}
+		return 1;
+	}
+	if (errno == ECHILD) {
+		// Процесс уже собран другим кодом; настоящий код возврата неизвестен.
+		m_exited = true;
+		m_hasExitCode = false;
+		m_exitCode = -1;
+		return 1;
+	}
+	return -1;
+}
+
+int ProcessControl::PollState()
+{
+	std::lock_guard<std::mutex> lock(m_mutex);
+	return PollStateLocked();
 }
 
 bool ProcessControl::Create(std::wstring command, bool show)
 {
-	std::string cmd = WC2MB(command);
-	int child = fork();
-	if (0 == child) {
-		if (dup2(m_pipe[PIPE_READ], STDIN_FILENO) == -1) exit(errno);
-		close(m_pipe[PIPE_READ]);
-		close(m_pipe[PIPE_WRITE]);
-		int result = execl("/bin/sh", "/bin/sh", "-c", cmd.c_str(), NULL);		
-		exit(result);
+	(void)show;
+	std::lock_guard<std::mutex> lock(m_mutex);
+
+	if (m_pid > 0 && !m_exited) {
+		const int state = PollStateLocked();
+		// При ошибке waitpid нельзя терять старый дочерний процесс.
+		if (state != 1) return false;
 	}
-	else if (child > 0) {
-		close(m_pipe[PIPE_READ]);
-	}
-	else {
+
+	ClosePipe();
+	m_pid = -1;
+	m_processGroupId = -1;
+	m_exited = false;
+	m_hasExitCode = false;
+	m_exitCode = 0;
+
+	const std::string cmd = WC2MB(command);
+	if (cmd.empty()) return false;
+	if (pipe(m_pipe) != 0) {
+		m_pipe[PIPE_READ] = -1;
+		m_pipe[PIPE_WRITE] = -1;
 		return false;
 	}
+
+	// Оболочка нужна для пайпов и перенаправлений. Собственная группа
+	// процессов позволяет завершить и её дочерние процессы.
+	const std::string shellCommand = cmd;
+	const pid_t child = fork();
+	if (child == 0) {
+		setpgid(0, 0);
+		if (dup2(m_pipe[PIPE_READ], STDIN_FILENO) == -1) _exit(127);
+		close(m_pipe[PIPE_READ]);
+		close(m_pipe[PIPE_WRITE]);
+		execl("/bin/sh", "sh", "-c", shellCommand.c_str(), nullptr);
+		_exit(127);
+	}
+	if (child < 0) {
+		ClosePipe();
+		return false;
+	}
+
+	setpgid(child, child);
+	m_pid = child;
+	m_processGroupId = (getpgid(child) == child) ? child : -1;
+	close(m_pipe[PIPE_READ]);
+	m_pipe[PIPE_READ] = -1;
 	return true;
 }
 
 bool ProcessControl::Terminate()
 {
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (m_pid <= 0) return false;
+
+		const int state = PollStateLocked();
+		if (state == 1) return true;
+		if (state < 0) return false;
+
+		int result = 0;
+		pid_t groupId = m_processGroupId;
+		if (groupId != m_pid) {
+			// Дочерний setpgid мог выполниться уже после возврата из fork.
+			const pid_t currentGroup = getpgid(m_pid);
+			if (currentGroup == m_pid) groupId = m_pid;
+		}
+		if (groupId == m_pid) {
+			result = kill(-m_pid, SIGKILL);
+		}
+		else {
+			result = kill(m_pid, SIGKILL);
+		}
+		if (result != 0) {
+			if (errno == ESRCH) {
+				return PollStateLocked() == 1;
+			}
+			return false;
+		}
+	}
+
+	// kill возвращается до фактической смерти процесса. Ждём reap,
+	// чтобы следующий Create не увидел ещё активный PID.
+	for (int attempt = 0; attempt < 100; ++attempt) {
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (PollStateLocked() == 1) return true;
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
 	return false;
 }
 
 bool ProcessControl::Input(const std::string& text)
 {
-	auto res = write(m_pipe[PIPE_WRITE], text.data(), text.size());	
-	return res >= 0;
+	int fd = -1;
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (m_pipe[PIPE_WRITE] < 0) return false;
+		fd = dup(m_pipe[PIPE_WRITE]);
+	}
+	if (fd < 0) return false;
+
+	sigset_t pipeSet;
+	sigset_t oldSet;
+	sigemptyset(&pipeSet);
+	sigaddset(&pipeSet, SIGPIPE);
+	const bool maskChanged = pthread_sigmask(SIG_BLOCK, &pipeSet, &oldSet) == 0;
+
+	size_t written = 0;
+	while (written < text.size()) {
+		const ssize_t result = write(fd,
+			text.data() + written, text.size() - written);
+		if (result < 0) {
+			if (errno == EINTR) continue;
+			if (errno == EPIPE) {
+				struct timespec timeout = { 0, 0 };
+				sigtimedwait(&pipeSet, nullptr, &timeout);
+			}
+			break;
+		}
+		if (result == 0) break;
+		written += static_cast<size_t>(result);
+	}
+
+	if (maskChanged) pthread_sigmask(SIG_SETMASK, &oldSet, nullptr);
+	close(fd);
+	return written == text.size();
 }
 
 void ProcessControl::Sleep(int64_t msec)
 {
-	unsigned long ms = (unsigned long)msec;
-	::usleep(ms * 1000);
+	if (msec <= 0) return;
+	std::this_thread::sleep_for(std::chrono::milliseconds(msec));
+}
+
+int64_t ProcessControl::Wait(int64_t msec)
+{
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (m_pid <= 0) return -1;
+	}
+	if (msec <= 0) {
+		while (true) {
+			const int state = PollState();
+			if (state == 1) return 0;
+			if (state < 0) return -1;
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		}
+	}
+
+	const auto deadline = std::chrono::steady_clock::now() +
+		std::chrono::milliseconds(msec);
+	while (std::chrono::steady_clock::now() < deadline) {
+		const int state = PollState();
+		if (state == 1) return 0;
+		if (state < 0) return -1;
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+	const int state = PollState();
+	if (state == 1) return 0;
+	if (state < 0) return -1;
+	return 1;
 }
 
 int64_t ProcessControl::ProcessId()
 {
-	return 0;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	return (int64_t)m_pid;
 }
 
 int64_t ProcessControl::ExitCode()
 {
-	return 0;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	const int state = PollStateLocked();
+	if (state < 0) return -1;
+	if (state == 0) return 259;
+	if (!m_hasExitCode) return -1;
+	return m_exitCode;
 }
 
 bool ProcessControl::IsActive()
 {
-	return false;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	return PollStateLocked() == 0;
 }
 
 #endif //_WINDOWS

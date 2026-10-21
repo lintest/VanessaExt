@@ -12,6 +12,13 @@ public:
 	static std::wstring FindTestClient(int64_t port);
 	static std::wstring GetProcessList(bool only1c);
 	static std::wstring GetProcessInfo(int64_t pid);
+	static std::wstring StartProcess(const std::wstring& command,
+	                                 const std::wstring& windowMode);
+	static std::wstring StopProcess(int64_t pid,
+	                                const std::wstring& startTime,
+	                                bool force);
+	static std::wstring GetProcessState(int64_t pid,
+	                                    const std::wstring& startTime);
 	static std::wstring FindProcess(const std::wstring& name);
 	static std::string GetFreeDiskSpace(const std::wstring& disk);
 	static bool ConsoleOut(const std::wstring& text, int64_t encoding);

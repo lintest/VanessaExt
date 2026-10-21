@@ -2,9 +2,13 @@
 #include "stdafx.h"
 #include "BaseHelper.h"
 
+#include <mutex>
+
 #ifdef _WINDOWS
 #include <windows.h>
 #include <stdio.h>
+#else
+#include <sys/types.h>
 #endif //_WINDOWS
 
 class ProcessControl : public BaseHelper
@@ -19,7 +23,16 @@ private:
 	PROCESS_INFORMATION pi{ 0 };
 	HANDLE hInPipeR, hInPipeW, hOutPipeR, hOutPipeW;
 #else
-	int m_pipe[2] = { 0 , 0 };
+	int m_pipe[2] = { -1, -1 };
+	pid_t m_pid = -1;
+	pid_t m_processGroupId = -1;
+	bool m_exited = false;
+	bool m_hasExitCode = false;
+	int m_exitCode = 0;
+	std::mutex m_mutex;
+	int PollStateLocked();
+	int PollState();
+	void ClosePipe();
 #endif //_WINDOWS
 	bool Create(std::wstring command, bool show);
 	bool Terminate();

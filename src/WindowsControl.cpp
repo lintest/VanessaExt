@@ -22,6 +22,7 @@
 #include "ImageHelper.h"
 #include "KeyboardHook.h"
 #include "ProcessManager.h"
+#include "ProcessUtils.h"
 #include "ScreenManager.h"
 #include "SoundEffect.h"
 #include "WindowsManager.h"
@@ -86,6 +87,21 @@ WindowsControl::WindowsControl() {
 	);
 	AddFunction(u"GetProcessInfo", u"ПолучитьСвойстваПроцесса",
 		[&](VH pid) { this->result = ProcessManager::GetProcessInfo(pid); }
+	);
+	AddFunction(u"StartProcess", u"ЗапуститьПроцесс",
+		[&](VH cmd, VH mode) { this->result = ProcessManager::StartProcess(cmd, mode); },
+		{ {1, u"Normal"} }
+	);
+	AddFunction(u"TerminateProcess", u"ЗавершитьПроцесс",
+		[&](VH pid, VH startTime, VH force) {
+			this->result = ProcessManager::StopProcess(pid, startTime, force);
+		},
+		{ {2, false} }
+	);
+	AddFunction(u"GetProcessState", u"ПроцессСуществует",
+		[&](VH pid, VH startTime) {
+			this->result = ProcessManager::GetProcessState(pid, startTime);
+		}
 	);
 	AddFunction(u"ActivateProcess", u"АктивироватьПроцесс",
 		[&](VH pid) { this->result = WindowsManager::ActivateProcess(pid); }
@@ -389,10 +405,13 @@ WindowsControl::WindowsControl() {
 		[&]() { this->CloseWebSocket(); }
 	);
 #endif//USE_BOOST	
+	ProcessUtils::AddRef();
+	processUtilsAcquired = true;
 }
 
 WindowsControl::~WindowsControl()
 {
+	ReleaseProcessUtils();
 #ifdef USE_BOOST
 	CloseWebSocket();
 #endif//USE_BOOST
@@ -404,6 +423,17 @@ WindowsControl::~WindowsControl()
 	KeyboardHook::Hook(nullptr);
 	Magnifier::Hide();
 #endif//_WINDOWS
+}
+
+void WindowsControl::ReleaseProcessUtils()
+{
+	if (!processUtilsAcquired.exchange(false)) return;
+	ProcessUtils::Release();
+}
+
+void WindowsControl::OnDone()
+{
+	ReleaseProcessUtils();
 }
 
 static WCHAR_T* T(const std::u16string& text)

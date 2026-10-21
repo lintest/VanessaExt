@@ -122,6 +122,7 @@ long AddInNative::GetInfo()
 
 void AddInNative::Done()
 {
+	OnDone();
 }
 
 bool AddInNative::RegisterExtensionAs(WCHAR_T** wsLanguageExt)
@@ -508,7 +509,22 @@ std::u16string MB2WCHAR(std::string_view src) {
 #endif//_WINDOWS
 }
 
-std::locale locale_ru = std::locale("ru_RU.UTF-8");
+static std::locale MakeLocaleRu()
+{
+	try {
+		return std::locale("ru_RU.UTF-8");
+	}
+	catch (...) {
+		try {
+			return std::locale("");
+		}
+		catch (...) {
+			return std::locale::classic();
+		}
+	}
+}
+
+std::locale locale_ru = MakeLocaleRu();
 
 std::u16string upper(const std::u16string& src)
 {

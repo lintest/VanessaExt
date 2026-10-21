@@ -185,6 +185,7 @@ public:
 	// UserLanguageBase
 	virtual void ADDIN_API SetUserInterfaceLanguageCode(const WCHAR_T* lang) override final {}
 protected:
+	virtual void OnDone() {}
 	IAddInDefBase* connection() { return m_iConnect; };
 private:
 	IMemoryManager* m_iMemory = nullptr;

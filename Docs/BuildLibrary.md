@@ -35,6 +35,19 @@ cd VanessaExt
 ./build.sh
 ```
 
+Для сборки и запуска тестов ядра процессов:
+```bash
+cmake -S . -B build \
+  -DWITH_GHERKIN=OFF -DWITH_OPENCV=OFF -DWITH_BOOST=OFF \
+  -DWITH_LIBGIT2=OFF -DVANESSAEXT_BUILD_TESTS=ON
+cmake --build build --target ProcessUtilsTest
+ctest --test-dir build --output-on-failure
+```
+Тестовый таргет `ProcessUtilsTest` собирает только `src/ProcessUtils.cpp`
+и не требует X11/OpenCV/Boost. Артефакт теста пишется в `build/tests`,
+а не в исходное дерево. Для сборки всей библиотеки используйте `./build.sh`
+или обычный `cmake --build build` с установленными зависимостями.
+
 Сборка библотеки [**boost**](https://www.boost.org/doc/libs/1_72_0/more/getting_started/windows.html#prepare-to-use-a-boost-library-binary) для Windows
 ```Batchfile
 b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage
