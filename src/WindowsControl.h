@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "stdafx.h"
 #include "BaseHelper.h"
+
+#include <atomic>
 #include "VideoPainter.h"
 #include "WebSocket.h"
 
@@ -27,7 +29,13 @@ public:
 private:
 	int64_t LaunchProcess(const std::wstring& cmd, bool show);
 	void ExitCurrentProcess(int64_t status);
+	std::atomic<bool> processUtilsAcquired{ false };
+	void ReleaseProcessUtils();
 
+protected:
+	void OnDone() override;
+
+private:
 #ifdef USE_BOOST
 	std::unique_ptr<WebSocketBase> webSocket;
 	void CloseWebSocket() { webSocket.reset(); }

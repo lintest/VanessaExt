@@ -7,6 +7,9 @@ option(WITH_BOOST "Use boost library" ON)
 option(WITH_GHERKIN "Gherkin language parser" ON)
 option(WITH_LIBGIT2 "Use library libgit2" ON)
 option(WITH_OPENCV "Use OpenCV library" ON)
+option(VANESSAEXT_BUILD_TESTS "Build VanessaExt tests" OFF)
+
+find_package(Threads REQUIRED)
 
 if(WITH_GHERKIN)
 	add_definitions(-DUSE_GHERKIN)
@@ -93,6 +96,8 @@ add_library(${TARGET} SHARED
 	src/ProcessControl.h
 	src/ProcessManager.cpp
 	src/ProcessManager.h
+	src/ProcessUtils.cpp
+	src/ProcessUtils.h
 	src/RegExpControl.cpp
 	src/RegExpControl.h
 	src/SoundEffect.cpp
@@ -117,6 +122,7 @@ add_library(${TARGET} SHARED
 
 target_compile_definitions(${TARGET} PRIVATE UNICODE _UNICODE)
 target_include_directories(${TARGET} PRIVATE include)
+target_link_libraries(${TARGET} Threads::Threads)
 
 if(UNIX)
 	set(MyPrefix "")
@@ -254,3 +260,8 @@ if(WITH_GHERKIN)
 	include_directories(${VanessaExt_BINARY_DIR})
 	add_dependencies(${TARGET} GherkinLexer)
 endif(WITH_GHERKIN)
+
+if(VANESSAEXT_BUILD_TESTS)
+	enable_testing()
+	add_subdirectory(tests)
+endif(VANESSAEXT_BUILD_TESTS)

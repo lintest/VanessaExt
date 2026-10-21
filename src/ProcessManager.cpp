@@ -1,5 +1,20 @@
 #include "stdafx.h"
 #include "ProcessManager.h"
+#include "ProcessUtils.h"
+
+static void AddProcessStartTime(JSON& json, int64_t pid)
+{
+	std::string startTime;
+	std::string startTimeUtc;
+	if (ProcessUtils::GetStartTime(pid, startTime, startTimeUtc)) {
+		json["StartTime"] = startTime;
+		json["StartTimeUTC"] = startTimeUtc;
+	}
+	else {
+		json["StartTime"] = "";
+		json["StartTimeUTC"] = "";
+	}
+}
 
 #ifdef _WINDOWS
 
@@ -154,7 +169,16 @@ std::wstring ProcessManager::GetProcessList(bool only1c)
 	query.append(L"SELECT ProcessId,CreationDate,CommandLine");
 	query.append(L" FROM Win32_Process ");
 	if (only1c) query.append(L" WHERE Name LIKE '1cv8%'");
-	return ProcessEnumerator(query.c_str());
+	JSON json = ProcessEnumerator(query.c_str()).json();
+	if (json.is_array()) {
+		for (auto& item : json) {
+			if (!item.is_object()) continue;
+			auto pid = item.find("ProcessId");
+			if (pid == item.end() || !pid->is_number_integer()) continue;
+			AddProcessStartTime(item, pid->get<int64_t>());
+		}
+	}
+	return MB2WC(json.dump());
 }
 
 typedef BOOL (STDAPICALLTYPE* PGetProcessMemoryInfo)(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
@@ -167,6 +191,7 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	JSON json = ProcessEnumerator(query.c_str()).json();
 	if (json.is_array() && json.size() == 1) {
 		json = json[0];
+		AddProcessStartTime(json, pid);
 		PROCESS_MEMORY_COUNTERS_EX pmc;
 		ZeroMemory(&pmc, sizeof(pmc));
 		static HMODULE hLibKernel32 = nullptr;
@@ -174,24 +199,28 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 		if (!hLibKernel32) {
 			hLibKernel32 = LoadLibrary(L"kernel32.dll");
 			if (hLibKernel32) {
-				pGetProcessMemoryInfo = reinterpret_cast<PGetProcessMemoryInfo>(
+				auto proc = reinterpret_cast<PGetProcessMemoryInfo>(
 					GetProcAddress(hLibKernel32, "K32GetProcessMemoryInfo"));
+				if (proc) pGetProcessMemoryInfo = proc;
 			}
 		}
-		HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, (DWORD)pid);
-		BOOL ok = pGetProcessMemoryInfo(hProcess, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
-		CloseHandle(hProcess);
-		if (ok) {
-			json["PageFaultCount"] = pmc.PageFaultCount;
-			json["PeakWorkingSetSize"] = pmc.PeakWorkingSetSize;
-			json["WorkingSetSize"] = pmc.WorkingSetSize;
-			json["QuotaPeakPagedPoolUsage"] = pmc.QuotaPeakPagedPoolUsage;
-			json["QuotaPagedPoolUsage"] = pmc.QuotaPagedPoolUsage;
-			json["QuotaPeakNonPagedPoolUsage"] = pmc.QuotaPeakNonPagedPoolUsage;
-			json["QuotaNonPagedPoolUsage"] = pmc.QuotaNonPagedPoolUsage;
-			json["PagefileUsage"] = pmc.PagefileUsage;
-			json["PeakPagefileUsage"] = pmc.PeakPagefileUsage;
-			json["PrivateUsage"] = pmc.PrivateUsage;
+		HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+			FALSE, (DWORD)pid);
+		if (hProcess) {
+			BOOL ok = pGetProcessMemoryInfo(hProcess, (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+			CloseHandle(hProcess);
+			if (ok) {
+				json["PageFaultCount"] = pmc.PageFaultCount;
+				json["PeakWorkingSetSize"] = pmc.PeakWorkingSetSize;
+				json["WorkingSetSize"] = pmc.WorkingSetSize;
+				json["QuotaPeakPagedPoolUsage"] = pmc.QuotaPeakPagedPoolUsage;
+				json["QuotaPagedPoolUsage"] = pmc.QuotaPagedPoolUsage;
+				json["QuotaPeakNonPagedPoolUsage"] = pmc.QuotaPeakNonPagedPoolUsage;
+				json["QuotaNonPagedPoolUsage"] = pmc.QuotaNonPagedPoolUsage;
+				json["PagefileUsage"] = pmc.PagefileUsage;
+				json["PeakPagefileUsage"] = pmc.PeakPagefileUsage;
+				json["PrivateUsage"] = pmc.PrivateUsage;
+			}
 		}
 		return MB2WC(json.dump());
 	}
@@ -243,6 +272,8 @@ std::wstring ProcessManager::FindTestClient(int64_t port)
 	HWND hWnd = params.second;
 	if (!bResult && GetLastError() == -1 && hWnd) {
 		nlohmann::json j = json[0];
+		const int64_t foundPid = j["ProcessId"].get<int64_t>();
+		AddProcessStartTime(j, foundPid);
 		j["Window"] = (uint64_t)hWnd;
 		const int length = GetWindowTextLength(hWnd);
 		if (length != 0) {
@@ -365,6 +396,7 @@ protected:
 		json["Title"] = GetWindowTitle(window);
 		json["CommandLine"] = GetCommandLine(pid);
 		json["ProcessId"] = pid;
+		AddProcessStartTime(json, pid);
 		return false;
 	}
 
@@ -422,6 +454,7 @@ protected:
 		j["Title"] = GetWindowTitle(window);
 		j["CommandLine"] = GetCommandLine(pid);
 		j["ProcessId"] = pid;
+		AddProcessStartTime(j, pid);
 		json.push_back(j);
 		return true;
 	}
@@ -439,7 +472,8 @@ public:
 		if (!name.empty()) {
 			json["Name"] = name;
 			json["ProcessId"] = pid;
-			json["CommandLine"] = GetCommandLine(pid);;
+			json["CommandLine"] = GetCommandLine(pid);
+			AddProcessStartTime(json, pid);
 		}
 	}
 	bool empty() {
@@ -488,6 +522,24 @@ bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 }
 
 #endif //_WINDOWS
+
+std::wstring ProcessManager::StartProcess(const std::wstring& command,
+	const std::wstring& windowMode)
+{
+	return MB2WC(ProcessUtils::StartProcess(command, windowMode));
+}
+
+std::wstring ProcessManager::StopProcess(int64_t pid,
+	const std::wstring& startTime, bool force)
+{
+	return MB2WC(ProcessUtils::StopProcess(pid, startTime, force));
+}
+
+std::wstring ProcessManager::GetProcessState(int64_t pid,
+	const std::wstring& startTime)
+{
+	return MB2WC(ProcessUtils::GetProcessState(pid, startTime));
+}
 
 #ifdef USE_BOOST
 
