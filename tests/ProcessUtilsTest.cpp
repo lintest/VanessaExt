@@ -82,6 +82,17 @@ int main()
 		"StartTimeUTC must not be empty");
 	Require(started["State"].get<std::string>() == "Running", "start state");
 
+	// ProcessManager::GetProcessInfo/GetProcessList/FindTestClient получают
+	// StartTime через эту же функцию. Формат и значение должны совпадать.
+	std::string startTimeFromGet;
+	std::string startTimeUtcFromGet;
+	Require(ProcessUtils::GetStartTime(pid, startTimeFromGet, startTimeUtcFromGet),
+		"GetStartTime must return data");
+	Require(startTimeFromGet == startTime,
+		"StartProcess and GetStartTime must return the same StartTime");
+	Require(startTimeUtcFromGet == started["StartTimeUTC"].get<std::string>(),
+		"StartProcess and GetStartTime must return the same StartTimeUTC");
+
 	JSON running = Parse(ProcessUtils::GetProcessState(pid, Widen(startTime)));
 	Require(running["State"].get<std::string>() == "Running", "process must be running");
 	Require(running["StartTimeMatches"].get<bool>(), "StartTime must match");
