@@ -216,13 +216,19 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"Sleep", u"Пауза",
 		[&](VH msec) { ProcessManager::Sleep(msec); }
 	);
-#ifdef _WINDOWS
 	AddProcedure(u"SetWindowState", u"УстановитьСтатусОкна",
 		[&](VH window, VH state, VH activate) { WindowsManager::SetWindowState(window, state, activate); }
 	);
 	AddFunction(u"FindProcess", u"НайтиПроцесс",
 		[&](VH query) { this->result = ProcessManager::FindProcess(query); }
 	);
+	AddProperty(u"ScaleFactor", u"Масштаб",
+		[&](VH var) { var = GetScaleFactor(0); }
+	);
+	AddFunction(u"GetScaleFactor", u"ПолучитьМасштаб",
+		[&](VH id) { this->result = GetScaleFactor(id); }, { {0, (int64_t)0} }
+	);
+#ifdef _WINDOWS
 	AddProcedure(u"ShowClick", u"ПоказатьНажатиеМыши",
 		[&](VH color, VH radius, VH width, VH delay, VH trans, VH echo) { ClickEffect::Show(color, radius, width, delay, trans, echo); },
 		{ {0, (int64_t)RGB(200, 50, 50)}, {1, (int64_t)30}, {2, (int64_t)12}, {3, (int64_t)12}, {4, (int64_t)127}, {5, (int64_t)1} }
@@ -332,12 +338,6 @@ WindowsControl::WindowsControl() {
 	);
 	AddFunction(u"CropImage", u"ОбрезатьИзображение",
 		[&](VH image, VH x, VH y, VH w, VH h) { ImageHelper::Crop(image, this->result, x, y, w, h); }
-	);
-	AddProperty(u"ScaleFactor", u"Масштаб",
-		[&](VH var) { var = GetScaleFactor(0); }
-	);
-	AddFunction(u"GetScaleFactor", u"ПолучитьМасштаб",
-		[&](VH id) { this->result = GetScaleFactor(id); }, { {0, (int64_t)0} }
 	);
 	AddFunction(u"GetElements", u"ПолучитьЭлементы",
 		[&](VH id, VH level) { this->result = GetElements(id, level); }, { {1, (int64_t)MAXINT} }
@@ -652,6 +652,59 @@ int64_t WindowsControl::LaunchProcess(const std::wstring& command, bool hide)
 void WindowsControl::ExitCurrentProcess(int64_t status)
 {
 	exit((int)status);
+}
+
+#include <X11/Xresource.h>
+#include <cmath>
+#include <cstdlib>
+
+int64_t WindowsControl::GetScaleFactor(int64_t window)
+{
+	Display* display = XOpenDisplay(NULL);
+	if (!display) return 0;
+
+	double dpi = 0;
+
+	// The configured DPI is usually stored in the Xft.dpi resource of the root window.
+	if (const char* resources = XResourceManagerString(display)) {
+		XrmDatabase database = XrmGetStringDatabase(resources);
+		if (database) {
+			char* type = NULL;
+			XrmValue value;
+			if (XrmGetResource(database, "Xft.dpi", "Xft.Dpi", &type, &value) && value.addr) {
+				dpi = atof(value.addr);
+			}
+			XrmDestroyDatabase(database);
+		}
+	}
+
+	// Fallback: estimate the DPI from the screen size in pixels and millimeters.
+	if (dpi <= 0) {
+		int screen = DefaultScreen(display);
+		if (window) {
+			XWindowAttributes attributes;
+			if (XGetWindowAttributes(display, (Window)window, &attributes)) {
+				screen = XScreenNumberOfScreen(attributes.screen);
+			}
+		}
+		int width_mm = DisplayWidthMM(display, screen);
+		int width_px = DisplayWidth(display, screen);
+		if (width_mm > 0) dpi = width_px * 25.4 / width_mm;
+	}
+
+	XCloseDisplay(display);
+
+	if (dpi <= 0) return 0;
+
+	int64_t scale = (int64_t)llround(dpi * 100.0 / 96.0);
+
+	// Windows reports a DEVICE_SCALE_FACTOR, snap to the same set of values.
+	static const int64_t factors[] = { 100, 125, 150, 175, 200, 225, 250, 300, 350, 400 };
+	int64_t result = factors[0];
+	for (auto factor : factors) {
+		if (llabs(factor - scale) < llabs(result - scale)) result = factor;
+	}
+	return result;
 }
 
 #endif//_WINDOWS

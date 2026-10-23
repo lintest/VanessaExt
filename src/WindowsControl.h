@@ -24,6 +24,9 @@ private:
 public:
 	void OnProcessFinished(DWORD ProcessId, DWORD ExitCode);
 	WinUIAuto& getUIAuto();
+#else//_WINDOWS
+private:
+	int64_t GetScaleFactor(int64_t window);
 #endif//_WINDOWS
 
 private:
