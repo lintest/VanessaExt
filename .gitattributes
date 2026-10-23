@@ -9,6 +9,9 @@
 *.h++ text
 *.hh text
 
+# Shell scripts run on Linux CI — always check out with LF.
+*.sh text eol=lf
+
 # Compiled Object files
 *.slo binary
 *.lo binary

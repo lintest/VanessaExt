@@ -10,7 +10,11 @@ $postfix = '_' + $version -replace '\.', '-'
 
 $apiUrl = 'https://ci.appveyor.com/api'
 $data = Invoke-RestMethod -Method Get -Uri "$apiUrl/projects/$account/$project/build/$version"
-$jobId = $data.build.jobs[0].jobId
+$linuxJob = $data.build.jobs | Where-Object { $_.name -eq 'Linux' }
+if (-not $linuxJob) {
+  throw "AppVeyor job 'Linux' not found in build $version"
+}
+$jobId = $linuxJob.jobId
 
 Invoke-RestMethod -Method Get -OutFile "$path\Linux.zip" `
   -Uri "$apiUrl/buildjobs/$jobId/artifacts/AddIn.zip" 
