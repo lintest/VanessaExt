@@ -11,9 +11,10 @@ skip_branch_with_pr: true
 skip_tags: true
 
 environment:
-  # Пароль от архива с дистрибутивом 1С для Windows (lintest/tools1c, ветка platform).
-  KEY_1CV8T:
-    secure: OolAVEKkEg1cGCpG/VK2FaM0LWrPgMR/Kn4nTLYyKR0=
+  # Пароль от архивов с дистрибутивом 1С 8.3.27.2342
+  # (lintest/tools1c, ветки platform-8.3.27 и platform-linux).
+  KEY_1CV8_8_3_27:
+    secure: 34Xb8rbciFBEMpxZ5r2QxlNQgQALR/QWv8f1tWy120rHShlHO92WnQ1Tqye/nng7
 
   matrix:
     # 1. Сборка Linux-библиотеки.
@@ -37,9 +38,9 @@ environment:
 
 install:
   # Windows: дистрибутив 1С и утилиты. На Linux cmd-строки пропускаются.
-  - cmd: git clone -q --branch=platform https://github.com/lintest/tools1c.git bin
+  - cmd: git clone -q --branch=platform-8.3.27 https://github.com/lintest/tools1c.git bin
   - cmd: cd bin
-  - cmd: 7z x tools1c.part01.rar -p%KEY_1CV8T%
+  - cmd: 7z x win1c.7z.001 -p%KEY_1CV8_8_3_27%
   - cmd: cd ..
   - cmd: powershell -Command "Write-Host ('1C Windows version ' + (Get-Item bin\1cv8t.exe).VersionInfo.ProductVersion)"
 
@@ -167,9 +168,9 @@ for:
 
       # Собираем VanessaExt.epf — тестовые джобы забирают его как артефакт.
       - mkdir database
-      - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
-      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg
-      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml %APPVEYOR_PROJECT_NAME%.epf /Out example.log
+      - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database /DisableStartupDialogs /DisableStartupMessages
+      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg /DisableStartupDialogs /DisableStartupMessages
+      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml %APPVEYOR_PROJECT_NAME%.epf /Out example.log /DisableStartupDialogs /DisableStartupMessages
       - appveyor PushArtifact %APPVEYOR_PROJECT_NAME%.epf
 
     artifacts:
@@ -186,9 +187,9 @@ for:
         - job_name: WindowsTests
 
     install:
-      - cmd: git clone -q --branch=platform https://github.com/lintest/tools1c.git bin
+      - cmd: git clone -q --branch=platform-8.3.27 https://github.com/lintest/tools1c.git bin
       - cmd: cd bin
-      - cmd: 7z x tools1c.part01.rar -p%KEY_1CV8T%
+      - cmd: 7z x win1c.7z.001 -p%KEY_1CV8_8_3_27%
       - cmd: cd ..
       - cmd: powershell -Command "Write-Host ('1C Windows version ' + (Get-Item bin\1cv8t.exe).VersionInfo.ProductVersion)"
 
@@ -204,10 +205,10 @@ for:
       - appveyor PushArtifact %APPVEYOR_PROJECT_NAME%.epf
 
       - mkdir database
-      - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
-      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg
-      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute %APPVEYOR_PROJECT_NAME%.epf /C install
-      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute %APPVEYOR_PROJECT_NAME%.epf /C autotest
+      - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database /DisableStartupDialogs /DisableStartupMessages
+      - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg /DisableStartupDialogs /DisableStartupMessages
+      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute %APPVEYOR_PROJECT_NAME%.epf /DisableStartupDialogs /DisableStartupMessages /C install
+      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute %APPVEYOR_PROJECT_NAME%.epf /DisableStartupDialogs /DisableStartupMessages /C autotest
       - ps: if (!(Test-Path success.txt)) { throw "Имеются ошибки" }
 
     on_failure:
@@ -268,8 +269,8 @@ for:
       - sh: sudo locale-gen ru_RU.UTF-8 en_US.UTF-8
       - sh: git clone -q --branch=platform-linux --depth=1 https://github.com/lintest/tools1c.git 1c-linux
       - sh: |
-          if [ -z "$KEY_1CV8LINUX" ]; then
-            echo "KEY_1CV8LINUX is not set in AppVeyor project settings"
+          if [ -z "$KEY_1CV8_8_3_27" ]; then
+            echo "KEY_1CV8_8_3_27 is not set"
             exit 1
           fi
           ARCHIVE=$(ls 1c-linux/*.7z.001 2>/dev/null | head -n1)
@@ -278,7 +279,7 @@ for:
             exit 1
           fi
           echo "Archive: $ARCHIVE"
-          7z x "$ARCHIVE" -p"$KEY_1CV8LINUX" -o1c-dist
+          7z x "$ARCHIVE" -p"$KEY_1CV8_8_3_27" -o1c-dist
       - sh: |
           ARCHIVE=$(ls 1c-dist/*.tar.gz 2>/dev/null | head -n1)
           if [ -n "$ARCHIVE" ]; then
