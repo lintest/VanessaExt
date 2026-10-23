@@ -20,6 +20,13 @@ Invoke-RestMethod -Method Get -OutFile "$path\Linux.zip" `
   -Uri "$apiUrl/buildjobs/$jobId/artifacts/AddIn.zip" 
 
 Expand-Archive -Force -Path "$path\Linux.zip" -DestinationPath $path
+
+# На всякий случай поднимаем Linux-библиотеки из вложенных каталогов в корень:
+# p7zip может сохранить в архиве путь bin32/bin64, а manifest.xml ждёт файлы рядом.
+Get-ChildItem -Path $path -Recurse -File |
+  Where-Object { $_.Name -like "${name}Lin*.so*" -and $_.DirectoryName -ne $path } |
+  ForEach-Object { Move-Item -Force $_.FullName (Join-Path $path $_.Name) }
+
 Rename-Item "$path\${name}Win32.dll" "${name}Win32$postfix.dll"
 Rename-Item "$path\${name}Win64.dll" "${name}Win64$postfix.dll"
 Rename-Item "$path\${name}Lin32.so" "${name}Lin32$postfix.so"

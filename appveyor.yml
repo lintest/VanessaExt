@@ -204,6 +204,9 @@ for:
       - appveyor PushArtifact Debug.zip
       - appveyor PushArtifact %APPVEYOR_PROJECT_NAME%.epf
 
+      # Порт локального API AppVeyor нужен обработке для отправки результатов тестов.
+      - ps: Set-Content -Path app_port.txt -Value ([uri] $env:APPVEYOR_API_URL).Port
+
       - mkdir database
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database /DisableStartupDialogs /DisableStartupMessages
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg /DisableStartupDialogs /DisableStartupMessages
@@ -306,6 +309,13 @@ for:
           JOB=$(python3 -c "import json;d=json.load(open('build.json'));print(next(j['jobId'] for j in d['build']['jobs'] if j['name']=='Windows'))")
           echo "Windows job: $JOB"
           curl -sSfL -o "$APPVEYOR_PROJECT_NAME.epf" "https://ci.appveyor.com/api/buildjobs/$JOB/artifacts/$APPVEYOR_PROJECT_NAME.epf"
+      - sh: |
+          if [ -n "${APPVEYOR_API_URL:-}" ]; then
+            PORT="${APPVEYOR_API_URL##*:}"
+            PORT="${PORT%%/*}"
+            printf '%s' "$PORT" > app_port.txt
+            echo "app_port=$PORT"
+          fi
       - sh: bash scripts/linux-1c-test.sh "$APPVEYOR_PROJECT_NAME.epf"
 
     on_failure:
