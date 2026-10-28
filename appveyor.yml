@@ -241,6 +241,12 @@ for:
           foreach ($t in $targets) {
             $dir = Split-Path $t -Parent
             New-Item -ItemType Directory -Force -Path $dir | Out-Null
+            # Если файл не заканчивается переводом строки, настройка приклеится
+            # к предыдущей директиве (например, к ConfLocation=).
+            $text = if (Test-Path $t) { [System.IO.File]::ReadAllText($t) } else { '' }
+            if ($text.Length -gt 0 -and -not $text.EndsWith("`n")) {
+              [System.IO.File]::AppendAllText($t, "`r`n", $enc)
+            }
             [System.IO.File]::AppendAllText($t, "$setting`r`n", $enc)
             Write-Host "conf.cfg: $t"
             Get-Content $t | ForEach-Object { Write-Host "  $_" }
@@ -258,8 +264,9 @@ for:
             if ($Mode -ne 'prepare') {
               $a += @('/Execute', "$PWD\$env:APPVEYOR_PROJECT_NAME.epf")
             }
+            # /C должен идти последним: остаток командной строки 1С считает его значением.
             $a += @('/DisableStartupDialogs', '/DisableStartupMessages',
-                    '/Out', "$PWD\$Mode.log", '/C', $Mode) + $Extra
+                    '/Out', "$PWD\$Mode.log") + $Extra + @('/C', $Mode)
             $p = Start-Process -FilePath 'bin\1cv8ct.exe' -ArgumentList $a -PassThru
             if (-not $p.WaitForExit($TimeoutSec * 1000)) {
               Add-Type -AssemblyName System.Windows.Forms, System.Drawing
@@ -287,12 +294,15 @@ for:
       - ps: if (!(Test-Path success.txt)) { throw "Имеются ошибки" }
 
     on_failure:
+      - ps: if (Test-Path prepare.log) { Get-Content prepare.log -Tail 100 }
       - ps: if (Test-Path autotest.log) { Get-Content autotest.log -Tail 200 }
       - ps: if (Test-Path install.log) { Get-Content install.log -Tail 200 }
 
     artifacts:
+      - path: prepare.log
       - path: autotest.log
       - path: install.log
+      - path: desktop-prepare.png
       - path: desktop-install.png
       - path: desktop-autotest.png
       - path: AddIn.zip
@@ -406,10 +416,14 @@ for:
       - sh: bash scripts/linux-1c-test.sh "$APPVEYOR_PROJECT_NAME.epf"
 
     on_failure:
-      - sh: if [ -f autotest.log ]; then tail -n 200 autotest.log; fi
+      - sh: if [ -f prepare.log ]; then echo "=== prepare.log"; tail -n 100 prepare.log; fi
+      - sh: if [ -f install.log ]; then echo "=== install.log"; tail -n 100 install.log; fi
+      - sh: if [ -f autotest.log ]; then echo "=== autotest.log"; tail -n 200 autotest.log; fi
       - sh: if [ -f success.txt ]; then cat success.txt; fi
 
     artifacts:
+      - path: prepare.log
+      - path: install.log
       - path: autotest.log
       - path: success.txt
       - path: load.log
