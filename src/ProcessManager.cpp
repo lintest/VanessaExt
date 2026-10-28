@@ -336,6 +336,17 @@ bool ProcessManager::ConsoleOut(const std::wstring& text, int64_t encoding)
 
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
+#include <dirent.h>
+#include <errno.h>
+#include <regex>
+#include <algorithm>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <fstream>
+#include <iterator>
 #include "XWinBase.h"
 
 static std::string file2str(const std::string& filepath) {
@@ -505,9 +516,157 @@ std::wstring ProcessManager::GetProcessInfo(int64_t pid)
 	return pi;
 }
 
-std::wstring ProcessManager::FindProcess(const std::wstring& name)
+namespace {
+
+bool IsProcessId(const char* value)
 {
-	return {};
+	if (!value || !*value) return false;
+	for (const char* p = value; *p; ++p) {
+		if (*p < '0' || *p > '9') return false;
+	}
+	return true;
+}
+
+std::string ReadProcessFile(const std::string& path, bool firstLineOnly)
+{
+	std::ifstream file(path, std::ios::binary);
+	if (!file) return {};
+	std::string text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	if (firstLineOnly) {
+		auto pos = text.find('\n');
+		if (pos != std::string::npos) text.resize(pos);
+	}
+	std::replace(text.begin(), text.end(), '\0', ' ');
+	return text;
+}
+
+std::string TrimProcessQuery(const std::string& value)
+{
+	size_t begin = value.find_first_not_of(" \t\r\n");
+	if (begin == std::string::npos) return {};
+	size_t end = value.find_last_not_of(" \t\r\n");
+	return value.substr(begin, end - begin + 1);
+}
+
+std::string ToLower(const std::string& value)
+{
+	std::string result = value;
+	std::transform(result.begin(), result.end(), result.begin(),
+		[](unsigned char c) { return (char)::tolower(c); });
+	return result;
+}
+
+// Converts a SQL LIKE pattern (or a file mask with * and ?) to a regular expression.
+std::string MaskToRegex(const std::string& mask)
+{
+	std::string result;
+	for (char c : mask) {
+		switch (c) {
+		case '%':
+		case '*': result += ".*"; break;
+		case '_':
+		case '?': result += "."; break;
+		default:
+			if (std::strchr("\\^$.|+()[]{}", c)) result += '\\';
+			result += c;
+			break;
+		}
+	}
+	return result;
+}
+
+std::regex MakeMaskRegex(const std::string& mask)
+{
+	return std::regex(MaskToRegex(mask), std::regex::icase | std::regex::optimize);
+}
+
+struct ProcessFilter
+{
+	bool matchAny = false;
+	bool byName = false;
+	bool byCommandLine = false;
+	std::regex name;
+	std::regex commandLine;
+};
+
+// Understands a bare mask (matched against the name or the command line) and a
+// subset of WQL: SELECT ... FROM Win32_Process WHERE Name = '...' AND CommandLine LIKE '%...%'.
+bool ParseProcessQuery(const std::string& query, ProcessFilter& filter)
+{
+	std::string lower = ToLower(query);
+	size_t where = lower.find(" where ");
+	if (where == std::string::npos) return false;
+
+	std::string conditions = query.substr(where + 7);
+	std::regex condition(R"((\w+)\s*(=|like)\s*'([^']*)')", std::regex::icase);
+	for (auto it = std::sregex_iterator(conditions.begin(), conditions.end(), condition);
+		it != std::sregex_iterator(); ++it) {
+		std::string field = ToLower((*it)[1].str());
+		std::string value = (*it)[3].str();
+		if (field == "name") {
+			filter.byName = true;
+			filter.name = MakeMaskRegex(value);
+		}
+		else if (field == "commandline") {
+			filter.byCommandLine = true;
+			filter.commandLine = MakeMaskRegex(value);
+		}
+	}
+	return filter.byName || filter.byCommandLine;
+}
+
+} // namespace
+
+std::wstring ProcessManager::FindProcess(const std::wstring& query)
+{
+	std::string text = TrimProcessQuery(WC2MB(query));
+	if (text.empty()) return {};
+
+	ProcessFilter filter;
+	try {
+		if (!ParseProcessQuery(text, filter)) {
+			// Bare mask: match either the process name or its command line.
+			filter.matchAny = true;
+			filter.byName = true;
+			filter.byCommandLine = true;
+			filter.name = MakeMaskRegex(text);
+			filter.commandLine = filter.name;
+		}
+	}
+	catch (const std::regex_error&) {
+		return {};
+	}
+
+	JSON result = JSON::array();
+	DIR* dir = opendir("/proc");
+	if (!dir) return MB2WC(result.dump());
+
+	while (auto entry = readdir(dir)) {
+		if (!IsProcessId(entry->d_name)) continue;
+
+		unsigned long pid = strtoul(entry->d_name, nullptr, 10);
+		std::string path = std::string("/proc/") + entry->d_name;
+		std::string name = ReadProcessFile(path + "/comm", true);
+		if (name.empty()) continue;
+		std::string commandLine = ReadProcessFile(path + "/cmdline", false);
+
+		bool nameMatches = !filter.byName || std::regex_search(name, filter.name);
+		bool commandLineMatches = !filter.byCommandLine || std::regex_search(commandLine, filter.commandLine);
+		bool match = filter.matchAny
+			? ((filter.byName && nameMatches) || (filter.byCommandLine && commandLineMatches))
+			: (nameMatches && commandLineMatches);
+		if (!match) continue;
+
+		JSON json;
+		json["Name"] = name;
+		json["ProcessId"] = pid;
+		json["CommandLine"] = commandLine;
+		AddProcessStartTime(json, pid);
+		result.push_back(json);
+	}
+	closedir(dir);
+
+	return MB2WC(result.dump());
 }
 
 void ProcessManager::Sleep(int64_t ms)
@@ -542,11 +701,13 @@ std::wstring ProcessManager::GetProcessState(int64_t pid,
 }
 
 #ifdef USE_BOOST
-
 #include <boost/filesystem.hpp>
+#endif //USE_BOOST
 
 std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
 {
+#ifdef _WINDOWS
+#ifdef USE_BOOST
 	try {
 		boost::filesystem::path path(disk);
 		auto space = boost::filesystem::space(path);
@@ -562,13 +723,7 @@ std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
 	catch (std::exception& e) {
 		return JSON({ {"error", e.what()} }).dump();
 	}
-}
-
-#else //USE_BOOST
-
-std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
-{
-#ifdef _WINDOWS
+#else
 	ULARGE_INTEGER uFreeBytesAvailableToCaller;
 	ULARGE_INTEGER uTotalNumberOfBytes;
 	ULARGE_INTEGER uTotalNumberOfFreeBytes;
@@ -584,9 +739,22 @@ std::string ProcessManager::GetFreeDiskSpace(const std::wstring& disk)
 	else {
 		return JSON({ {"error", GetLastError()} }).dump();
 	}
+#endif //USE_BOOST
 #else //_WINDOWS
-	return JSON({ {"error", "Boost not found"} }).dump();
+	std::string path = WC2MB(disk);
+	if (path.empty()) path = "/";
+
+	struct statvfs info;
+	if (statvfs(path.c_str(), &info) != 0) {
+		return JSON({ {"error", errno} }).dump();
+	}
+
+	uint64_t blockSize = (uint64_t)info.f_frsize;
+	JSON json{
+		{"available", blockSize * (uint64_t)info.f_bavail},
+		{"capacity", blockSize * (uint64_t)info.f_blocks},
+		{"free", blockSize * (uint64_t)info.f_bfree}
+	};
+	return json.dump();
 #endif //_WINDOWS
 }
-
-#endif // USE_BOOST

@@ -362,6 +362,7 @@ BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pa
 
 #include "XWinBase.h"
 #include <X11/extensions/XTest.h>
+#include <cstdint>
 #include <unistd.h>
 
 static bool HasWindowManager(Display* display)
@@ -851,24 +852,128 @@ BOOL BaseHelper::ScreenManager::EmulateHotkey(VH keys, int64_t flags)
 	return true;
 }
 
+namespace {
+
+// Converts a Unicode code point to an X11 keysym.
+KeySym UnicodeToKeysym(uint32_t code) {
+	switch (code) {
+	case '\n':
+	case '\r': return XK_Return;
+	case '\t': return XK_Tab;
+	case '\b': return XK_BackSpace;
+	case 0x1B: return XK_Escape;
+	default: break;
+	}
+	if ((code >= 0x20 && code <= 0x7E) || (code >= 0xA0 && code <= 0xFF)) {
+		return (KeySym)code;
+	}
+	// Unicode keysyms have the form 0x01000000 | code point
+	return (KeySym)(0x01000000 | code);
+}
+
+// Returns a key code without any keysyms assigned, or 0 if there is none.
+KeyCode FindSpareKeycode(Display* display) {
+	int min_code = 0, max_code = 0;
+	XDisplayKeycodes(display, &min_code, &max_code);
+	int per_code = 0;
+	KeySym* keysyms = XGetKeyboardMapping(display, (KeyCode)min_code,
+		max_code - min_code + 1, &per_code);
+	if (!keysyms || per_code <= 0) {
+		if (keysyms) XFree(keysyms);
+		return 0;
+	}
+	KeyCode result = 0;
+	for (int code = max_code; code >= min_code && !result; --code) {
+		bool empty = true;
+		for (int level = 0; level < per_code; ++level) {
+			if (keysyms[(code - min_code) * per_code + level] != NoSymbol) {
+				empty = false;
+				break;
+			}
+		}
+		if (empty) result = (KeyCode)code;
+	}
+	XFree(keysyms);
+	return result;
+}
+
+// Sends a press/release pair for the keysym. When a spare key code is available it is
+// temporarily remapped to the keysym, which makes input independent of the current
+// keyboard layout (Cyrillic, uppercase letters and shifted symbols included).
+bool SendKeysym(Display* display, KeyCode spare, KeySym keysym) {
+	KeyCode keycode = spare;
+	bool shift = false;
+
+	if (keycode) {
+		// Fill all levels and groups, so the result doesn't depend on modifiers or layout.
+		KeySym keysyms[4] = { keysym, keysym, keysym, keysym };
+		XChangeKeyboardMapping(display, keycode, 4, keysyms, 1);
+		XSync(display, False);
+	}
+	else {
+		// Fallback: use the key code the keysym is already mapped to.
+		keycode = XKeysymToKeycode(display, keysym);
+		if (!keycode) return false;
+
+		int per_code = 0;
+		KeySym* keysyms = XGetKeyboardMapping(display, keycode, 1, &per_code);
+		if (keysyms) {
+			if (per_code > 1 && keysyms[0] != keysym && keysyms[1] == keysym) shift = true;
+			XFree(keysyms);
+		}
+	}
+
+	KeyCode shiftCode = shift ? XKeysymToKeycode(display, XK_Shift_L) : 0;
+	if (shiftCode) XTestFakeKeyEvent(display, shiftCode, True, CurrentTime);
+	XTestFakeKeyEvent(display, keycode, True, CurrentTime);
+	XTestFakeKeyEvent(display, keycode, False, CurrentTime);
+	if (shiftCode) XTestFakeKeyEvent(display, shiftCode, False, CurrentTime);
+	XFlush(display);
+	return true;
+}
+
+} // namespace
+
 BOOL BaseHelper::ScreenManager::EmulateText(const std::wstring& text, int64_t pause)
 {
-	std::wcout << L"EmulateText";
 	Display* display = XOpenDisplay(NULL);
 	if (!display) return false;
 	usleep(100 * 1000);
+
+	KeyCode spare = FindSpareKeycode(display);
+	bool result = true;
+
 	for (auto ch : text) {
-		std::wstring w; w += ch;
-		KeySym keysym = XStringToKeysym(WC2MB(w).data());
-		KeyCode keycode = XKeysymToKeycode(display, keysym);
-		std::wcout << std::endl << w << " : " << keysym << " : " << keycode << std::endl;
-		XTestFakeKeyEvent(display, keycode, true, CurrentTime);
-		XTestFakeKeyEvent(display, keycode, false, CurrentTime);
-		XFlush(display);
-		if (pause) usleep(pause * 1000);
+		uint32_t code = (uint32_t)ch;
+		KeySym keysym = UnicodeToKeysym(code);
+
+		// Control keys are always present in the keymap, press them directly.
+		if (code == '\n' || code == '\r' || code == '\t' || code == '\b' || code == 0x1B) {
+			KeyCode keycode = XKeysymToKeycode(display, keysym);
+			if (keycode) {
+				XTestFakeKeyEvent(display, keycode, True, CurrentTime);
+				XTestFakeKeyEvent(display, keycode, False, CurrentTime);
+				XFlush(display);
+			}
+			else {
+				result = SendKeysym(display, spare, keysym) && result;
+			}
+		}
+		else {
+			result = SendKeysym(display, spare, keysym) && result;
+		}
+
+		if (pause > 0) usleep((unsigned long)pause * 1000);
 	}
+
+	if (spare) {
+		KeySym keysyms[4] = { NoSymbol, NoSymbol, NoSymbol, NoSymbol };
+		XChangeKeyboardMapping(display, spare, 4, keysyms, 1);
+		XSync(display, False);
+	}
+
 	XCloseDisplay(display);
-	return true;
+	return result;
 }
 
 #endif //_WINDOWS

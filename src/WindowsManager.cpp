@@ -296,6 +296,8 @@ bool WindowsManager::PostMessage(int64_t hWnd, int64_t Msg, int64_t wParam, int6
 #else //_WINDOWS
 
 #include "XWinBase.h"
+#include <X11/Xutil.h>
+#include <cstring>
 
 class WindowList : public WindowEnumerator
 {
@@ -415,10 +417,97 @@ public:
 	}
 };
 
+class WindowStateHelper : public WindowHelper
+{
+public:
+	bool IsValid() const { return display != NULL; }
+
+	bool IsMaximizedWindow(Window window) {
+		return WindowHelper::IsMaximized(window);
+	}
+
+	bool IsHidden(Window window) {
+		Atom hidden = XInternAtom(display, "_NET_WM_STATE_HIDDEN", False);
+		Atom* states = NULL;
+		unsigned long size = 0;
+		bool result = false;
+		if (GetProperty(window, XA_ATOM, "_NET_WM_STATE", VXX(&states), &size)) {
+			for (unsigned long i = 0; i < size; i++) {
+				if (states[i] == hidden) { result = true; break; }
+			}
+			if (states) XFree(states);
+		}
+		return result;
+	}
+
+	void SetResizable(Window window, bool enable) {
+		XSizeHints hints;
+		memset(&hints, 0, sizeof(hints));
+		long supplied = 0;
+		XGetWMNormalHints(display, window, &hints, &supplied);
+		if (enable) {
+			// Let the window manager resize the window freely.
+			hints.flags &= ~(PMinSize | PMaxSize);
+		}
+		else {
+			// Fix the current size, the window manager will not resize it anymore.
+			XWindowAttributes attributes;
+			if (!XGetWindowAttributes(display, window, &attributes)) return;
+			hints.flags |= PMinSize | PMaxSize;
+			hints.min_width = hints.max_width = attributes.width;
+			hints.min_height = hints.max_height = attributes.height;
+		}
+		XSetWMNormalHints(display, window, &hints);
+		XFlush(display);
+	}
+};
+
 bool WindowsManager::IsMaximized(int64_t window)
 {
-	//TODO
-	return false;
+	if (window == 0) window = ActiveWindow();
+	if (window == 0) return false;
+	WindowStateHelper helper;
+	return helper.IsValid() && helper.IsMaximizedWindow((Window)window);
+}
+
+int64_t WindowsManager::GetWindowState(int64_t window)
+{
+	if (window == 0) window = ActiveWindow();
+	if (window == 0) return 0;
+
+	WindowStateHelper helper;
+	if (!helper.IsValid()) return -1;
+
+	Window w = (Window)window;
+	if (helper.IsHidden(w)) return 0;
+	if (helper.IsMaximizedWindow(w)) return 2;
+	return 1;
+}
+
+bool WindowsManager::SetWindowState(int64_t window, int64_t mode, bool activate)
+{
+	if (window == 0) window = ActiveWindow();
+	if (window == 0) return true;
+
+	WindowStateHelper helper;
+	if (!helper.IsValid()) return false;
+
+	Window w = (Window)window;
+	switch (mode) {
+	case 0: // minimize
+		helper.Minimize(w);
+		break;
+	case 2: // maximize
+		helper.Maximize(w, true);
+		break;
+	default: // restore
+		helper.Maximize(w, false);
+		break;
+	}
+
+	if (activate) helper.SetActiveWindow(w);
+
+	return true;
 }
 
 std::string WindowsManager::GetWindowList(int64_t pid)
@@ -496,7 +585,13 @@ bool WindowsManager::SetWindowPos(int64_t window, int64_t x, int64_t y, int64_t 
 
 bool WindowsManager::EnableResizing(int64_t window, bool enable)
 {
-	//TODO
+	if (window == 0) window = ActiveWindow();
+	if (window == 0) return true;
+
+	WindowStateHelper helper;
+	if (!helper.IsValid()) return false;
+
+	helper.SetResizable((Window)window, enable);
 	return true;
 }
 

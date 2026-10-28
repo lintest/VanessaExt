@@ -232,6 +232,7 @@ protected:
             if (states[i] == xa_horz) max_horz = true;
             if (states[i] == xa_vert) max_vert = true;
         }
+        XFree(states);
         return max_horz && max_vert;
     }
 
@@ -298,16 +299,20 @@ public:
         SendMessage(window, "_NET_ACTIVE_WINDOW", 1, CurrentTime);
     }
 
-     void Maximize(Window window, bool state) {
-        SendMessage(window, "_NET_WM_STATE_HIDDEN", 0, CurrentTime);
+    void Maximize(Window window, bool state) {
+        // Mapping deiconifies the window, so restore also works for minimized windows.
+        XMapWindow(display, window);
         Atom prop1 = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
         Atom prop2 = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
-        SendMessage(window, "_NET_WM_STATE", state ? 1 : 2, prop1, prop2);
+        SendMessage(window, "_NET_WM_STATE", state ? 1 : 2, prop1, prop2, 1);
     }
 
     void Minimize(Window window) {
-        SendMessage(window, "_NET_WM_STATE_HIDDEN", 1, CurrentTime);
-		XLowerWindow(display, window);
+        int screen = DefaultScreen(display);
+        XWindowAttributes attributes;
+        if (XGetWindowAttributes(display, window, &attributes))
+            screen = XScreenNumberOfScreen(attributes.screen);
+        XIconifyWindow(display, window, screen);
     }
 
 	void SetWindowPos(Window window, unsigned long x, unsigned long y, unsigned long w, unsigned long h) {
