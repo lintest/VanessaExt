@@ -261,9 +261,8 @@ for:
       - ps: |
           function Invoke-1C([string]$Mode, [int]$TimeoutSec, [string[]]$Extra = @()) {
             $a = @('ENTERPRISE', '/LRU', "/F$PWD\database")
-            if ($Mode -ne 'prepare') {
-              $a += @('/Execute', "$PWD\$env:APPVEYOR_PROJECT_NAME.epf")
-            }
+            # Обработку не передаём через /Execute: её открывает сама тестовая база
+            # методом ВнешниеОбработки.Создать, поэтому диалог защиты не появляется.
             # /C должен идти последним: остаток командной строки 1С считает его значением.
             $a += @('/DisableStartupDialogs', '/DisableStartupMessages',
                     '/Out', "$PWD\$Mode.log") + $Extra + @('/C', $Mode)

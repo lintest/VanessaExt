@@ -113,12 +113,15 @@ timeout 300 "$ONEC_THIN" ENTERPRISE /F "$DB" \
   /DisableStartupDialogs /DisableStartupMessages \
   /Out "$PWD/prepare.log" /C prepare
 
+# Обработку не передаём через /Execute: её открывает сама тестовая база
+# (ВнешниеОбработки.Создать с отключёнными предупреждениями), поэтому диалог
+# «Предупреждение безопасности» не появляется.
 echo "Installing VanessaExt AddIn"
-timeout 900 "$ONEC_THIN" ENTERPRISE /F "$DB" /Execute "$EPF" /N CI \
+timeout 900 "$ONEC_THIN" ENTERPRISE /F "$DB" /N CI \
   /DisableStartupDialogs /DisableStartupMessages /Out "$PWD/install.log" /C install
 
 echo "Running autotests"
-timeout 2400 "$ONEC_THIN" ENTERPRISE /F "$DB" /Execute "$EPF" /N CI \
+timeout 2400 "$ONEC_THIN" ENTERPRISE /F "$DB" /N CI \
   /DisableStartupDialogs /DisableStartupMessages /Out "$PWD/autotest.log" /C autotest
 
 if [ ! -f success.txt ]; then
