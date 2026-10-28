@@ -106,13 +106,20 @@ echo "Loading configuration"
 run "$ONEC" DESIGNER /F "$DB" /LoadConfigFromFiles "$PWD/Config" /UpdateDBCfg \
   /Out "$PWD/load.log" /DisableStartupDialogs /DisableStartupMessages
 
+# Пользователь CI создаётся без загрузки внешней обработки, поэтому диалогов нет.
+# Под ним 1С не показывает предупреждение безопасности при загрузке VanessaExt.epf.
+echo "Preparing CI user without unsafe-action warnings"
+timeout 300 "$ONEC_THIN" ENTERPRISE /F "$DB" \
+  /DisableStartupDialogs /DisableStartupMessages \
+  /Out "$PWD/prepare.log" /C prepare
+
 echo "Installing VanessaExt AddIn"
-timeout 900 "$ONEC_THIN" ENTERPRISE /F "$DB" /Execute "$EPF" \
-  /DisableStartupDialogs /DisableStartupMessages /C install
+timeout 900 "$ONEC_THIN" ENTERPRISE /F "$DB" /Execute "$EPF" /N CI \
+  /DisableStartupDialogs /DisableStartupMessages /Out "$PWD/install.log" /C install
 
 echo "Running autotests"
-timeout 2400 "$ONEC_THIN" ENTERPRISE /F "$DB" /Execute "$EPF" \
-  /DisableStartupDialogs /DisableStartupMessages /C autotest
+timeout 2400 "$ONEC_THIN" ENTERPRISE /F "$DB" /Execute "$EPF" /N CI \
+  /DisableStartupDialogs /DisableStartupMessages /Out "$PWD/autotest.log" /C autotest
 
 if [ ! -f success.txt ]; then
   echo "Autotest failed: success.txt not found" >&2

@@ -208,18 +208,93 @@ for:
       # Порт локального API AppVeyor нужен обработке для отправки результатов тестов.
       - ps: Set-Content -Path app_port.txt -Value ([uri] $env:APPVEYOR_API_URL).Port
 
+      # Отключаем защиту от опасных действий: иначе клиент показывает модальное
+      # предупреждение «Предупреждение безопасности» при загрузке внешней обработки
+      # и не завершается.
+      # ITS: 1С:Облачная подсистема Фреш, 11.3.7 — DisableUnsafeActionProtection=.*
+      # ITS: «Размещение данных 1С:Предприятия 8» — локальный conf.cfg лежит в bin\conf
+      # каталога версии, а настройки могут жить в общем каталоге из ConfLocation.
+      - ps: |
+          $setting = 'DisableUnsafeActionProtection=.*'
+          $enc = New-Object System.Text.UTF8Encoding($false)
+
+          Write-Host '--- layout ---'
+          Get-ChildItem $PWD -Filter '*.exe' | Select-Object -First 5 | ForEach-Object { Write-Host $_.FullName }
+
+          $targets = New-Object System.Collections.Generic.List[string]
+          $targets.Add((Join-Path $PWD 'bin\conf\conf.cfg'))
+          $targets.Add((Join-Path $PWD 'bin\bin\conf\conf.cfg'))
+
+          # Если в локальном conf.cfg есть ConfLocation — пишем и в общий каталог.
+          foreach ($t in @($targets)) {
+            if (Test-Path $t) {
+              $loc = Select-String -Path $t -Pattern '^\s*ConfLocation\s*=\s*(.+)$' |
+                Select-Object -First 1
+              if ($loc) {
+                $dir = $loc.Matches[0].Groups[1].Value.Trim()
+                $targets.Add((Join-Path $dir 'conf.cfg'))
+              }
+            }
+          }
+          $targets.Add('C:\Program Files\1cv8\conf\conf.cfg')
+
+          foreach ($t in $targets) {
+            $dir = Split-Path $t -Parent
+            New-Item -ItemType Directory -Force -Path $dir | Out-Null
+            [System.IO.File]::AppendAllText($t, "$setting`r`n", $enc)
+            Write-Host "conf.cfg: $t"
+            Get-Content $t | ForEach-Object { Write-Host "  $_" }
+          }
+
       - mkdir database
       - bin\1cv8t.exe CREATEINFOBASE File=%CD%/database /DisableStartupDialogs /DisableStartupMessages
       - bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg /DisableStartupDialogs /DisableStartupMessages
-      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute %APPVEYOR_PROJECT_NAME%.epf /DisableStartupDialogs /DisableStartupMessages /C install
-      - bin\1cv8ct.exe ENTERPRISE /LRU /F %CD%/database /Execute %APPVEYOR_PROJECT_NAME%.epf /DisableStartupDialogs /DisableStartupMessages /C autotest
+
+      # 1С в интерактивном режиме может открыть модальное окно и не завершиться.
+      # Поэтому запускаем с таймаутом: при зависании снимаем экран и падаем с диагностикой.
+      - ps: |
+          function Invoke-1C([string]$Mode, [int]$TimeoutSec, [string[]]$Extra = @()) {
+            $a = @('ENTERPRISE', '/LRU', "/F$PWD\database")
+            if ($Mode -ne 'prepare') {
+              $a += @('/Execute', "$PWD\$env:APPVEYOR_PROJECT_NAME.epf")
+            }
+            $a += @('/DisableStartupDialogs', '/DisableStartupMessages',
+                    '/Out', "$PWD\$Mode.log", '/C', $Mode) + $Extra
+            $p = Start-Process -FilePath 'bin\1cv8ct.exe' -ArgumentList $a -PassThru
+            if (-not $p.WaitForExit($TimeoutSec * 1000)) {
+              Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+              $r = [System.Windows.Forms.SystemInformation]::VirtualScreen
+              $bmp = New-Object System.Drawing.Bitmap $r.Width, $r.Height
+              $g = [System.Drawing.Graphics]::FromImage($bmp)
+              $g.CopyFromScreen($r.Location, [System.Drawing.Point]::Empty, $r.Size)
+              $bmp.Save("$PWD\desktop-$Mode.png")
+              $p.Kill()
+              throw "1C /C $Mode не завершился за $TimeoutSec с — смотрите $Mode.log и desktop-$Mode.png"
+            }
+            if ($p.ExitCode -ne 0) {
+              throw "1C /C $Mode завершился с кодом $($p.ExitCode) — смотрите $Mode.log"
+            }
+          }
+
+          # Фаза 1: создаём пользователя CI с отключёнными предупреждениями
+          # безопасности (внешняя обработка при этом не загружается).
+          Invoke-1C 'prepare' 300
+
+          # Фаза 2: install и autotest — под пользователем CI, без диалогов.
+          Invoke-1C 'install' 300 @('/N', 'CI')
+          Invoke-1C 'autotest' 1800 @('/N', 'CI')
+
       - ps: if (!(Test-Path success.txt)) { throw "Имеются ошибки" }
 
     on_failure:
       - ps: if (Test-Path autotest.log) { Get-Content autotest.log -Tail 200 }
+      - ps: if (Test-Path install.log) { Get-Content install.log -Tail 200 }
 
     artifacts:
       - path: autotest.log
+      - path: install.log
+      - path: desktop-install.png
+      - path: desktop-autotest.png
       - path: AddIn.zip
       - path: Debug.zip
       - path: ${APPVEYOR_PROJECT_NAME}.epf
@@ -300,6 +375,17 @@ for:
           chmod +x "$SETUP"
           sudo "$SETUP" --mode unattended --unattendedmodeui none
       - sh: find /opt/1cv8 -type f -name 1cv8 || true
+      # Отключаем защиту от опасных действий: иначе клиент показывает модальное
+      # предупреждение «Предупреждение безопасности» при загрузке внешней обработки
+      # и не завершается.
+      # ITS: 1С:Облачная подсистема Фреш, 11.3.7 — DisableUnsafeActionProtection=.*
+      - sh: |
+          sudo mkdir -p /opt/1cv8/conf
+          echo "DisableUnsafeActionProtection=.*" | sudo tee -a /opt/1cv8/conf/conf.cfg
+          for f in $(sudo find /opt/1cv8 -type f -path '*/bin/conf/conf.cfg' 2>/dev/null); do
+            echo "DisableUnsafeActionProtection=.*" | sudo tee -a "$f"
+          done
+          sudo find /opt/1cv8 -name conf.cfg -type f -exec sh -c 'echo "== $1"; cat "$1"' _ {} \;
 
     build_script:
       - sh: echo "Build skipped - tests only"
