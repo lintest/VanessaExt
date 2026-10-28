@@ -6,6 +6,7 @@ branches:
   only:
     - develop
     - master
+    - opencode
 
 skip_branch_with_pr: true
 skip_tags: true
@@ -18,7 +19,7 @@ environment:
 
   matrix:
     # 1. Сборка Linux-библиотеки.
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       job_name: Linux
 
     # 2. Сборка Windows-библиотеки и упаковка VanessaExt.epf (без тестов).
@@ -32,7 +33,7 @@ environment:
       job_name: WindowsTests
 
     # 4. Интеграционные тесты на реальной 1С под Linux (Xvfb).
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       job_depends_on: Windows
       job_name: LinuxTests
 
@@ -53,7 +54,7 @@ install:
   - sh: sudo apt -qq -y install
       build-essential
       elfutils
-      gcc-7 g++-7
+      gcc-9 g++-9
       uuid-dev uuid-dev:i386
       libpcre3-dev:i386
       libx11-dev libx11-dev:i386
@@ -61,10 +62,10 @@ install:
       libxrandr-dev libxrandr-dev:i386
       libpng-dev libpng-dev:i386
       libssl-dev libssl-dev:i386
-      g++-7-multilib gcc-7-multilib
+      g++-9-multilib gcc-9-multilib
 
-  - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 --slave /usr/bin/g++ g++ /usr/bin/g++-7
-  - sh: sudo update-alternatives --set gcc "/usr/bin/gcc-7"
+  - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 100 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+  - sh: sudo update-alternatives --set gcc "/usr/bin/gcc-9"
   - sh: gcc --version
 
   - cmd: git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
