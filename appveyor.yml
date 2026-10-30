@@ -122,7 +122,7 @@ for:
     # поэтому glibc-символы артефакта уезжают в GLIBC_2.28/2.29 и компонента не
     # загружается на 18.04/20.04. Собираем в контейнере с настоящим 18.04.
     install:
-      - sh: echo "Linux: зависимости и сборка выполняются в контейнере ubuntu:18.04"
+      - sh: 'echo "Linux: зависимости и сборка выполняются в контейнере ubuntu:18.04"'
 
     build_script:
       - sh: sudo docker run --rm -v "$PWD:/src" -w /src -e APPVEYOR_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ubuntu:18.04 bash scripts/ci-linux-build.sh
