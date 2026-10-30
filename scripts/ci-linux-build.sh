@@ -40,8 +40,15 @@ update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 \
 update-alternatives --set gcc "/usr/bin/gcc-7"
 gcc --version
 
+# Контейнер работает от root, а /src смонтирован от uid хоста: без этого git
+# отказывается работать с репозиторием и падает с «dubious ownership».
+git config --global --add safe.directory '*'
+
 echo "== RE-flex"
-if [ ! -d RE-flex ]; then
+# RE-flex в репозитории — gitlink (подмодуль): после checkout это пустая папка,
+# поэтому проверяем именно наличие .git, а не каталога.
+if [ ! -d RE-flex/.git ]; then
+  rm -rf RE-flex
   git clone -q --branch=master --depth=1 https://github.com/lintest/RE-flex.git RE-flex
 fi
 (
