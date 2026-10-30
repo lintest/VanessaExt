@@ -140,10 +140,21 @@ for:
       # Проверка ловит дрейф сборочного окружения и новые API, которые тянут
       # более свежие версии символов (именно так сломалось подключение компоненты).
       - sh: python3 tools/check_abi_baseline.py ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so ./bin64/${APPVEYOR_PROJECT_NAME}Lin64.so
-      - 7z a AddIn.zip ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so
-      - 7z a AddIn.zip ./bin64/${APPVEYOR_PROJECT_NAME}Lin64.so
-      - 7z a AddIn.zip ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so.debug
-      - 7z a AddIn.zip ./bin64/${APPVEYOR_PROJECT_NAME}Lin64.so.debug
+      # .debug появляются только если в контейнере есть eu-strip (пакет elfutils).
+      # 7z на отсутствующем файле возвращает 1, поэтому пакуем по факту наличия.
+      - sh: |
+          set -e
+          cd "$APPVEYOR_BUILD_FOLDER"
+          for f in ./bin32/*Lin32.so ./bin64/*Lin64.so \
+                   ./bin32/*Lin32.so.debug ./bin64/*Lin64.so.debug; do
+            if [ -f "$f" ]; then
+              7z a AddIn.zip "$f" > /dev/null
+              echo "в архиве: $f"
+            else
+              echo "пропускаю (нет файла): $f"
+            fi
+          done
+          7z l AddIn.zip | tail -n 5
 
     artifacts:
       - path: AddIn.zip

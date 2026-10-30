@@ -33,7 +33,7 @@ apt-get install -y -qq --no-install-recommends \
   libxrandr-dev libxrandr-dev:i386 \
   libpng-dev libpng-dev:i386 \
   libssl-dev libssl-dev:i386 \
-  zlib1g-dev
+  zlib1g-dev elfutils
 
 update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 \
   --slave /usr/bin/g++ g++ /usr/bin/g++-7
