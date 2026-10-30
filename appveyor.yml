@@ -119,6 +119,10 @@ for:
         - job_name: Linux
 
     after_build:
+      # Базовая линия артефакта: glibc 2.27 / GLIBCXX 3.4.25 (Ubuntu 18.04 + gcc-7).
+      # Проверка ловит дрейф сборочного окружения и новые API, которые тянут
+      # более свежие версии символов (именно так сломалось подключение компоненты).
+      - sh: python3 tools/check_abi_baseline.py ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so ./bin64/${APPVEYOR_PROJECT_NAME}Lin64.so
       - 7z a AddIn.zip ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so
       - 7z a AddIn.zip ./bin64/${APPVEYOR_PROJECT_NAME}Lin64.so
       - 7z a AddIn.zip ./bin32/${APPVEYOR_PROJECT_NAME}Lin32.so.debug
