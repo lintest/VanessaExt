@@ -125,7 +125,15 @@ for:
       - sh: 'echo "Linux: зависимости и сборка выполняются в контейнере ubuntu:18.04"'
 
     build_script:
-      - sh: sudo docker run --rm -v "$PWD:/src" -w /src -e APPVEYOR_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ubuntu:18.04 bash scripts/ci-linux-build.sh
+      - sh: |
+          set -e
+          SRC="$APPVEYOR_BUILD_FOLDER"
+          echo "SRC=$SRC"
+          pwd
+          ls -la "$SRC" | head -n 20
+          sudo docker run --rm -v "$SRC:/src" -w /src \
+            -e APPVEYOR_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" \
+            ubuntu:18.04 bash -c "ls -la /src/scripts && bash /src/scripts/ci-linux-build.sh"
 
     after_build:
       # Базовая линия артефакта: glibc 2.27 / GLIBCXX 3.4.25 (Ubuntu 18.04 + gcc-7).
