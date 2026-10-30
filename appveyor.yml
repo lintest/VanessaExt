@@ -118,6 +118,15 @@ for:
       only:
         - job_name: Linux
 
+    # Образ Ubuntu1804 в AppVeyor подменён на 20.04 (в логах ставятся пакеты 2.31),
+    # поэтому glibc-символы артефакта уезжают в GLIBC_2.28/2.29 и компонента не
+    # загружается на 18.04/20.04. Собираем в контейнере с настоящим 18.04.
+    install:
+      - sh: echo "Linux: зависимости и сборка выполняются в контейнере ubuntu:18.04"
+
+    build_script:
+      - sh: sudo docker run --rm -v "$PWD:/src" -w /src -e APPVEYOR_BUILD_VERSION="$APPVEYOR_BUILD_VERSION" ubuntu:18.04 bash scripts/ci-linux-build.sh
+
     after_build:
       # Базовая линия артефакта: glibc 2.27 / GLIBCXX 3.4.25 (Ubuntu 18.04 + gcc-7).
       # Проверка ловит дрейф сборочного окружения и новые API, которые тянут

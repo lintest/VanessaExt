@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+#
+# Сборка Linux-компоненты VanessaExt в контейнере Ubuntu 18.04.
+#
+# Зачем: версии символов glibc/libstdc++ в .so задаёт сборочное окружение, а не
+# исходный код. Образ Ubuntu1804 в AppVeyor давно подменён на 20.04, и артефакт
+# начинает требовать GLIBC_2.28/2.29 (statx, exp/log/pow), после чего компонента
+# не загружается на Ubuntu 18.04 (glibc 2.27) и 20.04 (2.31).
+#
+# Скрипт рассчитан на запуск из корня репозитория, смонтированного в контейнер:
+#
+#   docker run --rm -v "$PWD:/src" -w /src ubuntu:18.04 bash scripts/ci-linux-build.sh
+#
+# Ожидает переменную APPVEYOR_BUILD_VERSION (номер сборки для version.h).
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+echo "== Окружение"
+cat /etc/os-release | head -n2
+gcc --version 2>/dev/null || true
+
+echo "== Зависимости"
+dpkg --add-architecture i386
+apt-get update -qq
+apt-get install -y -qq --no-install-recommends \
+  build-essential cmake git curl ca-certificates \
+  gcc-7 g++-7 g++-7-multilib gcc-7-multilib \
+  uuid-dev uuid-dev:i386 \
+  libpcre3-dev:i386 \
+  libx11-dev libx11-dev:i386 \
+  libxtst-dev libxtst-dev:i386 \
+  libxrandr-dev libxrandr-dev:i386 \
+  libpng-dev libpng-dev:i386 \
+  libssl-dev libssl-dev:i386 \
+  zlib1g-dev
+
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 100 \
+  --slave /usr/bin/g++ g++ /usr/bin/g++-7
+update-alternatives --set gcc "/usr/bin/gcc-7"
+gcc --version
+
+echo "== RE-flex"
+if [ ! -d RE-flex ]; then
+  git clone -q --branch=master --depth=1 https://github.com/lintest/RE-flex.git RE-flex
+fi
+(
+  cd RE-flex
+  git checkout -q -B version v3.0.1
+  ./clean.sh
+  ./build.sh
+)
+
+echo "== OpenCV"
+./Build.OpenCV.sh
+
+echo "== Boost"
+if [ ! -d boost_1_84_0 ]; then
+  curl -sSfL -o boost_1_84_0.tar.gz \
+    https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
+  tar xzf boost_1_84_0.tar.gz
+fi
+
+echo "== version.h"
+echo "#define VERSION_FULL \"${APPVEYOR_BUILD_VERSION:-0.0.0}\"" > version.h
+
+build() {
+  local address_model="$1"
+  local build_dir="$2"
+  local target_32="$3"
+
+  echo "== Boost ${address_model}-bit"
+  (
+    cd boost_1_84_0
+    ./b2 cxxflags="-fPIC -std=c++17" link=static threading=multi \
+      runtime-link=static release stage \
+      --with-regex --with-date_time --with-filesystem \
+      "address-model=${address_model}"
+  )
+
+  echo "== CMake ${address_model}-bit"
+  rm -rf "$build_dir"
+  mkdir -p "$build_dir"
+  (
+    cd "$build_dir"
+    cmake -D CMAKE_BUILD_TYPE:STRING=RelWithDebInfo -D TARGET_PLATFORM_32:BOOL="${target_32}" ..
+    cmake --build . --config RelWithDebInfo
+  )
+}
+
+build 32 build32 ON
+build 64 build64 OFF
+
+echo "== Готово"
+ls -la bin32 bin64 2>/dev/null || true
