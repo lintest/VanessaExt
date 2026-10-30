@@ -59,6 +59,11 @@ fi
 )
 
 echo "== OpenCV"
+# Build.OpenCV.sh ожидает уже развёрнутый исходник (в старом пайплайне его
+# клонировали отдельным шагом install).
+if [ ! -d opencv-4.5.2 ]; then
+  git clone -q --branch=4.5.2 --depth=1 https://github.com/opencv/opencv.git opencv-4.5.2
+fi
 ./Build.OpenCV.sh
 
 echo "== Boost"
@@ -66,6 +71,10 @@ if [ ! -d boost_1_84_0 ]; then
   curl -sSfL -o boost_1_84_0.tar.gz \
     https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
   tar xzf boost_1_84_0.tar.gz
+fi
+# В tar-архиве boost нет готового b2 — его собирает bootstrap.sh.
+if [ ! -x boost_1_84_0/b2 ]; then
+  ( cd boost_1_84_0 && ./bootstrap.sh )
 fi
 
 echo "== version.h"
