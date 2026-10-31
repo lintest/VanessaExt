@@ -83,6 +83,11 @@ extern "C" {
 // window is focused; between focus changes the worker sleeps in select() on
 // the X connection and wakes up on root window property changes.
 //
+// The focus state is cached and refreshed event-driven: a tracker connection
+// subscribes to _NET_ACTIVE_WINDOW changes on the root window, so the
+// expensive process-tree check runs only on focus switches (or at most once
+// per second as a fallback), never on every keystroke.
+//
 // Only dependencies already used by the component are involved:
 // - X11 and libXtst (XRecord is part of Xtst), both linked in CMakeLists.txt;
 // - the bundled json.hpp (included through stdafx.h);
@@ -431,6 +436,85 @@ namespace {
 		return active && WindowBelongsTo(display, active, pid);
 	}
 
+	// Event-driven focus cache. Owns an X11 connection subscribed to root
+	// window property changes (_NET_ACTIVE_WINDOW), so the cached focus state
+	// is refreshed on focus switches without per-keystroke round trips. A
+	// periodic revalidation covers servers that do not maintain the EWMH
+	// property. The connection also receives MappingNotify, which the owner
+	// consumes to re-resolve key codes.
+	class FocusTracker {
+		using clock = std::chrono::steady_clock;
+	public:
+		FocusTracker() : m_display(XOpenDisplay(nullptr))
+		{
+			if (m_display) {
+				m_root = DefaultRootWindow(m_display);
+				m_activeWindow = XInternAtom(m_display, "_NET_ACTIVE_WINDOW", True);
+				XSelectInput(m_display, m_root, PropertyChangeMask);
+			}
+		}
+		~FocusTracker() { if (m_display) XCloseDisplay(m_display); }
+		FocusTracker(const FocusTracker&) = delete;
+		FocusTracker& operator=(const FocusTracker&) = delete;
+
+		operator Display*() const { return m_display; }
+		explicit operator bool() const { return m_display != nullptr; }
+
+		// Full (expensive) refresh of the cached focus state.
+		bool Update(pid_t pid)
+		{
+			m_focused = m_display && IsOwnProcessFocused(m_display, pid);
+			m_checked = clock::now();
+			return m_focused;
+		}
+
+		// Cached state with a local event pump: pending events are processed
+		// without round trips, the expensive check runs only after a reported
+		// focus switch or when the fallback interval has elapsed.
+		bool Focused(pid_t pid)
+		{
+			if (!m_display) return false;
+			Drain();
+			if (clock::now() - m_checked >= std::chrono::seconds(1)) Update(pid);
+			return m_focused;
+		}
+
+		// Returns and resets the pending keyboard mapping change flag.
+		bool ConsumeMappingChange()
+		{
+			if (m_display) Drain();
+			bool changed = m_mappingChanged;
+			m_mappingChanged = false;
+			return changed;
+		}
+
+	private:
+		void Drain()
+		{
+			while (XPending(m_display)) {
+				XEvent event;
+				XNextEvent(m_display, &event);
+				if (event.type == PropertyNotify
+					&& event.xproperty.window == m_root
+					&& event.xproperty.atom == m_activeWindow) {
+					// Active window changed: force revalidation on next query.
+					m_checked = clock::time_point();
+				}
+				else if (event.type == MappingNotify) {
+					XRefreshKeyboardMapping(&event.xmapping);
+					m_mappingChanged = true;
+				}
+			}
+		}
+
+		Display* m_display = nullptr;
+		Window m_root = 0;
+		Atom m_activeWindow = None;
+		bool m_focused = false;
+		bool m_mappingChanged = false;
+		clock::time_point m_checked = clock::time_point();
+	};
+
 	// XRecord callback. Runs on the worker thread between replies of the data
 	// connection; the query connection may be used here, the data one may not.
 	void RecordCallback(XPointer closure, XRecordInterceptData* data);
@@ -442,6 +526,7 @@ namespace {
 	struct RecordState {
 		LinuxKeyboardHook* hook = nullptr;
 		Display* query = nullptr;
+		FocusTracker* focus = nullptr;
 		pid_t pid = 0;
 		KeyCode modifiers[ModCount][2] = {};
 		bool down[256] = {};
@@ -483,22 +568,24 @@ namespace {
 		{
 			// The data connection must differ from the control one, because
 			// XRecordEnableContext blocks this connection until the context is
-			// disabled. The query connection serves Xlib round trips made from
-			// the callback (focus check, periodic rebinding).
+			// disabled. The focus tracker owns the query connection used for
+			// Xlib round trips made from the callback (focus checks, rebinding).
 			XDisplay data;
-			XDisplay query;
-			if (!data || !query) return false;
+			FocusTracker focus;
+			if (!data || !focus) return false;
 
 			RecordState state;
 			state.hook = this;
-			state.query = query;
+			state.focus = &focus;
+			state.query = focus;
 			state.pid = getpid();
-			ResolveModifiers(query, state.modifiers);
+			ResolveModifiers(state.query, state.modifiers);
+			state.focus->Update(state.pid);
 
 			// Seed the key-down map so a combination held while the hook was
 			// started is still recognized.
 			char keys[32] = {};
-			XQueryKeymap(query, keys);
+			XQueryKeymap(state.query, keys);
 			for (int code = 0; code < 256; ++code) {
 				state.down[code] = IsKeyDown(keys, (KeyCode)code);
 			}
@@ -511,30 +598,28 @@ namespace {
 
 		// Polling fallback: unlike the old implementation the worker sleeps in
 		// select() on the X connection and polls the key map only while the 1C
-		// window is focused, so idle CPU usage is close to zero.
+		// window is focused, so idle CPU usage is close to zero. Focus tracking
+		// and keyboard mapping refreshes are delegated to FocusTracker.
 		void RunPolling()
 		{
-			XDisplay display;
-			if (!display) return;
+			FocusTracker focus;
+			if (!focus) return;
 
-			Display* x11 = display;
-			const Window root = DefaultRootWindow(x11);
-			XSelectInput(display, root, PropertyChangeMask);
+			Display* display = focus;
 			const int fd = XConnectionNumber(display);
 
 			KeyCode modifiers[ModCount][2] = {};
 			ResolveModifiers(display, modifiers);
 
 			const pid_t pid = getpid();
-			bool focused = IsOwnProcessFocused(display, pid);
+			bool focused = focus.Update(pid);
 			char previous[32] = {};
 			if (focused) XQueryKeymap(display, previous);
 
-			int idleChecks = 0;
 			while (!m_stop.load(std::memory_order_relaxed)) {
 				// PropertyChangeMask on the root window delivers _NET_ACTIVE_WINDOW
 				// changes, so focus switches wake the thread immediately; otherwise
-				// it re-checks focus from time to time.
+				// FocusTracker re-checks focus at most once a second.
 				timeval timeout{ 0, focused ? 15000 : 200000 };
 				fd_set set;
 				FD_ZERO(&set);
@@ -542,35 +627,20 @@ namespace {
 				select(fd + 1, &set, nullptr, nullptr, &timeout);
 				if (m_stop.load(std::memory_order_relaxed)) break;
 
-				while (XPending(display)) {
-					XEvent event;
-					XNextEvent(display, &event);
-					if (event.type == MappingNotify) {
-						// Keyboard mapping changed (layout or keyboard added).
-						XRefreshKeyboardMapping(&event.xmapping);
-						ResolveModifiers(display, modifiers);
-						ResolveKeycodes(display);
-						continue;
-					}
-					if (event.type == PropertyNotify) {
-						idleChecks = 0;
-						bool now = IsOwnProcessFocused(display, pid);
-						if (now != focused) {
-							focused = now;
-							std::memset(previous, 0, sizeof(previous));
-							if (focused) XQueryKeymap(display, previous);
-						}
-					}
+				if (focus.ConsumeMappingChange()) {
+					// Keyboard mapping changed (layout or keyboard added).
+					ResolveModifiers(display, modifiers);
+					ResolveKeycodes(display);
 				}
 
-				if (!focused) {
-					if (++idleChecks >= 5) {
-						idleChecks = 0;
-						focused = IsOwnProcessFocused(display, pid);
-						if (focused) XQueryKeymap(display, previous);
-					}
+				bool now = focus.Focused(pid);
+				if (now != focused) {
+					focused = now;
+					std::memset(previous, 0, sizeof(previous));
+					if (focused) XQueryKeymap(display, previous);
 					continue;
 				}
+				if (!focused) continue;
 
 				char current[32] = {};
 				XQueryKeymap(display, current);
@@ -756,16 +826,21 @@ namespace {
 				return;
 			}
 
-			// Key codes may change when the layout or the keyboard changes; the
-			// record stream does not deliver MappingNotify, so re-resolve the
-			// hotkeys from time to time.
+			// Key codes may change when the layout or the keyboard changes. The
+			// query connection receives MappingNotify on such changes; the
+			// periodic rebinding below stays as a fallback for servers that
+			// do not deliver it.
+			if (state->focus->ConsumeMappingChange()) {
+				ResolveKeycodes(state->query);
+				ResolveModifiers(state->query, state->modifiers);
+			}
 			if (time - state->lastRebind > 10000) {
 				state->lastRebind = time;
 				ResolveKeycodes(state->query);
 				ResolveModifiers(state->query, state->modifiers);
 			}
 
-			if (!IsOwnProcessFocused(state->query, state->pid)) return;
+			if (!state->focus->Focused(state->pid)) return;
 
 			bool state_mod[ModCount];
 			for (int i = 0; i < ModCount; ++i) {
