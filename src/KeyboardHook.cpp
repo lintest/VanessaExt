@@ -73,25 +73,39 @@ extern "C" {
 #else //_WINDOWS
 
 // 1C:Enterprise on Linux is an X11 client, including in Wayland sessions where
-// it runs through XWayland. A single polling implementation therefore covers
-// both cases: XWayland only forwards key events while the 1C window is active.
+// it runs through XWayland. A single implementation therefore covers both
+// cases: XWayland only forwards key events while the 1C window is active.
+//
+// The preferred mode uses the XRecord extension: the worker thread receives
+// real key press/release events, so no fast keystrokes are missed and no
+// polling is done. When XRecord is unavailable (some XWayland builds), the
+// implementation falls back to polling the key map, but only while the 1C
+// window is focused; between focus changes the worker sleeps in select() on
+// the X connection and wakes up on root window property changes.
 //
 // Only dependencies already used by the component are involved:
-// - X11 (linked for the Linux build in CMakeLists.txt);
+// - X11 and libXtst (XRecord is part of Xtst), both linked in CMakeLists.txt;
 // - the bundled json.hpp (included through stdafx.h);
-// - the C++ standard library (std::thread, std::atomic).
+// - the C++ standard library (std::thread, std::atomic, std::mutex).
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
+#include <X11/extensions/record.h>
+
+#include <sys/select.h>
+#include <sys/time.h>
 
 #include <atomic>
 #include <chrono>
 #include <cstring>
+#include <mutex>
 #include <thread>
 #include <unistd.h>
 
 namespace {
+
+	enum { ModCtrl = 0, ModAlt, ModShift, ModMeta, ModCount };
 
 	// A single hotkey description. `key` in the JSON payload is a Windows virtual
 	// key code (as used by 1C's СочетаниеКлавиш), so the same scripts work on both
@@ -260,6 +274,23 @@ namespace {
 		return keycode;
 	}
 
+	// Modifier key codes change together with the keyboard mapping, so they
+	// are re-resolved on MappingNotify and on periodic rebinding.
+	void ResolveModifiers(Display* display, KeyCode (&modifiers)[ModCount][2])
+	{
+		const KeySym keysyms[ModCount][2] = {
+			{ XK_Control_L, XK_Control_R },
+			{ XK_Alt_L, XK_Alt_R },
+			{ XK_Shift_L, XK_Shift_R },
+			{ XK_Super_L, XK_Super_R },
+		};
+		for (int i = 0; i < ModCount; ++i) {
+			for (int j = 0; j < 2; ++j) {
+				modifiers[i][j] = XKeysymToKeycode(display, keysyms[i][j]);
+			}
+		}
+	}
+
 	std::u16string HotkeyName(const Hotkey& hotkey)
 	{
 		std::string result;
@@ -400,6 +431,24 @@ namespace {
 		return active && WindowBelongsTo(display, active, pid);
 	}
 
+	// XRecord callback. Runs on the worker thread between replies of the data
+	// connection; the query connection may be used here, the data one may not.
+	void RecordCallback(XPointer closure, XRecordInterceptData* data);
+
+	class LinuxKeyboardHook;
+
+	// Per-run state of the XRecord worker. Owned by the worker thread, passed
+	// to the record callback as an opaque pointer.
+	struct RecordState {
+		LinuxKeyboardHook* hook = nullptr;
+		Display* query = nullptr;
+		pid_t pid = 0;
+		KeyCode modifiers[ModCount][2] = {};
+		bool down[256] = {};
+		Time lastRelease[256] = {};
+		Time lastRebind = 0;
+	};
+
 	class LinuxKeyboardHook
 	{
 	private:
@@ -408,27 +457,120 @@ namespace {
 		std::atomic<bool> m_stop{ false };
 		std::thread m_thread;
 
-		void Run()
+		// XRecord lifecycle objects. Created by Start() on the calling thread,
+		// destroyed by Stop() after the worker has been joined; the worker
+		// itself never frees them.
+		Display* m_recordCtrl = nullptr;
+		XRecordContext m_recordContext = 0;
+		std::mutex m_recordMutex;
+
+		// Re-resolves hotkey key codes. Called when the hook starts and again
+		// when the keyboard mapping may have changed (MappingNotify in polling
+		// mode, periodically in record mode).
+		void ResolveKeycodes(Display* display)
 		{
-			// The worker thread uses its own X11 connection.
+			if (!display) return;
+			for (auto& hotkey : m_hotkeys) {
+				KeyCode code = FindKeycode(display, hotkey.keysym);
+				if (code) hotkey.keycode = code;
+			}
+		}
+
+		// Record mode: blocks in XRecordEnableContext until Stop() disables the
+		// context. Returns false when the record stream ended prematurely, so
+		// the caller can switch to the polling fallback.
+		bool RunRecord(Display* ctrl, XRecordContext context)
+		{
+			// The data connection must differ from the control one, because
+			// XRecordEnableContext blocks this connection until the context is
+			// disabled. The query connection serves Xlib round trips made from
+			// the callback (focus check, periodic rebinding).
+			XDisplay data;
+			XDisplay query;
+			if (!data || !query) return false;
+
+			RecordState state;
+			state.hook = this;
+			state.query = query;
+			state.pid = getpid();
+			ResolveModifiers(query, state.modifiers);
+
+			// Seed the key-down map so a combination held while the hook was
+			// started is still recognized.
+			char keys[32] = {};
+			XQueryKeymap(query, keys);
+			for (int code = 0; code < 256; ++code) {
+				state.down[code] = IsKeyDown(keys, (KeyCode)code);
+			}
+
+			Display* dataX11 = data;
+			XRecordEnableContext(dataX11, context, RecordCallback, (XPointer)&state);
+
+			return m_stop.load(std::memory_order_relaxed);
+		}
+
+		// Polling fallback: unlike the old implementation the worker sleeps in
+		// select() on the X connection and polls the key map only while the 1C
+		// window is focused, so idle CPU usage is close to zero.
+		void RunPolling()
+		{
 			XDisplay display;
 			if (!display) return;
 
-			enum { ModCtrl = 0, ModAlt, ModShift, ModMeta, ModCount };
-			const KeyCode modifiers[ModCount][2] = {
-				{ XKeysymToKeycode(display, XK_Control_L), XKeysymToKeycode(display, XK_Control_R) },
-				{ XKeysymToKeycode(display, XK_Alt_L), XKeysymToKeycode(display, XK_Alt_R) },
-				{ XKeysymToKeycode(display, XK_Shift_L), XKeysymToKeycode(display, XK_Shift_R) },
-				{ XKeysymToKeycode(display, XK_Super_L), XKeysymToKeycode(display, XK_Super_R) },
-			};
+			Display* x11 = display;
+			const Window root = DefaultRootWindow(x11);
+			XSelectInput(display, root, PropertyChangeMask);
+			const int fd = XConnectionNumber(display);
+
+			KeyCode modifiers[ModCount][2] = {};
+			ResolveModifiers(display, modifiers);
 
 			const pid_t pid = getpid();
+			bool focused = IsOwnProcessFocused(display, pid);
 			char previous[32] = {};
-			XQueryKeymap(display, previous);
+			if (focused) XQueryKeymap(display, previous);
 
+			int idleChecks = 0;
 			while (!m_stop.load(std::memory_order_relaxed)) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(15));
+				// PropertyChangeMask on the root window delivers _NET_ACTIVE_WINDOW
+				// changes, so focus switches wake the thread immediately; otherwise
+				// it re-checks focus from time to time.
+				timeval timeout{ 0, focused ? 15000 : 200000 };
+				fd_set set;
+				FD_ZERO(&set);
+				FD_SET(fd, &set);
+				select(fd + 1, &set, nullptr, nullptr, &timeout);
 				if (m_stop.load(std::memory_order_relaxed)) break;
+
+				while (XPending(display)) {
+					XEvent event;
+					XNextEvent(display, &event);
+					if (event.type == MappingNotify) {
+						// Keyboard mapping changed (layout or keyboard added).
+						XRefreshKeyboardMapping(&event.xmapping);
+						ResolveModifiers(display, modifiers);
+						ResolveKeycodes(display);
+						continue;
+					}
+					if (event.type == PropertyNotify) {
+						idleChecks = 0;
+						bool now = IsOwnProcessFocused(display, pid);
+						if (now != focused) {
+							focused = now;
+							std::memset(previous, 0, sizeof(previous));
+							if (focused) XQueryKeymap(display, previous);
+						}
+					}
+				}
+
+				if (!focused) {
+					if (++idleChecks >= 5) {
+						idleChecks = 0;
+						focused = IsOwnProcessFocused(display, pid);
+						if (focused) XQueryKeymap(display, previous);
+					}
+					continue;
+				}
 
 				char current[32] = {};
 				XQueryKeymap(display, current);
@@ -438,7 +580,7 @@ namespace {
 					if (current[i] & ~previous[i]) pressed = true;
 				}
 
-				if (pressed && IsOwnProcessFocused(display, pid)) {
+				if (pressed) {
 					bool state[ModCount];
 					for (int i = 0; i < ModCount; ++i) {
 						state[i] = IsKeyDown(current, modifiers[i][0]) || IsKeyDown(current, modifiers[i][1]);
@@ -457,6 +599,26 @@ namespace {
 			}
 		}
 
+		void Run()
+		{
+			Display* ctrl = nullptr;
+			XRecordContext context = 0;
+			{
+				std::lock_guard<std::mutex> lock(m_recordMutex);
+				ctrl = m_recordCtrl;
+				context = m_recordContext;
+			}
+
+			if (ctrl && context
+				&& !m_stop.load(std::memory_order_relaxed)
+				&& RunRecord(ctrl, context)) {
+				return;
+			}
+
+			if (m_stop.load(std::memory_order_relaxed)) return;
+			RunPolling();
+		}
+
 	public:
 		~LinuxKeyboardHook()
 		{
@@ -465,10 +627,34 @@ namespace {
 
 		void Stop()
 		{
-			if (m_thread.joinable()) {
-				m_stop.store(true, std::memory_order_relaxed);
-				m_thread.join();
+			std::thread thread;
+			Display* ctrl = nullptr;
+			XRecordContext context = 0;
+			{
+				std::lock_guard<std::mutex> lock(m_recordMutex);
+				thread = std::move(m_thread);
+				ctrl = m_recordCtrl;
+				context = m_recordContext;
 			}
+
+			if (thread.joinable()) {
+				m_stop.store(true, std::memory_order_relaxed);
+				// Unblocks XRecordEnableContext; the worker never frees the
+				// context itself.
+				if (ctrl && context) XRecordDisableContext(ctrl, context);
+				thread.join();
+			}
+
+			if (ctrl) {
+				if (context) XRecordFreeContext(ctrl, context);
+				XCloseDisplay(ctrl);
+			}
+			{
+				std::lock_guard<std::mutex> lock(m_recordMutex);
+				m_recordCtrl = nullptr;
+				m_recordContext = 0;
+			}
+
 			m_addin = nullptr;
 			m_hotkeys.clear();
 		}
@@ -484,20 +670,51 @@ namespace {
 			}
 
 			// A temporary connection is enough to resolve the key codes; the worker
-			// thread opens its own one.
+			// thread opens its own ones.
 			XDisplay display;
 			if (!display) {
 				m_hotkeys.clear();
 				return "Keyboard hook error: cannot open X11 display";
 			}
 
+			std::string unresolved;
 			for (auto it = m_hotkeys.begin(); it != m_hotkeys.end();) {
 				it->keycode = FindKeycode(display, it->keysym);
-				if (!it->keycode) it = m_hotkeys.erase(it);
+				if (!it->keycode) {
+					const char* name = XKeysymToString(it->keysym);
+					unresolved += unresolved.empty() ? "" : ", ";
+					unresolved += name ? name : "unknown";
+					it = m_hotkeys.erase(it);
+				}
 				else ++it;
 			}
 
-			if (m_hotkeys.empty()) return "Keyboard hook error: unsupported keys";
+			if (m_hotkeys.empty()) {
+				return "Keyboard hook error: unsupported keys"
+					+ (unresolved.empty() ? "" : (": " + unresolved));
+			}
+
+			// The control connection hosts the record context; Stop() disables
+			// the context through it from the calling thread.
+			Display* ctrl = XOpenDisplay(nullptr);
+			if (ctrl) {
+				int major = 0, minor = 0;
+				if (XRecordQueryVersion(ctrl, &major, &minor)) {
+					XRecordRange* range = XRecordAllocRange();
+					if (range) {
+						range->device_events.first = KeyPress;
+						range->device_events.last = KeyRelease;
+						XRecordClientSpec spec = XRecordAllClients;
+						XRecordContext context = XRecordCreateContext(ctrl, 0, &spec, 1, &range, 1);
+						XFree(range);
+						if (context) {
+							std::lock_guard<std::mutex> lock(m_recordMutex);
+							m_recordCtrl = ctrl;
+							m_recordContext = context;
+						}
+					}
+				}
+			}
 
 			m_addin = addin;
 			m_stop.store(false, std::memory_order_relaxed);
@@ -508,11 +725,80 @@ namespace {
 			catch (const std::exception& e) {
 				m_addin = nullptr;
 				m_hotkeys.clear();
+				if (ctrl) {
+					{
+						std::lock_guard<std::mutex> lock(m_recordMutex);
+						if (m_recordContext) XRecordFreeContext(ctrl, m_recordContext);
+						m_recordCtrl = nullptr;
+						m_recordContext = 0;
+					}
+					XCloseDisplay(ctrl);
+				}
 				return std::string("Keyboard hook error: ") + e.what();
 			}
 			return {};
 		}
+
+		// Called from the XRecord callback for every recorded key event.
+		void OnRecordKey(RecordState* state, bool press, KeyCode code, Time time)
+		{
+			if (press) {
+				// Skip auto-repeat: the key is already tracked as down, or the
+				// release-press pair is too recent for a human press.
+				bool repeat = state->down[code]
+					|| (state->lastRelease[code] && time - state->lastRelease[code] < 25);
+				state->down[code] = true;
+				if (repeat) return;
+			}
+			else {
+				state->down[code] = false;
+				state->lastRelease[code] = time;
+				return;
+			}
+
+			// Key codes may change when the layout or the keyboard changes; the
+			// record stream does not deliver MappingNotify, so re-resolve the
+			// hotkeys from time to time.
+			if (time - state->lastRebind > 10000) {
+				state->lastRebind = time;
+				ResolveKeycodes(state->query);
+				ResolveModifiers(state->query, state->modifiers);
+			}
+
+			if (!IsOwnProcessFocused(state->query, state->pid)) return;
+
+			bool state_mod[ModCount];
+			for (int i = 0; i < ModCount; ++i) {
+				state_mod[i] = state->down[state->modifiers[i][0]] || state->down[state->modifiers[i][1]];
+			}
+
+			for (const auto& hotkey : m_hotkeys) {
+				if (hotkey.keycode != code) continue;
+				if (hotkey.ctrl != state_mod[ModCtrl] || hotkey.alt != state_mod[ModAlt]
+					|| hotkey.shift != state_mod[ModShift] || hotkey.meta != state_mod[ModMeta]) continue;
+
+				if (m_addin) m_addin->ExternalEvent(hotkey.message, hotkey.data);
+				return;
+			}
+		}
 	};
+
+	// XRecord callback. Runs on the worker thread between replies of the data
+	// connection; the query connection may be used here, the data one may not.
+	void RecordCallback(XPointer closure, XRecordInterceptData* data)
+	{
+		auto* state = (RecordState*)closure;
+		if (data->category == XRecordFromServer && data->data_len > 0) {
+			const uint8_t type = ((const uint8_t*)data->data)[0];
+			if (type == KeyPress || type == KeyRelease) {
+				const uint8_t code = ((const uint8_t*)data->data)[1];
+				if (code) {
+					state->hook->OnRecordKey(state, type == KeyPress, (KeyCode)code, data->server_time);
+				}
+			}
+		}
+		XRecordFreeData(data);
+	}
 
 	LinuxKeyboardHook s_hook;
 
