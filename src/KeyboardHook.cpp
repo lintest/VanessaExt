@@ -95,6 +95,7 @@ extern "C" {
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/extensions/record.h>
 
@@ -593,7 +594,7 @@ namespace {
 			Display* dataX11 = data;
 			XRecordEnableContext(dataX11, context, RecordCallback, (XPointer)&state);
 
-			return m_stop.load(std::memory_order_relaxed);
+			return m_stop.load(std::memory_order_acquire);
 		}
 
 		// Polling fallback: unlike the old implementation the worker sleeps in
@@ -616,7 +617,7 @@ namespace {
 			char previous[32] = {};
 			if (focused) XQueryKeymap(display, previous);
 
-			while (!m_stop.load(std::memory_order_relaxed)) {
+			while (!m_stop.load(std::memory_order_acquire)) {
 				// PropertyChangeMask on the root window delivers _NET_ACTIVE_WINDOW
 				// changes, so focus switches wake the thread immediately; otherwise
 				// FocusTracker re-checks focus at most once a second.
@@ -625,7 +626,7 @@ namespace {
 				FD_ZERO(&set);
 				FD_SET(fd, &set);
 				select(fd + 1, &set, nullptr, nullptr, &timeout);
-				if (m_stop.load(std::memory_order_relaxed)) break;
+				if (m_stop.load(std::memory_order_acquire)) break;
 
 				if (focus.ConsumeMappingChange()) {
 					// Keyboard mapping changed (layout or keyboard added).
@@ -680,12 +681,12 @@ namespace {
 			}
 
 			if (ctrl && context
-				&& !m_stop.load(std::memory_order_relaxed)
+				&& !m_stop.load(std::memory_order_acquire)
 				&& RunRecord(ctrl, context)) {
 				return;
 			}
 
-			if (m_stop.load(std::memory_order_relaxed)) return;
+			if (m_stop.load(std::memory_order_acquire)) return;
 			RunPolling();
 		}
 
@@ -708,7 +709,7 @@ namespace {
 			}
 
 			if (thread.joinable()) {
-				m_stop.store(true, std::memory_order_relaxed);
+				m_stop.store(true, std::memory_order_release);
 				// Unblocks XRecordEnableContext; the worker never frees the
 				// context itself.
 				if (ctrl && context) XRecordDisableContext(ctrl, context);
@@ -787,7 +788,7 @@ namespace {
 			}
 
 			m_addin = addin;
-			m_stop.store(false, std::memory_order_relaxed);
+			m_stop.store(false, std::memory_order_release);
 
 			try {
 				m_thread = std::thread(&LinuxKeyboardHook::Run, this);
@@ -875,17 +876,22 @@ namespace {
 		XRecordFreeData(data);
 	}
 
-	LinuxKeyboardHook s_hook;
+	LinuxKeyboardHook& GetHook()
+	{
+		static LinuxKeyboardHook hook;
+		return hook;
+	}
 
 } // namespace
 
 std::string KeyboardHook::Hook(AddInNative* addin, const std::u16string& msg)
 {
+	auto& hook = GetHook();
 	if (!addin) {
-		s_hook.Stop();
+		hook.Stop();
 		return {};
 	}
-	return s_hook.Start(addin, msg);
+	return hook.Start(addin, msg);
 }
 
 #endif //_WINDOWS
