@@ -81,15 +81,17 @@ jobs:
           python3 tools/check_abi_baseline.py \
             ./bin32/${PROJECT_NAME}Lin32.so ./bin64/${PROJECT_NAME}Lin64.so
 
-      # CMakeLists.txt линкует X11/XTest/XRandR в основной таргет безусловно
-      # (target_link_libraries с ${X11_LIBRARIES}), а на чистом раннере
-      # dev-пакетов X11 нет: переменные пустые, и конфигурирование падает на
-      # вызове target_link_libraries без аргументов. В контейнере ubuntu:18.04
-      # этого не видно — ci-linux-build.sh ставит пакеты сам.
-      - name: Пакеты X11 для конфигурирования CMake
+      # Заголовки, которые нужны при конфигурировании и сборке тестов:
+      # include/com.h (через types.h и stdafx.h) требует uuid/uuid.h, а
+      # X11/XTest/XRandR линкуются в основной таргет безусловно — без пакетов
+      # target_link_libraries падает на пустых переменных. В контейнере
+      # ubuntu:18.04 всё это ставит ci-linux-build.sh, на раннере — здесь.
+      - name: Системные пакеты для сборки тестов
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libx11-dev libxtst-dev libxrandr-dev
+          sudo apt-get install -y -qq \
+            uuid-dev libpng-dev zlib1g-dev \
+            libx11-dev libxtst-dev libxrandr-dev
 
       # Юнит-тесты ядра процессов. OpenCV/Boost/libgit2 не нужны, поэтому идут
       # секунды, см. Docs/BuildLibrary.md.
