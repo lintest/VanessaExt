@@ -176,12 +176,23 @@ set -e
 log "код возврата клиента: ${rc}"
 
 if [ ! -f success.txt ]; then
-	echo '--- отчёт приёмника ---'
-	cat tests-report.log 2>/dev/null || echo 'нет tests-report.log'
-	echo '--- вывод клиента ---'
+	echo "--- код возврата клиента: ${rc} (124 = сработал timeout, значит завис) ---"
+	echo '--- размеры логов ---'
+	wc -c autotest.log autotest.out 2>/dev/null || true
+	echo '--- начало вывода клиента ---'
+	head -n 40 autotest.log 2>/dev/null || true
+	echo '--- конец вывода клиента ---'
 	tail -n 60 autotest.log 2>/dev/null || true
 	echo '--- autotest.out ---'
 	tail -n 20 autotest.out 2>/dev/null || true
+	echo '--- отчёт приёмника ---'
+	cat tests-report.log 2>/dev/null || echo 'нет tests-report.log'
+	echo '--- заглушка AppVeyor ---'
+	cat stub.log 2>/dev/null || true
+	echo "--- порт приёмника: $(cat app_port.txt 2>/dev/null || echo нет) ---"
+	echo '--- база и обработка ---'
+	ls -la "${DB}" 2>/dev/null | head -n 10 || true
+	ls -la "${PROJECT}.epf" 2>/dev/null || true
 	echo '--- окна X ---'
 	xwininfo -root -tree 2>/dev/null | head -n 40 || true
 	fail "автотест не дошёл до конца: success.txt не создан"
