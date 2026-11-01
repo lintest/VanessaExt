@@ -203,6 +203,12 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 		tail -n 20 autotest.log 2>/dev/null | sed 's/^/    /'
 		echo '    --- autotest.out (журнал клиента) ---'
 		tail -n 10 autotest.out 2>/dev/null | sed 's/^/    /'
+		# Собственный лог платформы: клиент держит его открытым (видно в /proc/PID/fd),
+		# и именно туда 1С пишет причины, не попадающие ни в stdout, ни в /Out.
+		for platform_log in $(ls -t "${HOME}"/.1cv8t/1C/1cv8t/logs/*/*.log 2>/dev/null | head -n 2); do
+			echo "    --- ${platform_log} ---"
+			tail -n 20 "${platform_log}" 2>/dev/null | sed 's/^/    /'
+		done
 		echo '    --- состояние процесса ---'
 		ps -o pid,stat,pcpu,etime,args -C "$(basename "${client}")" 2>/dev/null | sed 's/^/    /'
 		for p in $(pgrep -f "$(basename "${client}")" 2>/dev/null || true); do
@@ -226,6 +232,15 @@ if [ ! -f success.txt ]; then
 	tail -n 60 autotest.log 2>/dev/null || true
 	echo '--- autotest.out ---'
 	tail -n 20 autotest.out 2>/dev/null || true
+	# Лог самой платформы: клиент держит его открытым, но в консоль он не попадает.
+	# Копируем целиком в артефакты и печатаем хвосты.
+	mkdir -p platform-logs
+	cp -r "${HOME}"/.1cv8t/1C/1cv8t/logs/* platform-logs/ 2>/dev/null || true
+	echo '--- логи платформы ---'
+	find platform-logs -name '*.log' -type f 2>/dev/null | while read -r platform_log; do
+		echo "=== ${platform_log} ==="
+		tail -n 30 "${platform_log}" 2>/dev/null || true
+	done | head -n 200
 	echo '--- отчёт приёмника ---'
 	cat tests-report.log 2>/dev/null || echo 'нет tests-report.log'
 	echo '--- заглушка AppVeyor ---'

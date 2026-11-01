@@ -195,6 +195,7 @@ jobs:
             tests-report.log
             autotest.log
             autotest.out
+            platform-logs
             example.log
             stub.log
             success.txt
