@@ -400,6 +400,15 @@ jobs:
           cmake --build . --config Release
           if errorlevel 1 exit /b 1
 
+      # Если конфигурация OpenCV на Windows сломается снова, без этого шага
+      # в логе не видно, что реально лежит в префиксе установки.
+      - name: Диагностика OpenCV
+        if: failure()
+        shell: cmd
+        run: |
+          dir /b opencv-x32
+          dir /b opencv-x32\*.lib
+
       - name: Упаковка AddIn.zip и Debug.zip
         shell: pwsh
         run: ./scripts/ci-pack-windows.ps1 -project $env:PROJECT_NAME -version "${{ needs.linux.outputs.version }}"

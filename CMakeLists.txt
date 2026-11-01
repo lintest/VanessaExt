@@ -194,20 +194,34 @@ endif(UNIX)
 if(WITH_OPENCV)
 	MESSAGE(STATUS "WITH_OPENCV")
 	add_definitions(-DUSE_OPENCV)
-	find_package(OpenCV REQUIRED PATHS "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}" NO_DEFAULT_PATH)
-	target_include_directories(${TARGET} PRIVATE ${OpenCV_INCLUDE_DIRS})
 	if(UNIX)
+		find_package(OpenCV REQUIRED PATHS "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}" NO_DEFAULT_PATH)
+		target_include_directories(${TARGET} PRIVATE ${OpenCV_INCLUDE_DIRS})
 		# X11Screenshot.cpp под #ifndef _WINDOWS включает <png.h> и вызывает png_*
 		# напрямую; png.h в opencv-x<разрядность> не устанавливается, берём из
 		# исходников OpenCV. zlib.h не нужен никому — include на 3rdparty/zlib убран.
 		target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-4.5.2/3rdparty/libpng")
+		# libpng и zlib — статические сборки самого OpenCV, а не системные: в
+		# OpenCVModules.cmake это IMPORTED-таргеты с путями внутрь opencv-x<разрядность>.
+		# Формально они дублируют INTERFACE_LINK_LIBRARIES у opencv_imgcodecs, но
+		# оставлены намеренно: X11Screenshot.cpp вызывает png_* сам, а при статической
+		# линковке порядок архивов важен (opencv_imgcodecs -> libpng -> zlib).
+		target_link_libraries(${TARGET} opencv_core opencv_imgcodecs opencv_imgproc libpng zlib)
+	else(UNIX)
+		# На Windows find_package(OpenCV) использовать нельзя: OpenCV 4.5.2 не знает
+		# MSVC 19.5x (VS 2026), не определяет OpenCV_RUNTIME и раскладывает конфиг по
+		# вложенному пути x86/vcNN, которого в нашей плоской установке нет — поиск
+		# пакета падает. Поэтому берём библиотеки прямо из префикса установки.
+		# Версия в именах .lib (opencv_core452.lib) не хардкодится — ищем по маске.
+		set(OCV_DIR "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
+		file(GLOB OCV_IMPORT_LIBS
+			"${OCV_DIR}/opencv_core*.lib"
+			"${OCV_DIR}/opencv_imgcodecs*.lib"
+			"${OCV_DIR}/opencv_imgproc*.lib")
+		target_include_directories(${TARGET} PRIVATE "${OCV_DIR}")
+		target_link_directories(${TARGET} PRIVATE "${OCV_DIR}")
+		target_link_libraries(${TARGET} ${OCV_IMPORT_LIBS} libpng.lib zlib.lib)
 	endif(UNIX)
-	# libpng и zlib — статические сборки самого OpenCV, а не системные: в
-	# OpenCVModules.cmake это IMPORTED-таргеты с путями внутрь opencv-x<разрядность>.
-	# Формально они дублируют INTERFACE_LINK_LIBRARIES у opencv_imgcodecs, но
-	# оставлены намеренно: X11Screenshot.cpp вызывает png_* сам, а при статической
-	# линковке порядок архивов важен (opencv_imgcodecs -> libpng -> zlib).
-	target_link_libraries(${TARGET} opencv_core opencv_imgcodecs opencv_imgproc libpng zlib)
 endif(WITH_OPENCV)
 
 if(WITH_BOOST)
