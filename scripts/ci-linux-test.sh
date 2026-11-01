@@ -13,7 +13,8 @@
 # загрузиться на более новой системе.
 #
 # Ожидает переменные:
-#   KEY_1CV8T      — пароль к архиву платформы в lintest/tools1c (ветка platform-linux)
+#   KEY_1CV8T      — пароль к архиву платформы в lintest/tools1c (ветка platform-linux);
+#                    нужен только если архив зашифрован
 #   ADDIN_ZIP      — путь к AddIn.zip с Linux-библиотеками (артефакт job'а linux)
 # Необязательные:
 #   PLATFORM_BRANCH (по умолчанию platform-linux)
@@ -75,9 +76,14 @@ ls -la "${DIST}" | head -n 5
 
 if [ -z "$(ls /opt/1cv8t/x86_64/*/1cv8ct 2>/dev/null || true)" ]; then
 	log "Распаковка и установка платформы"
-	[ -n "${KEY_1CV8T:-}" ] || fail "не задан KEY_1CV8T"
-	7z x -y -p"${KEY_1CV8T}" -o"${DIST}/unpacked" "${DIST}/linux1c.7z.001" > /dev/null \
-		|| fail "не удалось распаковать архив платформы (проверьте KEY_1CV8T)"
+	# Архив бывает как без пароля, так и под ним — сначала пробуем без ключа,
+	# иначе 7z падает с «Cannot open encrypted archive» на открытом архиве.
+	if ! 7z x -y -o"${DIST}/unpacked" "${DIST}/linux1c.7z.001" > /dev/null 2>&1; then
+		log "архив под паролем, пробую KEY_1CV8T"
+		[ -n "${KEY_1CV8T:-}" ] || fail "архив зашифрован, а KEY_1CV8T не задан"
+		7z x -y -p"${KEY_1CV8T}" -o"${DIST}/unpacked" "${DIST}/linux1c.7z.001" > /dev/null \
+			|| fail "не удалось распаковать архив платформы (проверьте KEY_1CV8T)"
+	fi
 
 	run=$(find "${DIST}/unpacked" -maxdepth 4 -name '*.run' | head -n 1)
 	[ -n "${run}" ] || fail "установщик .run не найден в архиве"

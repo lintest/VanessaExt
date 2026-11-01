@@ -260,9 +260,9 @@ jobs:
         run: |
           set -e
           git config --local --unset-all "http.https://github.com/.extraheader" || true
-          sha=$(git ls-remote https://github.com/lintest/tools1c.git refs/heads/platform | cut -f1)
+          sha=$(git ls-remote https://github.com/lintest/tools1c.git refs/heads/platform-8.3.27 | cut -f1)
           if [ -z "$sha" ]; then
-            echo "::error::не удалось получить SHA ветки platform"
+            echo "::error::не удалось получить SHA ветки platform-8.3.27"
             exit 1
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
@@ -272,10 +272,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: bin
-          key: p1c-win-${{ steps.platform.outputs.sha }}
+          key: p1c-win-8.3.27-${{ steps.platform.outputs.sha }}
 
       # Токен checkout-а привязан к текущему репозиторию: с ним обращения к
       # чужим публичным репозиториям отваливаются, поэтому extraheader снимаем.
+      # Раскладка как в VAEditor: клон ветки, распаковка томов win1c.7z.001..,
+      # поиск каталога с 1cv8t.exe (учебная поставка) или 1cv8.exe (полная),
+      # копирование в bin и алиасы имён, которых ждут последующие шаги.
+      # Архив бывает как без пароля, так и под ним — пробуем оба варианта.
       - name: Платформа 1С
         if: steps.platform-cache.outputs.cache-hit != 'true'
         shell: cmd
@@ -283,13 +287,28 @@ jobs:
           KEY_1CV8T: ${{ secrets.KEY_1CV8T }}
         run: |
           git config --local --unset-all "http.https://github.com/.extraheader"
+          if exist p1c-src rmdir /s /q p1c-src
+          if exist p1c rmdir /s /q p1c
           if exist bin rmdir /s /q bin
-          git clone -q --branch=platform https://github.com/lintest/tools1c.git bin
+          git clone -q --branch=platform-8.3.27 https://github.com/lintest/tools1c.git p1c-src
           if errorlevel 1 exit /b 1
-          cd bin
-          "%ProgramFiles%\7-Zip\7z.exe" x tools1c.part01.rar -p%KEY_1CV8T%
+          mkdir p1c
+          "%ProgramFiles%\7-Zip\7z.exe" x p1c-src\win1c.7z.001 -op1c
+          if not errorlevel 1 goto extracted
+          echo архив под паролем, пробую KEY_1CV8T
+          "%ProgramFiles%\7-Zip\7z.exe" x p1c-src\win1c.7z.001 -p%KEY_1CV8T% -op1c
           if errorlevel 1 exit /b 1
-          cd ..
+          :extracted
+          set "EXEDIR="
+          for /f "delims=" %%F in ('dir /s /b p1c\1cv8t.exe 2^>nul') do set "EXEDIR=%%~dpF"
+          if not defined EXEDIR for /f "delims=" %%F in ('dir /s /b p1c\1cv8.exe 2^>nul') do set "EXEDIR=%%~dpF"
+          if not defined EXEDIR echo ERROR: платформа не найдена в архиве
+          if not defined EXEDIR exit /b 1
+          mkdir bin
+          xcopy "%EXEDIR%\*" bin\ /E /I /Y /Q > nul
+          if exist bin\1cv8.exe if not exist bin\1cv8t.exe copy /y bin\1cv8.exe bin\1cv8t.exe > nul
+          if exist bin\1cv8c.exe if not exist bin\1cv8ct.exe copy /y bin\1cv8c.exe bin\1cv8ct.exe > nul
+          rmdir /s /q p1c-src p1c
 
       # Проверка обязательна и при попадании в кэш: битый кэш не должен
       # доехать до шагов конфигурации.
@@ -519,14 +538,20 @@ jobs:
           name: linux-addin
           path: linux-addin
 
+      # OneScript берём из ветки oscript.w64 репозитория tools1c — так же, как
+      # VAEditor. Это готовый zip, и не нужно спрашивать список ассетов через
+      # API GitHub: при исчерпанном лимите он отдаёт объект без поля assets,
+      # отсюда и был KeyError 'assets'.
       - name: Установка OneScript
         run: |
           set -e
-          url=$(curl -sSL https://api.github.com/repos/EvilBeaver/OneScript/releases/latest \
-            | python3 -c "import sys,json;d=json.load(sys.stdin);print(next(a['browser_download_url'] for a in d['assets'] if 'linux' in a['name'].lower() and a['name'].lower().endswith('.zip')))")
-          echo "asset: $url"
-          curl -sSL -o oscript.zip "$url"
-          unzip -q oscript.zip -d oscript
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
+          git clone -q --branch=oscript.w64 --depth=1 https://github.com/lintest/tools1c.git oscript-src
+          mkdir -p oscript
+          for z in oscript-src/*.zip; do
+            [ -f "$z" ] || { echo "::error::в ветке oscript.w64 нет zip-архива"; exit 1; }
+            unzip -q -o "$z" -d oscript
+          done
           bin=$(find oscript -name oscript -type f | head -n 1)
           [ -n "$bin" ] || { echo "::error::oscript не найден в архиве"; exit 1; }
           chmod +x "$bin"
@@ -555,15 +580,17 @@ jobs:
           pattern: vanessaext-*
           path: artifacts
 
+      # То же, что на Linux: zip из ветки oscript.w64 репозитория tools1c,
+      # без обращения к API GitHub (его лимит давал KeyError 'assets').
       - name: Установка OneScript
         shell: pwsh
         run: |
-          $release = Invoke-RestMethod 'https://api.github.com/repos/EvilBeaver/OneScript/releases/latest'
-          $asset = $release.assets | Where-Object { $_.name -match 'win' -and $_.name -like '*.zip' } | Select-Object -First 1
-          if (-not $asset) { throw 'не найден архив OneScript для Windows' }
-          Write-Host "asset: $($asset.browser_download_url)"
-          Invoke-WebRequest $asset.browser_download_url -OutFile oscript.zip
-          Expand-Archive oscript.zip -DestinationPath oscript -Force
+          git config --local --unset-all "http.https://github.com/.extraheader"
+          if (Test-Path 'oscript-src') { Remove-Item 'oscript-src' -Recurse -Force }
+          git clone -q --branch=oscript.w64 --depth=1 https://github.com/lintest/tools1c.git oscript-src
+          $zip = Get-ChildItem oscript-src -Filter *.zip | Select-Object -First 1
+          if (-not $zip) { throw 'в ветке oscript.w64 нет zip-архива' }
+          Expand-Archive $zip.FullName -DestinationPath oscript -Force
           $exe = Get-ChildItem oscript -Recurse -Filter oscript.exe | Select-Object -First 1
           if (-not $exe) { throw 'oscript.exe не найден в архиве' }
           $exe.DirectoryName | Out-File -Append $env:GITHUB_PATH
