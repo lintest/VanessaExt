@@ -163,8 +163,12 @@ log "порт приёмника: $(cat app_port.txt)"
 
 log "Автотест в тонком клиенте"
 set +e
+# Тест запускается из конфигурации: клиент открывает
+# Обработка.ОткрытьТестируемуОбработку.Форма, путь к внешней обработке
+# приходит в параметре запуска. Защиту от опасных действий обработка
+# снимает сама (ОписаниеЗащитыОтОпасныхДействий), поэтому conf.cfg не нужен.
 timeout -k 10 300 "${client}" ENTERPRISE /LRU "/F${DB}" \
-	"/Execute${WORKDIR}/${PROJECT}.epf" /C autotest \
+	"/C${WORKDIR}/${PROJECT}.epf" \
 	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out \
 	> autotest.log 2>&1 &
 client_pid=$!

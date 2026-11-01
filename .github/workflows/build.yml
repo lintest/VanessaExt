@@ -434,10 +434,6 @@ jobs:
           }
           Write-Host "приёмник слушает порт $(Get-Content app_port.txt)"
 
-      # Два прогона сохранены для паритета с AppVeyor (/C install и /C autotest).
-      # Форма параметр запуска не различает, поэтому прогоны идентичны; после
-      # стабилизации первый можно убрать.
-      #
       # continue-on-error — временно, на время переезда: на хостинговом
       # windows-раннере нет гарантированной интерактивной сессии, а клиенту 1С
       # нужно окно. Шаг нужен, чтобы увидеть факт (стартовал ли клиент, сколько
@@ -453,24 +449,25 @@ jobs:
           $base = Join-Path $PWD 'database'
           $epf = Join-Path $PWD "$env:PROJECT_NAME.epf"
 
-          foreach ($mode in @('install', 'autotest')) {
-            Remove-Item 'success.txt' -Force -ErrorAction SilentlyContinue
-            Write-Host "== прогон /C $mode"
-            $client = Start-Process -FilePath $exe -PassThru `
-              -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/Execute', $epf, '/C', $mode) `
-              -RedirectStandardOutput "autotest-$mode.log" -RedirectStandardError "autotest-$mode.err.log"
-            if (-not $client.WaitForExit(600000)) {
-              $client.Kill()
-              throw "клиент 1С не завершился за 10 минут (/C $mode)"
-            }
-            Write-Host "код возврата клиента: $($client.ExitCode)"
-            if (-not (Test-Path 'success.txt')) {
-              Write-Host '--- отчёт приёмника ---'
-              Get-Content 'tests-report.log' -ErrorAction SilentlyContinue
-              Write-Host '--- вывод клиента ---'
-              Get-Content "autotest-$mode.log" -ErrorAction SilentlyContinue | Select-Object -Last 50
-              throw "Имеются ошибки: success.txt не создан (/C $mode)"
-            }
+          # Тест запускается из конфигурации: клиент открывает
+          # Обработка.ОткрытьТестируемуОбработку.Форма, а путь к внешней
+          # обработке приходит в параметре запуска (/C). Защиту от опасных
+          # действий обработка снимает сама через ОписаниеЗащитыОтОпасныхДействий.
+          Remove-Item 'success.txt' -Force -ErrorAction SilentlyContinue
+          $client = Start-Process -FilePath $exe -PassThru `
+            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/C', $epf) `
+            -RedirectStandardOutput 'autotest.log' -RedirectStandardError 'autotest.err.log'
+          if (-not $client.WaitForExit(600000)) {
+            $client.Kill()
+            throw 'клиент 1С не завершился за 10 минут'
+          }
+          Write-Host "код возврата клиента: $($client.ExitCode)"
+          if (-not (Test-Path 'success.txt')) {
+            Write-Host '--- отчёт приёмника ---'
+            Get-Content 'tests-report.log' -ErrorAction SilentlyContinue
+            Write-Host '--- вывод клиента ---'
+            Get-Content 'autotest.log' -ErrorAction SilentlyContinue | Select-Object -Last 50
+            throw 'Имеются ошибки: success.txt не создан'
           }
           Write-Host 'автотест пройден'
 
