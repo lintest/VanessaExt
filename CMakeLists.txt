@@ -197,12 +197,16 @@ if(WITH_OPENCV)
 	find_package(OpenCV REQUIRED PATHS "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}" NO_DEFAULT_PATH)
 	target_include_directories(${TARGET} PRIVATE ${OpenCV_INCLUDE_DIRS})
 	if(UNIX)
-		# X11Screenshot.cpp под #ifndef _WINDOWS пишет PNG напрямую и включает <png.h>,
-		# которому нужны заголовки из исходников OpenCV.
+		# X11Screenshot.cpp под #ifndef _WINDOWS включает <png.h> и вызывает png_*
+		# напрямую; png.h в opencv-x<разрядность> не устанавливается, берём из
+		# исходников OpenCV. zlib.h не нужен никому — include на 3rdparty/zlib убран.
 		target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-4.5.2/3rdparty/libpng")
 	endif(UNIX)
 	# libpng и zlib — статические сборки самого OpenCV, а не системные: в
 	# OpenCVModules.cmake это IMPORTED-таргеты с путями внутрь opencv-x<разрядность>.
+	# Формально они дублируют INTERFACE_LINK_LIBRARIES у opencv_imgcodecs, но
+	# оставлены намеренно: X11Screenshot.cpp вызывает png_* сам, а при статической
+	# линковке порядок архивов важен (opencv_imgcodecs -> libpng -> zlib).
 	target_link_libraries(${TARGET} opencv_core opencv_imgcodecs opencv_imgproc libpng zlib)
 endif(WITH_OPENCV)
 
