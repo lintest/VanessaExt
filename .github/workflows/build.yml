@@ -61,10 +61,10 @@ jobs:
             opencv-x32
             opencv-x64
             opencv-4.5.2/3rdparty
-            boost_1_84_0/boost
-            boost_1_84_0/stage/lib
+            boost_1_92_0/boost
+            boost_1_92_0/stage/lib
             RE-flex
-          key: lin-deps-ocv452-boost184-reflex301-${{ hashFiles('Build.OpenCV.sh') }}
+          key: lin-deps-ocv452-boost192-reflex301-${{ hashFiles('Build.OpenCV.sh') }}
 
       # ubuntu:18.04 + gcc-7 — это и есть ABI-базовая линия артефакта
       # (glibc 2.27 / GLIBCXX 3.4.25). Менять образ нельзя: на более свежем
@@ -245,12 +245,12 @@ jobs:
           path: |
             opencv-x32
             opencv-x64
-            boost_1_84_0/boost
-            boost_1_84_0/stage/lib
+            boost_1_92_0/boost
+            boost_1_92_0/stage/lib
             libgit2-1.1.0
             libssh2-1.9.0
             RE-flex
-          key: win-deps-v2-ocv452-boost184-git2110-reflex301-${{ hashFiles('Build.OpenCV.bat') }}
+          key: win-deps-v3-ocv452-boost192-git2110-reflex301-${{ hashFiles('Build.OpenCV.bat') }}
 
       # Платформа 1С — это гигабайты томов, а меняется редко: кэшируем по SHA
       # ветки platform, как на Linux.
@@ -346,14 +346,17 @@ jobs:
 
       # В appveyor.yml b2 запускался без address-model, то есть собирал только
       # 32-битные библиотеки — для x64-линковки этого мало. Здесь оба прогона.
-      - name: Boost 1.84
+      # Boost 1.92, а не 1.84: старый bootstrap.bat знает toolset'ы только до
+      # vc143 и на раннере с Visual Studio 18 падает с "Unknown toolset: vcunk".
+      # В 1.92 добавлено определение VS180COMNTOOLS (vc145).
+      - name: Boost 1.92
         if: steps.deps-cache.outputs.cache-hit != 'true'
         shell: cmd
         run: |
-          curl -sSfL -o boost_1_84_0.tar.gz https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
+          curl -sSfL -o boost_1_92_0.tar.gz https://archives.boost.io/release/1.92.0/source/boost_1_92_0.tar.gz
           if errorlevel 1 exit /b 1
-          tar xzf boost_1_84_0.tar.gz
-          cd boost_1_84_0
+          tar xzf boost_1_92_0.tar.gz
+          cd boost_1_92_0
           call bootstrap.bat
           if errorlevel 1 exit /b 1
           .\b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem address-model=32

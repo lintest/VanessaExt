@@ -78,18 +78,18 @@ else
 fi
 
 echo "== Boost"
-# Каталог boost_1_84_0 может прийти из кэша CI частично: там лежат только
+# Каталог boost_1_92_0 может прийти из кэша CI частично: там лежат только
 # заголовки (boost/) и собранные библиотеки (stage/lib), без bootstrap.sh и b2.
 # Поэтому проверяем наличие самого скрипта загрузки, а не каталога: tar
 # распакуется поверх и добавит недостающие файлы, не тронув stage/lib.
-if [ ! -f boost_1_84_0/bootstrap.sh ]; then
-  curl -sSfL -o boost_1_84_0.tar.gz \
-    https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
-  tar xzf boost_1_84_0.tar.gz
+if [ ! -f boost_1_92_0/bootstrap.sh ]; then
+  curl -sSfL -o boost_1_92_0.tar.gz \
+    https://archives.boost.io/release/1.92.0/source/boost_1_92_0.tar.gz
+  tar xzf boost_1_92_0.tar.gz
 fi
 # В tar-архиве boost нет готового b2 — его собирает bootstrap.sh.
-if [ ! -x boost_1_84_0/b2 ]; then
-  ( cd boost_1_84_0 && ./bootstrap.sh )
+if [ ! -x boost_1_92_0/b2 ]; then
+  ( cd boost_1_92_0 && ./bootstrap.sh )
 fi
 
 echo "== version.h"
@@ -104,7 +104,7 @@ build() {
 
   echo "== Boost ${address_model}-bit"
   (
-    cd boost_1_84_0
+    cd boost_1_92_0
     ./b2 cxxflags="-fPIC -std=c++17" link=static threading=multi \
       runtime-link=static release stage \
       --with-regex --with-date_time --with-filesystem \
