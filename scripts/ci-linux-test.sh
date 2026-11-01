@@ -49,7 +49,7 @@ sudo apt-get install -y -qq --no-install-recommends \
 	libnss3 libxext6 libsm6 libice6 libfreetype6 libfontconfig1 \
 	libdbus-1-3 libasound2 libxslt1.1 libxfixes3 libxcursor1 \
 	libxrandr2 libcups2 libpango-1.0-0 libcairo2 libgbm1 libpng16-16 \
-	locales fonts-dejavu-core zip
+	locales fonts-dejavu-core zip dbus dbus-x11
 
 # Кириллица в сообщениях тестов: без локали 1С падает на выводе.
 sudo locale-gen ru_RU.UTF-8 >/dev/null 2>&1 || true
@@ -113,6 +113,12 @@ openbox --sm-disable >/dev/null 2>&1 &
 sleep 2
 xwininfo -root -tree >/dev/null 2>&1 || log "предупреждение: X-сервер не отвечает"
 
+# GTK/WebKit в headless-окружении: шина доступности и compositing не нужны,
+# а без них клиент иногда встаёт на инициализации, не показав главное окно.
+export NO_AT_BRIDGE=1
+export WEBKIT_DISABLE_COMPOSITING_MODE=1
+export GDK_BACKEND=x11
+
 # --- 4. Макеты внешней обработки -----------------------------------------
 log "Макеты"
 [ -n "${ADDIN_ZIP:-}" ] || fail "не задан ADDIN_ZIP"
@@ -167,10 +173,17 @@ set +e
 # Обработка.ОткрытьТестируемуОбработку.Форма, путь к внешней обработке
 # приходит в параметре запуска. Защиту от опасных действий обработка
 # снимает сама (ОписаниеЗащитыОтОпасныхДействий), поэтому conf.cfg не нужен.
-timeout -k 10 300 "${client}" ENTERPRISE /LRU "/F${DB}" \
-	"/C${WORKDIR}/${PROJECT}.epf" \
-	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out \
-	> autotest.log 2>&1 &
+client_args=(ENTERPRISE /LRU "/F${DB}" "/C${WORKDIR}/${PROJECT}.epf"
+	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out)
+# GTK/WebKit нужна сессионная шина D-Bus: без неё старт клиента может
+# зависнуть на инициализации, так и не создав главное окно.
+if command -v dbus-run-session >/dev/null 2>&1; then
+	run_prefix=(dbus-run-session --)
+else
+	log "предупреждение: dbus-run-session не найден, запускаю напрямую"
+	run_prefix=()
+fi
+"${run_prefix[@]}" timeout -k 10 300 "${client}" "${client_args[@]}" > autotest.log 2>&1 &
 client_pid=$!
 
 # Пока клиент работает, раз в 30 с печатаем дерево окон. Если он встал на
@@ -186,10 +199,16 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 	if [ $((waited % 30)) -eq 0 ]; then
 		log "ожидание ${waited} с, строк в дереве окон: $(xwininfo -root -tree 2>/dev/null | wc -l)"
 		xwininfo -root -tree 2>/dev/null | sed -n '1,25p' | sed 's/^/    /'
+		echo '    --- autotest.log (stdout клиента) ---'
+		tail -n 20 autotest.log 2>/dev/null | sed 's/^/    /'
 		echo '    --- autotest.out (журнал клиента) ---'
 		tail -n 10 autotest.out 2>/dev/null | sed 's/^/    /'
-		echo '    --- процесс клиента ---'
+		echo '    --- состояние процесса ---'
 		ps -o pid,stat,pcpu,etime,args -C "$(basename "${client}")" 2>/dev/null | sed 's/^/    /'
+		for p in $(pgrep -f "$(basename "${client}")" 2>/dev/null || true); do
+			echo "    wchan(${p}): $(cat "/proc/${p}/wchan" 2>/dev/null)"
+			ls -l "/proc/${p}/fd" 2>/dev/null | tail -n 8 | sed 's/^/    /'
+		done
 	fi
 done
 wait "${client_pid}"
