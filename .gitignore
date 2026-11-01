@@ -28,6 +28,10 @@ XxCompile.bat
 manifest.xml
 *.log
 *.epf
+/app_port.txt
+/success.txt
+/tests-report.json
+/stub.pid
 *.o
 *.d
 *.so

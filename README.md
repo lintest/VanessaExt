@@ -6,7 +6,8 @@
 
 Предназначена для Windows и Linux, разработана по технологии Native API.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/jau22n1d2a6bvwpo?svg=true)](https://ci.appveyor.com/project/lintest/vanessaext)
+[![Build status](https://github.com/lintest/VanessaExt/actions/workflows/build.yml/badge.svg)](https://github.com/lintest/VanessaExt/actions/workflows/build.yml)
+[![Резервный контур: AppVeyor](https://ci.appveyor.com/api/projects/status/jau22n1d2a6bvwpo?svg=true)](https://ci.appveyor.com/project/lintest/vanessaext)
 
 ### Возможности библиотеки:
 - Получение списка окон и списка процессов

@@ -86,6 +86,14 @@ init:
   - cmd: cmake --version
   - cmd: msbuild /version
   - cmd: echo.
+  # Источник истины по версии — файл VERSION (его читает GitHub Actions).
+  # Здесь база версии зашита в строку version: выше, поэтому расхождение
+  # только предупреждаем: AppVeyor остаётся резервным контуром.
+  - sh: |
+      base=$(tr -d ' \r\n' < VERSION)
+      if [ "$base" != "1.3.9" ]; then
+        echo "WARNING: версия в appveyor.yml (1.3.9) не совпадает с VERSION ($base)"
+      fi
 
 build_script:
   - sh: echo "#define VERSION_FULL " ${APPVEYOR_BUILD_VERSION} > "version.h"
@@ -191,14 +199,7 @@ for:
       - path: autotest.log
       - path: example.log
 
-    deploy:
-      - provider: GitHub
-        auth_token:
-          secure: v7P89NQ2I5+WGNNdhpFrZEt6OCTPf8A8VSC5rttZMXh3DJ2fTChNEjZ1Wvm3kfBt
-        repository: lintest/VanessaExt
-        artifact: AddIn.zip, Debug.zip, VanessaExt.epf
-        draft: true
-        prerelease: true
-        force_update: true
-        on:
-          branch: master
+    # Публикация черновика релиза переехала в GitHub Actions
+    # (.github/workflows/build.yml, шаг "Draft release"). Здесь деплой убран,
+    # чтобы на master не появлялось два черновика на один коммит. Вместе с ним
+    # удалён и GitHub-токен, который лежал в этом файле.

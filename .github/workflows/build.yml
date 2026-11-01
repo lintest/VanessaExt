@@ -1,0 +1,493 @@
+name: build
+
+# Основная сборка VanessaExt: Linux-компонента в контейнере ubuntu:18.04,
+# Windows-компонента на MSVC, внешняя обработка .epf, GUI-автотест в тонком
+# клиенте 1С и черновик релиза на master.
+#
+# AppVeyor (appveyor.yml) остаётся резервным контуром: на хостинговом
+# windows-раннере GitHub нет гарантированной интерактивной сессии, а клиенту 1С
+# нужно окно. Если автотест здесь перестанет запускаться — GUI-проверку
+# вытягивает AppVeyor.
+on:
+  push:
+    # Ветка actions — только на время переезда, перед мержем в develop убрать.
+    branches: [develop, master, actions]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Новый пуш в ту же ветку отменяет предыдущий прогон.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROJECT_NAME: VanessaExt
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Версия = база из VERSION + номер прогона, как 1.3.9.{build} в AppVeyor.
+      - name: Версия сборки
+        id: version
+        run: |
+          set -e
+          base=$(tr -d ' \r\n' < VERSION)
+          if [ -z "$base" ]; then
+            echo "::error::файл VERSION пуст"
+            exit 1
+          fi
+          version="$base.${{ github.run_number }}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "::notice::версия сборки $version"
+
+      # ubuntu:18.04 + gcc-7 — это и есть ABI-базовая линия артефакта
+      # (glibc 2.27 / GLIBCXX 3.4.25). Менять образ нельзя: на более свежем
+      # окружении .so потребует GLIBC_2.28+ и не загрузится на 18.04/20.04.
+      - name: Сборка Linux-компоненты
+        run: |
+          set -e
+          docker run --rm -v "$PWD:/src" -w /src \
+            -e BUILD_VERSION="${{ steps.version.outputs.version }}" \
+            ubuntu:18.04 bash -c "bash /src/scripts/ci-linux-build.sh"
+
+      - name: Проверка ABI-базовой линии
+        run: |
+          python3 tools/check_abi_baseline.py \
+            ./bin32/${PROJECT_NAME}Lin32.so ./bin64/${PROJECT_NAME}Lin64.so
+
+      # Юнит-тесты ядра процессов. Собираются без X11/OpenCV/Boost/libgit2,
+      # поэтому идут секунды, см. Docs/BuildLibrary.md.
+      - name: Юнит-тесты C++
+        run: |
+          set -e
+          cmake -S . -B build-tests \
+            -DWITH_GHERKIN=OFF -DWITH_OPENCV=OFF -DWITH_BOOST=OFF \
+            -DWITH_LIBGIT2=OFF -DVANESSAEXT_BUILD_TESTS=ON
+          cmake --build build-tests --target ProcessUtilsTest
+          ctest --test-dir build-tests --output-on-failure
+
+      # .debug появляются только если в контейнере был eu-strip (elfutils),
+      # поэтому пакуем по факту наличия — как в appveyor.yml.
+      - name: Упаковка Linux-артефакта
+        run: |
+          set -e
+          rm -f AddIn.zip
+          packed=0
+          for f in ./bin32/*Lin32.so ./bin64/*Lin64.so \
+                   ./bin32/*Lin32.so.debug ./bin64/*Lin64.so.debug; do
+            if [ -f "$f" ]; then
+              zip -q -X -j AddIn.zip "$f"
+              echo "в архиве: $f"
+              packed=$((packed + 1))
+            else
+              echo "пропускаю (нет файла): $f"
+            fi
+          done
+          if [ "$packed" -lt 2 ]; then
+            echo "::error::в архиве меньше двух библиотек"
+            exit 1
+          fi
+          unzip -l AddIn.zip
+
+      - name: Выгрузка Linux-артефакта
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-addin
+          path: AddIn.zip
+
+  # Прогон автотестов компоненты в настоящем клиенте 1С под Linux.
+  # Отдельный job, потому что нужен другой образ (webkitgtk 4.0 есть только
+  # до 22.04) и своя тяжёлая инфраструктура: Xvfb с WM, платформа 1С, база.
+  linux-test:
+    needs: linux
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Забрать Linux-артефакт
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-addin
+          path: linux-addin
+
+      - name: Resolve platform branch
+        id: platform
+        run: |
+          set -e
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
+          sha=$(git ls-remote https://github.com/lintest/tools1c.git refs/heads/platform-linux | cut -f1)
+          if [ -z "$sha" ]; then
+            echo "::error::не удалось получить SHA ветки platform-linux"
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      # Архив платформы — это несколько гигабайт томов; качаем один раз на
+      # версию ветки, дальше берём из кэша.
+      - name: Кэш платформы
+        id: platform-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/1c/dist
+          key: p1c-linux-${{ steps.platform.outputs.sha }}
+
+      - name: Автотесты в клиенте 1С
+        env:
+          KEY_1CV8T: ${{ secrets.KEY_1CV8T }}
+          ADDIN_ZIP: ${{ github.workspace }}/linux-addin/AddIn.zip
+        run: bash scripts/ci-linux-test.sh
+
+      - name: Выгрузка артефактов
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-autotest
+          if-no-files-found: warn
+          path: |
+            tests-report.json
+            tests-report.log
+            autotest.log
+            autotest.out
+            example.log
+            stub.log
+            success.txt
+
+  windows:
+    needs: linux
+    runs-on: windows-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Забрать Linux-артефакт
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-addin
+          path: linux-addin
+
+      # manifest.ps1 пишет version.h (его читает компилятор) и manifest.xml
+      # (его пакует ci-pack-windows.ps1). Параметры у скрипта уже есть.
+      - name: version.h и manifest.xml
+        shell: cmd
+        run: powershell -File manifest.ps1 -project %PROJECT_NAME% -version ${{ needs.linux.outputs.version }}
+
+      # Не-GUI проверка кода: тест ядра процессов собирается без X11/OpenCV/
+      # Boost/libgit2. Идёт до тяжёлых сборок, чтобы падать быстро.
+      # -C Release обязателен: на MSVC генератор многоконфигурационный.
+      - name: Юнит-тесты C++
+        shell: cmd
+        run: |
+          cmake -S . -B build-tests -DWITH_GHERKIN=OFF -DWITH_OPENCV=OFF -DWITH_BOOST=OFF -DWITH_LIBGIT2=OFF -DVANESSAEXT_BUILD_TESTS=ON
+          if errorlevel 1 exit /b 1
+          cmake --build build-tests --target ProcessUtilsTest --config Release
+          if errorlevel 1 exit /b 1
+          ctest --test-dir build-tests -C Release --output-on-failure
+          if errorlevel 1 exit /b 1
+
+      # Токен checkout-а привязан к текущему репозиторию: с ним обращения к
+      # чужим публичным репозиториям отваливаются, поэтому extraheader снимаем.
+      - name: Платформа 1С
+        shell: cmd
+        env:
+          KEY_1CV8T: ${{ secrets.KEY_1CV8T }}
+        run: |
+          git config --local --unset-all "http.https://github.com/.extraheader"
+          git clone -q --branch=platform https://github.com/lintest/tools1c.git bin
+          if errorlevel 1 exit /b 1
+          cd bin
+          "%ProgramFiles%\7-Zip\7z.exe" x tools1c.part01.rar -p%KEY_1CV8T%
+          if errorlevel 1 exit /b 1
+          cd ..
+          dir /b bin\1cv8*.exe
+
+      # RE-flex в репозитории — gitlink без .gitmodules, после checkout это
+      # пустая папка. CMakeLists.txt ждёт RE-flex/bin/win64/reflex.exe.
+      - name: RE-flex
+        shell: bash
+        run: |
+          set -e
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
+          if [ ! -d RE-flex/.git ]; then
+            rm -rf RE-flex
+            git clone -q --branch=master --depth=1 https://github.com/lintest/RE-flex.git RE-flex
+          fi
+          cd RE-flex
+          git checkout -q -B version v3.0.1
+          ./clean.sh
+          ./build.sh
+          ls -la bin/win64
+
+      - name: OpenCV 4.5.2
+        shell: cmd
+        run: |
+          git clone -q --branch=4.5.2 --depth=1 https://github.com/opencv/opencv.git opencv-4.5.2
+          if errorlevel 1 exit /b 1
+          call Build.OpenCV.bat
+          if errorlevel 1 exit /b 1
+
+      # В appveyor.yml b2 запускался без address-model, то есть собирал только
+      # 32-битные библиотеки — для x64-линковки этого мало. Здесь оба прогона.
+      - name: Boost 1.84
+        shell: cmd
+        run: |
+          curl -sSfL -o boost_1_84_0.tar.gz https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
+          if errorlevel 1 exit /b 1
+          tar xzf boost_1_84_0.tar.gz
+          cd boost_1_84_0
+          call bootstrap.bat
+          if errorlevel 1 exit /b 1
+          .\b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem address-model=32
+          if errorlevel 1 exit /b 1
+          .\b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem address-model=64
+          if errorlevel 1 exit /b 1
+
+      - name: libgit2 и libssh2
+        shell: cmd
+        run: |
+          git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
+          if errorlevel 1 exit /b 1
+          cd libgit2-1.1.0
+          git checkout -q -b version v1.1.0
+          cd ..
+          git clone -q --branch=master https://github.com/libssh2/libssh2.git libssh2-1.9.0
+          if errorlevel 1 exit /b 1
+          cd libssh2-1.9.0
+          git checkout -q -b version libssh2-1.9.0
+          cd ..
+
+      - name: Сборка Win32
+        shell: cmd
+        run: |
+          mkdir build32
+          cd build32
+          cmake .. -A Win32 -DMySuffix2=32
+          if errorlevel 1 exit /b 1
+          cmake --build . --config Release
+          if errorlevel 1 exit /b 1
+
+      - name: Сборка Win64
+        shell: cmd
+        run: |
+          mkdir build64
+          cd build64
+          cmake .. -A x64 -DMySuffix2=64
+          if errorlevel 1 exit /b 1
+          cmake --build . --config Release
+          if errorlevel 1 exit /b 1
+
+      - name: Упаковка AddIn.zip и Debug.zip
+        shell: pwsh
+        run: ./scripts/ci-pack-windows.ps1 -project $env:PROJECT_NAME -version "${{ needs.linux.outputs.version }}"
+
+      # Защита от опасных действий не даёт запустить внешнюю обработку: клиент
+      # ждёт нажатия «Да» и висит до таймаута, а подтверждать некому. Файл
+      # настроек ищется рядом с исполняемым файлом (bin).
+      - name: Защита от опасных действий
+        shell: pwsh
+        run: Set-Content -Path 'bin\conf.cfg' -Value 'DisableUnsafeActionProtection=.\*' -Encoding ASCII
+
+      - name: Конфигурация и внешняя обработка
+        shell: cmd
+        run: |
+          mkdir database
+          bin\1cv8t.exe CREATEINFOBASE File=%CD%/database
+          if errorlevel 1 exit /b 1
+          bin\1cv8t.exe DESIGNER /F %CD%/database /LoadConfigFromFiles %CD%/Config /UpdateDBCfg
+          if errorlevel 1 exit /b 1
+          bin\1cv8t.exe DESIGNER /F %CD%/database /LoadExternalDataProcessorOrReportFromFiles Example.xml %PROJECT_NAME%.epf /Out example.log
+          if errorlevel 1 exit /b 1
+          dir /b %PROJECT_NAME%.epf
+
+      # Форма Example/Forms/AppVeyor при открытии читает app_port.txt и шлёт
+      # результаты в API AppVeyor. На раннере GitHub API нет — поднимаем
+      # локальный приёмник и отдаём его порт через тот же файл. Код 1С не меняем.
+      - name: Приёмник результатов тестов
+        shell: pwsh
+        run: |
+          $stub = Start-Process python -ArgumentList 'scripts/ci-appveyor-stub.py' -PassThru `
+            -RedirectStandardOutput 'stub.log' -RedirectStandardError 'stub.err'
+          $stub.Id | Set-Content 'stub.pid'
+          for ($i = 0; $i -lt 30; $i++) {
+            if (Test-Path 'app_port.txt') { break }
+            Start-Sleep -Seconds 1
+          }
+          if (-not (Test-Path 'app_port.txt')) {
+            Get-Content 'stub.err' -ErrorAction SilentlyContinue
+            throw 'приёмник результатов не поднялся'
+          }
+          Write-Host "приёмник слушает порт $(Get-Content app_port.txt)"
+
+      # Два прогона сохранены для паритета с AppVeyor (/C install и /C autotest).
+      # Форма параметр запуска не различает, поэтому прогоны идентичны; после
+      # стабилизации первый можно убрать.
+      #
+      # continue-on-error — временно, на время переезда: на хостинговом
+      # windows-раннере нет гарантированной интерактивной сессии, а клиенту 1С
+      # нужно окно. Шаг нужен, чтобы увидеть факт (стартовал ли клиент, сколько
+      # тестов прошло), не крася билд. После подтверждения — снять флаг.
+      # Релиз при этом всё равно не публикуется: см. условие по outcome ниже.
+      - name: Автотест 1С
+        id: autotest
+        continue-on-error: true
+        shell: pwsh
+        timeout-minutes: 25
+        run: |
+          $exe = Join-Path $PWD 'bin\1cv8ct.exe'
+          $base = Join-Path $PWD 'database'
+          $epf = Join-Path $PWD "$env:PROJECT_NAME.epf"
+
+          foreach ($mode in @('install', 'autotest')) {
+            Remove-Item 'success.txt' -Force -ErrorAction SilentlyContinue
+            Write-Host "== прогон /C $mode"
+            $client = Start-Process -FilePath $exe -PassThru `
+              -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/Execute', $epf, '/C', $mode) `
+              -RedirectStandardOutput "autotest-$mode.log" -RedirectStandardError "autotest-$mode.err.log"
+            if (-not $client.WaitForExit(600000)) {
+              $client.Kill()
+              throw "клиент 1С не завершился за 10 минут (/C $mode)"
+            }
+            Write-Host "код возврата клиента: $($client.ExitCode)"
+            if (-not (Test-Path 'success.txt')) {
+              Write-Host '--- отчёт приёмника ---'
+              Get-Content 'tests-report.log' -ErrorAction SilentlyContinue
+              Write-Host '--- вывод клиента ---'
+              Get-Content "autotest-$mode.log" -ErrorAction SilentlyContinue | Select-Object -Last 50
+              throw "Имеются ошибки: success.txt не создан (/C $mode)"
+            }
+          }
+          Write-Host 'автотест пройден'
+
+      - name: Остановить приёмник
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path 'stub.pid') {
+            Stop-Process -Id (Get-Content 'stub.pid') -Force -ErrorAction SilentlyContinue
+            Remove-Item 'stub.pid' -Force -ErrorAction SilentlyContinue
+          }
+          Get-Content 'stub.log' -ErrorAction SilentlyContinue | Select-Object -Last 40
+          Get-Content 'tests-report.log' -ErrorAction SilentlyContinue
+
+      - name: Выгрузка артефактов
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vanessaext-${{ needs.linux.outputs.version }}
+          if-no-files-found: warn
+          path: |
+            AddIn.zip
+            Debug.zip
+            ${{ env.PROJECT_NAME }}.epf
+            tests-report.json
+            tests-report.log
+            stub.log
+            autotest-install.log
+            autotest-autotest.log
+            example.log
+
+      # outcome проверяется явно: шаг автотеста неблокирующий, поэтому success()
+      # сам по себе не гарантирует, что тесты прошли.
+      - name: Draft release
+        if: github.ref == 'refs/heads/master' && success() && steps.autotest.outcome == 'success'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ needs.linux.outputs.version }}
+          tag_name: ${{ needs.linux.outputs.version }}
+          draft: true
+          prerelease: true
+          files: |
+            AddIn.zip
+            Debug.zip
+            ${{ env.PROJECT_NAME }}.epf
+
+  # Контур OneScript: та же компонента, но без платформы 1С и без GUI.
+  # Нужен только нативный мост ScriptEngine.NativeApi, поэтому прогон идёт
+  # на обычном раннере. Подробности — tests/oscript/runner.os.
+  # continue-on-error — временно, до первого зелёного прогона.
+  oscript-linux:
+    needs: linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Забрать Linux-артефакт
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-addin
+          path: linux-addin
+
+      - name: Установка OneScript
+        run: |
+          set -e
+          url=$(curl -sSL https://api.github.com/repos/EvilBeaver/OneScript/releases/latest \
+            | python3 -c "import sys,json;d=json.load(sys.stdin);print(next(a['browser_download_url'] for a in d['assets'] if 'linux' in a['name'].lower() and a['name'].lower().endswith('.zip')))")
+          echo "asset: $url"
+          curl -sSL -o oscript.zip "$url"
+          unzip -q oscript.zip -d oscript
+          bin=$(find oscript -name oscript -type f | head -n 1)
+          [ -n "$bin" ] || { echo "::error::oscript не найден в архиве"; exit 1; }
+          chmod +x "$bin"
+          dirname "$bin" >> "$GITHUB_PATH"
+          "$bin" --version || true
+
+      - name: Прогон автотестов
+        continue-on-error: true
+        run: |
+          set -e
+          unzip -o -q linux-addin/AddIn.zip -d libs
+          ls -la libs
+          oscript tests/oscript/runner.os --библиотека="$(ls libs/*Lin64.so | head -n 1)"
+
+  oscript-windows:
+    needs: windows
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Забрать артефакт сборки
+        uses: actions/download-artifact@v4
+        with:
+          pattern: vanessaext-*
+          path: artifacts
+
+      - name: Установка OneScript
+        shell: pwsh
+        run: |
+          $release = Invoke-RestMethod 'https://api.github.com/repos/EvilBeaver/OneScript/releases/latest'
+          $asset = $release.assets | Where-Object { $_.name -match 'win' -and $_.name -like '*.zip' } | Select-Object -First 1
+          if (-not $asset) { throw 'не найден архив OneScript для Windows' }
+          Write-Host "asset: $($asset.browser_download_url)"
+          Invoke-WebRequest $asset.browser_download_url -OutFile oscript.zip
+          Expand-Archive oscript.zip -DestinationPath oscript -Force
+          $exe = Get-ChildItem oscript -Recurse -Filter oscript.exe | Select-Object -First 1
+          if (-not $exe) { throw 'oscript.exe не найден в архиве' }
+          $exe.DirectoryName | Out-File -Append $env:GITHUB_PATH
+
+      - name: Прогон автотестов
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem artifacts -Recurse -Filter AddIn.zip | Select-Object -First 1
+          if (-not $zip) { throw 'не найден AddIn.zip в артефактах' }
+          Expand-Archive $zip.FullName -DestinationPath libs -Force
+          Get-ChildItem libs | Format-Table Name
+          $library = Get-ChildItem libs -Filter '*Win64.dll' | Select-Object -First 1
+          if (-not $library) { throw 'не найден VanessaExtWin64.dll' }
+          oscript tests/oscript/runner.os --библиотека=$($library.FullName)

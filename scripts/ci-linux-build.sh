@@ -11,7 +11,8 @@
 #
 #   docker run --rm -v "$PWD:/src" -w /src ubuntu:18.04 bash scripts/ci-linux-build.sh
 #
-# Ожидает переменную APPVEYOR_BUILD_VERSION (номер сборки для version.h).
+# Номер сборки для version.h берётся из BUILD_VERSION (GitHub Actions) или из
+# APPVEYOR_BUILD_VERSION (AppVeyor) — скрипт общий для двух CI.
 set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
@@ -78,7 +79,9 @@ if [ ! -x boost_1_84_0/b2 ]; then
 fi
 
 echo "== version.h"
-echo "#define VERSION_FULL \"${APPVEYOR_BUILD_VERSION:-0.0.0}\"" > version.h
+BUILD_VERSION="${BUILD_VERSION:-${APPVEYOR_BUILD_VERSION:-0.0.0}}"
+echo "сборка ${BUILD_VERSION}"
+echo "#define VERSION_FULL \"${BUILD_VERSION}\"" > version.h
 
 build() {
   local address_model="$1"
