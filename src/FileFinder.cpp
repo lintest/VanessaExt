@@ -150,11 +150,12 @@ static void EscapeRegex(std::wstring& regex)
 	boost::replace_all(regex, "(", "\\(");
 	boost::replace_all(regex, ")", "\\)");
 	boost::replace_all(regex, "{", "\\{");
-	boost::replace_all(regex, "{", "\\}");
+	boost::replace_all(regex, "}", "\\}");
 	boost::replace_all(regex, "[", "\\[");
 	boost::replace_all(regex, "]", "\\]");
 	boost::replace_all(regex, "+", "\\+");
 	boost::replace_all(regex, "?", "\\?");
+	boost::replace_all(regex, "*", "\\*");
 	boost::replace_all(regex, "/", "\\/");
 
 	// Convert chars '*?' back to their regex equivalents
