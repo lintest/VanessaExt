@@ -42,25 +42,21 @@ update-alternatives --set gcc "/usr/bin/gcc-7"
 gcc --version
 
 echo "== CMake"
-# Системный CMake в Ubuntu 18.04 — 3.10. Его FindBoost знает Boost только до 1.66
-# и на 1.92 предупреждает про неверные зависимости компонентов; подавить это
-# умеет только Boost_NO_WARN_NEW_VERSIONS из CMake 3.20. Бинарник Kitware собран
-# на glibc 2.17, поэтому на 18.04 запускается. Если не запустился — молча
-# остаёмся на системном: на результат сборки версия CMake не влияет.
+# Системный CMake в Ubuntu 18.04 — 3.10, а CMakeLists.txt требует 3.13, и
+# FindBoost из 3.10 не знает Boost новее 1.66: на 1.92 он предупреждает про
+# неверные зависимости компонентов, а подавляет это только
+# Boost_NO_WARN_NEW_VERSIONS из CMake 3.20. Бинарник Kitware собран на glibc 2.17,
+# поэтому на 18.04 запускается. Установка обязательна — тихого отката на
+# системный CMake нет, иначе конфигурирование упадёт на cmake_minimum_required.
 CMAKE_VERSION=3.20.6
 if [ ! -x /opt/cmake/bin/cmake ]; then
-  if curl -sSfL -o /tmp/cmake.tar.gz \
-      "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"; then
-    mkdir -p /opt/cmake
-    tar xzf /tmp/cmake.tar.gz -C /opt/cmake --strip-components=1
-    rm -f /tmp/cmake.tar.gz
-  else
-    echo "не удалось скачать CMake ${CMAKE_VERSION} — остаюсь на системном"
-  fi
+  curl -sSfL -o /tmp/cmake.tar.gz \
+    "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"
+  mkdir -p /opt/cmake
+  tar xzf /tmp/cmake.tar.gz -C /opt/cmake --strip-components=1
+  rm -f /tmp/cmake.tar.gz
 fi
-if /opt/cmake/bin/cmake --version >/dev/null 2>&1; then
-  export PATH="/opt/cmake/bin:${PATH}"
-fi
+export PATH="/opt/cmake/bin:${PATH}"
 cmake --version | head -n1
 
 # Контейнер работает от root, а /src смонтирован от uid хоста: без этого git

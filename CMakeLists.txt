@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 
 project(VanessaExt)
 set(TARGET VanessaExt)
@@ -194,16 +194,16 @@ endif(UNIX)
 if(WITH_OPENCV)
 	MESSAGE(STATUS "WITH_OPENCV")
 	add_definitions(-DUSE_OPENCV)
-	target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
+	find_package(OpenCV REQUIRED PATHS "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}" NO_DEFAULT_PATH)
+	target_include_directories(${TARGET} PRIVATE ${OpenCV_INCLUDE_DIRS})
 	if(UNIX)
+		# X11Screenshot.cpp под #ifndef _WINDOWS пишет PNG напрямую и включает <png.h>,
+		# которому нужны заголовки из исходников OpenCV.
 		target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-4.5.2/3rdparty/libpng")
-		target_include_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-4.5.2/3rdparty/zlib")	
-		find_package(OpenCV REQUIRED PATHS "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}" NO_DEFAULT_PATH)
-		target_link_libraries(${TARGET} opencv_core opencv_imgcodecs opencv_imgproc libpng zlib)
-	else(UNIX)
-		target_link_libraries(${TARGET} opencv_core452.lib opencv_imgcodecs452.lib opencv_imgproc452.lib libpng.lib zlib.lib)
-		target_link_directories(${TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/opencv-x${MySuffix2}")
 	endif(UNIX)
+	# libpng и zlib — статические сборки самого OpenCV, а не системные: в
+	# OpenCVModules.cmake это IMPORTED-таргеты с путями внутрь opencv-x<разрядность>.
+	target_link_libraries(${TARGET} opencv_core opencv_imgcodecs opencv_imgproc libpng zlib)
 endif(WITH_OPENCV)
 
 if(WITH_BOOST)
