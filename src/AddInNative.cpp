@@ -393,7 +393,12 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
-		std::fprintf(stderr, "VanessaExt: %s\n", WCHAR2MB(msg.c_str()).c_str());
+		// WCHAR2MB принимает WCHAR_T (wchar_t на Linux, uint16_t на Windows),
+		// а c_str() у u16string — char16_t*, поэтому конвертируем вручную:
+		// текст нужен только для диагностики в stderr.
+		std::string text;
+		for (char16_t c : msg) text.push_back(c < 128 ? static_cast<char>(c) : '?');
+		std::fprintf(stderr, "VanessaExt: %s\n", text.c_str());
 		return false;
 	}
 	catch (...) {
@@ -419,7 +424,12 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
-		std::fprintf(stderr, "VanessaExt: %s\n", WCHAR2MB(msg.c_str()).c_str());
+		// WCHAR2MB принимает WCHAR_T (wchar_t на Linux, uint16_t на Windows),
+		// а c_str() у u16string — char16_t*, поэтому конвертируем вручную:
+		// текст нужен только для диагностики в stderr.
+		std::string text;
+		for (char16_t c : msg) text.push_back(c < 128 ? static_cast<char>(c) : '?');
+		std::fprintf(stderr, "VanessaExt: %s\n", text.c_str());
 		return false;
 	}
 	catch (...) {

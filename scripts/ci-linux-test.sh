@@ -176,7 +176,25 @@ set +e
 timeout -k 10 900 "${client}" ENTERPRISE /LRU "/F${DB}" \
 	"/Execute${WORKDIR}/${PROJECT}.epf" /C autotest \
 	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out \
-	> autotest.log 2>&1
+	> autotest.log 2>&1 &
+client_pid=$!
+
+# Пока клиент работает, раз в 30 с печатаем дерево окон. Если он встал на
+# модальном диалоге (предупреждение о безопасности, выбор базы, ошибка
+# подключения), это видно сразу, а не через 15 минут по таймауту.
+waited=0
+while kill -0 "${client_pid}" 2>/dev/null; do
+	if [ -f success.txt ]; then
+		break
+	fi
+	sleep 10
+	waited=$((waited + 10))
+	if [ $((waited % 30)) -eq 0 ]; then
+		log "ожидание ${waited} с, строк в дереве окон: $(xwininfo -root -tree 2>/dev/null | wc -l)"
+		xwininfo -root -tree 2>/dev/null | sed -n '1,12p' | sed 's/^/    /'
+	fi
+done
+wait "${client_pid}"
 rc=$?
 set -e
 log "код возврата клиента: ${rc}"
