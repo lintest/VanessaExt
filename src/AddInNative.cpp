@@ -22,6 +22,7 @@
 #include <codecvt>
 #include <cwctype>
 #include <sstream>
+#include <cstdio>
 
 #include "AddInNative.h"
 
@@ -385,13 +386,18 @@ bool AddInNative::CallAsProc(const long lMethodNum, tVariant* paParams, const lo
 	}
 	catch (const std::exception& e) {
 		AddError(MB2WCHAR(e.what()));
+		// OneScript не показывает AddError, и метод молча возвращает Undefined.
+		// Дублируем причину в stderr, иначе диагностировать нечем.
+		std::fprintf(stderr, "VanessaExt: %s\n", e.what());
 		return false;
 	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
+		std::fprintf(stderr, "VanessaExt: %s\n", WCHAR2MB(msg.c_str()).c_str());
 		return false;
 	}
 	catch (...) {
+		std::fprintf(stderr, "VanessaExt: неизвестное исключение\n");
 		return false;
 	}
 }
@@ -408,13 +414,16 @@ bool AddInNative::CallAsFunc(const long lMethodNum, tVariant* pvarRetValue, tVar
 	}
 	catch (const std::exception& e) {
 		AddError(MB2WCHAR(e.what()));
+		std::fprintf(stderr, "VanessaExt: %s\n", e.what());
 		return false;
 	}
 	catch (const std::u16string& msg) {
 		AddError(msg);
+		std::fprintf(stderr, "VanessaExt: %s\n", WCHAR2MB(msg.c_str()).c_str());
 		return false;
 	}
 	catch (...) {
+		std::fprintf(stderr, "VanessaExt: неизвестное исключение\n");
 		result << VA(nullptr);
 		return false;
 	}
