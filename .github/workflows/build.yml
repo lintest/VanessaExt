@@ -111,18 +111,29 @@ jobs:
           cmake --build build-tests --target ProcessUtilsTest
           ctest --test-dir build-tests --output-on-failure
 
+      # Имена — как в manifest.xml: суффикс версии стоит ПЕРЕД расширением
+      # (VanessaExtLin32_1-3-9-25.so). Раньше файлы переименовывались в
+      # "VanessaExtLin32.so_1-3-9-25", платформа не находила их по пути из
+      # манифеста, подключение компоненты проваливалось молча — тестов 0.
+      # manifest.xml обязателен: без него компоненту из макета не подключить.
       # .debug появляются только если в контейнере был eu-strip (elfutils),
       # поэтому пакуем по факту наличия — как в appveyor.yml.
       - name: Упаковка Linux-артефакта
         run: |
           set -e
-          rm -f AddIn.zip
+          version="${{ steps.version.outputs.version }}"
+          postfix="_${version//./-}"
+          rm -f AddIn.zip manifest.xml
+          rm -rf package && mkdir package
+          pwsh -NoProfile -File manifest.ps1 -project "$PROJECT_NAME" -version "$version"
           packed=0
           for f in ./bin32/*Lin32.so ./bin64/*Lin64.so \
                    ./bin32/*Lin32.so.debug ./bin64/*Lin64.so.debug; do
             if [ -f "$f" ]; then
-              zip -q -X -j AddIn.zip "$f"
-              echo "в архиве: $f"
+              name=$(basename "$f")
+              versioned="${name%%.*}${postfix}.${name#*.}"
+              cp "$f" "package/$versioned"
+              echo "в архиве: $versioned"
               packed=$((packed + 1))
             else
               echo "пропускаю (нет файла): $f"
@@ -132,6 +143,8 @@ jobs:
             echo "::error::в архиве меньше двух библиотек"
             exit 1
           fi
+          cp manifest.xml package/
+          (cd package && zip -q -X AddIn.zip *)
           unzip -l AddIn.zip
 
       - name: Выгрузка Linux-артефакта

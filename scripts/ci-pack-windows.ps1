@@ -56,29 +56,43 @@ Expand-Archive -Force -Path $linuxZip.FullName -DestinationPath $path
 $binaries = @(
 	"${project}Win32.dll",
 	"${project}Win64.dll",
-	"${project}Lin32.so",
-	"${project}Lin64.so"
+	"${project}Lin32${postfix}.so",
+	"${project}Lin64${postfix}.so"
 )
 $debugFiles = @(
-	"${project}Lin32.so.debug",
-	"${project}Lin64.so.debug"
+	"${project}Lin32${postfix}.so.debug",
+	"${project}Lin64${postfix}.so.debug"
+)
+
+# Linux-библиотеки приходят из Linux-артефакта уже с суффиксом версии — так их
+# ждёт manifest.xml. Windows-библиотеки приходят без суффикса: добавляем его
+# перед расширением (VanessaExtWin32_1-3-9-25.dll), иначе платформа не находит
+# файл по пути из манифеста и подключение компоненты молча проваливается.
+foreach ($name in @("${project}Win32.dll", "${project}Win64.dll")) {
+	$source = Join-Path $path $name
+	Assert-File $source "собранный $name"
+	$versioned = [System.IO.Path]::GetFileNameWithoutExtension($name) + $postfix +
+		[System.IO.Path]::GetExtension($name)
+	Rename-Item -Path $source -NewName $versioned -Force
+}
+
+$binaries = @(
+	"${project}Win32${postfix}.dll",
+	"${project}Win64${postfix}.dll",
+	"${project}Lin32${postfix}.so",
+	"${project}Lin64${postfix}.so"
 )
 
 foreach ($name in $binaries) {
-	$source = Join-Path $path $name
-	Assert-File $source "файл из Linux-артефакта"
-	Rename-Item -Path $source -NewName ($name + $postfix) -Force
+	Assert-File (Join-Path $path $name) "файл для AddIn.zip"
 }
 
-# .debug появляются только если в контейнере был eu-strip (пакет elfutils).
-# В AppVeyor на отсутствующем файле падал Rename-Item, здесь пропускаем.
+# .debug появляются только если в контейнере был eu-strip (пакет elfutils),
+# поэтому Debug.zip собираем по факту наличия файлов.
 foreach ($name in $debugFiles) {
-	$source = Join-Path $path $name
-	if (-not (Test-Path $source)) {
+	if (-not (Test-Path (Join-Path $path $name))) {
 		Write-Host "пропускаю (нет файла): $name"
-		continue
 	}
-	Rename-Item -Path $source -NewName ($name + $postfix) -Force
 }
 
 Assert-File (Join-Path $path 'manifest.xml') 'manifest.xml (его пишет manifest.ps1)'
@@ -89,14 +103,14 @@ if (Test-Path $addInZip) { Remove-Item $addInZip -Force }
 
 $packed = @()
 foreach ($name in $binaries) {
-	$packed += (Join-Path $path ($name + $postfix))
+	$packed += (Join-Path $path $name)
 }
 $packed += (Join-Path $path 'manifest.xml')
 Compress-Archive -Path $packed -DestinationPath $addInZip -Force
 
 $debugPacked = @()
 foreach ($name in $debugFiles) {
-	$file = Join-Path $path ($name + $postfix)
+	$file = Join-Path $path $name
 	if (Test-Path $file) { $debugPacked += $file }
 }
 if ($debugPacked.Count -gt 0) {
