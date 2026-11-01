@@ -546,7 +546,11 @@ std::string FormatStartTimeUtc(uint64_t startTicks)
 	struct tm timeValue;
 	if (!gmtime_r(&seconds, &timeValue)) return {};
 
-	char buffer[40];
+	// Запас под worst case GCC: для %04d он закладывает до 11 символов
+	// (знак + 10 цифр), для %03u — до 10, суммарно 84. Фактическая длина
+	// всегда 24 символа + терминатор: год 4 цифры, остальные поля по 2,
+	// миллисекунды 0..999.
+	char buffer[96];
 	std::snprintf(buffer, sizeof(buffer), "%04d-%02d-%02dT%02d:%02d:%02d.%03uZ",
 		timeValue.tm_year + 1900, timeValue.tm_mon + 1, timeValue.tm_mday,
 		timeValue.tm_hour, timeValue.tm_min, timeValue.tm_sec, milliseconds);
