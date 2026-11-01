@@ -497,6 +497,17 @@ jobs:
               Write-Host "   --- $f ---"
               Get-Content $f -Tail 12 -ErrorAction SilentlyContinue
             }
+            # Лог самой платформы: на Linux именно он дал причину зависания
+            # (Unknown form name). На Windows он лежит в LOCALAPPDATA и в консоль
+            # не попадает — печатаем хвосты двух свежих файлов.
+            $platformLogs = Get-ChildItem `
+                "$env:LOCALAPPDATA\1C\1cv8t\logs", "$env:LOCALAPPDATA\1C\1cv8\logs" `
+                -Recurse -Filter '*.log' -ErrorAction SilentlyContinue |
+              Sort-Object LastWriteTime -Descending | Select-Object -First 2
+            foreach ($platformLog in $platformLogs) {
+              Write-Host "   --- $($platformLog.FullName) ---"
+              Get-Content $platformLog.FullName -Tail 20 -ErrorAction SilentlyContinue
+            }
             if ((Get-Date) -gt $deadline) {
               $client.Kill()
               throw 'клиент 1С не завершился за 10 минут'
