@@ -109,11 +109,11 @@ void EducationShow::draw(Graphics& graphics)
 	path.AddRectangle(Rect(0, 0, w, h));
 	graphics.FillPath(&brush, &path);
 
-	REAL z = buttonIconWidth / 4;
-	REAL dy = pressed ? max(buttonIconWidth / 12, 2) : 0;
+	REAL z = (REAL)buttonIconWidth / 4;
+	REAL dy = pressed ? (REAL)max(buttonIconWidth / 12, 2) : 0.0f;
 
 	Color btnColor = buttonColor;
-	if (pressed) btnColor = Color(color.GetAlpha(), color.GetRed() * 0.8, color.GetGreen() * 0.8, color.GetBlue() * 0.8);
+	if (pressed) btnColor = Color(color.GetAlpha(), (BYTE)(color.GetRed() * 0.8), (BYTE)(color.GetGreen() * 0.8), (BYTE)(color.GetBlue() * 0.8));
 	SolidBrush buttonBrush(btnColor);
 	GraphicsPath buttonPath;
 	buttonPath.AddRectangle(Rect(w - buttonWidth, 0, buttonWidth, h));
@@ -121,7 +121,7 @@ void EducationShow::draw(Graphics& graphics)
 
 	SolidBrush iconBrush(iconColor);
 	GraphicsPath iconPath;
-	iconPath.AddRectangle(Rect(w - buttonWidth + z * 2, z + dy, z * 2, z * 2));
+	iconPath.AddRectangle(Rect((INT)(w - buttonWidth + z * 2), (INT)(z + dy), (INT)(z * 2), (INT)(z * 2)));
 	graphics.FillPath(&iconBrush, &iconPath);
 
 	Pen pen(color, (REAL)thick);
@@ -251,7 +251,7 @@ LRESULT EducationShow::onMouseUp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				SYSTEMTIME st;
 				GetLocalTime(&st);
 				wsprintfW(buf, L"%.4u-%.2u-%.2uT%.2u:%.2u:%.2u", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
-				WriteFile(hFile, buf, wcslen(buf) * sizeof(WCHAR), NULL, NULL);
+				WriteFile(hFile, buf, (DWORD)(wcslen(buf) * sizeof(WCHAR)), NULL, NULL);
 				CloseHandle(hFile);
 			}
 		}
