@@ -235,6 +235,17 @@ if(NOT UNIX AND WITH_LIBGIT2)
 	set(EMBED_SSH_PATH "${CMAKE_SOURCE_DIR}/libssh2-1.9.0" CACHE PATH "" FORCE)
 	add_subdirectory(./libgit2-1.1.0)
 	target_link_libraries(${TARGET} git2)
+	# libssh2 1.9.0 и сам libgit2 — вендорный код: C4267 (size_t -> uint32_t)
+	# приходит из их userauth.c и к нашему коду отношения не имеет. Патчить
+	# чужие исходники не будем — глушим предупреждение только у целей libgit2,
+	# чтобы не потерять его в собственных файлах компоненты.
+	if(MSVC)
+		foreach(libgit2_target git2internal git2 git2package)
+			if(TARGET ${libgit2_target})
+				target_compile_options(${libgit2_target} PRIVATE /wd4267)
+			endif()
+		endforeach()
+	endif()
 endif(NOT UNIX AND WITH_LIBGIT2)
 
 if(UNIX AND NOT APPLE)
