@@ -1,7 +1,7 @@
 # Clip Library
 # Copyright (c) 2015-2020 David Capello
 
-cmake_minimum_required(VERSION 3.1.2)
+cmake_minimum_required(VERSION 3.13)
 
 project(clip)
 
