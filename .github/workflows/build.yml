@@ -454,20 +454,53 @@ jobs:
           # Обработка.ОткрытьТестируемуОбработку.Форма, а путь к внешней
           # обработке приходит в параметре запуска (/C). Защиту от опасных
           # действий обработка снимает сама через ОписаниеЗащитыОтОпасныхДействий.
-          Remove-Item 'success.txt' -Force -ErrorAction SilentlyContinue
+          Remove-Item 'success.txt','autotest.out','autotest.log','autotest.err.log' `
+            -Force -ErrorAction SilentlyContinue
           $client = Start-Process -FilePath $exe -PassThru `
-            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/C', $epf) `
+            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/C', $epf,
+              '/DisableStartupDialogs', '/DisableStartupMessages', '/Out', 'autotest.out') `
             -RedirectStandardOutput 'autotest.log' -RedirectStandardError 'autotest.err.log'
-          if (-not $client.WaitForExit(600000)) {
-            $client.Kill()
-            throw 'клиент 1С не завершился за 10 минут'
+
+          # Ожидание с диагностикой: молчаливый WaitForExit(600000) не даёт
+          # понять, что происходит, пока клиент висит. Раз в 30 с печатаем
+          # состояние процесса, заголовки его окон и хвосты всех логов —
+          # по ним видно, встал ли клиент на диалоге или просто медленно идёт.
+          $deadline = (Get-Date).AddMinutes(10)
+          $waited = 0
+          while (-not $client.HasExited) {
+            if (Test-Path 'success.txt') { break }
+            Start-Sleep -Seconds 10
+            $waited += 10
+            if ($waited % 30 -ne 0) { continue }
+
+            Write-Host "== ожидание $waited с"
+            $proc = Get-Process -Id $client.Id -ErrorAction SilentlyContinue
+            if ($proc) {
+              Write-Host ("   клиент: cpu={0:N1}с память={1:N0}МБ потоков={2} окно='{3}'" -f `
+                $proc.CPU, ($proc.WorkingSet64 / 1MB), $proc.Threads.Count, $proc.MainWindowTitle)
+            }
+            Get-Process -Name '1cv8*' -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host ("   {0} pid={1} cpu={2:N1} окно='{3}'" -f `
+                $_.ProcessName, $_.Id, $_.CPU, $_.MainWindowTitle)
+            }
+            foreach ($f in 'autotest.log', 'autotest.err.log', 'autotest.out', 'tests-report.log') {
+              Write-Host "   --- $f ---"
+              Get-Content $f -Tail 12 -ErrorAction SilentlyContinue
+            }
+            if ((Get-Date) -gt $deadline) {
+              $client.Kill()
+              throw 'клиент 1С не завершился за 10 минут'
+            }
           }
+          $client.WaitForExit()
           Write-Host "код возврата клиента: $($client.ExitCode)"
           if (-not (Test-Path 'success.txt')) {
             Write-Host '--- отчёт приёмника ---'
             Get-Content 'tests-report.log' -ErrorAction SilentlyContinue
             Write-Host '--- вывод клиента ---'
             Get-Content 'autotest.log' -ErrorAction SilentlyContinue | Select-Object -Last 50
+            Write-Host '--- ошибки клиента ---'
+            Get-Content 'autotest.err.log' -ErrorAction SilentlyContinue | Select-Object -Last 50
             throw 'Имеются ошибки: success.txt не создан'
           }
           Write-Host 'автотест пройден'
