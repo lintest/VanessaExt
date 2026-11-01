@@ -403,13 +403,6 @@ jobs:
         shell: pwsh
         run: ./scripts/ci-pack-windows.ps1 -project $env:PROJECT_NAME -version "${{ needs.linux.outputs.version }}"
 
-      # Защита от опасных действий не даёт запустить внешнюю обработку: клиент
-      # ждёт нажатия «Да» и висит до таймаута, а подтверждать некому. Файл
-      # настроек ищется рядом с исполняемым файлом (bin).
-      - name: Защита от опасных действий
-        shell: pwsh
-        run: Set-Content -Path 'bin\conf.cfg' -Value 'DisableUnsafeActionProtection=.\*' -Encoding ASCII
-
       - name: Конфигурация и внешняя обработка
         shell: cmd
         run: |

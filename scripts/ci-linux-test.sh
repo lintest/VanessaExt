@@ -113,17 +113,7 @@ openbox --sm-disable >/dev/null 2>&1 &
 sleep 2
 xwininfo -root -tree >/dev/null 2>&1 || log "предупреждение: X-сервер не отвечает"
 
-# --- 4. Снятие защиты от опасных действий --------------------------------
-# Диалог «Разрешить открывать данный файл?» в неинтерактивном прогоне
-# подтверждать некому: клиент повиснет до таймаута.
-log "conf.cfg"
-for dir in /opt/1cv8t/conf /opt/1cv8/conf "${HOME}/.1cv8/1C/1cv8/conf"; do
-	sudo mkdir -p "${dir}"
-	printf 'SystemLanguage=System\nDisableUnsafeActionProtection=.\\*\n' \
-		| sudo tee "${dir}/conf.cfg" >/dev/null
-done
-
-# --- 5. Макеты внешней обработки -----------------------------------------
+# --- 4. Макеты внешней обработки -----------------------------------------
 log "Макеты"
 [ -n "${ADDIN_ZIP:-}" ] || fail "не задан ADDIN_ZIP"
 [ -f "${ADDIN_ZIP}" ] || fail "не найден ${ADDIN_ZIP}"
@@ -134,7 +124,7 @@ rm -f keywords.zip
 zip -q -X -j keywords.zip keywords.json
 cp keywords.zip "Example/Templates/Keywords/Ext/Template.bin"
 
-# --- 6. База, конфигурация и .epf ----------------------------------------
+# --- 5. База, конфигурация и .epf ----------------------------------------
 log "База и .epf"
 rm -rf "${DB}" "${PROJECT}.epf"
 mkdir -p "${DB}"
@@ -150,7 +140,7 @@ mkdir -p "${DB}"
 	|| fail "LoadExternalDataProcessorOrReportFromFiles (см. example.log)"
 [ -f "${PROJECT}.epf" ] || fail "${PROJECT}.epf не создан"
 
-# --- 7. Приёмник результатов и прогон ------------------------------------
+# --- 6. Приёмник результатов и прогон ------------------------------------
 # Форма AppVeyor читает app_port.txt и шлёт результаты в API AppVeyor.
 # На раннере API нет — поднимаем локальную заглушку, код 1С не меняем.
 log "Приёмник результатов тестов"
@@ -173,7 +163,7 @@ log "порт приёмника: $(cat app_port.txt)"
 
 log "Автотест в тонком клиенте"
 set +e
-timeout -k 10 900 "${client}" ENTERPRISE /LRU "/F${DB}" \
+timeout -k 10 300 "${client}" ENTERPRISE /LRU "/F${DB}" \
 	"/Execute${WORKDIR}/${PROJECT}.epf" /C autotest \
 	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out \
 	> autotest.log 2>&1 &
@@ -191,7 +181,11 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 	waited=$((waited + 10))
 	if [ $((waited % 30)) -eq 0 ]; then
 		log "ожидание ${waited} с, строк в дереве окон: $(xwininfo -root -tree 2>/dev/null | wc -l)"
-		xwininfo -root -tree 2>/dev/null | sed -n '1,12p' | sed 's/^/    /'
+		xwininfo -root -tree 2>/dev/null | sed -n '1,25p' | sed 's/^/    /'
+		echo '    --- autotest.out (журнал клиента) ---'
+		tail -n 10 autotest.out 2>/dev/null | sed 's/^/    /'
+		echo '    --- процесс клиента ---'
+		ps -o pid,stat,pcpu,etime,args -C "$(basename "${client}")" 2>/dev/null | sed 's/^/    /'
 	fi
 done
 wait "${client_pid}"
