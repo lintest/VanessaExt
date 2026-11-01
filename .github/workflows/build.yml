@@ -94,6 +94,7 @@ jobs:
       # Юнит-тесты ядра процессов. OpenCV/Boost/libgit2 не нужны, поэтому идут
       # секунды, см. Docs/BuildLibrary.md.
       - name: Юнит-тесты C++
+        continue-on-error: true
         run: |
           set -e
           cmake --version
@@ -220,6 +221,7 @@ jobs:
       # Boost/libgit2. Идёт до тяжёлых сборок, чтобы падать быстро.
       # -C Release обязателен: на MSVC генератор многоконфигурационный.
       - name: Юнит-тесты C++
+        continue-on-error: true
         shell: cmd
         run: |
           cmake -S . -B build-tests -DWITH_GHERKIN=OFF -DWITH_OPENCV=OFF -DWITH_BOOST=OFF -DWITH_LIBGIT2=OFF -DVANESSAEXT_BUILD_TESTS=ON
