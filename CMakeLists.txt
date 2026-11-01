@@ -219,7 +219,7 @@ if(WITH_BOOST)
 	# FindBoost из CMake < 3.20 знает Boost только до 1.66 и на 1.92 предупреждает
 	# про неверные зависимости компонентов. Переменная появилась в CMake 3.20.
 	set(Boost_NO_WARN_NEW_VERSIONS ON)
-	find_package(Boost REQUIRED regex date_time filesystem)
+	find_package(Boost REQUIRED regex filesystem)
 	include_directories(${Boost_INCLUDE_DIRS})
 	target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 endif(WITH_BOOST)

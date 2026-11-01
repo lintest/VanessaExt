@@ -129,7 +129,7 @@ build() {
     cd boost_1_92_0
     ./b2 cxxflags="-fPIC -std=c++17" link=static threading=multi \
       runtime-link=static release stage \
-      --with-regex --with-date_time --with-filesystem \
+      --with-regex --with-filesystem \
       "address-model=${address_model}"
   )
 

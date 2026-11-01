@@ -79,7 +79,7 @@ install:
   - cd boost_1_92_0
   - sh: ./bootstrap.sh
   - cmd: bootstrap.bat
-  - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem
+  - cmd: b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-filesystem
   - cd ..
 
 init:
@@ -100,7 +100,7 @@ build_script:
   - cmd: powershell -File manifest.ps1
 
   - sh: cd boost_1_92_0
-  - sh: ./b2 cxxflags="-fPIC -std=c++17" link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem address-model=32
+  - sh: ./b2 cxxflags="-fPIC -std=c++17" link=static threading=multi runtime-link=static release stage --with-regex --with-filesystem address-model=32
   - sh: cd ..
   - mkdir build32
   - cd build32
@@ -111,7 +111,7 @@ build_script:
   - cd ..
 
   - sh: cd boost_1_92_0
-  - sh: ./b2 cxxflags="-fPIC -std=c++17" link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem address-model=64
+  - sh: ./b2 cxxflags="-fPIC -std=c++17" link=static threading=multi runtime-link=static release stage --with-regex --with-filesystem address-model=64
   - sh: cd ..
   - mkdir build64
   - cd build64

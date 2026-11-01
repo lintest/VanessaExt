@@ -359,9 +359,9 @@ jobs:
           cd boost_1_92_0
           call bootstrap.bat
           if errorlevel 1 exit /b 1
-          .\b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem address-model=32
+          .\b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-filesystem address-model=32
           if errorlevel 1 exit /b 1
-          .\b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-date_time --with-filesystem address-model=64
+          .\b2.exe toolset=msvc link=static threading=multi runtime-link=static release stage --with-regex --with-filesystem address-model=64
           if errorlevel 1 exit /b 1
 
       - name: libgit2 и libssh2
