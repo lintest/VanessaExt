@@ -250,7 +250,7 @@ jobs:
             libgit2-1.1.0
             libssh2-1.9.0
             RE-flex
-          key: win-deps-ocv452-boost184-git2110-reflex301-${{ hashFiles('Build.OpenCV.bat') }}
+          key: win-deps-v2-ocv452-boost184-git2110-reflex301-${{ hashFiles('Build.OpenCV.bat') }}
 
       # Платформа 1С — это гигабайты томов, а меняется редко: кэшируем по SHA
       # ветки platform, как на Linux.
@@ -317,22 +317,23 @@ jobs:
         run: dir /b bin\1cv8*.exe
 
       # RE-flex в репозитории — gitlink без .gitmodules, после checkout это
-      # пустая папка. CMakeLists.txt ждёт RE-flex/bin/win64/reflex.exe.
+      # пустая папка. CMakeLists.txt ждёт RE-flex/bin/win64/reflex.exe, а в
+      # ветке master форка готовый бинарник уже лежит. Собирать его MinGW-ом
+      # не нужно и опасно: build.sh падает на posix_memalign (в mingw-w64 он
+      # объявлен только при _POSIX_C_SOURCE). Исходники lib/ и unicode/ из
+      # этого же клона всё равно компилируются в составе нашей цели.
       - name: RE-flex
         if: steps.deps-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -e
           git config --local --unset-all "http.https://github.com/.extraheader" || true
-          if [ ! -d RE-flex/.git ]; then
+          if [ ! -f RE-flex/bin/win64/reflex.exe ]; then
             rm -rf RE-flex
             git clone -q --branch=master --depth=1 https://github.com/lintest/RE-flex.git RE-flex
           fi
-          cd RE-flex
-          git checkout -q -B version v3.0.1
-          ./clean.sh
-          ./build.sh
-          ls -la bin/win64
+          ls -la RE-flex/bin/win64
+          test -f RE-flex/bin/win64/reflex.exe
 
       - name: OpenCV 4.5.2
         if: steps.deps-cache.outputs.cache-hit != 'true'
@@ -538,25 +539,28 @@ jobs:
           name: linux-addin
           path: linux-addin
 
-      # OneScript берём из ветки oscript.w64 репозитория tools1c — так же, как
-      # VAEditor. Это готовый zip, и не нужно спрашивать список ассетов через
-      # API GitHub: при исчерпанном лимите он отдаёт объект без поля assets,
-      # отсюда и был KeyError 'assets'.
+      # OneScript под Linux берём из ветки oscript репозитория tools1c: там
+      # deb-пакет движка и нативные модули ScriptEngine.NativeApi для Linux.
+      # Ветка oscript.w64 — это Windows-сборка, из неё oscript не извлекается.
+      # Через API GitHub не ходим: при исчерпанном лимите он отдаёт объект без
+      # поля assets, отсюда был KeyError 'assets'.
       - name: Установка OneScript
         run: |
           set -e
           git config --local --unset-all "http.https://github.com/.extraheader" || true
-          git clone -q --branch=oscript.w64 --depth=1 https://github.com/lintest/tools1c.git oscript-src
-          mkdir -p oscript
-          for z in oscript-src/*.zip; do
-            [ -f "$z" ] || { echo "::error::в ветке oscript.w64 нет zip-архива"; exit 1; }
-            unzip -q -o "$z" -d oscript
-          done
-          bin=$(find oscript -name oscript -type f | head -n 1)
-          [ -n "$bin" ] || { echo "::error::oscript не найден в архиве"; exit 1; }
-          chmod +x "$bin"
-          dirname "$bin" >> "$GITHUB_PATH"
-          "$bin" --version || true
+          git clone -q --branch=oscript --depth=1 https://github.com/lintest/tools1c.git oscript-src
+          ls oscript-src
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mono-runtime
+          sudo dpkg -i oscript-src/onescript-engine_1.5.0_all.deb || sudo apt-get -f install -y -qq
+          # Нативные модули NativeApi кладём рядом с движком: через них
+          # компонента 1С доступна скрипту как AddIn.
+          libdir=$(dpkg -L onescript-engine | grep 'ScriptEngine.HostedScript.dll$' | head -n 1 | xargs -r dirname)
+          [ -n "$libdir" ] || libdir=/usr/lib/onescript
+          echo "каталог движка: $libdir"
+          sudo cp oscript-src/ScriptEngine.NativeApi*.so "$libdir"/ || true
+          command -v oscript
+          oscript --version || true
 
       - name: Прогон автотестов
         continue-on-error: true
