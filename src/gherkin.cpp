@@ -11,8 +11,26 @@
 template<typename T>
 static bool comparei(const T& a, const T& b)
 {
-	static const std::locale locale_ru("ru_RU.UTF-8");
-	return boost::iequals(a, b, locale_ru);
+	// Локаль ru_RU.UTF-8 есть не в каждой системе (в CI её нет), а сравнение
+	// без учёта регистра не должно ронять разбор сценария.
+	try {
+		return boost::iequals(a, b, locale_ru);
+	}
+	catch (...) {
+		return boost::iequals(a, b, std::locale::classic());
+	}
+}
+
+// Один символ в нижний регистр: локаль может быть недоступна, но сниппет
+// шага должен строиться в любом случае.
+static wchar_t lowerChar(wchar_t ch)
+{
+	try {
+		return wchar_t(std::tolower(ch, locale_ru));
+	}
+	catch (...) {
+		return wchar_t(toLowerRu(char16_t(ch)));
+	}
 }
 
 static FILE* fileopen(const BoostPath& path)
@@ -963,7 +981,7 @@ namespace Gherkin {
 								ss << L'_';
 								break;
 							default:
-								ss << std::tolower(ch, locale_ru);
+								ss << lowerChar(ch);
 						}
 					}
 				} break;

@@ -49,3 +49,23 @@ using JSON = nlohmann::json;
 constexpr auto PROCESS_FINISHED = u"PROCESS_FINISHED";
 
 extern std::locale locale_ru;
+
+// Смена регистра для BMP без зависимости от системной локали: в контейнерах
+// локаль ru_RU.UTF-8 часто отсутствует, а std::tolower с такой локалью бросает
+// исключение уже во время работы (фасет создаётся лениво). Эти функции — аварийный
+// путь, когда locale_ru недоступна.
+inline char16_t toUpperRu(char16_t ch)
+{
+	if (ch >= u'а' && ch <= u'я') return char16_t(ch - 0x20);
+	if (ch == u'ё') return u'Ё';
+	if (ch >= u'a' && ch <= u'z') return char16_t(ch - 0x20);
+	return ch;
+}
+
+inline char16_t toLowerRu(char16_t ch)
+{
+	if (ch >= u'А' && ch <= u'Я') return char16_t(ch + 0x20);
+	if (ch == u'Ё') return u'ё';
+	if (ch >= u'A' && ch <= u'Z') return char16_t(ch + 0x20);
+	return ch;
+}

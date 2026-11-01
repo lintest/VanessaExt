@@ -530,12 +530,20 @@ std::u16string MB2WCHAR(std::string_view src) {
 
 static std::locale MakeLocaleRu()
 {
+	// libstdc++ создаёт фасеты лениво: без явного обращения к фасету исключение
+	// "locale::facet::_S_create_c_locale name not valid" вылетит позже, уже
+	// во время std::tolower, мимо этого try/catch. Поэтому фасет запрашиваем
+	// сразу — тогда catch действительно ловит отсутствие локали в системе.
+	auto probe = [](const std::locale& loc) {
+		std::use_facet<std::ctype<wchar_t>>(loc);
+		return loc;
+	};
 	try {
-		return std::locale("ru_RU.UTF-8");
+		return probe(std::locale("ru_RU.UTF-8"));
 	}
 	catch (...) {
 		try {
-			return std::locale("");
+			return probe(std::locale(""));
 		}
 		catch (...) {
 			return std::locale::classic();
@@ -548,28 +556,60 @@ std::locale locale_ru = MakeLocaleRu();
 std::u16string upper(const std::u16string& src)
 {
 	std::u16string str = src;
-	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::toupper(ch, locale_ru); });
+	try {
+		std::transform(str.begin(), str.end(), str.begin(), [](char16_t ch) {
+			return char16_t(std::toupper(wchar_t(ch), locale_ru));
+		});
+	}
+	catch (...) {
+		std::transform(str.begin(), str.end(), str.begin(), toUpperRu);
+	}
 	return str;
 }
 
 std::u16string lower(const std::u16string& src)
 {
 	std::u16string str = src;
-	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::tolower(ch, locale_ru); });
+	try {
+		std::transform(str.begin(), str.end(), str.begin(), [](char16_t ch) {
+			return char16_t(std::tolower(wchar_t(ch), locale_ru));
+		});
+	}
+	catch (...) {
+		std::transform(str.begin(), str.end(), str.begin(), toLowerRu);
+	}
 	return str;
 }
 
 std::wstring upper(const std::wstring& src)
 {
 	std::wstring str = src;
-	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::toupper(ch, locale_ru); });
+	try {
+		std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) {
+			return wchar_t(std::toupper(ch, locale_ru));
+		});
+	}
+	catch (...) {
+		std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) {
+			return wchar_t(toUpperRu(char16_t(ch)));
+		});
+	}
 	return str;
 }
 
 std::wstring lower(const std::wstring& src)
 {
 	std::wstring str = src;
-	std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) { return std::tolower(ch, locale_ru); });
+	try {
+		std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) {
+			return wchar_t(std::tolower(ch, locale_ru));
+		});
+	}
+	catch (...) {
+		std::transform(str.begin(), str.end(), str.begin(), [](wchar_t ch) {
+			return wchar_t(toLowerRu(char16_t(ch)));
+		});
+	}
 	return str;
 }
 
