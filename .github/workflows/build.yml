@@ -605,6 +605,9 @@ jobs:
 
   oscript-windows:
     needs: windows
+    # windows-джоба может упасть на GUI-автотесте, но AddIn.zip выгружается
+    # с if: always(). Быстрая проверка не должна зависеть от исхода GUI-тестов.
+    if: always()
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
@@ -629,7 +632,7 @@ jobs:
           Expand-Archive oscript.zip -DestinationPath oscript -Force
           $exe = Get-ChildItem oscript -Recurse -Filter oscript.exe | Select-Object -First 1
           if (-not $exe) { throw 'oscript.exe не найден в архиве' }
-          $exe.DirectoryName | Out-File -Append $env:GITHUB_PATH
+          Add-Content -Path $env:GITHUB_PATH -Value $exe.DirectoryName
           & $exe.FullName --version
 
       - name: Диагностика NativeApi
@@ -641,7 +644,7 @@ jobs:
           Expand-Archive $zip.FullName -DestinationPath libs -Force
           $library = Get-ChildItem libs -Filter '*Win64.dll' | Select-Object -First 1
           if (-not $library) { throw 'не найден VanessaExtWin64.dll' }
-          oscript tests/oscript/probe.os --библиотека=$($library.FullName)
+          oscript 'tests/oscript/probe.os' "--библиотека=$($library.FullName)"
 
       - name: Прогон автотестов
         continue-on-error: true
@@ -653,4 +656,4 @@ jobs:
           Get-ChildItem libs | Format-Table Name
           $library = Get-ChildItem libs -Filter '*Win64.dll' | Select-Object -First 1
           if (-not $library) { throw 'не найден VanessaExtWin64.dll' }
-          oscript tests/oscript/runner.os --библиотека=$($library.FullName)
+          oscript 'tests/oscript/runner.os' "--библиотека=$($library.FullName)"
