@@ -110,10 +110,10 @@ RectF ShadowButton::calculate(Graphics& graphics, const RectF& rect)
 
 void ShadowButton::resize(REAL x, REAL y, REAL w, REAL h)
 {
-	this->x = x;
-	this->y = y;
-	this->w = w;
-	this->h = h;
+	this->x = (int)x;
+	this->y = (int)y;
+	this->w = (int)w;
+	this->h = (int)h;
 }
 
 static Color makeTransparent(const Color& color, int trans) {
@@ -134,7 +134,7 @@ void ShadowButton::draw(Graphics& graphics)
 	}
 
 	Color backColor = this->backColor;
-	if (pressed) backColor = Color(255, backColor.GetRed() * 0.8, backColor.GetGreen() * 0.8, backColor.GetBlue() * 0.8);
+	if (pressed) backColor = Color(255, (BYTE)(backColor.GetRed() * 0.8), (BYTE)(backColor.GetGreen() * 0.8), (BYTE)(backColor.GetBlue() * 0.8));
 	SolidBrush brush(backColor);
 	GraphicsPath path;
 
@@ -511,12 +511,13 @@ SpeechBubble::SpeechBubble(const std::string& p, int x, int y, int w, int h, con
 	get(j, "fontSize", fontSize);
 	if (text.empty()) get(j, "text", text);
 	tailRotation = tailRotation + 180;
-	X = Y = tailLength + thick;
+	int tail = (int)tailLength;
+	X = Y = tail + thick;
 	W = w; H = h;
-	this->x -= tailLength;
-	this->y -= tailLength;
-	this->w += 2 * tailLength;
-	this->h += 2 * tailLength;
+	this->x -= tail;
+	this->y -= tail;
+	this->w += 2 * tail;
+	this->h += 2 * tail;
 }
 
 void SpeechBubble::draw(HWND hWnd, Graphics& graphics)
@@ -641,7 +642,7 @@ SpeechRect::SpeechRect(const std::string& p, int x, int y, const std::wstring& t
 void SpeechRect::draw(HWND hWnd, Graphics& graphics)
 {
 	auto gstate = graphics.Save();
-	graphics.TranslateTransform(dx - x, dy - y);
+	graphics.TranslateTransform((REAL)(dx - x), (REAL)(dy - y));
 	SolidBrush brush(background);
 	Pen pen(color, (REAL)thick * 2);
 	GraphicsPath path, tail;
