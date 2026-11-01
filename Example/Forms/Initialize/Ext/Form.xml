@@ -28,4 +28,11 @@
 			</Type>
 		</Attribute>
 	</Attributes>
+	<Parameters>
+		<Parameter name="Автотестирование" id="1">
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Parameter>
+	</Parameters>
 </Form>
