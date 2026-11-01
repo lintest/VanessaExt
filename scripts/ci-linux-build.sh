@@ -48,24 +48,34 @@ git config --global --add safe.directory '*'
 echo "== RE-flex"
 # RE-flex в репозитории — gitlink (подмодуль): после checkout это пустая папка,
 # поэтому проверяем именно наличие .git, а не каталога.
-if [ ! -d RE-flex/.git ]; then
-  rm -rf RE-flex
-  git clone -q --branch=master --depth=1 https://github.com/lintest/RE-flex.git RE-flex
+# Готовый bin/reflex приходит из кэша CI — тогда клон и сборка не нужны.
+if [ ! -x RE-flex/bin/reflex ]; then
+  if [ ! -d RE-flex/.git ]; then
+    rm -rf RE-flex
+    git clone -q --branch=master --depth=1 https://github.com/lintest/RE-flex.git RE-flex
+  fi
+  (
+    cd RE-flex
+    git checkout -q -B version v3.0.1
+    ./clean.sh
+    ./build.sh
+  )
+else
+  echo "RE-flex/bin/reflex уже собран — пропускаю"
 fi
-(
-  cd RE-flex
-  git checkout -q -B version v3.0.1
-  ./clean.sh
-  ./build.sh
-)
 
 echo "== OpenCV"
 # Build.OpenCV.sh ожидает уже развёрнутый исходник (в старом пайплайне его
 # клонировали отдельным шагом install).
-if [ ! -d opencv-4.5.2 ]; then
-  git clone -q --branch=4.5.2 --depth=1 https://github.com/opencv/opencv.git opencv-4.5.2
+# Установленные деревья приходят из кэша CI — тогда сборка пропускается.
+if [ ! -d opencv-x32 ] || [ ! -d opencv-x64 ]; then
+  if [ ! -d opencv-4.5.2 ]; then
+    git clone -q --branch=4.5.2 --depth=1 https://github.com/opencv/opencv.git opencv-4.5.2
+  fi
+  ./Build.OpenCV.sh
+else
+  echo "opencv-x32 и opencv-x64 уже собраны — пропускаю"
 fi
-./Build.OpenCV.sh
 
 echo "== Boost"
 if [ ! -d boost_1_84_0 ]; then

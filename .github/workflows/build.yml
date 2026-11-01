@@ -50,6 +50,22 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "::notice::версия сборки $version"
 
+      # Зависимости внутри контейнера собираются из исходников (OpenCV 4.5.2
+      # под две разрядности, Boost b2, RE-flex). Каталоги лежат в workspace,
+      # который монтируется в контейнер, поэтому их можно кэшировать между
+      # прогонами: скрипт сборки пропускает уже готовые шаги.
+      - name: Кэш зависимостей
+        uses: actions/cache@v4
+        with:
+          path: |
+            opencv-x32
+            opencv-x64
+            opencv-4.5.2/3rdparty
+            boost_1_84_0/boost
+            boost_1_84_0/stage/lib
+            RE-flex
+          key: lin-deps-ocv452-boost184-reflex301-${{ hashFiles('Build.OpenCV.sh') }}
+
       # ubuntu:18.04 + gcc-7 — это и есть ABI-базовая линия артефакта
       # (glibc 2.27 / GLIBCXX 3.4.25). Менять образ нельзя: на более свежем
       # окружении .so потребует GLIBC_2.28+ и не загрузится на 18.04/20.04.
@@ -65,14 +81,30 @@ jobs:
           python3 tools/check_abi_baseline.py \
             ./bin32/${PROJECT_NAME}Lin32.so ./bin64/${PROJECT_NAME}Lin64.so
 
-      # Юнит-тесты ядра процессов. Собираются без X11/OpenCV/Boost/libgit2,
-      # поэтому идут секунды, см. Docs/BuildLibrary.md.
+      # CMakeLists.txt линкует X11/XTest/XRandR в основной таргет безусловно
+      # (target_link_libraries с ${X11_LIBRARIES}), а на чистом раннере
+      # dev-пакетов X11 нет: переменные пустые, и конфигурирование падает на
+      # вызове target_link_libraries без аргументов. В контейнере ubuntu:18.04
+      # этого не видно — ci-linux-build.sh ставит пакеты сам.
+      - name: Пакеты X11 для конфигурирования CMake
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libx11-dev libxtst-dev libxrandr-dev
+
+      # Юнит-тесты ядра процессов. OpenCV/Boost/libgit2 не нужны, поэтому идут
+      # секунды, см. Docs/BuildLibrary.md.
       - name: Юнит-тесты C++
         run: |
           set -e
+          cmake --version
           cmake -S . -B build-tests \
             -DWITH_GHERKIN=OFF -DWITH_OPENCV=OFF -DWITH_BOOST=OFF \
-            -DWITH_LIBGIT2=OFF -DVANESSAEXT_BUILD_TESTS=ON
+            -DWITH_LIBGIT2=OFF -DVANESSAEXT_BUILD_TESTS=ON || {
+              echo "::error::конфигурирование CMake упало"
+              cat build-tests/CMakeFiles/CMakeError.log 2>/dev/null || true
+              tail -n 50 build-tests/CMakeFiles/CMakeOutput.log 2>/dev/null || true
+              exit 1
+            }
           cmake --build build-tests --target ProcessUtilsTest
           ctest --test-dir build-tests --output-on-failure
 
@@ -197,9 +229,51 @@ jobs:
           ctest --test-dir build-tests -C Release --output-on-failure
           if errorlevel 1 exit /b 1
 
+      # Собранные зависимости кэшируются целиком: Boost (заголовки + stage/lib
+      # под обе разрядности), установленные деревья OpenCV, исходники
+      # libgit2/libssh2 и RE-flex вместе с собранным reflex.exe. Ключ меняется
+      # только вместе с версиями зависимостей или с Build.OpenCV.bat, поэтому
+      # при обычной правке кода все шаги сборки зависимостей пропускаются.
+      - name: Кэш зависимостей
+        id: deps-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            opencv-x32
+            opencv-x64
+            boost_1_84_0/boost
+            boost_1_84_0/stage/lib
+            libgit2-1.1.0
+            libssh2-1.9.0
+            RE-flex
+          key: win-deps-ocv452-boost184-git2110-reflex301-${{ hashFiles('Build.OpenCV.bat') }}
+
+      # Платформа 1С — это гигабайты томов, а меняется редко: кэшируем по SHA
+      # ветки platform, как на Linux.
+      - name: SHA ветки platform
+        id: platform
+        shell: bash
+        run: |
+          set -e
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
+          sha=$(git ls-remote https://github.com/lintest/tools1c.git refs/heads/platform | cut -f1)
+          if [ -z "$sha" ]; then
+            echo "::error::не удалось получить SHA ветки platform"
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Кэш платформы 1С
+        id: platform-cache
+        uses: actions/cache@v4
+        with:
+          path: bin
+          key: p1c-win-${{ steps.platform.outputs.sha }}
+
       # Токен checkout-а привязан к текущему репозиторию: с ним обращения к
       # чужим публичным репозиториям отваливаются, поэтому extraheader снимаем.
       - name: Платформа 1С
+        if: steps.platform-cache.outputs.cache-hit != 'true'
         shell: cmd
         env:
           KEY_1CV8T: ${{ secrets.KEY_1CV8T }}
@@ -211,11 +285,17 @@ jobs:
           "%ProgramFiles%\7-Zip\7z.exe" x tools1c.part01.rar -p%KEY_1CV8T%
           if errorlevel 1 exit /b 1
           cd ..
-          dir /b bin\1cv8*.exe
+
+      # Проверка обязательна и при попадании в кэш: битый кэш не должен
+      # доехать до шагов конфигурации.
+      - name: Проверка платформы 1С
+        shell: cmd
+        run: dir /b bin\1cv8*.exe
 
       # RE-flex в репозитории — gitlink без .gitmodules, после checkout это
       # пустая папка. CMakeLists.txt ждёт RE-flex/bin/win64/reflex.exe.
       - name: RE-flex
+        if: steps.deps-cache.outputs.cache-hit != 'true'
         shell: bash
         run: |
           set -e
@@ -231,6 +311,7 @@ jobs:
           ls -la bin/win64
 
       - name: OpenCV 4.5.2
+        if: steps.deps-cache.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           git clone -q --branch=4.5.2 --depth=1 https://github.com/opencv/opencv.git opencv-4.5.2
@@ -241,6 +322,7 @@ jobs:
       # В appveyor.yml b2 запускался без address-model, то есть собирал только
       # 32-битные библиотеки — для x64-линковки этого мало. Здесь оба прогона.
       - name: Boost 1.84
+        if: steps.deps-cache.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           curl -sSfL -o boost_1_84_0.tar.gz https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
@@ -255,6 +337,7 @@ jobs:
           if errorlevel 1 exit /b 1
 
       - name: libgit2 и libssh2
+        if: steps.deps-cache.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           git clone -q --branch=main https://github.com/libgit2/libgit2.git libgit2-1.1.0
