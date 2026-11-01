@@ -135,7 +135,7 @@ OPENCV_INSTALL32="\
 cd opencv-4.5.2
 mkdir build32
 cd build32
-cmake $OPENCV_OPTIONS $OPENCV_INSTALL32 ..
+cmake -Wno-dev $OPENCV_OPTIONS $OPENCV_INSTALL32 ..
 cmake --build . --config Release
 cmake --build . --target install --config Release
 cd $ROOTPATH
@@ -152,7 +152,7 @@ OPENCV_INSTALL64="\
 cd opencv-4.5.2
 mkdir build64
 cd build64
-cmake $OPENCV_OPTIONS $OPENCV_INSTALL64 ..
+cmake -Wno-dev $OPENCV_OPTIONS $OPENCV_INSTALL64 ..
 cmake --build . --config Release
 cmake --build . --target install --config Release
 cd $ROOTPATH
