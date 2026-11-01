@@ -539,28 +539,25 @@ jobs:
           name: linux-addin
           path: linux-addin
 
-      # OneScript под Linux берём из ветки oscript репозитория tools1c: там
-      # deb-пакет движка и нативные модули ScriptEngine.NativeApi для Linux.
-      # Ветка oscript.w64 — это Windows-сборка, из неё oscript не извлекается.
-      # Через API GitHub не ходим: при исчерпанном лимите он отдаёт объект без
-      # поля assets, отсюда был KeyError 'assets'.
+      # OneScript 2.2.0 — self-contained сборка под .NET 8: ни Mono, ни
+      # отдельного dotnet не нужны. Ссылка собирается из фиксированной версии,
+      # а не из ответа API: при исчерпанном лимите он отдаёт объект без поля
+      # assets, отсюда был KeyError 'assets'.
       - name: Установка OneScript
+        env:
+          ONESCRIPT_VERSION: 2.2.0
         run: |
           set -e
-          git config --local --unset-all "http.https://github.com/.extraheader" || true
-          git clone -q --branch=oscript --depth=1 https://github.com/lintest/tools1c.git oscript-src
-          ls oscript-src
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq mono-runtime
-          sudo dpkg -i oscript-src/onescript-engine_1.5.0_all.deb || sudo apt-get -f install -y -qq
-          # Нативные модули NativeApi кладём рядом с движком: через них
-          # компонента 1С доступна скрипту как AddIn.
-          libdir=$(dpkg -L onescript-engine | grep 'ScriptEngine.HostedScript.dll$' | head -n 1 | xargs -r dirname)
-          [ -n "$libdir" ] || libdir=/usr/lib/onescript
-          echo "каталог движка: $libdir"
-          sudo cp oscript-src/ScriptEngine.NativeApi*.so "$libdir"/ || true
-          command -v oscript
-          oscript --version || true
+          url="https://github.com/EvilBeaver/OneScript/releases/download/v${ONESCRIPT_VERSION}/OneScript-${ONESCRIPT_VERSION}-linux-x64.zip"
+          echo "asset: $url"
+          curl -sSfL -o oscript.zip "$url"
+          mkdir -p oscript
+          unzip -q oscript.zip -d oscript
+          bin=$(find oscript -maxdepth 3 -name oscript -type f | head -n 1)
+          [ -n "$bin" ] || { echo "::error::oscript не найден в архиве"; exit 1; }
+          chmod +x "$bin"
+          dirname "$bin" >> "$GITHUB_PATH"
+          "$bin" --version
 
       - name: Прогон автотестов
         continue-on-error: true
@@ -584,20 +581,20 @@ jobs:
           pattern: vanessaext-*
           path: artifacts
 
-      # То же, что на Linux: zip из ветки oscript.w64 репозитория tools1c,
-      # без обращения к API GitHub (его лимит давал KeyError 'assets').
+      # Та же версия, что на Linux: self-contained сборка под .NET 8.
       - name: Установка OneScript
         shell: pwsh
+        env:
+          ONESCRIPT_VERSION: 2.2.0
         run: |
-          git config --local --unset-all "http.https://github.com/.extraheader"
-          if (Test-Path 'oscript-src') { Remove-Item 'oscript-src' -Recurse -Force }
-          git clone -q --branch=oscript.w64 --depth=1 https://github.com/lintest/tools1c.git oscript-src
-          $zip = Get-ChildItem oscript-src -Filter *.zip | Select-Object -First 1
-          if (-not $zip) { throw 'в ветке oscript.w64 нет zip-архива' }
-          Expand-Archive $zip.FullName -DestinationPath oscript -Force
+          $url = "https://github.com/EvilBeaver/OneScript/releases/download/v$env:ONESCRIPT_VERSION/OneScript-$env:ONESCRIPT_VERSION-win-x64.zip"
+          Write-Host "asset: $url"
+          Invoke-WebRequest $url -OutFile oscript.zip
+          Expand-Archive oscript.zip -DestinationPath oscript -Force
           $exe = Get-ChildItem oscript -Recurse -Filter oscript.exe | Select-Object -First 1
           if (-not $exe) { throw 'oscript.exe не найден в архиве' }
           $exe.DirectoryName | Out-File -Append $env:GITHUB_PATH
+          & $exe.FullName --version
 
       - name: Прогон автотестов
         continue-on-error: true
