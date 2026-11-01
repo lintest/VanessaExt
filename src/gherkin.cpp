@@ -36,10 +36,27 @@ static wchar_t lowerChar(wchar_t ch)
 static FILE* fileopen(const BoostPath& path)
 {
 #ifdef _WINDOWS
-	return _wfopen(path.wstring().c_str(), L"rb");
+	// _wfopen помечен как небезопасный (C4996): открываем через _wfopen_s.
+	FILE* file = nullptr;
+	if (_wfopen_s(&file, path.wstring().c_str(), L"rb") != 0)
+		return nullptr;
+	return file;
 #else
 	return fopen(path.string().c_str(), "rb");
 #endif
+}
+
+// Безопасный аналог localtime: на Windows это localtime_s (C4996 у localtime),
+// на остальных платформах — localtime_r.
+static struct tm localTime(const time_t& value)
+{
+	struct tm result = {};
+#ifdef _WINDOWS
+	localtime_s(&result, &value);
+#else
+	localtime_r(&value, &result);
+#endif
+	return result;
 }
 
 namespace Gherkin {
@@ -62,7 +79,8 @@ namespace Gherkin {
 			JSON js;
 			for (const auto& [key, val] : value) {
 				char buf[24];
-				strftime(buf, 20, "%Y-%m-%dT%H:%M:%S", localtime(&val.second));
+				struct tm timeinfo = localTime(val.second);
+				strftime(buf, 20, "%Y-%m-%dT%H:%M:%S", &timeinfo);
 				js.push_back(JSON({ {"file", WC2MB(key.wstring())}, {"id", val.first }, { "date", std::string(buf) } }));
 			}
 			json[key] = js;
