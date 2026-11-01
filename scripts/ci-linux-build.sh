@@ -78,7 +78,11 @@ else
 fi
 
 echo "== Boost"
-if [ ! -d boost_1_84_0 ]; then
+# Каталог boost_1_84_0 может прийти из кэша CI частично: там лежат только
+# заголовки (boost/) и собранные библиотеки (stage/lib), без bootstrap.sh и b2.
+# Поэтому проверяем наличие самого скрипта загрузки, а не каталога: tar
+# распакуется поверх и добавит недостающие файлы, не тронув stage/lib.
+if [ ! -f boost_1_84_0/bootstrap.sh ]; then
   curl -sSfL -o boost_1_84_0.tar.gz \
     https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
   tar xzf boost_1_84_0.tar.gz
