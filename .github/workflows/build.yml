@@ -559,6 +559,15 @@ jobs:
           dirname "$bin" >> "$GITHUB_PATH"
           "$bin" --version
 
+      # Диагностика NativeApi: печатает тип и содержимое того, что вернула
+      # компонента. Нужна, пока строки JSON приходят пустыми.
+      - name: Диагностика NativeApi
+        continue-on-error: true
+        run: |
+          set -e
+          unzip -o -q linux-addin/AddIn.zip -d libs
+          oscript tests/oscript/probe.os --библиотека="$(ls libs/*Lin64.so | head -n 1)"
+
       - name: Прогон автотестов
         continue-on-error: true
         run: |
@@ -595,6 +604,17 @@ jobs:
           if (-not $exe) { throw 'oscript.exe не найден в архиве' }
           $exe.DirectoryName | Out-File -Append $env:GITHUB_PATH
           & $exe.FullName --version
+
+      - name: Диагностика NativeApi
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem artifacts -Recurse -Filter AddIn.zip | Select-Object -First 1
+          if (-not $zip) { throw 'не найден AddIn.zip в артефактах' }
+          Expand-Archive $zip.FullName -DestinationPath libs -Force
+          $library = Get-ChildItem libs -Filter '*Win64.dll' | Select-Object -First 1
+          if (-not $library) { throw 'не найден VanessaExtWin64.dll' }
+          oscript tests/oscript/probe.os --библиотека=$($library.FullName)
 
       - name: Прогон автотестов
         continue-on-error: true
