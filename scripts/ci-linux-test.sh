@@ -141,7 +141,7 @@ mkdir -p "${DB}"
 [ -f "${PROJECT}.epf" ] || fail "${PROJECT}.epf не создан"
 
 # --- 6. Приёмник результатов и прогон ------------------------------------
-# Форма AppVeyor читает app_port.txt и шлёт результаты в API AppVeyor.
+# Форма AutotestRun читает app_port.txt и шлёт результаты в API AppVeyor.
 # На раннере API нет — поднимаем локальную заглушку, код 1С не меняем.
 log "Приёмник результатов тестов"
 rm -f app_port.txt success.txt

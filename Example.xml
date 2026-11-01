@@ -26,7 +26,7 @@
 		<ChildObjects>
 			<Form>Initialize</Form>
 			<Form>MainForm</Form>
-			<Form>AppVeyor</Form>
+			<Form>AutotestRun</Form>
 			<Form>RunTests</Form>
 			<Form>xUnitBDD</Form>
 			<Form>Autotests</Form>

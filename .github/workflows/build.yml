@@ -415,9 +415,10 @@ jobs:
           if errorlevel 1 exit /b 1
           dir /b %PROJECT_NAME%.epf
 
-      # Форма Example/Forms/AppVeyor при открытии читает app_port.txt и шлёт
-      # результаты в API AppVeyor. На раннере GitHub API нет — поднимаем
-      # локальный приёмник и отдаём его порт через тот же файл. Код 1С не меняем.
+      # Форма Example/Forms/AutotestRun при открытии читает app_port.txt и шлёт
+      # результаты в API AppVeyor (протокол публикации остался прежним).
+      # На раннере GitHub API нет — поднимаем локальный приёмник и отдаём его
+      # порт через тот же файл. Код 1С не меняем.
       - name: Приёмник результатов тестов
         shell: pwsh
         run: |

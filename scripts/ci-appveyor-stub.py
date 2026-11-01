@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Заглушка AppVeyor API для прогона автотестов VanessaExt в GitHub Actions.
 
-Зачем это нужно. Внешняя обработка Example/Forms/AppVeyor при открытии читает
+Зачем это нужно. Внешняя обработка Example/Forms/AutotestRun при открытии читает
 рядом с собой файл app_port.txt, поднимает HTTPСоединение на localhost с этим
 портом и отправляет туда результаты тестов (PUT /api/tests) и сообщения
 (POST /api/build/messages). Файл писал appveyor.ps1, а порт принадлежал API
