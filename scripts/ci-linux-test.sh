@@ -248,8 +248,14 @@ set +e
 # Обработка.ОткрытьТестируемуОбработку.Форма, путь к внешней обработке
 # приходит в параметре запуска. Защиту от опасных действий обработка
 # снимает сама (ОписаниеЗащитыОтОпасныхДействий), поэтому conf.cfg не нужен.
-client_args=(ENTERPRISE /LRU "/F${DB}" "/C${WORKDIR}/${PROJECT}.epf"
-	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out)
+# Запуск как в AppVeyor: обработка через /Execute, режим — в /C. /C идёт
+# последним: остаток командной строки 1С считает его значением. Раньше путь к
+# .epf передавался в /C без /Execute, и клиент зависал, не открыв форму
+# AutotestRun (trace.log не создавался вовсе). Фаза install на Linux не нужна:
+# компонента не ставится в ExtCompT, AutotestRun подключает .so синхронно по
+# прямому пути.
+client_args=(ENTERPRISE /LRU "/F${DB}" /Execute "${WORKDIR}/${PROJECT}.epf"
+	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out /C autotest)
 # GTK/WebKit нужна сессионная шина D-Bus: без неё старт клиента может
 # зависнуть на инициализации, так и не создав главное окно.
 if command -v dbus-run-session >/dev/null 2>&1; then

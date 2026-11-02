@@ -587,15 +587,35 @@ jobs:
           $base = Join-Path $PWD 'database'
           $epf = Join-Path $PWD "$env:PROJECT_NAME.epf"
 
-          # Тест запускается из конфигурации: клиент открывает
-          # Обработка.ОткрытьТестируемуОбработку.Форма, а путь к внешней
-          # обработке приходит в параметре запуска (/C). Защиту от опасных
-          # действий обработка снимает сама через ОписаниеЗащитыОтОпасныхДействий.
-          Remove-Item 'success.txt','autotest.out','autotest.log','autotest.err.log' `
+          # Схема запуска — как в appveyor.yml (там она зелёная): обработка
+          # передаётся через /Execute, режим — в /C, и /C идёт последним
+          # (остаток командной строки 1С считает его значением).
+          # Раньше путь к .epf уходил в /C без /Execute: клиент открывал
+          # Обработка.ОткрытьТестируемуОбработку.Форма, та брала путь из
+          # константы ТестируемаяОбработка (в свежей базе пустая), падала с
+          # исключением — форма AutotestRun не открывалась вовсе (trace.log
+          # отсутствовал), и клиент висел до таймаута.
+          Remove-Item 'success.txt','autotest.out','autotest.log','autotest.err.log',`
+            'autotest-install.out','autotest-install.log','autotest-install.err.log' `
             -Force -ErrorAction SilentlyContinue
+
+          # Фаза install: установка компоненты в ExtCompT, как в AppVeyor.
+          # Без неё AutotestRun подключает компоненту из бандла асинхронно.
+          $install = Start-Process -FilePath $exe -PassThru `
+            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/Execute', $epf,
+              '/DisableStartupDialogs', '/DisableStartupMessages',
+              '/Out', 'autotest-install.out', '/C', 'install') `
+            -RedirectStandardOutput 'autotest-install.log' -RedirectStandardError 'autotest-install.err.log'
+          if (-not $install.WaitForExit(300000)) {
+            $install.Kill()
+            throw 'фаза install не завершилась за 5 минут'
+          }
+          Write-Host "install: код возврата $($install.ExitCode)"
+
           $client = Start-Process -FilePath $exe -PassThru `
-            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/C', $epf,
-              '/DisableStartupDialogs', '/DisableStartupMessages', '/Out', 'autotest.out') `
+            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/Execute', $epf,
+              '/DisableStartupDialogs', '/DisableStartupMessages',
+              '/Out', 'autotest.out', '/C', 'autotest') `
             -RedirectStandardOutput 'autotest.log' -RedirectStandardError 'autotest.err.log'
 
           # Ожидание с диагностикой: молчаливый WaitForExit(600000) не даёт
