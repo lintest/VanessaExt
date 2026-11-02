@@ -587,37 +587,20 @@ jobs:
           $exe = Join-Path $PWD 'bin\1cv8ct.exe'
           $base = Join-Path $PWD 'database'
 
-          # Схема запуска (та же, что на Linux): обработка НЕ передаётся через
-          # /Execute. При /Execute платформа показывает модальный диалог
-          # «Предупреждение безопасности» до открытия формы — в журнале
-          # регистрации это _$Session$_.ExternalDataProcessorConnectError, — и
-          # на headless-раннере клиент встаёт на нём до таймаута, так и не
-          # создав trace.log. Поэтому модуль приложения по /C сам открывает
-          # обработку через ВнешниеОбработки.Создать с отключёнными
-          # предупреждениями. /C идёт последним: остаток командной строки 1С
-          # считает его значением.
+          # /Execute не используется: при нём платформа показывает модальный
+          # диалог «Предупреждение безопасности» до открытия формы (в журнале
+          # регистрации — _$Session$_.ExternalDataProcessorConnectError), и на
+          # headless-раннере клиент встаёт на нём до таймаута. Вместо этого
+          # форму открывает прослойка конфигурации: она грузит .epf через
+          # ВнешниеОбработки.Создать с отключёнными предупреждениями. /C идёт
+          # последним: остаток командной строки 1С считает его значением.
           Remove-Item 'success.txt','autotest.out','autotest.log','prepare.out',`
             'autotest-install.out' -Force -ErrorAction SilentlyContinue
-
-          # Фаза prepare: пользователь CI + отключение предупреждений о загрузке
-          # внешнего кода в самой базе.
-          $prepare = Start-Process -FilePath $exe -PassThru `
-            -ArgumentList @('ENTERPRISE', '/F', $base,
-              '/DisableStartupDialogs', '/DisableStartupMessages',
-              '/Out', 'prepare.out', '/C', 'prepare')
-          if (-not $prepare.WaitForExit(300000)) {
-            Write-Host '::warning::фаза prepare не завершилась за 5 минут, продолжаю'
-            $prepare.Kill()
-          }
-          else {
-            Write-Host "prepare: код возврата $($prepare.ExitCode)"
-            Get-Content 'prepare.out' -ErrorAction SilentlyContinue
-          }
 
           # Фаза install: предустановка компоненты в ExtCompT. Не критична —
           # AutotestRun подключает компоненту и сама.
           $install = Start-Process -FilePath $exe -PassThru `
-            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/N', 'CI',
+            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base,
               '/DisableStartupDialogs', '/DisableStartupMessages',
               '/Out', 'autotest-install.out', '/C', 'install')
           if (-not $install.WaitForExit(180000)) {
@@ -636,7 +619,7 @@ jobs:
           # Тот же запуск без редиректов: у 1cv8ct.exe нет stdout, а открытый
           # pipe не даёт Start-Process увидеть завершение процесса.
           $client = Start-Process -FilePath $exe -PassThru `
-            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/N', 'CI',
+            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base,
               '/DisableStartupDialogs', '/DisableStartupMessages',
               '/Out', 'autotest.out', '/C', 'autotest')
 
