@@ -601,22 +601,35 @@ jobs:
 
           # Фаза install: установка компоненты в ExtCompT, как в AppVeyor.
           # Без неё AutotestRun подключает компоненту из бандла асинхронно.
+          #
+          # Запуск БЕЗ -RedirectStandardOutput/-RedirectStandardError: это
+          # GUI-приложение, у него нет stdout, а редирект заставляет
+          # PowerShell держать pipe открытым до завершения всех потомков —
+          # в прогоне 49 install висел ровно до таймаута на пустом логе.
+          # В AppVeyor (там зелёно) вызов идёт напрямую из cmd, без редиректа,
+          # а лог платформы пишется по /Out.
           $install = Start-Process -FilePath $exe -PassThru `
             -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/Execute', $epf,
               '/DisableStartupDialogs', '/DisableStartupMessages',
-              '/Out', 'autotest-install.out', '/C', 'install') `
-            -RedirectStandardOutput 'autotest-install.log' -RedirectStandardError 'autotest-install.err.log'
-          if (-not $install.WaitForExit(300000)) {
+              '/Out', 'autotest-install.out', '/C', 'install')
+          if (-not $install.WaitForExit(180000)) {
+            Write-Host '--- фаза install не завершилась за 3 минуты, снимаю дамп ---'
+            Get-Process -Name '1cv8*' -ErrorAction SilentlyContinue | ForEach-Object {
+              Write-Host ("   {0} pid={1} окно='{2}'" -f $_.ProcessName, $_.Id, $_.MainWindowTitle)
+            }
+            Get-Content 'autotest-install.out' -Tail 40 -ErrorAction SilentlyContinue
             $install.Kill()
-            throw 'фаза install не завершилась за 5 минут'
+            throw 'фаза install не завершилась за 3 минуты'
           }
           Write-Host "install: код возврата $($install.ExitCode)"
+          Get-Content 'autotest-install.out' -ErrorAction SilentlyContinue
 
+          # Тот же запуск без редиректов: у 1cv8ct.exe нет stdout, а открытый
+          # pipe не даёт Start-Process увидеть завершение процесса.
           $client = Start-Process -FilePath $exe -PassThru `
             -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/Execute', $epf,
               '/DisableStartupDialogs', '/DisableStartupMessages',
-              '/Out', 'autotest.out', '/C', 'autotest') `
-            -RedirectStandardOutput 'autotest.log' -RedirectStandardError 'autotest.err.log'
+              '/Out', 'autotest.out', '/C', 'autotest')
 
           # Ожидание с диагностикой: молчаливый WaitForExit(600000) не даёт
           # понять, что происходит, пока клиент висит. Раз в 30 с печатаем
@@ -684,21 +697,53 @@ jobs:
           Get-Content 'stub.log' -ErrorAction SilentlyContinue | Select-Object -Last 40
           Get-Content 'tests-report.log' -ErrorAction SilentlyContinue
 
-      - name: Выгрузка артефактов
+      # Артефакты раздельные, как в appveyor.yml (artifacts: AddIn.zip,
+      # VanessaExt.epf, Debug.zip): из AppVeyor их скачивали по отдельности, и
+      # один общий zip с ними внутри ломал привычный путь. Имена оставлены с
+      # расширениями — так они и выглядят в списке артефактов прогона.
+      - name: Выгрузка AddIn.zip
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: vanessaext-${{ needs.linux.outputs.version }}
+          name: AddIn.zip
+          if-no-files-found: warn
+          path: AddIn.zip
+
+      # .debug приходят из Linux-артефакта и есть не всегда (нужен eu-strip),
+      # поэтому для Debug.zip отсутствие файлов — предупреждение, а не ошибка.
+      - name: Выгрузка Debug.zip
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Debug.zip
+          if-no-files-found: warn
+          path: Debug.zip
+
+      - name: Выгрузка внешней обработки
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT_NAME }}.epf
+          if-no-files-found: warn
+          path: ${{ env.PROJECT_NAME }}.epf
+
+      # Логи — отдельным артефактом: они нужны только при разборе падений и не
+      # должны смешиваться с тем, что публикуется в релиз.
+      - name: Выгрузка логов
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-logs
           if-no-files-found: warn
           path: |
-            AddIn.zip
-            Debug.zip
-            ${{ env.PROJECT_NAME }}.epf
             tests-report.json
             tests-report.log
             stub.log
+            autotest.log
+            autotest.err.log
+            autotest.out
             autotest-install.log
-            autotest-autotest.log
+            autotest-install.out
             example.log
 
       # outcome проверяется явно: шаг автотеста неблокирующий, поэтому success()
@@ -785,7 +830,7 @@ jobs:
       - name: Забрать артефакт сборки
         uses: actions/download-artifact@v4
         with:
-          pattern: vanessaext-*
+          name: AddIn.zip
           path: artifacts
 
       # Та же версия, что на Linux: self-contained сборка под .NET 8.
