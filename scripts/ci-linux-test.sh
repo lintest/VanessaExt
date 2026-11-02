@@ -37,6 +37,19 @@ fail() {
 	exit 1
 }
 
+# Печать многострочного текста одной аннотацией GitHub Actions. Логи шага и
+# артефакты видны только владельцу репозитория, а аннотации check-run отдаются
+# публичным API — поэтому ключевую диагностику дублируем сюда. Переводы строк
+# и проценты экранируются по правилам workflow-команд.
+annotate() {
+	local level="$1"
+	local text="$2"
+	text="${text//'%'/%25}"
+	text="${text//$'\r'/}"
+	text="${text//$'\n'/%0A}"
+	echo "::${level}::${text:0:6000}"
+}
+
 cd "${WORKDIR}"
 
 # --- 1. Зависимости -------------------------------------------------------
@@ -240,6 +253,14 @@ set -e
 log "код возврата клиента: ${rc}"
 
 if [ ! -f success.txt ]; then
+	# Короткая сводка в аннотацию: логи шага и артефакты доступны только
+	# владельцу репозитория, поэтому без этого шага причина видна лишь ему.
+	annotate error "linux-test: тесты не прошли (rc=${rc}).
+маркеры trace.log:
+$(cat trace.log 2>/dev/null || echo 'нет trace.log')
+ldd:
+$(grep -E 'not found' addin-ldd.txt 2>/dev/null || echo 'неразрешённых зависимостей нет')
+реестр: $(head -c 300 "${HOME}/.1cv8t/1C/1cv8t/ExtCompT/registry.xml" 2>/dev/null || echo 'нет registry.xml')"
 	echo "--- код возврата клиента: ${rc} (124 = сработал timeout, значит завис) ---"
 	echo '--- размеры логов ---'
 	wc -c autotest.log autotest.out 2>/dev/null || true
@@ -290,4 +311,5 @@ if [ ! -f success.txt ]; then
 fi
 
 log "Автотест пройден"
+annotate notice "linux-test: тесты пройдены, библиотека $(cat addin_path.txt 2>/dev/null)"
 cat tests-report.log 2>/dev/null || true
