@@ -41,7 +41,9 @@ cd "${WORKDIR}"
 
 # --- 1. Зависимости -------------------------------------------------------
 log "Зависимости"
-sudo apt-get update -qq
+# Вывод apt подавлен: он занимает десятки тысяч строк и вытесняет из лога
+# шага то, ради чего лог читают, — хвост с логами платформы 1С при падении.
+sudo apt-get update -qq >/dev/null
 sudo apt-get install -y -qq --no-install-recommends \
 	p7zip-full xvfb x11-utils openbox \
 	libwebkit2gtk-4.0-37 libjavascriptcoregtk-4.0-18 libsoup2.4-1 \
@@ -49,7 +51,7 @@ sudo apt-get install -y -qq --no-install-recommends \
 	libnss3 libxext6 libsm6 libice6 libfreetype6 libfontconfig1 \
 	libdbus-1-3 libasound2 libxslt1.1 libxfixes3 libxcursor1 \
 	libxrandr2 libcups2 libpango-1.0-0 libcairo2 libgbm1 libpng16-16 \
-	locales fonts-dejavu-core zip dbus dbus-x11
+	locales fonts-dejavu-core zip dbus dbus-x11 >/dev/null
 
 # Кириллица в сообщениях тестов: без локали 1С падает на выводе.
 sudo locale-gen ru_RU.UTF-8 >/dev/null 2>&1 || true
@@ -198,7 +200,7 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 	waited=$((waited + 10))
 	if [ $((waited % 30)) -eq 0 ]; then
 		log "ожидание ${waited} с, строк в дереве окон: $(xwininfo -root -tree 2>/dev/null | wc -l)"
-		xwininfo -root -tree 2>/dev/null | sed -n '1,25p' | sed 's/^/    /'
+		xwininfo -root -tree 2>/dev/null | sed -n '1,12p' | sed 's/^/    /'
 		echo '    --- autotest.log (stdout клиента) ---'
 		tail -n 20 autotest.log 2>/dev/null | sed 's/^/    /'
 		echo '    --- autotest.out (журнал клиента) ---'
