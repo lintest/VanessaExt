@@ -287,6 +287,8 @@ jobs:
             autotest.err.log
             autotest.out
             trace.log
+            addin_path.txt
+            addin-ldd.txt
             platform-logs
             example.log
             stub.log

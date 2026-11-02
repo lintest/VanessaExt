@@ -51,7 +51,7 @@ sudo apt-get install -y -qq --no-install-recommends \
 	libnss3 libxext6 libsm6 libice6 libfreetype6 libfontconfig1 \
 	libdbus-1-3 libasound2 libxslt1.1 libxfixes3 libxcursor1 \
 	libxrandr2 libcups2 libpango-1.0-0 libcairo2 libgbm1 libpng16-16 \
-	locales fonts-dejavu-core zip dbus dbus-x11 >/dev/null
+	locales fonts-dejavu-core zip unzip dbus dbus-x11 >/dev/null
 
 # Кириллица в сообщениях тестов: без локали 1С падает на выводе.
 sudo locale-gen ru_RU.UTF-8 >/dev/null 2>&1 || true
@@ -131,6 +131,34 @@ cp "${ADDIN_ZIP}" "Example/Templates/${PROJECT}/Ext/Template.bin"
 rm -f keywords.zip
 zip -q -X -j keywords.zip keywords.json
 cp keywords.zip "Example/Templates/Keywords/Ext/Template.bin"
+
+# Библиотеку распаковываем рядом с обработкой и отдаём форме её путь.
+# Подключение из бандла (макета) под Linux виснет: платформа не доводит
+# установку до ExtCompT/registry.xml и не вызывает оповещение ни для адреса
+# хранилища, ни для пути к zip — клиент стоит до таймаута. Прямой путь к .so
+# разбор бандла не требует, поэтому форма AutotestRun предпочитает его, если
+# рядом с .epf лежит addin_path.txt.
+log "Распаковка библиотеки"
+rm -rf addin && mkdir -p addin
+unzip -o -q "${ADDIN_ZIP}" -d addin
+# -quit вместо "| head -n 1": под pipefail head закрывает поток, find получает
+# SIGPIPE, и весь скрипт падал бы на пустом месте.
+so=$(find addin -maxdepth 1 -name '*Lin64*.so' -print -quit)
+[ -n "${so}" ] || so=$(find addin -maxdepth 1 -name '*Lin32*.so' -print -quit)
+[ -n "${so}" ] || fail "в ${ADDIN_ZIP} нет Linux-библиотеки (Lin64/Lin32)"
+# Путь абсолютный: клиент запускается с другим рабочим каталогом.
+printf '%s' "$(cd "$(dirname "${so}")" && pwd)/$(basename "${so}")" > addin_path.txt
+log "библиотека: $(cat addin_path.txt)"
+ls -la addin
+
+# Зависимости библиотеки: если dlopen не сможет их разрешить, платформа
+# отчитается о неудаче подключения без подробностей. ldd показывает причину
+# сразу — «not found» рядом с конкретной библиотекой.
+log "Зависимости библиотеки"
+ldd "${so}" 2>&1 | tee addin-ldd.txt || true
+if grep -q 'not found' addin-ldd.txt; then
+	echo "::warning::у ${so} не разрешаются зависимости (см. ldd выше)"
+fi
 
 # --- 5. База, конфигурация и .epf ----------------------------------------
 log "База и .epf"
