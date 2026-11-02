@@ -135,25 +135,14 @@ export WEBKIT_DISABLE_COMPOSITING_MODE=1
 export GDK_BACKEND=x11
 
 # --- 3a. Защита от опасных действий --------------------------------------
-# Диалог «Разрешить открывать данный файл?» в неинтерактивном прогоне
-# подтверждать некому: клиент показывает модальное окно и стоит, а оповещение
-# асинхронного подключения внешней компоненты не приходит. Снимаем защиту
-# через conf.cfg уровня установки и пользовательского каталога (на Windows то
-# же делает параметр /DisableUnsafeActionProtection в ярлыке). Локальный
-# conf.cfg каталога версии содержит ConfLocation — его только дополняем,
-# иначе платформа потеряет путь к общему конфигу.
-log "conf.cfg: DisableUnsafeActionProtection"
-for conf_dir in /opt/1cv8t/conf /opt/1cv8/conf "${HOME}/.1cv8t/1C/1cv8t/conf"; do
-	sudo mkdir -p "${conf_dir}"
-	printf 'SystemLanguage=System\nDisableUnsafeActionProtection=.*\n' |
-		sudo tee "${conf_dir}/conf.cfg" > /dev/null
-	log "  ${conf_dir}/conf.cfg: $(sudo cat "${conf_dir}/conf.cfg" | tr '\n' ' ')"
-done
-for conf_file in /opt/1cv8t/x86_64/*/conf/conf.cfg; do
-	[ -f "${conf_file}" ] || continue
-	sudo grep -q 'DisableUnsafeActionProtection' "${conf_file}" ||
-		printf 'DisableUnsafeActionProtection=.*\n' | sudo tee -a "${conf_file}" > /dev/null
-done
+# Ничего не настраиваем: диалог «Разрешить открывать данный файл?» снимается
+# программно при загрузке обработки — форма ОткрытьТестируемуОбработку создаёт
+# её через ВнешниеОбработки.Создать с ОписаниеЗащитыОтОпасныхДействий
+# (ПредупреждатьОбОпасныхДействиях = Ложь), поэтому подтверждать нечего и
+# conf.cfg с DisableUnsafeActionProtection не нужен.
+# Трогать conf.cfg нельзя: запись в /opt/1cv8t/conf/conf.cfg роняла
+# LoadConfigFromFiles — платформа не принимала конфигурацию ещё до запуска
+# клиента (прогон 41500778578 упал на шаге «База и .epf»).
 
 # --- 4. Макеты внешней обработки -----------------------------------------
 log "Макеты"
@@ -202,16 +191,34 @@ fi
 log "База и .epf"
 rm -rf "${DB}" "${PROJECT}.epf"
 mkdir -p "${DB}"
-"${bin}" CREATEINFOBASE "File=${DB}" \
-	/DisableStartupDialogs /DisableStartupMessages >/dev/null 2>&1 \
-	|| fail "CREATEINFOBASE"
-"${bin}" DESIGNER "/F${DB}" /LoadConfigFromFiles "${WORKDIR}/Config" /UpdateDBCfg \
-	/DisableStartupDialogs /DisableStartupMessages >/dev/null 2>&1 \
-	|| fail "LoadConfigFromFiles"
-"${bin}" DESIGNER "/F${DB}" \
+
+# Каждый вызов конфигуратора под timeout и со своим логом. Раньше вывод уходил
+# в /dev/null, а fail сообщал только имя команды: по прогону 41500778578 было
+# видно «LoadConfigFromFiles», но не причину, и разбор требовал нового прогона.
+# timeout нужен отдельно: встретив диалог, конфигуратор стоит до таймаута шага.
+run_designer() {
+	local name="$1"
+	shift
+	local log_file="designer-${name}.log"
+	set +e
+	timeout -k 10 420 "$@" > "${log_file}" 2>&1
+	local rc=$?
+	set -e
+	log "  ${name}: rc=${rc}, лог ${log_file}"
+	if [ "${rc}" -ne 0 ] || [ -s "${log_file}" ]; then
+		tail -n 20 "${log_file}" 2>/dev/null || true
+	fi
+	[ "${rc}" -eq 0 ] || fail "${name} (rc=${rc}, см. ${log_file})"
+}
+
+run_designer CREATEINFOBASE "${bin}" CREATEINFOBASE "File=${DB}" \
+	/DisableStartupDialogs /DisableStartupMessages
+run_designer LoadConfigFromFiles "${bin}" DESIGNER "/F${DB}" \
+	/LoadConfigFromFiles "${WORKDIR}/Config" /UpdateDBCfg \
+	/DisableStartupDialogs /DisableStartupMessages
+run_designer LoadExternalDataProcessor "${bin}" DESIGNER "/F${DB}" \
 	/LoadExternalDataProcessorOrReportFromFiles "${WORKDIR}/Example.xml" "${WORKDIR}/${PROJECT}.epf" \
-	/Out example.log /DisableStartupDialogs /DisableStartupMessages \
-	|| fail "LoadExternalDataProcessorOrReportFromFiles (см. example.log)"
+	/Out example.log /DisableStartupDialogs /DisableStartupMessages
 [ -f "${PROJECT}.epf" ] || fail "${PROJECT}.epf не создан"
 
 # --- 6. Приёмник результатов и прогон ------------------------------------
@@ -251,7 +258,10 @@ else
 	log "предупреждение: dbus-run-session не найден, запускаю напрямую"
 	run_prefix=()
 fi
-"${run_prefix[@]}" timeout -k 10 300 "${client}" "${client_args[@]}" > autotest.log 2>&1 &
+# 900 с, а не 300: полный набор тестов включает проверки управления окнами и
+# на медленном раннере не укладывается в пять минут — таймаут обрывал прогон
+# уже после успешного подключения компоненты (rc=124 при живом клиенте).
+"${run_prefix[@]}" timeout -k 10 900 "${client}" "${client_args[@]}" > autotest.log 2>&1 &
 client_pid=$!
 
 # Пока клиент работает, раз в 30 с печатаем дерево окон. Если он встал на
