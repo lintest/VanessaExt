@@ -199,24 +199,11 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 	sleep 10
 	waited=$((waited + 10))
 	if [ $((waited % 30)) -eq 0 ]; then
-		log "ожидание ${waited} с, строк в дереве окон: $(xwininfo -root -tree 2>/dev/null | wc -l)"
-		xwininfo -root -tree 2>/dev/null | sed -n '1,12p' | sed 's/^/    /'
-		echo '    --- autotest.log (stdout клиента) ---'
-		tail -n 20 autotest.log 2>/dev/null | sed 's/^/    /'
-		echo '    --- autotest.out (журнал клиента) ---'
-		tail -n 10 autotest.out 2>/dev/null | sed 's/^/    /'
-		# Собственный лог платформы: клиент держит его открытым (видно в /proc/PID/fd),
-		# и именно туда 1С пишет причины, не попадающие ни в stdout, ни в /Out.
-		for platform_log in $(ls -t "${HOME}"/.1cv8t/1C/1cv8t/logs/*/*.log 2>/dev/null | head -n 2); do
-			echo "    --- ${platform_log} ---"
-			tail -n 20 "${platform_log}" 2>/dev/null | sed 's/^/    /'
-		done
-		echo '    --- состояние процесса ---'
-		ps -o pid,stat,pcpu,etime,args -C "$(basename "${client}")" 2>/dev/null | sed 's/^/    /'
-		for p in $(pgrep -f "$(basename "${client}")" 2>/dev/null || true); do
-			echo "    wchan(${p}): $(cat "/proc/${p}/wchan" 2>/dev/null)"
-			ls -l "/proc/${p}/fd" 2>/dev/null | tail -n 8 | sed 's/^/    /'
-		done
+		# Одна строка на итерацию: подробности печатаются один раз при падении.
+		# Иначе десять итераций по 60 строк вытесняют из лога шага сам дамп.
+		windows=$(xwininfo -root -tree 2>/dev/null | wc -l)
+		cpu=$(ps -o pcpu= -C "$(basename "${client}")" 2>/dev/null | tr -d ' ' | head -n 1)
+		log "ожидание ${waited} с: строк в дереве окон ${windows}, cpu ${cpu:-?}, autotest.out $(wc -c < autotest.out 2>/dev/null || echo 0) байт"
 	fi
 done
 wait "${client_pid}"
