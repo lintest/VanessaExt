@@ -113,7 +113,22 @@ fi
 echo "== version.h"
 BUILD_VERSION="${BUILD_VERSION:-${APPVEYOR_BUILD_VERSION:-0.0.0}}"
 echo "сборка ${BUILD_VERSION}"
-echo "#define VERSION_FULL \"${BUILD_VERSION}\"" > version.h
+# Формат ровно как у manifest.ps1: значение БЕЗ кавычек и полный набор
+# макросов. AddInNative::version() возвращает STRINGIZE(VERSION_FULL), то есть
+# подставляет значение как есть; с кавычками в определении компонента отдавала
+# бы "1.4.0.42" вместе с кавычками, а на Windows — 1.4.0.42. Набор макросов
+# держим одинаковым с manifest.ps1, иначе version.h зависит от того, какой job
+# собрал библиотеку.
+IFS='.' read -r V1 V2 V3 V4 <<< "${BUILD_VERSION}"
+cat > version.h <<EOF
+#define VER_FILENAME VanessaExt
+#define VERSION_FULL ${BUILD_VERSION}
+#define VERSION_MAJOR     ${V1:-0}
+#define VERSION_MINOR     ${V2:-0}
+#define VERSION_REVISION  ${V3:-0}
+#define VERSION_BUILD     ${V4:-0}
+EOF
+cat version.h
 
 build() {
   local address_model="$1"
