@@ -203,7 +203,7 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 		# Иначе десять итераций по 60 строк вытесняют из лога шага сам дамп.
 		windows=$(xwininfo -root -tree 2>/dev/null | wc -l)
 		cpu=$(ps -o pcpu= -C "$(basename "${client}")" 2>/dev/null | tr -d ' ' | head -n 1)
-		log "ожидание ${waited} с: строк в дереве окон ${windows}, cpu ${cpu:-?}, autotest.out $(wc -c < autotest.out 2>/dev/null || echo 0) байт"
+		log "ожидание ${waited} с: строк в дереве окон ${windows}, cpu ${cpu:-?}, autotest.out $(wc -c < autotest.out 2>/dev/null || echo 0) байт, trace: $(tail -n 1 trace.log 2>/dev/null || echo нет)"
 	fi
 done
 wait "${client_pid}"
@@ -221,6 +221,8 @@ if [ ! -f success.txt ]; then
 	tail -n 60 autotest.log 2>/dev/null || true
 	echo '--- autotest.out ---'
 	tail -n 20 autotest.out 2>/dev/null || true
+	echo '--- маркеры выполнения (trace.log) ---'
+	cat trace.log 2>/dev/null || echo 'нет trace.log'
 	# Лог самой платформы: клиент держит его открытым, но в консоль он не попадает.
 	# Копируем целиком в артефакты и печатаем хвосты.
 	mkdir -p platform-logs
