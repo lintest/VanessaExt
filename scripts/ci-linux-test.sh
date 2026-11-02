@@ -244,8 +244,18 @@ if [ ! -f success.txt ]; then
 	xwininfo -root -tree 2>/dev/null || true
 	echo '--- домашний каталог 1С ---'
 	find "${HOME}/.1cv8t" -maxdepth 4 2>/dev/null | head -n 50 || true
-	echo '--- журнал регистрации базы ---'
-	ls -la "${DB}/1Cv8Log" 2>/dev/null || true
+	# ExtCompT/registry.xml — реестр внешних компонент: видно, дошла ли платформа
+	# до установки компоненты из макета и что она про неё записала.
+	echo '--- реестр внешних компонент ---'
+	cat "${HOME}/.1cv8t/1C/1cv8t/ExtCompT/registry.xml" 2>/dev/null || echo 'нет registry.xml'
+	echo '--- example.log (сборка .epf) ---'
+	cat example.log 2>/dev/null || echo 'нет example.log'
+	echo '--- журнал регистрации базы (текстовые строки) ---'
+	for lgf in "${DB}"/1Cv8Log/*.lgp "${DB}"/1Cv8Log/*.lgf; do
+		[ -f "${lgf}" ] || continue
+		echo "=== ${lgf} ==="
+		strings "${lgf}" 2>/dev/null | tail -n 40 || true
+	done
 	fail "автотест не дошёл до конца: success.txt не создан"
 fi
 
