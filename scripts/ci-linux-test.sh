@@ -152,8 +152,12 @@ cp keywords.zip "Example/Templates/Keywords/Ext/Template.bin"
 # разбор бандла не требует, поэтому форма AutotestRun предпочитает его, если
 # рядом с .epf лежит addin_path.txt.
 log "Распаковка библиотеки"
+# Распаковываем и в подкаталог addin, и в корень: форма ищет библиотеку по
+# маске сначала в addin/, потом рядом с обработкой. Оба варианта дешёвые, а
+# маска в корне дополнительно страхует от расхождения в структуре архива.
 rm -rf addin && mkdir -p addin
 unzip -o -q "${ADDIN_ZIP}" -d addin
+unzip -o -q "${ADDIN_ZIP}" -d .
 # -quit вместо "| head -n 1": под pipefail head закрывает поток, find получает
 # SIGPIPE, и весь скрипт падал бы на пустом месте.
 so=$(find addin -maxdepth 1 -name '*Lin64*.so' -print -quit)
