@@ -317,6 +317,7 @@ jobs:
             autotest.log
             autotest.err.log
             autotest.out
+            prepare.out
             trace.log
             addin_path.txt
             addin-ldd.txt
@@ -585,39 +586,41 @@ jobs:
         run: |
           $exe = Join-Path $PWD 'bin\1cv8ct.exe'
           $base = Join-Path $PWD 'database'
-          $epf = Join-Path $PWD "$env:PROJECT_NAME.epf"
 
-          # Схема запуска — как в appveyor.yml (там она зелёная): обработка
-          # передаётся через /Execute, режим — в /C, и /C идёт последним
-          # (остаток командной строки 1С считает его значением).
-          # Раньше путь к .epf уходил в /C без /Execute: клиент открывал
-          # Обработка.ОткрытьТестируемуОбработку.Форма, та брала путь из
-          # константы ТестируемаяОбработка (в свежей базе пустая), падала с
-          # исключением — форма AutotestRun не открывалась вовсе (trace.log
-          # отсутствовал), и клиент висел до таймаута.
-          Remove-Item 'success.txt','autotest.out','autotest.log','autotest.err.log',`
-            'autotest-install.out','autotest-install.log','autotest-install.err.log' `
-            -Force -ErrorAction SilentlyContinue
+          # Схема запуска (та же, что на Linux): обработка НЕ передаётся через
+          # /Execute. При /Execute платформа показывает модальный диалог
+          # «Предупреждение безопасности» до открытия формы — в журнале
+          # регистрации это _$Session$_.ExternalDataProcessorConnectError, — и
+          # на headless-раннере клиент встаёт на нём до таймаута, так и не
+          # создав trace.log. Поэтому модуль приложения по /C сам открывает
+          # обработку через ВнешниеОбработки.Создать с отключёнными
+          # предупреждениями. /C идёт последним: остаток командной строки 1С
+          # считает его значением.
+          Remove-Item 'success.txt','autotest.out','autotest.log','prepare.out',`
+            'autotest-install.out' -Force -ErrorAction SilentlyContinue
 
-          # Фаза install: установка компоненты в ExtCompT, как в AppVeyor.
-          # Без неё AutotestRun подключает компоненту из бандла асинхронно.
-          #
-          # Запуск БЕЗ -RedirectStandardOutput/-RedirectStandardError: это
-          # GUI-приложение, у него нет stdout, а редирект заставляет
-          # PowerShell держать pipe открытым до завершения всех потомков —
-          # в прогоне 49 install висел ровно до таймаута на пустом логе.
-          # В AppVeyor (там зелёно) вызов идёт напрямую из cmd, без редиректа,
-          # а лог платформы пишется по /Out.
+          # Фаза prepare: пользователь CI + отключение предупреждений о загрузке
+          # внешнего кода в самой базе.
+          $prepare = Start-Process -FilePath $exe -PassThru `
+            -ArgumentList @('ENTERPRISE', '/F', $base,
+              '/DisableStartupDialogs', '/DisableStartupMessages',
+              '/Out', 'prepare.out', '/C', 'prepare')
+          if (-not $prepare.WaitForExit(300000)) {
+            Write-Host '::warning::фаза prepare не завершилась за 5 минут, продолжаю'
+            $prepare.Kill()
+          }
+          else {
+            Write-Host "prepare: код возврата $($prepare.ExitCode)"
+            Get-Content 'prepare.out' -ErrorAction SilentlyContinue
+          }
+
+          # Фаза install: предустановка компоненты в ExtCompT. Не критична —
+          # AutotestRun подключает компоненту и сама.
           $install = Start-Process -FilePath $exe -PassThru `
-            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/Execute', $epf,
+            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/N', 'CI',
               '/DisableStartupDialogs', '/DisableStartupMessages',
               '/Out', 'autotest-install.out', '/C', 'install')
           if (-not $install.WaitForExit(180000)) {
-            # Фаза install — только предустановка компоненты в ExtCompT. Если
-            # клиент на ней встал, это не повод не пускать сами тесты:
-            # AutotestRun подключает компоненту из бандла сама (в AppVeyor
-            # install занимает 5 с, но там интерактивная сессия). Раньше throw
-            # здесь отменял фазу autotest целиком, и тесты не стартовали вовсе.
             Write-Host '::warning::фаза install не завершилась за 3 минуты, продолжаю без предустановки'
             Get-Process -Name '1cv8*' -ErrorAction SilentlyContinue | ForEach-Object {
               Write-Host ("   {0} pid={1} окно='{2}'" -f $_.ProcessName, $_.Id, $_.MainWindowTitle)
@@ -633,7 +636,7 @@ jobs:
           # Тот же запуск без редиректов: у 1cv8ct.exe нет stdout, а открытый
           # pipe не даёт Start-Process увидеть завершение процесса.
           $client = Start-Process -FilePath $exe -PassThru `
-            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/Execute', $epf,
+            -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base, '/N', 'CI',
               '/DisableStartupDialogs', '/DisableStartupMessages',
               '/Out', 'autotest.out', '/C', 'autotest')
 
