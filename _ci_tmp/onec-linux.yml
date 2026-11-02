@@ -1,0 +1,273 @@
+name: onec-linux
+
+# Эксперимент: запустить клиент 1С на ubuntu-раннере и прогнать в нём автотест.
+# Пока это разведка: скачать платформу, распаковать, посмотреть структуру и
+# проверить, что бинарь вообще стартует под Xvfb.
+
+on:
+  push:
+    branches: [onec-linux, onec-no-execute]
+  workflow_dispatch:
+
+jobs:
+  platform:
+    # Платформа собрана под WebKitGTK 4.0 (libwebkit2gtk-4.0.so.37,
+    # libjavascriptcoregtk-4.0.so.18, libsoup-2.4.so.1). В 24.04 их нет —
+    # там 4.1 и libsoup3, поэтому берём 22.04.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Зависимости
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            p7zip-full xvfb x11-utils \
+            libwebkit2gtk-4.0-37 libjavascriptcoregtk-4.0-18 libsoup2.4-1 \
+            libglu1-mesa libgtk-3-0 libxtst6 libxrender1 libxi6 libglib2.0-0 \
+            libnss3 libxext6 libsm6 libice6 libfreetype6 libfontconfig1 \
+            libdbus-1-3 libasound2 libxslt1.1 libxfixes3 libxcursor1 \
+            libxrandr2 libcups2 libpango-1.0-0 libcairo2 libgbm1
+
+      - name: Resolve platform version
+        id: platform
+        run: |
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
+          sha=$(git ls-remote https://github.com/lintest/tools1c.git refs/heads/platform-linux | cut -f1)
+          if [ -z "$sha" ]; then echo 'ERROR: cannot resolve platform-linux'; exit 1; fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "::notice::platform-linux sha=$sha"
+
+      - name: Кэш платформы
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/1c
+          key: p1c-linux-${{ steps.platform.outputs.sha }}
+
+      - name: Скачать и распаковать
+        if: steps.cache.outputs.cache-hit != 'true'
+        env:
+          KEY_1CV8T: ${{ secrets.KEY_1CV8T }}
+        run: |
+          mkdir -p ~/1c/dist
+          cd ~/1c/dist
+          base=https://raw.githubusercontent.com/lintest/tools1c/platform-linux
+          for i in $(seq -w 1 17); do
+            curl -fsSL -O "$base/linux1c.7z.0$i" || echo "curl failed on $i"
+          done
+          ls -la
+          df -h /
+          # Архив учебной поставки зашифрован: 7z спрашивает пароль и без него
+          # не отдаёт ни одного файла. Пробуем без пароля, затем с секретом —
+          # так же, как это делает build.yml на Windows.
+          if 7z x -y linux1c.7z.001 > extract.log 2>&1; then
+            echo '::notice::распаковано без пароля'
+          else
+            echo '::notice::без пароля не вышло, пробую KEY_1CV8T'
+            7z x -y -p"$KEY_1CV8T" linux1c.7z.001 > extract.log 2>&1 || true
+          fi
+          tail -15 extract.log
+          echo "::notice::верхний уровень: $(ls | grep -v 'linux1c.7z' | head -10 | tr '\n' ' ')"
+          echo "::notice::размер: $(du -sh . | cut -f1)"
+          rm -f linux1c.7z.* extract.log
+
+      - name: Что внутри
+        if: always()
+        run: |
+          echo '--- каталоги (2 уровня) ---'
+          find ~/1c/dist -maxdepth 2 -type d | head -40
+          echo '--- пакеты ---'
+          find ~/1c/dist -maxdepth 4 \( -name '*.deb' -o -name '*.rpm' -o -name '*.run' \) | head -40
+          echo '--- исполняемые 1c ---'
+          find ~/1c/dist -maxdepth 6 -name '1cv8*' -type f | head -40
+          # Аннотации прогона читаются без токена, а лог шага — нет. Поэтому
+          # главное выносим в ::notice::, чтобы разбор не зависел от доступа к логам.
+          echo "::notice::верхний уровень: $(ls ~/1c/dist | tr '\n' ' ')"
+          echo "::notice::каталоги: $(find ~/1c/dist -maxdepth 2 -type d | head -12 | tr '\n' ' ')"
+          echo "::notice::бинарники: $(find ~/1c/dist -maxdepth 6 -name '1cv8*' -type f | head -12 | tr '\n' ' ')"
+          echo "::notice::размер: $(du -sh ~/1c/dist | cut -f1)"
+
+      - name: Установка
+        run: |
+          run=$(ls ~/1c/dist/*.run 2>/dev/null | head -1)
+          if [ -z "$run" ]; then
+            echo '::error::установщик .run не найден'
+            exit 1
+          fi
+          echo "установщик: $run"
+          chmod +x "$run"
+          echo "::notice::help: $("$run" --help 2>&1 | head -60 | tr '\n' ' ')"
+          echo "::notice::version: $("$run" --version 2>&1 | head -3 | tr '\n' ' ')"
+          # По умолчанию установщик ставит client_full,ws,langs,en,ru.
+          set +e
+          out=$(sudo "$run" --mode unattended --unattendedmodeui none \
+                  --enable-components client_full,ws,ru --debuglevel 4 2>&1)
+          rc=$?
+          set -e
+          echo "$out" | tail -40
+          echo "::notice::rc=$rc"
+          echo "::notice::out: $(echo "$out" | tail -12 | tr '\n' ' ')"
+          echo "::notice::df: $(df -h / | tail -1)"
+          echo "::notice::opt: $(ls /opt 2>/dev/null | tr '\n' ' ' || echo нет)"
+          echo "::notice::opt1cv8: $(ls -R /opt/1cv8 2>/dev/null | head -20 | tr '\n' ' ' || echo нет)"
+          echo "::notice::бины: $(find /opt /usr -maxdepth 5 -name '1cv8*' -type f 2>/dev/null | head -10 | tr '\n' ' ')"
+
+      - name: База
+        timeout-minutes: 10
+        run: |
+          Xvfb :99 -screen 0 1680x1050x24 -shmem &
+          sleep 2
+          export DISPLAY=:99
+          # Учебная поставка ставится в /opt/1cv8t (не /opt/1cv8) и называет
+          # файлы с суффиксом t: 1cv8t — конфигуратор и толстый клиент,
+          # 1cv8ct — тонкий клиент.
+          bin=$(ls /opt/1cv8t/x86_64/*/1cv8t 2>/dev/null | head -1)
+          client=$(ls /opt/1cv8t/x86_64/*/1cv8ct 2>/dev/null | head -1)
+          echo "bin=$bin client=$client"
+          echo "::notice::bin=$bin client=$client"
+          if [ -z "$bin" ]; then
+            echo '::error::1cv8t не найден'
+            exit 1
+          fi
+          # -k обязателен: клиент 1С обрабатывает SIGTERM и без добивания
+          # висит до таймаута шага. Именно на этом вставал «--version».
+          set +e
+          out=$(timeout -k 10 180 "$bin" CREATEINFOBASE "File=$HOME/1c/base" /DisableStartupDialogs /DisableStartupMessages /Out /tmp/create.log 2>&1)
+          rc=$?
+          set -e
+          echo "$out" | head -20
+          echo "::notice::CREATEINFOBASE rc=$rc"
+          echo "::notice::вывод: $(echo "$out" | head -5 | tr '\n' ' ')"
+          echo "::notice::лог: $(head -5 /tmp/create.log 2>/dev/null | tr '\n' ' ')"
+          echo "::notice::база: $(ls -la "$HOME/1c/base" 2>/dev/null | head -5 | tr '\n' ' ' || echo нет)"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Сборка фронтенда
+        run: |
+          npm ci
+          npm run build:test
+          ls -la dist | head -10
+
+      # Макет 1С — это zip, внутри которого лежит html. Локально то же самое
+      # делает tools/local-check.ps1 через Compress-Archive.
+      - name: Макеты
+        run: |
+          va=example/VAEditorSample/Templates/VAEditor/Ext
+          at=example/VAEditorSample/Templates/AutoTest/Ext
+          mkdir -p "$va" "$at"
+          (cd dist && zip -q -X "$GITHUB_WORKSPACE/$va/Template.bin" index.html)
+          (cd dist && zip -q -X "$GITHUB_WORKSPACE/$at/Template.bin" test.html)
+          ls -la "$va" "$at"
+
+      # Диалог «Разрешить открывать данный файл?» в неинтерактивном прогоне
+      # подтверждать некому: скрипт ждёт success.txt до таймаута и падает.
+      # Снимаем защиту через conf.cfg уровня установки (не версии) — на Linux
+      # это /opt/1cv8t/conf/conf.cfg, нужен sudo.
+      - name: conf.cfg
+        run: |
+          # ИТС для Linux указывает /opt/1cv8/conf/conf.cfg (freshex1, 10.5);
+          # у учебной поставки установка в /opt/1cv8t, поэтому пишем в оба
+          # каталога установки плюс в пользовательский.
+          for dir in /opt/1cv8t/conf /opt/1cv8/conf "$HOME/.1cv8/1C/1cv8/conf"; do
+            sudo mkdir -p "$dir"
+            { echo 'SystemLanguage=System'; echo 'DisableUnsafeActionProtection=.*'; } \
+              | sudo tee "$dir/conf.cfg" > /dev/null
+            echo "::notice::$dir/conf.cfg: $(sudo cat "$dir/conf.cfg" | tr '\n' ' ')"
+          done
+          # Локальный conf.cfg каталога версии содержит ConfLocation=/opt/1cv8t/conf
+          # — перезаписывать его нельзя, только дописывать параметр.
+          for f in /opt/1cv8t/x86_64/*/conf/conf.cfg; do
+            [ -f "$f" ] || continue
+            sudo grep -q 'DisableUnsafeActionProtection' "$f" \
+              || echo 'DisableUnsafeActionProtection=.*' | sudo tee -a "$f" > /dev/null
+            echo "::notice::локальный $f: $(sudo cat "$f" | tr '\n' ' ')"
+          done
+
+      - name: Конфигурация и epf
+        timeout-minutes: 15
+        run: |
+          # Дисплей поднимаем один раз на весь job: второй Xvfb на :99 падает
+          # с «Server is already active for display 99».
+          pgrep -f 'Xvfb :99' > /dev/null || (Xvfb :99 -screen 0 1680x1050x24 -shmem &)
+          sleep 2
+          export DISPLAY=:99
+          bin=$(ls /opt/1cv8t/x86_64/*/1cv8t | head -1)
+          db=$HOME/1c/base
+          rm -f /tmp/load.log /tmp/epf.log VAEditorSample.epf
+          set +e
+          timeout -k 10 420 "$bin" DESIGNER "/F$db" \
+            /LoadConfigFromFiles "$GITHUB_WORKSPACE/config" /UpdateDBCfg \
+            /DisableStartupDialogs /DisableStartupMessages /Out /tmp/load.log
+          rc=$?
+          set -e
+          echo "::notice::LoadConfigFromFiles rc=$rc лог: $(tail -3 /tmp/load.log 2>/dev/null | tr '\n' ' ')"
+          set +e
+          timeout -k 10 420 "$bin" DESIGNER "/F$db" \
+            /LoadExternalDataProcessorOrReportFromFiles \
+            "$GITHUB_WORKSPACE/example/VAEditorSample.xml" "$GITHUB_WORKSPACE/VAEditorSample.epf" \
+            /DisableStartupDialogs /DisableStartupMessages /Out /tmp/epf.log
+          rc=$?
+          set -e
+          echo "::notice::epf rc=$rc файл: $(ls -la VAEditorSample.epf 2>/dev/null | awk '{print $5}' || echo нет) лог: $(tail -3 /tmp/epf.log 2>/dev/null | tr '\n' ' ')"
+          pkill -f 1cv8 || true
+
+      # Обработку загружает модуль приложения (config/Ext/ManagedApplicationModule.bsl)
+      # через ВнешниеОбработки.Создать с выключенным предупреждением об опасных
+      # действиях, поэтому диалог «Разрешить открывать данный файл?» не появляется
+      # и подтверждать его клавиатурой не нужно. Путь к epf передаётся в /C.
+      - name: Автотест в WebView 1С
+        timeout-minutes: 20
+        run: |
+          pgrep -f 'Xvfb :99' > /dev/null || (Xvfb :99 -screen 0 1680x1050x24 -shmem &)
+          sleep 2
+          export DISPLAY=:99
+          client=$(ls /opt/1cv8t/x86_64/*/1cv8ct | head -1)
+          db=$HOME/1c/base
+          rm -f success.txt autotest-result.txt client-started.txt page-loaded.txt VAEditorSample.epf.error.txt
+          timeout -k 10 900 "$client" ENTERPRISE /LRU "/F$db" \
+            "/C$GITHUB_WORKSPACE/VAEditorSample.epf" \
+            /DisableStartupDialogs /DisableStartupMessages \
+            /Out /tmp/client-out.log \
+            > /tmp/client.log 2>&1 &
+          pid=$!
+          for i in $(seq 1 180); do
+            if [ -f success.txt ] || [ -f autotest-result.txt ]; then break; fi
+            kill -0 "$pid" 2>/dev/null || break
+            sleep 1
+          done
+          if [ ! -f success.txt ] && [ ! -f autotest-result.txt ]; then
+            echo '--- окна X на момент зависания ---'
+            xwininfo -root -tree 2>/dev/null | head -40 || true
+          fi
+          kill "$pid" 2>/dev/null || true
+          pkill -f 1cv8 || true
+          echo '--- вывод клиента ---'
+          tail -40 /tmp/client.log 2>/dev/null || true
+          # Метки формы Autotest: client-started — форма открылась,
+          # page-loaded — сработал DocumentComplete, autotest-result — тесты
+          # досчитали. Где оборвалось, там и встали.
+          for mark in client-started.txt page-loaded.txt autotest-result.txt; do
+            if [ -f "$mark" ]; then
+              echo "::notice::$mark: $(head -5 "$mark" | tr '\n' ' ')"
+            else
+              echo "::notice::$mark: нет"
+            fi
+          done
+          echo "::notice::лог клиента: $(tail -5 /tmp/client.log 2>/dev/null | tr '\n' ' ')"
+          echo "::notice::out клиента: $(tail -5 /tmp/client-out.log 2>/dev/null | tr '\n' ' ')"
+          if [ -f autotest-result.txt ]; then
+            echo '--- autotest-result.txt ---'
+            cat autotest-result.txt
+          fi
+          if [ -f success.txt ]; then
+            echo '::notice::автотест в WebView 1С пройден'
+          else
+            echo '::error::автотест не дошёл до конца'
+            exit 1
+          fi

@@ -1,0 +1,65 @@
+name: build-linux
+
+# Фронтенд собирается и проверяется на ubuntu — это секунды вместо минут.
+# Сборка epf и прогон в WebKit 1С остаются в build.yml на Windows: клиенту
+# 1С на Linux нужен Xvfb, дистрибутив платформы и лицензия.
+# Быстрый чек для PR: фронтенд собирается и проверяется на ubuntu за ~1,5
+# минуты. Сборка epf и прогон в WebKit 1С остаются в build.yml на Windows:
+# клиенту 1С на Linux нужен Xvfb, дистрибутив платформы и лицензия.
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-linux-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # Стиль JS-части (standard). Legacy-файлы, которые писались под старый
+      # WebKit и не переводятся на const/let без риска, исключены в
+      # package.json → standard.ignore.
+      - name: Check code style
+        run: npm run codestyle
+
+      - name: Build frontend
+        run: npm run buildci
+
+      # Тот же скрипт, что в build.yml: acorn разбирает встроенные <script>
+      # из dist/*.html и сравнивает с порогом es2018.
+      - name: Check ES level
+        run: npm run check:es
+
+      # В ubuntu-24.04 chromium из apt — snap-обёртка, в CI она не работает.
+      # Chrome for Testing ставится отдельным action'ом, путь отдаём скрипту.
+      - name: Setup Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Run headless tests
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: node tools/run-headless-tests.js
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vaeditor-linux
+          if-no-files-found: warn
+          path: dist/index.html

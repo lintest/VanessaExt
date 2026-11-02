@@ -134,6 +134,27 @@ export NO_AT_BRIDGE=1
 export WEBKIT_DISABLE_COMPOSITING_MODE=1
 export GDK_BACKEND=x11
 
+# --- 3a. Защита от опасных действий --------------------------------------
+# Диалог «Разрешить открывать данный файл?» в неинтерактивном прогоне
+# подтверждать некому: клиент показывает модальное окно и стоит, а оповещение
+# асинхронного подключения внешней компоненты не приходит. Снимаем защиту
+# через conf.cfg уровня установки и пользовательского каталога (на Windows то
+# же делает параметр /DisableUnsafeActionProtection в ярлыке). Локальный
+# conf.cfg каталога версии содержит ConfLocation — его только дополняем,
+# иначе платформа потеряет путь к общему конфигу.
+log "conf.cfg: DisableUnsafeActionProtection"
+for conf_dir in /opt/1cv8t/conf /opt/1cv8/conf "${HOME}/.1cv8t/1C/1cv8t/conf"; do
+	sudo mkdir -p "${conf_dir}"
+	printf 'SystemLanguage=System\nDisableUnsafeActionProtection=.*\n' |
+		sudo tee "${conf_dir}/conf.cfg" > /dev/null
+	log "  ${conf_dir}/conf.cfg: $(sudo cat "${conf_dir}/conf.cfg" | tr '\n' ' ')"
+done
+for conf_file in /opt/1cv8t/x86_64/*/conf/conf.cfg; do
+	[ -f "${conf_file}" ] || continue
+	sudo grep -q 'DisableUnsafeActionProtection' "${conf_file}" ||
+		printf 'DisableUnsafeActionProtection=.*\n' | sudo tee -a "${conf_file}" > /dev/null
+done
+
 # --- 4. Макеты внешней обработки -----------------------------------------
 log "Макеты"
 [ -n "${ADDIN_ZIP:-}" ] || fail "не задан ADDIN_ZIP"

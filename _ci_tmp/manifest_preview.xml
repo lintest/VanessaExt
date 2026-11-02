@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bundle xmlns="http://v8.1c.ru/8.2/addin/bundle">
+	<component type="native" os="Windows" arch="i386" path="${PROJECT_NAME}Win32${postfix}.dll" />
+	<component type="native" os="Windows" arch="x86_64" path="${PROJECT_NAME}Win64${postfix}.dll" />
+	<component type="native" os="Linux" arch="i386" path="${PROJECT_NAME}Lin32${postfix}.so" />
+	<component type="native" os="Linux" arch="x86_64" path="${PROJECT_NAME}Lin64${postfix}.so" />
+</bundle>
