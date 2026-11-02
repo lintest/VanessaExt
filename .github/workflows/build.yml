@@ -125,7 +125,22 @@ jobs:
           postfix="_${version//./-}"
           rm -f AddIn.zip manifest.xml
           rm -rf package && mkdir package
-          pwsh -NoProfile -File manifest.ps1 -project "$PROJECT_NAME" -version "$version"
+
+          # Манифест пишем здесь же: manifest.ps1 заодно перезаписывает
+          # version.h в другом формате (с VER_FILENAME/VERSION_MAJOR), а на
+          # раннере PowerShell может быть недоступен. Формат — как у
+          # manifest.ps1: пути с суффиксом версии ПЕРЕД расширением.
+          cat > manifest.xml <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <bundle xmlns="http://v8.1c.ru/8.2/addin/bundle">
+          	<component type="native" os="Windows" arch="i386" path="${PROJECT_NAME}Win32${postfix}.dll" />
+          	<component type="native" os="Windows" arch="x86_64" path="${PROJECT_NAME}Win64${postfix}.dll" />
+          	<component type="native" os="Linux" arch="i386" path="${PROJECT_NAME}Lin32${postfix}.so" />
+          	<component type="native" os="Linux" arch="x86_64" path="${PROJECT_NAME}Lin64${postfix}.so" />
+          </bundle>
+          EOF
+          cat manifest.xml
+
           packed=0
           for f in ./bin32/*Lin32.so ./bin64/*Lin64.so \
                    ./bin32/*Lin32.so.debug ./bin64/*Lin64.so.debug; do
@@ -141,6 +156,7 @@ jobs:
           done
           if [ "$packed" -lt 2 ]; then
             echo "::error::в архиве меньше двух библиотек"
+            ls -la bin32 bin64 || true
             exit 1
           fi
           cp manifest.xml package/
