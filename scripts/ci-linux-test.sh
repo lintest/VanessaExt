@@ -253,14 +253,30 @@ set -e
 log "код возврата клиента: ${rc}"
 
 if [ ! -f success.txt ]; then
-	# Короткая сводка в аннотацию: логи шага и артефакты доступны только
-	# владельцу репозитория, поэтому без этого шага причина видна лишь ему.
-	annotate error "linux-test: тесты не прошли (rc=${rc}).
-маркеры trace.log:
-$(cat trace.log 2>/dev/null || echo 'нет trace.log')
-ldd:
-$(grep -E 'not found' addin-ldd.txt 2>/dev/null || echo 'неразрешённых зависимостей нет')
-реестр: $(head -c 300 "${HOME}/.1cv8t/1C/1cv8t/ExtCompT/registry.xml" 2>/dev/null || echo 'нет registry.xml')"
+	# Сводка в аннотацию: логи шага и артефакты доступны только владельцу
+	# репозитория, а аннотации check-run отдаются публичным API. Без этого
+	# причина падения видна только владельцу, и разбор затягивается.
+	{
+		echo "linux-test: тесты не прошли (rc=${rc})"
+		echo "epf: $(ls -la "${PROJECT}.epf" 2>/dev/null | awk '{print $5" байт"}')"
+		echo "autotest.out: $(wc -c < autotest.out 2>/dev/null || echo 0) байт"
+		echo "--- trace.log ---"
+		cat trace.log 2>/dev/null || echo 'нет trace.log: форма AutotestRun не открывалась'
+		echo "--- autotest.log (хвост) ---"
+		tail -n 15 autotest.log 2>/dev/null || echo пусто
+		echo "--- autotest.out ---"
+		tail -n 15 autotest.out 2>/dev/null || echo пусто
+		echo "--- логи платформы (хвост) ---"
+		find "${HOME}/.1cv8t/1C/1cv8t/logs" -name '*.log' -type f 2>/dev/null |
+			while read -r f; do tail -n 12 "$f"; done | tail -n 30 || echo пусто
+		echo "--- неразрешённые зависимости ---"
+		grep -E 'not found' addin-ldd.txt 2>/dev/null || echo нет
+		echo "--- registry.xml ---"
+		head -c 200 "${HOME}/.1cv8t/1C/1cv8t/ExtCompT/registry.xml" 2>/dev/null || echo нет
+	} > ci-failure-report.txt 2>&1
+	annotate error "$(cat ci-failure-report.txt)"
+	echo '--- сводка для аннотации ---'
+	cat ci-failure-report.txt
 	echo "--- код возврата клиента: ${rc} (124 = сработал timeout, значит завис) ---"
 	echo '--- размеры логов ---'
 	wc -c autotest.log autotest.out 2>/dev/null || true
