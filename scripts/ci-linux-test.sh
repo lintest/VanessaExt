@@ -251,8 +251,14 @@ if [ ! -f success.txt ]; then
 	echo '--- база и обработка ---'
 	ls -la "${DB}" 2>/dev/null | head -n 10 || true
 	ls -la "${PROJECT}.epf" 2>/dev/null || true
-	echo '--- окна X ---'
-	xwininfo -root -tree 2>/dev/null | head -n 40 || true
+	# Дерево окон целиком: в нём 200+ строк, и именно в хвосте (а не в первых
+	# строках) виден модальный диалог, на котором клиент встал.
+	echo '--- окна X (полное дерево) ---'
+	xwininfo -root -tree 2>/dev/null || true
+	echo '--- домашний каталог 1С ---'
+	find "${HOME}/.1cv8t" -maxdepth 4 2>/dev/null | head -n 50 || true
+	echo '--- журнал регистрации базы ---'
+	ls -la "${DB}/1Cv8Log" 2>/dev/null || true
 	fail "автотест не дошёл до конца: success.txt не создан"
 fi
 
