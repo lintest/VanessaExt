@@ -53,12 +53,6 @@ if (-not $linuxZip) {
 Write-Host "Linux-артефакт: $($linuxZip.FullName)"
 Expand-Archive -Force -Path $linuxZip.FullName -DestinationPath $path
 
-$binaries = @(
-	"${project}Win32.dll",
-	"${project}Win64.dll",
-	"${project}Lin32${postfix}.so",
-	"${project}Lin64${postfix}.so"
-)
 $debugFiles = @(
 	"${project}Lin32${postfix}.so.debug",
 	"${project}Lin64${postfix}.so.debug"
