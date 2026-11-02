@@ -613,16 +613,22 @@ jobs:
               '/DisableStartupDialogs', '/DisableStartupMessages',
               '/Out', 'autotest-install.out', '/C', 'install')
           if (-not $install.WaitForExit(180000)) {
-            Write-Host '--- фаза install не завершилась за 3 минуты, снимаю дамп ---'
+            # Фаза install — только предустановка компоненты в ExtCompT. Если
+            # клиент на ней встал, это не повод не пускать сами тесты:
+            # AutotestRun подключает компоненту из бандла сама (в AppVeyor
+            # install занимает 5 с, но там интерактивная сессия). Раньше throw
+            # здесь отменял фазу autotest целиком, и тесты не стартовали вовсе.
+            Write-Host '::warning::фаза install не завершилась за 3 минуты, продолжаю без предустановки'
             Get-Process -Name '1cv8*' -ErrorAction SilentlyContinue | ForEach-Object {
               Write-Host ("   {0} pid={1} окно='{2}'" -f $_.ProcessName, $_.Id, $_.MainWindowTitle)
             }
             Get-Content 'autotest-install.out' -Tail 40 -ErrorAction SilentlyContinue
             $install.Kill()
-            throw 'фаза install не завершилась за 3 минуты'
           }
-          Write-Host "install: код возврата $($install.ExitCode)"
-          Get-Content 'autotest-install.out' -ErrorAction SilentlyContinue
+          else {
+            Write-Host "install: код возврата $($install.ExitCode)"
+            Get-Content 'autotest-install.out' -ErrorAction SilentlyContinue
+          }
 
           # Тот же запуск без редиректов: у 1cv8ct.exe нет stdout, а открытый
           # pipe не даёт Start-Process увидеть завершение процесса.
