@@ -120,7 +120,8 @@ jobs:
       # поэтому пакуем по факту наличия — как в appveyor.yml.
       - name: Упаковка Linux-артефакта
         run: |
-          set -e
+          set -euxo pipefail
+          exec > >(tee pack.log) 2>&1
           version="${{ steps.version.outputs.version }}"
           postfix="_${version//./-}"
           rm -f AddIn.zip manifest.xml
@@ -160,8 +161,29 @@ jobs:
             exit 1
           fi
           cp manifest.xml package/
-          (cd package && zip -q -X AddIn.zip *)
-          unzip -l AddIn.zip
+
+          # zip/unzip на раннере отдают невнятный exit 9 и мешают понять, что
+          # именно упало, поэтому архив собираем стандартным модулем Python.
+          python3 - <<'PY'
+          import os, zipfile
+          with zipfile.ZipFile('package/AddIn.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+          	for name in sorted(os.listdir('package')):
+          		if name != 'AddIn.zip':
+          			z.write(os.path.join('package', name), name)
+          			print('в zip:', name)
+          PY
+          mv package/AddIn.zip AddIn.zip
+          python3 -c "import zipfile;print('\n'.join(zipfile.ZipFile('AddIn.zip').namelist()))"
+
+      # Лог шага упаковки: без него не видно причину, если шаг снова упадёт —
+      # общий лог джобы тонет в выводе apt.
+      - name: Лог упаковки
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-pack-log
+          if-no-files-found: warn
+          path: pack.log
 
       - name: Выгрузка Linux-артефакта
         uses: actions/upload-artifact@v4
