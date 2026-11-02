@@ -184,19 +184,31 @@ jobs:
       # не должна считаться успешной.
       - name: Смоук-тест загрузки компоненты
         run: |
-          set -e
-          cc -O1 -Wall -o check_addin_load tools/check_addin_load.c -ldl
+          # Весь вывод идёт в файл: логи шага отдаются только владельцу
+          # репозитория, а аннотация check-run — публично. Поэтому при падении
+          # содержимое печатается через ::error:: с экранированием переводов
+          # строк (иначе аннотация обрежется на первой же строке).
+          exec > >(tee check-addin-load.log) 2>&1
+          on_error() {
+            echo "::error::$(sed 's/%/%25/g; s/\r$//' check-addin-load.log | awk '{printf "%s%%0A", $0}')"
+            exit 1
+          }
+
+          cc -O1 -Wall -o check_addin_load tools/check_addin_load.c -ldl || on_error
           # Библиотеки распакованы из того же архива, что уедет в артефакт:
           # проверяем именно артефакт, а не bin64 из рабочего каталога.
-          rm -rf smoke && mkdir smoke
-          unzip -o -q AddIn.zip -d smoke
+          rm -rf smoke && mkdir smoke || on_error
+          unzip -o -q AddIn.zip -d smoke || on_error
           lib=$(find smoke -maxdepth 1 -name '*Lin64*.so' -print -quit)
-          [ -n "$lib" ] || { echo "::error::в AddIn.zip нет Lin64-библиотеки"; exit 1; }
+          if [ -z "$lib" ]; then
+            echo "в AddIn.zip нет Lin64-библиотеки"
+            on_error
+          fi
           echo "проверяю $lib"
           # timeout: если конструктор объекта компоненты повиснет (обращение к
           # X-серверу и т.п.), шаг не должен съесть весь лимит job'а. Для
           # смоук-теста, которому нужен только dlopen, 60 с заведомо хватает.
-          timeout -k 5 60 ./check_addin_load "$lib"
+          timeout -k 5 60 ./check_addin_load "$lib" || on_error
 
       - name: Выгрузка Linux-артефакта
         uses: actions/upload-artifact@v4
