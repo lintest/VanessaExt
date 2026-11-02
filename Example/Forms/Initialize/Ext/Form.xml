@@ -27,12 +27,16 @@
 				</v8:StringQualifiers>
 			</Type>
 		</Attribute>
-	</Attributes>
-	<Parameters>
-		<Parameter name="Автотестирование" id="1">
+		<Attribute name="Автотестирование" id="3">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Автотестирование</v8:content>
+				</v8:item>
+			</Title>
 			<Type>
 				<v8:Type>xs:boolean</v8:Type>
 			</Type>
-		</Parameter>
-	</Parameters>
+		</Attribute>
+	</Attributes>
 </Form>
