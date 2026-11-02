@@ -4,6 +4,7 @@
                 *GetClassObject*;
                 *DestroyObject*;
                 *GetClassNames*;
+                *GetAttachType*;
                 *SetPlatformCapabilities*;
          local: 
                 *;
