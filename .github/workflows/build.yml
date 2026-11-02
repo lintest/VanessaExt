@@ -175,15 +175,28 @@ jobs:
           mv package/AddIn.zip AddIn.zip
           python3 -c "import zipfile;print('\n'.join(zipfile.ZipFile('AddIn.zip').namelist()))"
 
-      # Лог шага упаковки: без него не видно причину, если шаг снова упадёт —
-      # общий лог джобы тонет в выводе apt.
-      - name: Лог упаковки
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-pack-log
-          if-no-files-found: warn
-          path: pack.log
+      # Проверка, что .so реально загружается и отдаёт объекты — без платформы
+      # 1С и без GUI. GUI-автотест (job linux-test) на подключении компоненты
+      # виснет, поэтому «библиотека не грузится» и «клиент завис» выглядят там
+      # одинаково (rc=124). Здесь тот же dlopen, что делает платформа, и при
+      # неудаче печатается точный текст dlerror() — то есть причина, а не
+      # молчание. Шаг обязательный: если библиотека не загружается, сборка
+      # не должна считаться успешной.
+      - name: Смоук-тест загрузки компоненты
+        run: |
+          set -e
+          cc -O1 -Wall -o check_addin_load tools/check_addin_load.c -ldl
+          # Библиотеки распакованы из того же архива, что уедет в артефакт:
+          # проверяем именно артефакт, а не bin64 из рабочего каталога.
+          rm -rf smoke && mkdir smoke
+          unzip -o -q AddIn.zip -d smoke
+          lib=$(find smoke -maxdepth 1 -name '*Lin64*.so' -print -quit)
+          [ -n "$lib" ] || { echo "::error::в AddIn.zip нет Lin64-библиотеки"; exit 1; }
+          echo "проверяю $lib"
+          # timeout: если конструктор объекта компоненты повиснет (обращение к
+          # X-серверу и т.п.), шаг не должен съесть весь лимит job'а. Для
+          # смоук-теста, которому нужен только dlopen, 60 с заведомо хватает.
+          timeout -k 5 60 ./check_addin_load "$lib"
 
       - name: Выгрузка Linux-артефакта
         uses: actions/upload-artifact@v4
