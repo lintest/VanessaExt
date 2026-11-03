@@ -309,8 +309,17 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 				sudo timeout 90 gdb -batch -p "${stack_pid}" \
 					-ex "thread apply all bt" >> client-stacks.txt 2>&1 || true
 			done
-			annotate error "клиент висит: стеки потоков
-$(grep -E '^===|^Thread|^#[0-9]' client-stacks.txt | head -n 80 | cut -c1-200)"
+			# В аннотацию GitHub влезает ~6000 символов, а полный дамп всех
+			# потоков его переполняет и обрезается ровно там, где начинается
+			# интересное. Печатаем главный поток (он и держит вызов
+			# ОткрытьФорму) и хвост дерева окон: в нём виден модальный диалог.
+			{
+				echo "клиент висит: главный поток и окна"
+				awk '/^Thread 1 \(/{f=1} f' client-stacks.txt | head -n 35 | cut -c1-180
+				echo "--- окна X (хвост) ---"
+				xwininfo -root -tree 2>/dev/null | tail -n 12 | cut -c1-180
+			} > stack-brief.txt 2>&1
+			annotate error "$(cat stack-brief.txt)"
 			log "стеки сохранены в client-stacks.txt ($(wc -l < client-stacks.txt) строк)"
 		fi
 	fi
