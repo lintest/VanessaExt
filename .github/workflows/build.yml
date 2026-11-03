@@ -319,6 +319,7 @@ jobs:
             autotest.out
             prepare.out
             trace.log
+            /tmp/ci-trace.log
             addin_path.txt
             addin-ldd.txt
             ci-failure-report.txt
@@ -649,6 +650,10 @@ jobs:
               Write-Host "   --- $f ---"
               Get-Content $f -Tail 12 -ErrorAction SilentlyContinue
             }
+            # ci-trace.log: маркеры прослойки (ManagedApplicationModule + ОткрытьТестируемуОбработку)
+            $ciTrace = Join-Path $env:TEMP 'ci-trace.log'
+            Write-Host "   --- ci-trace.log ($ciTrace) ---"
+            Get-Content $ciTrace -ErrorAction SilentlyContinue
             # Лог самой платформы: на Linux именно он дал причину зависания
             # (Unknown form name). На Windows он лежит в LOCALAPPDATA и в консоль
             # не попадает — печатаем хвосты двух свежих файлов.
@@ -737,6 +742,7 @@ jobs:
             autotest-install.log
             autotest-install.out
             example.log
+            ${{ runner.temp }}\ci-trace.log
 
       # outcome проверяется явно: шаг автотеста неблокирующий, поэтому success()
       # сам по себе не гарантирует, что тесты прошли.

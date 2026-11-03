@@ -284,6 +284,10 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 		windows=$(xwininfo -root -tree 2>/dev/null | wc -l)
 		cpu=$(ps -o pcpu= -C "$(basename "${client}")" 2>/dev/null | tr -d ' ' | head -n 1)
 		log "ожидание ${waited} с: строк в дереве окон ${windows}, cpu ${cpu:-?}, autotest.out $(wc -c < autotest.out 2>/dev/null || echo 0) байт, trace: $(tail -n 1 trace.log 2>/dev/null || echo нет)"
+		# ci-trace.log: прогресс прослойки (показываем при каждом опросе если изменился)
+		if [ -f /tmp/ci-trace.log ]; then
+			log "ci-trace.log (хвост): $(tail -n 3 /tmp/ci-trace.log | tr '\n' ' ')"
+		fi
 	fi
 done
 wait "${client_pid}"
@@ -299,6 +303,8 @@ if [ ! -f success.txt ]; then
 		echo "linux-test: тесты не прошли (rc=${rc})"
 		echo "epf: $(ls -la "${PROJECT}.epf" 2>/dev/null | awk '{print $5" байт"}')"
 		echo "autotest.out: $(wc -c < autotest.out 2>/dev/null || echo 0) байт"
+		echo "--- ci-trace.log (прослойка) ---"
+		cat /tmp/ci-trace.log 2>/dev/null || echo 'нет ci-trace.log: ManagedApplicationModule не выполнился'
 		echo "--- trace.log ---"
 		cat trace.log 2>/dev/null || echo 'нет trace.log: форма AutotestRun не открывалась'
 		echo "--- autotest.log (хвост) ---"
@@ -325,6 +331,8 @@ if [ ! -f success.txt ]; then
 	tail -n 60 autotest.log 2>/dev/null || true
 	echo '--- autotest.out ---'
 	tail -n 20 autotest.out 2>/dev/null || true
+	echo '--- ci-trace.log (прослойка) ---'
+	cat /tmp/ci-trace.log 2>/dev/null || echo 'нет ci-trace.log'
 	echo '--- маркеры выполнения (trace.log) ---'
 	cat trace.log 2>/dev/null || echo 'нет trace.log'
 	# Лог самой платформы: клиент держит его открытым, но в консоль он не попадает.
