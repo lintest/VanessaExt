@@ -54,4 +54,19 @@
 			</Type>
 		</Attribute>
 	</Attributes>
+	<!-- Параметр объявлен явно и под отдельным именем: ключи структуры из
+	     ОткрытьФорму попадают в свойство Параметры только для объявленных
+	     параметров, а совпадать с именем реквизита формы ему нельзя.
+	     Без этого режим всегда приходил пустым и форма уходила в ветку MainForm. -->
+	<Parameters>
+		<Parameter name="РежимЗапускаФормы">
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Parameter>
+	</Parameters>
 </Form>
