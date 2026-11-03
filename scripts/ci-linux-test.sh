@@ -294,12 +294,23 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 	# видно только «висит», а не на чём именно (ожидание сервера, модальный
 	# диалог, блокировка внутри WebKit/GTK).
 	if [ "${waited}" -eq 120 ]; then
-		stack_pid=$(pgrep -f '1cv8ct' | head -n 1 || true)
-		if [ -n "${stack_pid}" ] && command -v gdb >/dev/null 2>&1; then
-			log "снятие стеков клиента (pid ${stack_pid})"
-			sudo timeout 90 gdb -batch -p "${stack_pid}" \
-				-ex "thread apply all bt" > client-stacks.txt 2>&1 || true
-			annotate error "клиент висит: стеки потоков (первые строки)%0A$(head -n 40 client-stacks.txt | cut -c1-200)"
+		# pgrep -f ловит dbus-run-session: в его командной строке тоже есть
+		# "1cv8ct", и стек получался от обёртки (wait4), а не от клиента.
+		# Нужен точный матч по имени процесса.
+		stack_pids=$(pgrep -x 1cv8ct || true)
+		if [ -z "${stack_pids}" ]; then
+			stack_pids=$(pgrep -x 1cv8 || true)
+		fi
+		if [ -n "${stack_pids}" ] && command -v gdb >/dev/null 2>&1; then
+			log "снятие стеков клиента (pid: $(echo ${stack_pids}))"
+			: > client-stacks.txt
+			for stack_pid in ${stack_pids}; do
+				echo "=== pid ${stack_pid}: $(ps -o args= -p "${stack_pid}" | cut -c1-120) ===" >> client-stacks.txt
+				sudo timeout 90 gdb -batch -p "${stack_pid}" \
+					-ex "thread apply all bt" >> client-stacks.txt 2>&1 || true
+			done
+			annotate error "клиент висит: стеки потоков
+$(grep -E '^===|^Thread|^#[0-9]' client-stacks.txt | head -n 80 | cut -c1-200)"
 			log "стеки сохранены в client-stacks.txt ($(wc -l < client-stacks.txt) строк)"
 		fi
 	fi
