@@ -679,6 +679,23 @@ jobs:
             Get-Content 'autotest.log' -ErrorAction SilentlyContinue | Select-Object -Last 50
             Write-Host '--- ошибки клиента ---'
             Get-Content 'autotest.err.log' -ErrorAction SilentlyContinue | Select-Object -Last 50
+            # Сводка в аннотацию: логи шага видны только владельцу репозитория,
+            # а аннотации check-run отдаются публичным API. Без этого причина
+            # падения на Windows — просто «exit code 1».
+            $report = @(
+              "windows-test: тесты не прошли (код клиента $($client.ExitCode))"
+              "success.txt: нет"
+              '--- ci-trace.log (прослойка и формы) ---'
+              (Get-Content (Join-Path $env:TEMP 'ci-trace.log') -ErrorAction SilentlyContinue)
+              '--- trace.log (маркеры формы) ---'
+              (Get-Content 'trace.log' -ErrorAction SilentlyContinue)
+              '--- autotest.out ---'
+              (Get-Content 'autotest.out' -ErrorAction SilentlyContinue | Select-Object -Last 20)
+              '--- отчёт приёмника (хвост) ---'
+              (Get-Content 'tests-report.log' -ErrorAction SilentlyContinue | Select-Object -Last 20)
+            ) -join "`n"
+            $report = $report -replace '%', '%25' -replace "`r", '' -replace "`n", '%0A'
+            Write-Host "::error::$($report.Substring(0, [Math]::Min(6000, $report.Length)))"
             throw 'Имеются ошибки: success.txt не создан'
           }
           Write-Host 'автотест пройден'
