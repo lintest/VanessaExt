@@ -58,7 +58,7 @@ log "Зависимости"
 # шага то, ради чего лог читают, — хвост с логами платформы 1С при падении.
 sudo apt-get update -qq >/dev/null
 sudo apt-get install -y -qq --no-install-recommends \
-	p7zip-full xvfb x11-utils openbox \
+	p7zip-full xvfb x11-utils openbox gdb \
 	libwebkit2gtk-4.0-37 libjavascriptcoregtk-4.0-18 libsoup2.4-1 \
 	libglu1-mesa libgtk-3-0 libxtst6 libxrender1 libxi6 libglib2.0-0 \
 	libnss3 libxext6 libsm6 libice6 libfreetype6 libfontconfig1 \
@@ -287,6 +287,20 @@ while kill -0 "${client_pid}" 2>/dev/null; do
 		# ci-trace.log: прогресс прослойки (показываем при каждом опросе если изменился)
 		if [ -f /tmp/ci-trace.log ]; then
 			log "ci-trace.log (хвост): $(tail -n 3 /tmp/ci-trace.log | tr '\n' ' ')"
+		fi
+	fi
+	# Через две минуты клиент уже точно должен был открыть форму и подключить
+	# компоненту. Если он всё ещё жив, снимаем стеки всех потоков: без этого
+	# видно только «висит», а не на чём именно (ожидание сервера, модальный
+	# диалог, блокировка внутри WebKit/GTK).
+	if [ "${waited}" -eq 120 ]; then
+		stack_pid=$(pgrep -f '1cv8ct' | head -n 1 || true)
+		if [ -n "${stack_pid}" ] && command -v gdb >/dev/null 2>&1; then
+			log "снятие стеков клиента (pid ${stack_pid})"
+			sudo timeout 90 gdb -batch -p "${stack_pid}" \
+				-ex "thread apply all bt" > client-stacks.txt 2>&1 || true
+			annotate error "клиент висит: стеки потоков (первые строки)%0A$(head -n 40 client-stacks.txt | cut -c1-200)"
+			log "стеки сохранены в client-stacks.txt ($(wc -l < client-stacks.txt) строк)"
 		fi
 	fi
 done
