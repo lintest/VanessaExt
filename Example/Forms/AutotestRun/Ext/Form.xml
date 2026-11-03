@@ -58,4 +58,26 @@
 			</Type>
 		</Attribute>
 	</Attributes>
+	<!-- Параметры объявлены явно: прослойка передаёт их структурой из
+	     ОткрытьФорму, а необъявленные ключи платформа в Параметры не передаёт.
+	     Форма без секции Parameters вообще не открывалась под Linux: серверная
+	     часть ПриСозданииНаСервере отрабатывала, клиентский ПриОткрытии не
+	     наступал, а главный поток клиента застревал во вложенной обработке
+	     idle-событий (стеки прогонов 66-68). -->
+	<Parameters>
+		<Parameter name="AddInURL">
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Parameter>
+		<Parameter name="Автотестирование">
+			<Type>
+				<v8:Type>xs:boolean</v8:Type>
+			</Type>
+		</Parameter>
+	</Parameters>
 </Form>
