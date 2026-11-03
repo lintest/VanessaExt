@@ -79,5 +79,17 @@
 				<v8:Type>xs:boolean</v8:Type>
 			</Type>
 		</Parameter>
+		<!-- Путь к самому .epf: ИспользуемоеИмяФайла у внешней обработки пустое
+		     при любом способе загрузки, поэтому каталог обработки (для success.txt,
+		     app_port.txt и поиска распакованной .so) берётся из этого параметра. -->
+		<Parameter name="ПутьКОбработке">
+			<Type>
+				<v8:Type>xs:string</v8:Type>
+				<v8:StringQualifiers>
+					<v8:Length>0</v8:Length>
+					<v8:AllowedLength>Variable</v8:AllowedLength>
+				</v8:StringQualifiers>
+			</Type>
+		</Parameter>
 	</Parameters>
 </Form>
