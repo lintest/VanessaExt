@@ -252,8 +252,13 @@ set +e
 # отключёнными предупреждениями, поэтому диалога не возникает. /C идёт
 # последним: остаток командной строки 1С считает его значением, а режим
 # autotest доезжает до обработки параметром формы.
+# Формат значения /C: "<режим>|<абсолютный путь к .epf>". Путь абсолютный
+# обязателен: глобальной функции «текущий каталог» в платформе нет, а от
+# относительного имени Файл.Путь пуст — форма тестов тогда не знает, где искать
+# .so компоненты и куда писать success.txt (прогон 74: «каталог обработки:» пуст).
 client_args=(ENTERPRISE /LRU "/F${DB}"
-	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out /C autotest)
+	/DisableStartupDialogs /DisableStartupMessages /Out autotest.out
+	/C "autotest|${WORKDIR}/${PROJECT}.epf")
 # GTK/WebKit нужна сессионная шина D-Bus: без неё старт клиента может
 # зависнуть на инициализации, так и не создав главное окно.
 if command -v dbus-run-session >/dev/null 2>&1; then

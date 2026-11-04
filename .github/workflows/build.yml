@@ -587,6 +587,11 @@ jobs:
         run: |
           $exe = Join-Path $PWD 'bin\1cv8ct.exe'
           $base = Join-Path $PWD 'database'
+          # Путь к .epf передаётся в /C абсолютным: глобальной функции «текущий
+          # каталог» в платформе нет, а от относительного имени Файл.Путь пуст —
+          # форма тестов тогда не знает, где искать компоненту и куда писать
+          # success.txt (прогон 74: «каталог обработки:» пуст).
+          $epf = Join-Path $PWD 'VanessaExt.epf'
 
           # /Execute не используется: при нём платформа показывает модальный
           # диалог «Предупреждение безопасности» до открытия формы (в журнале
@@ -603,7 +608,7 @@ jobs:
           $install = Start-Process -FilePath $exe -PassThru `
             -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base,
               '/DisableStartupDialogs', '/DisableStartupMessages',
-              '/Out', 'autotest-install.out', '/C', 'install')
+              '/Out', 'autotest-install.out', '/C', "install|$epf")
           if (-not $install.WaitForExit(180000)) {
             Write-Host '::warning::фаза install не завершилась за 3 минуты, продолжаю без предустановки'
             Get-Process -Name '1cv8*' -ErrorAction SilentlyContinue | ForEach-Object {
@@ -622,7 +627,7 @@ jobs:
           $client = Start-Process -FilePath $exe -PassThru `
             -ArgumentList @('ENTERPRISE', '/LRU', '/F', $base,
               '/DisableStartupDialogs', '/DisableStartupMessages',
-              '/Out', 'autotest.out', '/C', 'autotest')
+              '/Out', 'autotest.out', '/C', "autotest|$epf")
 
           # Ожидание с диагностикой: молчаливый WaitForExit(600000) не даёт
           # понять, что происходит, пока клиент висит. Раз в 30 с печатаем
