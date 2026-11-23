@@ -67,6 +67,12 @@ WindowsControl::WindowsControl() {
 	AddProperty(u"ScreenInfo", u"СвойстваЭкрана",
 		[&](VH var) { var = ScreenManager::GetScreenInfo(); }
 	);
+	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
+		[&](VH key) { this->result = KeyboardHook::Hook(this, key); }, { {0, u""} }
+	);
+	AddFunction(u"ClearHotKeys", u"СброситьГорячиеКлавиши",
+		[&]() { this->result = KeyboardHook::Hook(nullptr); }
+	);
 
 #ifdef _WINDOWS
 	AddProperty(u"ActiveElementMonitoring", u"МониторингАктивногоЭлемента",
@@ -243,12 +249,6 @@ WindowsControl::WindowsControl() {
 	AddProcedure(u"StopClickVisualization", u"ПрекратитьВизуализациюНажатияМыши",
 		[&]() { ClickEffect::Unhook(); }
 	);
-	AddFunction(u"SetHotKeys", u"НазначитьГорячиеКлавиши",
-		[&](VH key) { this->result = KeyboardHook::Hook(this, key); }, { {0, u""} }
-	);
-	AddFunction(u"ClearHotKeys", u"СброситьГорячиеКлавиши",
-		[&]() { this->result = KeyboardHook::Hook(nullptr); }
-	);
 	AddProcedure(u"PlaySound", u"ВоспроизвестиЗвук",
 		[&](VH filename, VH async) { SoundEffect::PlaySound(filename, async); }, { {0, u""}, {1, false} }
 	);
@@ -415,12 +415,12 @@ WindowsControl::~WindowsControl()
 #ifdef USE_BOOST
 	CloseWebSocket();
 #endif//USE_BOOST
+	KeyboardHook::Hook(nullptr);
 #ifdef _WINDOWS
 	if (hProcessMonitor)
 		DestroyWindow(hProcessMonitor);
 	ClickEffect::Unhook();
 	EventMonitor::Hook(nullptr);
-	KeyboardHook::Hook(nullptr);
 	Magnifier::Hide();
 #endif//_WINDOWS
 }

@@ -12,7 +12,6 @@
 #include <cerrno>
 #include <climits>
 #include <codecvt>
-#include <condition_variable>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -33,12 +32,14 @@
 #else
 #include <dirent.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <signal.h>
 #include <spawn.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 #ifndef O_CLOEXEC
 #define O_CLOEXEC 0
@@ -213,9 +214,18 @@ std::atomic<int> g_refs{ 0 };
 // Shutdown() ждёт завершения уже начатых вызовов, чтобы не закрыть handle
 // или не остановить reaper во время работы другого потока.
 std::mutex g_lifecycleMutex;
-std::condition_variable g_lifecycleCondition;
 int g_activeCalls = 0;
 bool g_shuttingDown = false;
+
+// Короткая пауза для handshake при выгрузке компоненты.
+// std::condition_variable здесь не используется намеренно: не-inline
+// wait(unique_lock<mutex>&) в libstdc++ из GCC 12 помечен версией
+// GLIBCXX_3.4.30, и .so не загружается на Ubuntu 18.04 (GLIBCXX_3.4.22)
+// и Ubuntu 20.04 (GLIBCXX_3.4.28).
+void WaitMilliseconds(int milliseconds)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+}
 
 class CallGuard
 {
@@ -223,7 +233,11 @@ public:
 	CallGuard()
 	{
 		std::unique_lock<std::mutex> lock(g_lifecycleMutex);
-		g_lifecycleCondition.wait(lock, [] { return !g_shuttingDown; });
+		while (g_shuttingDown) {
+			lock.unlock();
+			WaitMilliseconds(5);
+			lock.lock();
+		}
 		++g_activeCalls;
 	}
 
@@ -231,9 +245,20 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(g_lifecycleMutex);
 		--g_activeCalls;
-		if (g_activeCalls == 0) g_lifecycleCondition.notify_all();
 	}
 };
+
+// Ждёт завершения уже начатых вызовов; вызывается только из Shutdown().
+void WaitActiveCallsFinished()
+{
+	std::unique_lock<std::mutex> lock(g_lifecycleMutex);
+	g_shuttingDown = true;
+	while (g_activeCalls != 0) {
+		lock.unlock();
+		WaitMilliseconds(5);
+		lock.lock();
+	}
+}
 
 #ifdef _WINDOWS
 
@@ -399,11 +424,10 @@ struct Entry {
 };
 
 std::mutex g_mutex;
-std::condition_variable g_condition;
 std::map<pid_t, Entry> g_entries;
-std::thread* g_reaper = nullptr;
+pthread_t g_reaperThread;
+std::atomic<bool> g_stop{ false };
 bool g_reaperStarted = false;
-bool g_stop = false;
 
 std::string WideToUtf8(const std::wstring& value)
 {
@@ -529,14 +553,20 @@ std::string FormatStartTimeUtc(uint64_t startTicks)
 	return buffer;
 }
 
-void ReaperLoop()
-{
-	std::unique_lock<std::mutex> lock(g_mutex);
-	while (true) {
-		g_condition.wait_for(lock, std::chrono::milliseconds(100),
-			[] { return g_stop; });
-		if (g_stop) break;
+// Период опроса waitpid. Отдельный поток нужен, чтобы zombie-процессы
+// собирались без участия 1С. Ожидание — nanosleep, без condition_variable
+// и chrono-примитивов: на новых libstdc++ они тянут версии символов
+// GLIBCXX_3.4.30/GLIBC_2.30 и ломают загрузку на старых Ubuntu.
+const long kReaperTickNanoseconds = 100 * 1000 * 1000L;
 
+void* ReaperLoop(void*)
+{
+	while (!g_stop.load()) {
+		struct timespec remaining = { 0, kReaperTickNanoseconds };
+		while (nanosleep(&remaining, &remaining) == -1 && errno == EINTR) {}
+		if (g_stop.load()) break;
+
+		std::lock_guard<std::mutex> lock(g_mutex);
 		for (auto& item : g_entries) {
 			Entry& entry = item.second;
 			if (entry.exited) continue;
@@ -560,6 +590,7 @@ void ReaperLoop()
 			}
 		}
 	}
+	return nullptr;
 }
 
 bool EnsureReaper()
@@ -571,17 +602,13 @@ bool EnsureReaper()
 		std::atexit([] { ProcessUtils::Shutdown(); });
 		exitHandlerRegistered = true;
 	}
-	try {
-		g_stop = false;
-		g_reaper = new std::thread(ReaperLoop);
-		g_reaperStarted = true;
-		return true;
-	}
-	catch (...) {
-		delete g_reaper;
-		g_reaper = nullptr;
+	g_stop.store(false);
+	if (pthread_create(&g_reaperThread, nullptr, ReaperLoop, nullptr) != 0) {
+		g_stop.store(true);
 		return false;
 	}
+	g_reaperStarted = true;
+	return true;
 }
 
 bool SplitCommandLine(const std::string& command,
@@ -1070,11 +1097,7 @@ void ProcessUtils::Release()
 
 void ProcessUtils::Shutdown()
 {
-	{
-		std::unique_lock<std::mutex> lock(g_lifecycleMutex);
-		g_shuttingDown = true;
-		g_lifecycleCondition.wait(lock, [] { return g_activeCalls == 0; });
-	}
+	WaitActiveCallsFinished();
 
 	{
 		std::lock_guard<std::mutex> lock(g_mutex);
@@ -1085,7 +1108,6 @@ void ProcessUtils::Shutdown()
 	{
 		std::lock_guard<std::mutex> lock(g_lifecycleMutex);
 		g_shuttingDown = false;
-		g_lifecycleCondition.notify_all();
 	}
 }
 
@@ -1498,27 +1520,18 @@ void ProcessUtils::Release()
 
 void ProcessUtils::Shutdown()
 {
-	{
-		std::unique_lock<std::mutex> lock(g_lifecycleMutex);
-		g_shuttingDown = true;
-		g_lifecycleCondition.wait(lock, [] { return g_activeCalls == 0; });
-	}
+	WaitActiveCallsFinished();
 
-	std::thread* reaper = nullptr;
+	bool joinReaper = false;
 	{
 		std::lock_guard<std::mutex> lock(g_mutex);
 		if (g_reaperStarted) {
-			g_stop = true;
-			g_condition.notify_all();
-			reaper = g_reaper;
-			g_reaper = nullptr;
 			g_reaperStarted = false;
+			g_stop.store(true);
+			joinReaper = true;
 		}
 	}
-	if (reaper) {
-		if (reaper->joinable()) reaper->join();
-		delete reaper;
-	}
+	if (joinReaper) pthread_join(g_reaperThread, nullptr);
 
 	{
 		std::lock_guard<std::mutex> lock(g_mutex);
@@ -1528,13 +1541,12 @@ void ProcessUtils::Shutdown()
 			waitpid(item.first, &status, WNOHANG);
 		}
 		g_entries.clear();
-		g_stop = false;
+		g_stop.store(false);
 	}
 
 	{
 		std::lock_guard<std::mutex> lock(g_lifecycleMutex);
 		g_shuttingDown = false;
-		g_lifecycleCondition.notify_all();
 	}
 }
 

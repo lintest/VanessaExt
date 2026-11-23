@@ -52,6 +52,7 @@
 ###############################################################################
 
 *.sh         text eol=lf
+*.py         text eol=lf
 *.sln        text eol=crlf
 *.csproj     text eol=crlf
 *.vbproj     text eol=crlf
