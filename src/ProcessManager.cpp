@@ -2,6 +2,8 @@
 #include "ProcessManager.h"
 #include "ProcessUtils.h"
 
+#include <vector>
+
 static void AddProcessStartTime(JSON& json, int64_t pid)
 {
 	std::string startTime;
@@ -25,11 +27,37 @@ static void AddProcessStartTime(JSON& json, int64_t pid)
 #include <sstream>
 #include <comdef.h>
 #include <psapi.h>
+#include <shellapi.h>
 #include <wbemidl.h>
 
 #pragma comment(lib, "psapi.lib")
+#pragma comment(lib, "shell32.lib")
 #pragma comment(lib, "wbemuuid.lib")
 #pragma comment(lib, "winmm.lib")
+
+// Splits CommandLine into arguments. WMI keeps quotes in the command line,
+// so the system parser restores the original boundaries: for example,
+// /N"Администратор (СоколовМИ)" becomes a single argument.
+static void AddCommandLineArgs(JSON& json)
+{
+	JSON arguments = JSON::array();
+	auto commandLine = json.find("CommandLine");
+	if (commandLine != json.end() && commandLine->is_string()) {
+		std::string text = commandLine->get<std::string>();
+		// An empty line makes CommandLineToArgvW return the current process path.
+		if (!text.empty()) {
+			int argc = 0;
+			LPWSTR* argv = CommandLineToArgvW(MB2WC(text).c_str(), &argc);
+			if (argv) {
+				for (int i = 0; i < argc; ++i) {
+					arguments.push_back(WC2MB(argv[i]));
+				}
+				LocalFree(argv);
+			}
+		}
+	}
+	json["CommandLineArgs"] = arguments;
+}
 
 class ProcessEnumerator {
 private:
@@ -137,6 +165,7 @@ public:
 				SysFreeString(name);
 			}
 			SafeArrayDestroy(pNames);
+			AddCommandLineArgs(json);
 			result.push_back(json);
 			pclsObj->Release();
 			pclsObj = NULL;
@@ -356,6 +385,17 @@ static std::string file2str(const std::string& filepath) {
 	return text;
 }
 
+// Reads argv from /proc/<pid>/cmdline, where arguments are NUL-separated.
+static std::vector<std::string> ReadProcessArguments(const std::string& filepath) {
+	std::vector<std::string> arguments;
+	std::ifstream file(filepath, std::ios::binary);
+	std::string argument;
+	while (std::getline(file, argument, '\0')) {
+		arguments.push_back(argument);
+	}
+	return arguments;
+}
+
 class ProcessEnumerator : public WindowEnumerator
 {
 private:
@@ -375,6 +415,10 @@ protected:
 			if (*it == 0) *it = ' ';
 		}
 		return line;
+	}
+
+	std::vector<std::string> GetCommandLineArguments(unsigned long pid) {
+		return ReadProcessArguments(proc + to_string(pid) + "/cmdline");
 	}
 
 	std::string GetCreationDate(unsigned long pid) {
@@ -406,6 +450,7 @@ protected:
 		json["Window"] = (uint64_t)window;
 		json["Title"] = GetWindowTitle(window);
 		json["CommandLine"] = GetCommandLine(pid);
+		json["CommandLineArgs"] = GetCommandLineArguments(pid);
 		json["ProcessId"] = pid;
 		AddProcessStartTime(json, pid);
 		return false;
@@ -416,27 +461,14 @@ public:
 
 private:
 
-	std::vector<std::string> getCommandLineArguments(int pid) {
-		std::vector<std::string> arguments;
-		std::string path = "/proc/" + std::to_string(pid) + "/cmdline";
-		std::ifstream file(path, std::ios::binary);
-		if (file.is_open()) {
-			std::string arg;
-			while (std::getline(file, arg, '\0')) {
-				if (!arg.empty()) {
-					arguments.push_back(arg);
-				}
-			}
-		}
-		return arguments;
-	}
-
 	bool NotFound(unsigned long pid) {
-		auto arguments = getCommandLineArguments(pid);
+		auto arguments = GetCommandLineArguments(pid);
 		std::string portParam = "-TPort";
 		std::string portValue = to_string(m_port);
 		bool portNotFound = true;
 		for (const auto& arg : arguments) {
+			// CommandLineArgs keeps empty arguments; skip them as before.
+			if (arg.empty()) continue;
 			if (portNotFound) {
 				portNotFound = (arg != portParam);
 			} else {
@@ -464,6 +496,7 @@ protected:
 		j["Window"] = (uint64_t)window;
 		j["Title"] = GetWindowTitle(window);
 		j["CommandLine"] = GetCommandLine(pid);
+		j["CommandLineArgs"] = GetCommandLineArguments(pid);
 		j["ProcessId"] = pid;
 		AddProcessStartTime(j, pid);
 		json.push_back(j);
@@ -484,6 +517,7 @@ public:
 			json["Name"] = name;
 			json["ProcessId"] = pid;
 			json["CommandLine"] = GetCommandLine(pid);
+			json["CommandLineArgs"] = GetCommandLineArguments(pid);
 			AddProcessStartTime(json, pid);
 		}
 	}
@@ -661,6 +695,7 @@ std::wstring ProcessManager::FindProcess(const std::wstring& query)
 		json["Name"] = name;
 		json["ProcessId"] = pid;
 		json["CommandLine"] = commandLine;
+		json["CommandLineArgs"] = ReadProcessArguments(path + "/cmdline");
 		AddProcessStartTime(json, pid);
 		result.push_back(json);
 	}
